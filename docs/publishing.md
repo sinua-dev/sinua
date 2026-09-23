@@ -30,7 +30,9 @@ git tag v0.1.0-beta.2 && git push origin v0.1.0-beta.2
 ```
 
 A version with a `-` suffix is a **prerelease**: npm dist-tag `beta`, a GitHub
-prerelease. It can never take npm's `latest`.
+prerelease. It never *moves* npm's `latest`, with one exception npm itself makes: a
+package's very first publish also gets `latest`, whatever `--tag` says. That is why
+`0.1.0-beta.1` is `latest` too (2026-09-23); the first stable release moves it.
 
 **What the tag does** (`.github/workflows/release.yml`). The `version` job fails unless
 the tag is exactly `v` + `VERSION`. Then three jobs, one per registry, each on its own

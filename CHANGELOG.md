@@ -13,7 +13,9 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 ## 0.1.0-beta.1
 
-The first public beta. Not published yet: it waits for the registry accounts.
+The first public beta: npm (`@sinua/core`, `@sinua/web`, `@sinua/voice`, `beta` tag) and
+SwiftPM (`sinua-swift`, `-livekit`, `-openai`). The Android packages (`dev.sinua:sinua-*`
+on Maven Central) follow with `0.1.0-beta.2`, once the `dev.sinua` namespace is verified.
 
 ### Added
 

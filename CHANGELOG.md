@@ -11,6 +11,20 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 ## Unreleased
 
+## 0.1.0-beta.2
+
+### Added
+
+- Android: `dev.sinua:sinua-core`, `sinua-view` and the voice modules on Maven Central,
+  signed. The `dev.sinua` namespace is verified.
+
+### Fixed
+
+- Release: a blank signing key (an unset CI secret) now stages unsigned instead of failing.
+- The publishing docs: npm gives a package's first version `latest` whatever `--tag` says.
+
+No runtime or API change from beta.1: npm and SwiftPM move to beta.2 in lockstep.
+
 ## 0.1.0-beta.1
 
 The first public beta: npm (`@sinua/core`, `@sinua/web`, `@sinua/voice`, `beta` tag) and

@@ -1,6 +1,6 @@
 // Package.swift -- from the first beta. Until it is published, use install/from-source.sh.
 dependencies: [
-    .package(url: "https://github.com/sinua-dev/sinua-swift", from: "0.1.0-beta.1"),
+    .package(url: "https://github.com/sinua-dev/sinua-swift", from: "0.1.0-beta.2"),
 ],
 targets: [
     .target(name: "MyApp", dependencies: [

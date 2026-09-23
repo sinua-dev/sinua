@@ -67,8 +67,9 @@ afterEvaluate {
     }
     // Central requires a detached signature (.asc) per file. Signed only when a key is
     // given (ORG_GRADLE_PROJECT_signingKey / signingPassword, an ASCII-armoured key in
-    // memory, as in CI); a local or dry-run build stays unsigned and says so.
-    val signingKey = project.findProperty("signingKey") as String?
+    // memory, as in CI); a local or dry-run build stays unsigned and says so. Blank counts
+    // as absent: GitHub Actions passes an unset secret as an empty string.
+    val signingKey = (project.findProperty("signingKey") as String?)?.takeIf { it.isNotBlank() }
     if (signingKey != null) {
         extensions.configure(SigningExtension::class.java) {
             useInMemoryPgpKeys(signingKey, project.findProperty("signingPassword") as String?)

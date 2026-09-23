@@ -1,0 +1,36 @@
+---
+title: LiveKit
+description: "Follow a LiveKit agent: pass your connected room, and the visual tracks the agent's state and voice."
+---
+
+If your app already uses LiveKit, connect the visual to the room you have. The source finds the agent participant, follows its state attribute (`lk.agent.state`, the same names Sinua uses), and measures the agent's audio track for the level and bands. Pass a room you've already connected, and no credential passes through Sinua. Or let the source join itself with a URL and an access token from your backend: `new LiveKitVoiceSource({ url, token })` on the web, `LiveKitVoiceSource(url:token:)` on iOS, `LiveKitVoiceSource.owned(context, url, token)` on Android.
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="livekit-web.ts"'>../../../../snippets/voice/livekit-web.ts</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="livekit.swift"'>../../../../snippets/voice/livekit.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="livekit.kt"'>../../../../snippets/voice/livekit.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="livekit-react-native.tsx"'>../../../../snippets/voice/livekit-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+## Packages
+
+| Platform | Package |
+|---|---|
+| Web | `LiveKitVoiceSource` from `@sinua/voice/livekit` (install `livekit-client` alongside) |
+| iOS | `SinuaLiveKit` (a separate Swift package, pulls `client-sdk-swift`) |
+| Android | `:sinua-livekit` (pulls `livekit-android`) |
+
+## Good to know
+
+- **The state comes from LiveKit Agents.** Agents built with LiveKit Agents set `lk.agent.state`. If your agent doesn't, the source falls back to the audio: the agent is `speaking` while its track is loud.
+- **Your room stays yours.** When you pass a room, the source never disconnects it. It waits up to 20 seconds for an agent to join.
+- **Say where the audio goes.** Publishing the microphone sends the user's voice to your LiveKit server and the agent in the room. Your iOS purpose string (`NSMicrophoneUsageDescription`) and, on Android, the explanation you show before the `RECORD_AUDIO` prompt (the system prompt carries no app text) should say so. App Store review expects the purpose string to explain the use.
+- **`livekit-client` is an optional peer on the web.** Install it yourself, and only apps that use LiveKit pull it in.

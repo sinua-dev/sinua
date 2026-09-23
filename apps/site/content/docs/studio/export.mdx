@@ -1,0 +1,22 @@
+---
+title: Export
+description: Take a design from the Studio to your app as code, an FX Spec file, or an image.
+---
+
+<Callout title="Pro">Studio feature.</Callout>
+
+- **Code:** the view with only the props you changed, for **React, Web, SwiftUI, Compose and React Native** — "Web" is the vanilla `mount()` call. It prints `FxView` with the engine keys you changed. Copy it into your view.
+- **FX Spec file:** the whole design, including states and bindings, as a `.fxspec.json` file (FX Spec 1.7, or the design's own version if it needs a newer one). Load it with the view's `spec` prop, and open it back in the Studio later.
+- **Image:** PNG (rasterized) or SVG (real vectors) of the current frame, for docs, app stores or static fallbacks.
+
+Which to choose is covered in [From Studio to your app](/docs/getting-started/from-studio#which-one).
+
+![The export drawer in Code mode, SwiftUI tab](/studio/studio-export-code.png)
+
+![The same drawer in File mode, showing the FX Spec](/studio/studio-export-file.png)
+
+The file half of that same design, exactly as the File tab writes it:
+
+<include lang="json" meta='title="orb-working.fxspec.json"'>../../../snippets/studio/export.fxspec.json</include>
+
+The code half, for React, SwiftUI and Compose, is on [From Studio to your app](/docs/getting-started/from-studio#code).

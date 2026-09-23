@@ -1,0 +1,63 @@
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+# LiveKit's own spec repo (its CocoaPods trunk support is deprecated) -- needed by
+# the SinuaCore/LiveKit and /OpenAI subspecs below.
+source "https://github.com/livekit/podspecs.git"
+source "https://cdn.cocoapods.org/"
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
+
+target 'SinuaExample' do
+  config = use_native_modules!
+
+  # Opt-in voice vendors (docs/fx-view.md, *React Native*): LiveKit and OpenAI
+  # Realtime pull real SDKs, so they are subspecs an app asks for.
+  # (left off by default so this example stays small -- they pull the LiveKit SDK
+  # and the WebRTC binary; both configurations are built in CI)
+  # pod "SinuaCore/LiveKit", :path => "../node_modules/@sinua/react-native"
+  # pod "SinuaCore/OpenAI", :path => "../node_modules/@sinua/react-native"
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
+    )
+    # LiveKit's CocoaPods build ships its nanopb headers as public headers, but its
+    # own C sources include them with <angled> paths, which only resolve with the
+    # pod's public header dir on the search path.
+    installer.pods_project.targets.each do |target|
+      next unless target.name == "LiveKitClient"
+      target.build_configurations.each do |config|
+        config.build_settings["HEADER_SEARCH_PATHS"] =
+          "$(inherited) \"${PODS_ROOT}/Headers/Public/LiveKitClient\""
+      end
+    end
+    # LiveKit's pods still declare iOS 13; Xcode 26 builds from 15 up.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        current = config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"].to_f
+        config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "15.0" if current > 0 && current < 15.0
+      end
+    end
+  end
+end

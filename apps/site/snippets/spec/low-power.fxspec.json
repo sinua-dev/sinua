@@ -1,0 +1,20 @@
+{
+  "fxSpec": "1.8",
+  "object": "orb",
+  "pattern": "working",
+  "materials": {
+    "glow": {
+      "strength": 0.5,
+      "mode": "blur"
+    }
+  },
+  "performance": {
+    "maxFps": 60,
+    "lowPower": {
+      "maxFps": 30,
+      "disable": [
+        "glow"
+      ]
+    }
+  }
+}

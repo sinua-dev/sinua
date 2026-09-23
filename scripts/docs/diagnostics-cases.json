@@ -1,0 +1,25 @@
+{
+  "note": "Curated triggers for the docs' Diagnostics page (scripts/docs/gen.mjs runs each through the engine and records its real severity, path and message). Add a case when a new diagnostic lands.",
+  "spec": [
+    { "title": "Unknown key in params (with a suggestion)", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "working", "params": { "orbitn": 3 } } },
+    { "title": "Unknown pattern", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathin" } },
+    { "title": "Pattern from another object", "spec": { "fxSpec": "1.8", "object": "ring", "pattern": "breathing" } },
+    { "title": "Value out of range", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "materials": { "glow": { "strength": 2 } } } },
+    { "title": "Runtime input in params", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "speaking", "params": { "audioLevel": 0.5 } } },
+    { "title": "Section-owned key in params", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "params": { "glowStrength": 0.5 } } },
+    { "title": "An old name: `state` (the pattern's name before 1.7)", "spec": { "fxSpec": "1.8", "object": "orb", "state": "breathing" } },
+    { "title": "An old name: an engine-key binding target", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "bindings": { "glowStrength": { "input": "level" } } } },
+    { "title": "A version older than 1.8 (the runtime's floor)", "spec": { "fxSpec": "1.7", "object": "orb", "pattern": "breathing" } },
+    { "title": "A section that isn't a material in a file (color / gradient)", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "materials": { "color": { "mix": 0.5 } } } },
+    { "title": "Binding to something that isn't bindable", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "bindings": { "lanes": { "input": "x" } } } },
+    { "title": "A lifecycle state the file doesn't list", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "states": { "listening": {} } }, "state": "speaking" },
+    { "title": "A newer 1.x file (forward compatible)", "spec": { "fxSpec": "1.9", "object": "orb", "pattern": "breathing", "timeline": {} } },
+    { "title": "An unsupported major version", "spec": { "fxSpec": "2.0", "object": "orb", "pattern": "breathing" } }
+  ],
+  "overrides": [
+    { "title": "Unknown override key (did you mean)", "pattern": "breathing", "size": 64, "overrides": { "lanse": 6 } },
+    { "title": "Abbreviated key", "pattern": "connecting", "size": 64, "overrides": { "lineWidth": 1 } },
+    { "title": "Override out of range", "pattern": "breathing", "size": 64, "overrides": { "lanes": 40 } },
+    { "title": "Fractional value for a whole-number key", "pattern": "breathing", "size": 64, "overrides": { "segs": 88.5 } }
+  ]
+}

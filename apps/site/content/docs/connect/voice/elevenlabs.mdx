@@ -1,0 +1,41 @@
+---
+title: ElevenLabs
+description: Follow an ElevenLabs Conversational AI agent.
+---
+
+The ElevenLabs source connects to a Conversational AI agent, plays its voice, and reports state and audio to the visual, including interruptions.
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="elevenlabs-web.ts"'>../../../../snippets/voice/elevenlabs-web.ts</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="elevenlabs.swift"'>../../../../snippets/voice/elevenlabs.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="elevenlabs.kt"'>../../../../snippets/voice/elevenlabs.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="elevenlabs-react-native.tsx"'>../../../../snippets/voice/elevenlabs-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+## Credentials
+
+- **A public agent** needs only its agent id. There's no secret anywhere.
+- **A private agent** needs a signed URL, minted by your server with your API key. It's valid for 15 minutes.
+
+## Packages
+
+| Platform | Package |
+|---|---|
+| Web | `ElevenLabsVoiceSource` from `@sinua/voice/elevenlabs` |
+| iOS | `SinuaElevenLabs` |
+| Android | `:sinua-elevenlabs` |
+
+## Good to know
+
+- **The agent's input format must be PCM.** In the agent's settings, set *user input audio format* to a PCM format (`pcm_16000` and so on). With μ-law input, the source refuses to connect and says why.
+- **How a turn ends.** The agent's turn ends when ElevenLabs signals the reply is complete and its audio has finished playing. If the network stalls mid-reply, the visual stays in `thinking` rather than flipping to `listening`. `thinking` shows between the end of the user's speech and the reply's first audio, so with a fast agent it can be short.
+- **A conversation can't be resumed.** When it closes, the source goes back to `idle`; connect again to start a new one.
+- **Start from a user gesture on the web**, since the browser only allows the microphone and audio playback after one. On iOS, add `NSMicrophoneUsageDescription`; on Android, declare `RECORD_AUDIO`. **Say where the audio goes:** the user's voice is sent to ElevenLabs, so your iOS purpose string (and, on Android, the explanation you show before the system prompt, which carries no app text) should say so. For example: "Your voice is sent to ElevenLabs so the assistant can hear you." App Store review expects the purpose string to explain the use.

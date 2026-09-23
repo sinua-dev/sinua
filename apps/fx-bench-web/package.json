@@ -1,0 +1,21 @@
+{
+  "name": "fx-bench-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sinua device bench, Web (docs/bench.md): runs spec/bench/cases.json through @sinua/web's mount() and reports frame/compute/paint times per result.schema.json.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@sinua/core": "file:../../packages/core",
+    "@sinua/web": "file:../../packages/web"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vite-plugin-wasm": "^3.6.0"
+  }
+}

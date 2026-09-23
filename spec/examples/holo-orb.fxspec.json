@@ -1,0 +1,20 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Holographic orb",
+  "description": "A composing orb in holographic foil: hue sweeps by depth and by distance from a slowly circling view point over the orb's own ink shading, and drifts with time. Speaking adds a blurred glow that inherits the foil hues. Holographic only recolours, so low power keeps it and sheds the glow.",
+  "object": "orb",
+  "pattern": "composing",
+  "size": 64,
+  "materials": { "holographic": { "strength": 1, "hue": 200, "span": 300, "speed": 0.08 } },
+  "states": {
+    "speaking": {
+      "pattern": "speaking",
+      "materials": {
+        "holographic": { "depth": 0.2, "facing": 0.8 },
+        "glow": { "strength": 0.6, "mode": "blur" }
+      }
+    }
+  },
+  "performance": { "lowPower": { "maxFps": 30, "disable": ["glow"] } }
+}

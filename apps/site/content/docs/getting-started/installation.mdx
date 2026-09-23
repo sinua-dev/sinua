@@ -1,0 +1,42 @@
+---
+title: Installation
+description: Add Sinua to a web, iOS, Android or React Native project.
+---
+
+<Callout type="warn" title="Pre-release">
+The packages aren't published to npm, Swift Package Index or Maven yet. Until they are, build them from the repository (see *From source* below). The names on this page are the ones they'll be published under.
+</Callout>
+
+Every platform ships the same engine: a compiled Rust core (WebAssembly on the web, a native library on iOS and Android) plus a view layer for that platform.
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="bash" meta='title="web.sh"'>../../../snippets/install/web.sh</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="swift-package.swift"'>../../../snippets/install/swift-package.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="gradle.kts"'>../../../snippets/install/gradle.kts</include>
+</Tab>
+<Tab value="React Native">
+<include lang="bash" meta='title="react-native.sh"'>../../../snippets/install/react-native.sh</include>
+</Tab>
+</Tabs>
+
+| Platform | Package | What you get |
+|---|---|---|
+| Web | `@sinua/web` (+ `@sinua/core`) | the view for React, Web Components (Vue, Svelte, Angular, Solid, plain HTML) and a vanilla `mount()` |
+| iOS | Swift package `CoreEngine`, products `Sinua` (+ `SinuaVoice`) | SwiftUI and UIKit views; iOS 15+ |
+| Android | module `:sinua-view` (+ the core library) | Jetpack Compose and Android View; API 24+ |
+| React Native | `@sinua/react-native` | a native view over the iOS and Android views |
+
+Voice sources for LiveKit, OpenAI Realtime, Gemini Live and ElevenLabs are separate: `@sinua/voice` on the web (one entry point per vendor) and one package per vendor on iOS and Android, so an app that doesn't use one never downloads its SDK. See [Voice](/docs/connect/voice).
+
+No bundler configuration on the web: the engine's WebAssembly is inlined into `@sinua/core`, so it works in Vite, webpack, Angular CLI (with Zone.js or zoneless), a plain `<script type="module">` and Node. Pages with a Content Security Policy need `'wasm-unsafe-eval'` in `script-src`.
+
+## From source
+
+Clone the repository and build the packages for your platform. Each package's build script regenerates the bindings from the engine.
+
+<include lang="bash" meta='title="from-source.sh"'>../../../snippets/install/from-source.sh</include>

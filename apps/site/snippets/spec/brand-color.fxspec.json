@@ -1,0 +1,10 @@
+{
+  "fxSpec": "1.8",
+  "object": "orb",
+  "pattern": "breathing",
+  "color": {
+    "value": "#E5484D",
+    "mix": 0.8,
+    "mode": "fixed"
+  }
+}

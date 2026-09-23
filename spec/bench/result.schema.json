@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sinua.dev/spec/bench/result.schema.json",
+  "title": "Sinua bench result",
+  "description": "One bench run on one device (docs/bench.md). Every platform computes the metrics with the same formula from FxView's onFrame dt: interval = 1000 / min(refreshHz, targetFps); late = max(0, round(dt / interval) - 1) (whole display intervals a frame missed); droppedFrames = sum(late); hitchRatioMsPerS = sum(late) * interval / durationS (Apple's hitch time ratio: good <= 5, warning 5-10, critical > 10 ms/s); percentiles are nearest-rank.",
+  "type": "object",
+  "required": ["schemaVersion", "platform", "device", "startedAt", "measureSeconds", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "platform": { "enum": ["web", "ios", "android"] },
+    "device": {
+      "type": "object",
+      "required": ["model", "os", "isSimulator", "refreshHz"],
+      "properties": {
+        "model": { "type": "string" },
+        "os": { "type": "string" },
+        "isSimulator": { "type": "boolean", "description": "true on a simulator, emulator or desktop browser run: those are NOT device numbers" },
+        "refreshHz": { "type": "number" },
+        "userAgent": { "type": "string" }
+      }
+    },
+    "startedAt": { "type": "string", "description": "ISO 8601" },
+    "measureSeconds": { "type": "number" },
+    "casesVersion": { "type": "integer" },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "power", "targetFps", "frames", "durationS", "fps", "frameMs", "computeMs", "paintMs", "droppedFrames", "hitchRatioMsPerS", "cpuPct", "cost"],
+        "properties": {
+          "id": { "type": "string" },
+          "power": { "enum": ["normal", "low"] },
+          "targetFps": { "type": "number", "description": "min(refreshHz, cap); cap = 30 in low power" },
+          "frames": { "type": "integer" },
+          "durationS": { "type": "number" },
+          "fps": { "type": "number" },
+          "frameMs": { "$ref": "#/$defs/pct", "description": "frame interval (onFrame dtMs)" },
+          "computeMs": { "$ref": "#/$defs/pct", "description": "engine frame compute (onFrame computeMs)" },
+          "paintMs": { "$ref": "#/$defs/pct", "description": "paint recording time (onFrame paintMs; not GPU raster)" },
+          "droppedFrames": { "type": "integer" },
+          "hitchRatioMsPerS": { "type": "number" },
+          "cpuPct": { "type": ["number", "null"], "description": "process CPU time / wall time x 100 (can exceed 100 on multi-core); null where the platform doesn't expose it (Web)" },
+          "platformJankFrames": { "type": ["integer", "null"], "description": "Android JankStats isJank count (2x refresh interval); null elsewhere" },
+          "longAnimationFrames": { "type": ["integer", "null"], "description": "Web long-animation-frame entries (>= 50 ms); null where unsupported or not Web" },
+          "cost": {
+            "type": "object",
+            "required": ["class", "elements", "coverage", "blurLoad"],
+            "properties": {
+              "class": { "enum": ["light", "medium", "heavy"] },
+              "elements": { "type": "number" },
+              "coverage": { "type": "number" },
+              "blurLoad": { "type": "number" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "pct": {
+      "type": "object",
+      "required": ["p50", "p95", "p99", "max"],
+      "properties": { "p50": { "type": "number" }, "p95": { "type": "number" }, "p99": { "type": "number" }, "max": { "type": "number" } }
+    }
+  }
+}

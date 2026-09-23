@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SinuaView example</title>
+    <!-- No favicon for a demo page: an empty one stops the browser's /favicon.ico 404. -->
+    <link rel="icon" href="data:," />
+    <style>
+      :root { color-scheme: light dark; --paper: #fff; --ink: #111; }
+      @media (prefers-color-scheme: dark) { :root { --paper: #111; --ink: #eee; } }
+      body { margin: 0; padding: 24px 16px; background: var(--paper); color: var(--ink); font: 14px/1.4 system-ui, sans-serif; }
+      .row { display: flex; flex-wrap: wrap; gap: 24px; }
+      figure { margin: 0; width: 160px; }
+      figcaption { margin-top: 8px; font-family: ui-monospace, monospace; font-size: 12px; opacity: 0.7; }
+      canvas { width: 160px; height: 160px; display: block; }
+    </style>
+  </head>
+  <body>
+    <h1>SinuaView: one line per view</h1>
+    <div class="row">
+      <figure><canvas id="spec"></canvas><figcaption>mount(canvas, { spec })</figcaption></figure>
+      <figure><canvas id="voice"></canvas><figcaption>mount(canvas, { state, voice })</figcaption></figure>
+      <figure id="react"></figure>
+    </div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

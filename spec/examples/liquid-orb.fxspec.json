@@ -1,0 +1,15 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Liquid orb",
+  "description": "A glowing orb whose dots melt into ink contours -- the voice-orb 'gooey' mood in this engine's own line language, no shader. Thinking pools into soft filled blobs; speaking becomes a liquid ring (a filled band with a hole). Low power sheds the liquid (plain dots) and caps at 24 fps.",
+  "object": "orb",
+  "pattern": "glowing",
+  "size": 64,
+  "materials": { "liquid": { "strength": 1, "reach": 2.5, "style": "outline" } },
+  "states": {
+    "thinking": { "pattern": "drifting", "materials": { "liquid": { "style": "fill", "blur": 0.6 } } },
+    "speaking": { "pattern": "speaking", "materials": { "liquid": { "style": "fill", "keep": true } } }
+  },
+  "performance": { "maxFps": 60, "lowPower": { "maxFps": 24, "disable": ["liquid"] } }
+}

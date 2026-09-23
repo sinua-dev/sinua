@@ -1,0 +1,39 @@
+{
+  "name": "@sinua/site",
+  "private": true,
+  "version": "0.0.0",
+  "description": "The Sinua docs site: Next.js + Fumadocs, static export. Content lives in content/docs (pages), content/generated (partials) and snippets/ (included code).",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run specs && next dev -p 3100",
+    "build": "npm run specs && next build",
+    "start": "serve out -l 3100",
+    "typecheck": "next typegen && tsc --noEmit",
+    "smoke": "node scripts/smoke.mjs",
+    "specs": "node scripts/copy-specs.mjs"
+  },
+  "dependencies": {
+    "fumadocs-core": "16.15.11",
+    "fumadocs-mdx": "15.4.1",
+    "fumadocs-ui": "16.15.11",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "lucide-react": "^1.43.0",
+    "@sinua/web": "file:../../packages/web",
+    "@sinua/core": "file:../../packages/core",
+    "@sinua/snippets": "file:../../packages/snippets"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/mdx": "^2",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "postcss": "^8",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "serve": "^14.2.6",
+    "playwright": "1.62.1"
+  }
+}

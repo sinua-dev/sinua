@@ -1,0 +1,80 @@
+{
+  "name": "@sinua/react-native",
+  "version": "0.1.0-beta.1",
+  "license": "Apache-2.0",
+  "author": "The Sinua Authors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinua-dev/sinua.git",
+    "directory": "packages/react-native",
+    "directory": "packages/react-native"
+  },
+  "homepage": "https://github.com/sinua-dev/sinua/tree/main/packages/react-native#readme",
+  "bugs": {
+    "url": "https://github.com/sinua-dev/sinua/issues"
+  },
+  "keywords": [
+    "react-native",
+    "animation",
+    "voice-ui",
+    "orb",
+    "visualizer",
+    "fabric"
+  ],
+  "private": true,
+  "description": "React Native bridge over the Sinua Rust geometry engine (a classic Promise native module over the same native binaries as packages/ios and packages/android, not wasm), plus SinuaView: a Fabric component hosting the native SwiftUI / Compose SinuaViews.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "ios",
+    "android/src",
+    "android/build.gradle.kts",
+    "core_engineFFI.xcframework",
+    "SinuaCore.podspec",
+    "LICENSE",
+    "NOTICE",
+    "THIRD_PARTY_LICENSES",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "test": "node --test --import ./test/register.mjs 'test/*.test.mjs'"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0",
+    "react-native": "^0.87.1",
+    "typescript": "^5.9.3"
+  },
+  "codegenConfig": {
+    "name": "SinuaViewSpec",
+    "type": "components",
+    "jsSrcsDir": "src/specs",
+    "android": {
+      "javaPackageName": "dev.sinua.reactnative"
+    },
+    "ios": {
+      "componentProvider": {
+        "SinuaView": "SinuaViewComponentView"
+      }
+    }
+  },
+  "react-native": "src/index.ts",
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "react-native": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

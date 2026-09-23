@@ -1,0 +1,50 @@
+{
+  "name": "@sinua/snippets",
+  "version": "0.1.0-beta.1",
+  "license": "Apache-2.0",
+  "author": "The Sinua Authors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinua-dev/sinua.git",
+    "directory": "packages/snippets",
+    "directory": "packages/snippets"
+  },
+  "homepage": "https://github.com/sinua-dev/sinua/tree/main/packages/snippets#readme",
+  "bugs": {
+    "url": "https://github.com/sinua-dev/sinua/issues"
+  },
+  "keywords": [
+    "codegen",
+    "snippets",
+    "fx-spec",
+    "export"
+  ],
+  "private": true,
+  "description": "The code the Studio and the docs site hand out: an FX design as FxView props per platform (React, Web, SwiftUI, Compose, React Native), and the same design as an .fxspec.json file. Text only, no engine dependency.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "NOTICE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "test": "node --test test/snippets.test.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "@sinua/core": "file:../core"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "sideEffects": false
+}

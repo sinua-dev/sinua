@@ -1,0 +1,20 @@
+---
+title: Glow
+description: Soft halos around every dot and stroke.
+---
+
+Glow adds light around the pattern: stacked translucent copies (the classic neon look) or one real Gaussian blur per element. Use it to make a visual feel lit rather than printed, especially on dark themes.
+
+<include lang="json" meta='title="material-glow.fxspec.json"'>../../../../snippets/spec/material-glow.fxspec.json</include>
+
+<Demo spec="spec/material-glow.fxspec.json" />
+
+## Cost and low power
+
+Glow is the most expensive material: stacked mode multiplies the element count, blur mode adds blur work. It's the first thing low power turns off, and an FX Spec can shed it explicitly (`disable: ["glow"]`, or `"blur"` to keep the halos but drop the blur).
+
+Additive blend is a dark-theme look: added light is invisible on a light background.
+
+## Props
+
+<include>../../../generated/materials/glow.mdx</include>

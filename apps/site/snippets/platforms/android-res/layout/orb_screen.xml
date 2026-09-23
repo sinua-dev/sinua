@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <dev.sinua.view.SinuaViewLayout
+        android:id="@+id/orb"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_gravity="center"
+        android:contentDescription="Assistant"
+        app:fxPattern="listening"
+        app:fxTheme="auto"
+        app:fxMaxFps="30" />
+</FrameLayout>

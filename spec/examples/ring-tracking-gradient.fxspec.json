@@ -1,0 +1,15 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Activity rings",
+  "description": "Three progress rings with a 3-stop gradient (one stop as a DTCG hsl color). Concentric rings share a centre, so the gradient tints them all with one hue rather than ramping (docs/materials.md).",
+  "object": "ring",
+  "pattern": "tracking",
+  "size": 64,
+  "gradient": {
+    "stops": ["#6E56CF", { "colorSpace": "hsl", "components": [330, 80, 60] }, "#FFB224"],
+    "angle": 45,
+    "mid": 0.4
+  },
+  "params": { "progress": [0.8, 0.55, 0.3] }
+}

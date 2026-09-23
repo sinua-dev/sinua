@@ -1,0 +1,56 @@
+---
+title: Bindings
+description: Map any number in your app onto a value or a material, with ranges and easing curves — in the design file, not in your code.
+---
+
+A **binding** turns one of your app's numbers (an *input*) into a value the visual draws (a *target*). Steps become ring progress, a heart rate becomes glow, a mic level becomes the orb's breathing. The mapping lives in the FX Spec, so a designer can tune it without a code change.
+
+<include lang="json" meta='title="activity-rings.fxspec.json"'>../../../snippets/spec/activity-rings.fxspec.json</include>
+
+<Demo spec="spec/activity-rings.fxspec.json" controls={[{ input: "steps", min: 0, max: 30000 }, { input: "waterMl", min: 0, max: 2500 }, { input: "activeMinutes", min: 0, max: 30 }, { input: "heartRate", min: 50, max: 180 }, { state: ["goalReached"] }]} />
+
+## Anatomy
+
+Each entry in `bindings` is keyed by its target (above: `progress[0]`) and says:
+
+| Key | Meaning |
+|---|---|
+| target (the key) | What to drive. One of the bindable targets below. |
+| `input` | Your name for the number. Pass it at runtime in `inputs`. Any name works. |
+| `inputRange` | Input stops, ascending or descending, at least two. Default `[0, 1]`. |
+| `outputRange` | Output stops, same count as `inputRange`. Default: the target's natural range. |
+| `curve` | `linear`, `ease`, `easeIn`, `easeOut` or `easeInOut` (CSS timing curves), one for all segments or one per segment. In TypeScript, a function works too. Default `linear`. |
+
+The output is always clamped to the target's range. Multi-stop ranges let one input do different things in different spans. Above, the first 10,000 steps fill the ring, and the next 20,000 add two more laps.
+
+## Bindable targets
+
+Values and the material masters: `progress`, `progress[0]`…`progress[3]`, `quality`, `accuracy`, `audioLevel`, `muted`, `glow.strength`, `noise.strength`, `gradient.strength`, `pulse.strength`, `color.mix`. Materials that need a companion setting to be visible get a sensible one automatically.
+
+## Bindings and states
+
+Bindings are part of a state's patch, like everything else. A state can add a binding, change one, or remove one with `null`. The `goalReached` state above drops the per-ring bindings and shows a full completion ring instead.
+
+## An input that isn't passed
+
+A binding whose input you don't pass leaves its target at the design's static value, and the view reports it as *inactive*. That's how one file works for users who have a heart-rate sensor and for users who don't.
+
+## Binding in code
+
+Without an FX Spec, `bindReactiveInput` applies the same mapping in TypeScript:
+
+<include lang="ts" meta='title="bind-reactive-input.ts"'>../../../snippets/ts/bind-reactive-input.ts</include>
+
+On every platform, pass the spec and your values as `inputs`:
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="react.tsx"'>../../../snippets/bindings/react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="swiftui.swift"'>../../../snippets/bindings/swiftui.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="compose.kt"'>../../../snippets/bindings/compose.kt</include>
+</Tab>
+</Tabs>

@@ -1,0 +1,32 @@
+---
+title: Ring
+description: "Progress in five patterns: one arc, nested goals, discrete steps, a gauge or a spinner."
+---
+
+The ring shows progress: one arc, several nested goals, discrete steps or a gauge. Drive it with `progress` (or a list of them) from your app.
+
+<div className="demo-gallery">
+<Demo object="ring" pattern="completing" />
+<Demo object="ring" pattern="loading" />
+<Demo object="ring" pattern="tracking" />
+<Demo object="ring" pattern="stepping" />
+<Demo object="ring" pattern="measuring" />
+</div>
+
+<GalleryLink family="ring" />
+
+## When to use which pattern
+
+| Pattern | `pattern` | When to use it |
+|---|---|---|
+| [Completing](#completing) | `completing` | One task's progress: an arc that fills. |
+| [Loading](#loading) | `loading` | Indeterminate wait: a spinner. |
+| [Tracking](#tracking) | `tracking` | Several goals at once: nested activity rings with extra laps. |
+| [Stepping](#stepping) | `stepping` | Discrete steps: segments that fill one by one. |
+| [Measuring](#measuring) | `measuring` | A reading within a range: a gauge. |
+
+## Props
+
+Every prop, per pattern. **Values** are your app's data; everything else is style. Defaults can differ per size (20 · 32 · 64).
+
+<include>../../generated/catalog/ring.mdx</include>

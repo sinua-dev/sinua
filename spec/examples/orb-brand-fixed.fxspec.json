@@ -1,0 +1,10 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Brand orb",
+  "description": "The working orb in a fixed brand green -- the same colour on light and dark backgrounds.",
+  "object": "orb",
+  "pattern": "working",
+  "size": 64,
+  "color": { "value": "#00FFB2", "mix": 1, "mode": "fixed" }
+}

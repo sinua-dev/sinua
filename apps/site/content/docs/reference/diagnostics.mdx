@@ -1,0 +1,22 @@
+---
+title: Diagnostics
+description: Every warning and error the engine reports for FX Spec files and props, with the exact message.
+---
+
+When a spec or a set of props has a problem, the engine explains it rather than silently ignoring it. Each diagnostic has:
+
+- **`severity`**: an **error** means the spec doesn't render (the view draws nothing and reports it); a **warning** means it renders, but something is probably not what you meant.
+- **`path`**: a JSON Pointer to the offending key, e.g. `/states/listening/pattern`.
+- **`message`**: what's wrong, and usually the fix (a "did you mean", or the new name).
+
+Views report diagnostics once per change of spec: through `onError` on the web, and as a logged warning on native.
+
+## Props: warnings only
+
+Component props are checked against the parameter catalog, and the result is always a warning. The visual renders anyway, and out-of-range values are clamped. You can run the same check yourself (`checkOverrides`, see [Values](/docs/connect/values#catching-mistakes)).
+
+## Every message
+
+These tables are produced by running real inputs through the engine, so they show the exact current wording.
+
+<include>../../generated/diagnostics.mdx</include>

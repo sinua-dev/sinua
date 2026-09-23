@@ -1,0 +1,386 @@
+{
+  "$comment": "The voice-state profile: what each agent state does to ANY pattern, as engine overrides. Compiled into the engine (crates/core_engine/src/voice_state.rs) and returned by `voiceStateProfile(pattern, state)`; the FX Spec resolver fills these into a 1.8+ file's voice-state entries for keys the file doesn't set, so an author patches the profile instead of restating it. `speed` multiplies the pattern's tuned speed; `overrides` are engine keys; `audioInput` tells a view which level to feed `audioLevel` (it is not an engine key). A negative `audioStrength` is the inward inhale, positive the outward swell. Per-pattern entries under `patterns` override the generic state for that pattern only.",
+  "profileVersion": 1,
+  "simulated": {
+    "$comment": "Nothing here is simulated any more: `ink` and the listening inhale became engine keys in FX Spec 1.8, and the views' clock became phase-continuous on 2026-09-20 -- including the FX Spec path, so a state with its own `speed` keeps the pose. Kept as a field so tools reading it don't break."
+  },
+  "voiceStateCode": {
+    "idle": 0,
+    "initializing": 1,
+    "listening": 2,
+    "thinking": 3,
+    "speaking": 4
+  },
+  "base": {
+    "colorHue": 251.9,
+    "colorSaturation": 0.558,
+    "colorMix": 0.7,
+    "glowStrength": 0.25,
+    "glowRadius": 3
+  },
+  "states": {
+    "initializing": {
+      "speed": 0.8,
+      "overrides": {
+        "particleStrength": 0,
+        "ink": 0.7
+      }
+    },
+    "idle": {
+      "speed": 0.6,
+      "overrides": {
+        "pulseStrength": 0.6,
+        "pulsePeriod": 4.5,
+        "pulseScale": 0.04,
+        "pulseOpacity": 0.25,
+        "ink": 0.72
+      }
+    },
+    "listening": {
+      "speed": 0.9,
+      "audioInput": "micLevel",
+      "overrides": {
+        "glowStrength": 0.3,
+        "particleStrength": 1,
+        "particleStyle": 1,
+        "particleCount": 36,
+        "particleSize": 1.4,
+        "particleSpread": 0.4,
+        "particleLife": 1.8,
+        "particleAudio": 1,
+        "ink": 1,
+        "audioStrength": -0.35
+      }
+    },
+    "thinking": {
+      "speed": 1.05,
+      "overrides": {
+        "colorHue": 271.9,
+        "glowStrength": 0.25,
+        "pulseStrength": 0.6,
+        "pulsePeriod": 1.8,
+        "pulseScale": 0.015,
+        "pulseOpacity": 0.45,
+        "particleStrength": 0.8,
+        "particleStyle": 2,
+        "particleCount": 16,
+        "ink": 1
+      }
+    },
+    "speaking": {
+      "speed": 1.15,
+      "audioInput": "agentVolume",
+      "overrides": {
+        "glowStrength": 0.4,
+        "particleStrength": 1,
+        "particleStyle": 0,
+        "particleCount": 32,
+        "particleLife": 1.4,
+        "particleAudio": 1,
+        "ink": 1,
+        "audioStrength": 0.5
+      }
+    }
+  },
+  "patterns": {
+    "glowing": {
+      "$comment": "Showcase base (aurora): the colour field flowing across the sphere is its own signal, so each state drives the flow speed, not just the tempo.",
+      "states": {
+        "initializing": {
+          "speed": 0.8,
+          "overrides": {
+            "nodeCount": 160,
+            "nodeSize": 1.0,
+            "saturation": 0.4,
+            "surfaceScale": 1.2,
+            "surfaceSpeed": 0.6,
+            "glowStrength": 0.25
+          }
+        },
+        "idle": {
+          "overrides": {
+            "surfaceSpeed": 0.1,
+            "surfaceScale": 1.2,
+            "nodeCount": 220,
+            "nodeSize": 1.15,
+            "saturation": 0.5,
+            "ink": 0.8,
+            "glowStrength": 0.25
+          }
+        },
+        "listening": {
+          "overrides": {
+            "surfaceSpeed": 0.28,
+            "surfaceScale": 1.2,
+            "nodeCount": 260,
+            "nodeSize": 1.3,
+            "saturation": 0.6,
+            "glowStrength": 0.3
+          }
+        },
+        "thinking": {
+          "speed": 1.05,
+          "overrides": {
+            "surfaceSpeed": 0.55,
+            "surfaceScale": 3.0,
+            "nodeCount": 340,
+            "nodeSize": 1.05,
+            "saturation": 0.8,
+            "particleStrength": 0,
+            "glowStrength": 0.28,
+            "ink": 1
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "surfaceSpeed": 0.5,
+            "surfaceScale": 1.5,
+            "nodeCount": 260,
+            "nodeSize": 1.5,
+            "saturation": 0.62,
+            "glowStrength": 0.45
+          }
+        }
+      }
+    },
+    "muted": {
+      "$comment": "hush dims itself (dim 0.6), so under the generic profile every state looked near-invisible. Here idle keeps a resting dim and the active states come up to full ink.",
+      "states": {
+        "idle": {
+          "overrides": {
+            "dim": 0.45,
+            "nodeSize": 1.2
+          }
+        },
+        "listening": {
+          "overrides": {
+            "dim": 0.1,
+            "nodeSize": 1.35,
+            "yaw": 1.2,
+            "period": 2.2
+          }
+        },
+        "thinking": {
+          "overrides": {
+            "dim": 0.2,
+            "nodeSize": 1.2,
+            "yaw": 1.0,
+            "period": 1.6
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "dim": 0.05,
+            "nodeSize": 1.45,
+            "period": 2.0
+          }
+        }
+      }
+    },
+    "speaking": {
+      "$comment": "spectrum's bars already follow the audio, so listening (driven by the mic) read louder than speaking. Listening now sheds the particles and sits back; speaking gets the glow and the taller bars.",
+      "states": {
+        "listening": {
+          "overrides": {
+            "particleStrength": 0,
+            "ink": 0.95,
+            "barCount": 20,
+            "jumpSpeed": 3
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "glowStrength": 0.4,
+            "barCount": 28,
+            "jumpSpeed": 5
+          }
+        }
+      }
+    },
+    "concluding": {
+      "$comment": "crystallize dissolves and re-forms on its own cycle, so at idle speed it spent seconds near-blank (studio-ui-ux measured 1461 -> 7 -> 739 ink over 7 s). A still, denser lattice raises the floor (min frame ink 0.25 -> 0.42) but cannot remove the gap without changing the mode -- it stays on the open list.",
+      "states": {
+        "idle": {
+          "overrides": {
+            "driftAmplitude": 0,
+            "dotSize": 1.6,
+            "lineWidth": 1.2,
+            "period": 6
+          }
+        },
+        "listening": {
+          "overrides": {
+            "driftAmplitude": 0.2,
+            "period": 5
+          }
+        },
+        "thinking": {
+          "overrides": {
+            "driftAmplitude": 0.3,
+            "period": 3.5
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "driftAmplitude": 0.22,
+            "period": 4,
+            "lineWidth": 0.9
+          }
+        }
+      }
+    },
+    "confirming": {
+      "$comment": "sonar is empty between pings, so idle showed nothing for most of a cycle. A bigger resting core and a shorter period keep something on screen.",
+      "states": {
+        "idle": {
+          "overrides": {
+            "coreSize": 3.0,
+            "period": 1.8,
+            "echoCount": 3,
+            "echoSpacing": 0.3
+          }
+        },
+        "listening": {
+          "overrides": {
+            "coreSize": 2.0,
+            "period": 1.6,
+            "echoCount": 2
+          }
+        },
+        "thinking": {
+          "overrides": {
+            "coreSize": 1.8,
+            "period": 1.2,
+            "echoCount": 3
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "coreSize": 2.6,
+            "period": 1.4,
+            "echoCount": 2
+          }
+        }
+      }
+    },
+    "calibrating": {
+      "$comment": "chladni's nodal figures are too fine to read at 64 px with the stock node size; the figures also hold still, which is the point, so the state shows through size and hold time instead of motion.",
+      "states": {
+        "idle": {
+          "overrides": {
+            "nodeSize": 1.5,
+            "nodeCount": 300,
+            "holdDuration": 4
+          }
+        },
+        "listening": {
+          "overrides": {
+            "nodeSize": 1.8,
+            "nodeCount": 340,
+            "holdDuration": 2.5
+          }
+        },
+        "thinking": {
+          "overrides": {
+            "nodeSize": 1.6,
+            "nodeCount": 380,
+            "holdDuration": 1.2
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "nodeSize": 1.9,
+            "nodeCount": 340,
+            "holdDuration": 2
+          }
+        }
+      }
+    },
+    "generating": {
+      "$comment": "shimmer is a track with a travelling highlight: speaking needs the brighter, longer highlight, or it reads quieter than listening.",
+      "states": {
+        "listening": {
+          "overrides": {
+            "highlightLength": 0.3,
+            "trackOpacity": 0.2,
+            "particleCount": 16,
+            "particleSize": 1.0,
+            "particleSpread": 0.25
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "highlightLength": 0.45,
+            "highlightFill": 0.8,
+            "trackOpacity": 0.35,
+            "period": 1.0,
+            "thickness": 0.3
+          }
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "$comment": "Patterns the generic state language doesn't fit. `fixed` ones have a tuned entry under `patterns`; `open` ones are still weak and say why, measured with a ladder (mean ink / motion / lowest single-frame ink, engine units, size 64).",
+    "glowing": {
+      "status": "fixed",
+      "was": "aurora cycles its own hue, so the states drifted pink/blue",
+      "now": "the showcase pins the colour; states differ by texture and energy (29/10 - 86/75 - 47/31 - 126/139)"
+    },
+    "muted": {
+      "status": "fixed",
+      "was": "hush dims itself, so every state was near-invisible",
+      "now": "idle keeps a resting dim, active states come up (12 - 65 - 29 - 80)"
+    },
+    "calibrating": {
+      "status": "fixed",
+      "was": "chladni's figures too fine to read at 64 px",
+      "now": "bigger nodes and a shorter hold per state (20 - 77 - 43 - 94)"
+    },
+    "confirming": {
+      "status": "fixed",
+      "was": "sonar was empty between pings at idle (lowest frame ink 0.48)",
+      "now": "a resting core and closer echoes; lowest frame ink 3.79",
+      "note": "Without voice states (the bare pattern) sonar still empties between pings -- that is the pattern's own cycle, and the profile only applies when a state is set."
+    },
+    "speaking": {
+      "status": "partial",
+      "was": "spectrum's bars follow the mic too, so listening read louder than speaking",
+      "now": "listening sheds its particles and sits back (10 vs speaking 23), but it still measures close to thinking (12) -- the bars are the same shape in both"
+    },
+    "generating": {
+      "status": "open",
+      "issue": "shimmer is a thin track with a travelling highlight, so there is little to modulate: speaking (6) still doesn't beat listening (10) or thinking (10). It needs its own speaking treatment in the mode, not more overrides."
+    },
+    "concluding": {
+      "status": "open",
+      "issue": "crystallize dissolves completely inside its cycle, so a single frame can still be near-blank (lowest frame ink 0.42 at idle, 0.96 while speaking). A still, denser lattice raised the floor but only the mode can remove the gap.",
+      "note": "Same caveat as `confirming`: the bare pattern empties on its own cycle; the profile's denser lattice only applies when a state is set."
+    },
+    "shaping": {
+      "status": "open",
+      "issue": "morph changes between circle, square and triangle by design, which cuts against 'one shape stays on screen'. Fine as a standalone pattern, wrong as a voice base."
+    },
+    "signal-family": {
+      "status": "by-design",
+      "patterns": [
+        "signaling",
+        "waveform",
+        "scrolling",
+        "metering"
+      ],
+      "note": "they already carry voice states through `voiceStateCode` and the audio bands, so the profile only lends them ink, glow and tempo; their own behaviour is left alone."
+    },
+    "value-driven-rings": {
+      "status": "fixed",
+      "patterns": [
+        "completing",
+        "tracking",
+        "stepping",
+        "measuring"
+      ],
+      "was": "thinking equalled idle: nothing moves, so there was no tempo to raise",
+      "now": "the profile's pulse carries it (e.g. completing idle motion 1.8 vs thinking 13.9); the value itself is never touched"
+    }
+  }
+}

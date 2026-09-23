@@ -1,0 +1,32 @@
+---
+title: Mic & test tone
+description: Drive the visual from the device microphone, or from a synthetic voice for previews and tests.
+---
+
+Two sources need no vendor at all.
+
+- **Microphone:** `LocalMicVoiceSource` measures the device microphone, so the visual reacts to the user's own voice. It asks for permission when you connect it. On Android, your app declares `RECORD_AUDIO`, since the library doesn't. On iOS it leaves the audio session to your app if you ask it to.
+- **Test tone:** `TestToneVoiceSource` synthesizes speech-like bursts. Its output gain is zero, so nothing is heard and no permission is needed, which makes it good for previews, screenshots and automated tests.
+
+Both run the same analysis on every platform (a level plus 16 log-spaced bands), checked against shared test vectors, so a visual tuned on one platform reacts the same way on the others.
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="mic-and-tone-web.ts"'>../../../../snippets/voice/mic-and-tone-web.ts</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="mic-and-tone.swift"'>../../../../snippets/voice/mic-and-tone.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="mic-and-tone.kt"'>../../../../snippets/voice/mic-and-tone.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="mic-and-tone-react-native.tsx"'>../../../../snippets/voice/mic-and-tone-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+| Platform | Package |
+|---|---|
+| Web | `LocalMicVoiceSource` from `@sinua/voice/mic`, `TestToneVoiceSource` from `@sinua/voice/tone` |
+| iOS | `SinuaVoice` |
+| Android | `dev.sinua.voice` (in the core library) |

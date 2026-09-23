@@ -1,0 +1,30 @@
+---
+title: Signal
+description: Sound as bars, waveforms, a scrolling history or an LED meter.
+---
+
+The signal draws sound: bars, waveforms, a scrolling history or an LED meter. Feed it a voice source and it follows the audio.
+
+<div className="demo-gallery">
+<Demo object="signal" pattern="signaling" />
+<Demo object="signal" pattern="waveform" />
+<Demo object="signal" pattern="scrolling" />
+<Demo object="signal" pattern="metering" />
+</div>
+
+<GalleryLink family="signal" />
+
+## When to use which pattern
+
+| Pattern | `pattern` | When to use it |
+|---|---|---|
+| [Bars](#signaling) | `signaling` | Live level: bars that follow the audio. |
+| [Waveform](#waveform) | `waveform` | Live voice: layered waveform lines. |
+| [Scrolling](#scrolling) | `scrolling` | Voice over time: a scrolling history of levels. |
+| [Meter](#metering) | `metering` | A precise meter: an LED matrix with peaks. |
+
+## Props
+
+Every prop, per pattern. **Values** are your app's data; everything else is style. Defaults can differ per size (20 · 32 · 64).
+
+<include>../../generated/catalog/signal.mdx</include>

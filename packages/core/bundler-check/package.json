@@ -1,0 +1,14 @@
+{
+  "name": "sinua-core-bundler-check",
+  "private": true,
+  "type": "module",
+  "description": "Bundles tiny consumers of the packed @sinua/core and @sinua/web with esbuild, Vite (Rollup) and webpack in production mode and runs each bundle: the inline wasm init and the custom-element registrations must survive tree-shaking.",
+  "scripts": {
+    "test": "node run.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "vite": "^5.4.11",
+    "webpack": "^5.101.0"
+  }
+}

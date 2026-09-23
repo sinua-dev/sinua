@@ -1,0 +1,20 @@
+---
+title: Noise
+description: Organic jitter from a slow noise field.
+---
+
+Noise moves every point a little along a slow, smooth field, so geometric patterns feel alive and hand-made. Points that are shared (a ring's stroke, a network's links) stay attached.
+
+<include lang="json" meta='title="material-noise.fxspec.json"'>../../../../snippets/spec/material-noise.fxspec.json</include>
+
+<Demo spec="spec/material-noise.fxspec.json" />
+
+## Cost and low power
+
+Cheap: it moves existing elements and adds none. Sheddable in low power (`disable: ["noise"]`).
+
+Keep `amplitude` small (a few percent of the size): noise reads as life at low amounts and as a glitch at high ones.
+
+## Props
+
+<include>../../../generated/materials/noise.mdx</include>

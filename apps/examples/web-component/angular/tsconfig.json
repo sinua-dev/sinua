@@ -1,0 +1,27 @@
+{
+ "compilerOptions": {
+  "target": "ES2022",
+  "module": "ES2022",
+  "moduleResolution": "Bundler",
+  "strict": true,
+  "resolveJsonModule": true,
+  "esModuleInterop": true,
+  "skipLibCheck": true,
+  "experimentalDecorators": true,
+  "useDefineForClassFields": false,
+  "lib": [
+   "ES2022",
+   "DOM"
+  ],
+  "preserveSymlinks": true
+ },
+ "files": [
+  "src/main.ts"
+ ],
+ "include": [
+  "src/**/*.ts"
+ ],
+ "angularCompilerOptions": {
+  "strictTemplates": true
+ }
+}

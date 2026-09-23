@@ -1,0 +1,32 @@
+---
+title: Beacon
+description: "Status in place: a ping, connection quality, location accuracy, a radar scan or a broadcast."
+---
+
+The beacon shows status in place: a notification ping, connection quality, location accuracy, a radar scan or a broadcast.
+
+<div className="demo-gallery">
+<Demo object="beacon" pattern="notifying" />
+<Demo object="beacon" pattern="reconnecting" />
+<Demo object="beacon" pattern="locating" />
+<Demo object="beacon" pattern="scanning" />
+<Demo object="beacon" pattern="broadcasting" />
+</div>
+
+<GalleryLink family="beacon" />
+
+## When to use which pattern
+
+| Pattern | `pattern` | When to use it |
+|---|---|---|
+| [Notifying](#notifying) | `notifying` | Something happened: a ping ripple (can play once). |
+| [Reconnecting](#reconnecting) | `reconnecting` | Connection quality: a pulse with lit segments. |
+| [Locating](#locating) | `locating` | Position with uncertainty: a halo that shrinks as accuracy rises. |
+| [Scanning](#scanning) | `scanning` | Scanning an area: a radar sweep with blips. |
+| [Broadcasting](#broadcasting) | `broadcasting` | Sending out: waves from a centre, driven by `level`. |
+
+## Props
+
+Every prop, per pattern. **Values** are your app's data; everything else is style. Defaults can differ per size (20 · 32 · 64).
+
+<include>../../generated/catalog/beacon.mdx</include>

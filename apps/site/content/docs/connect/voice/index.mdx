@@ -1,0 +1,59 @@
+---
+title: Voice overview
+description: Connect a voice agent or the microphone, and the visual follows the conversation — its state and its sound.
+---
+
+A **voice source** turns a conversation into two streams the visual understands:
+
+- **the agent's state** (`initializing`, `idle`, `listening`, `thinking`, `speaking`), which picks the look through your [states](/docs/connect/states-vs-patterns);
+- **the audio**: an overall level and per-band levels, which drive `audioLevel` (an orb's breathing) and the bars and waveforms of a signal.
+
+Give the view a source and it does the rest: it follows the state, eases the audio at display rate so nothing steps, shows the mute cue when you set it, and flashes briefly when the user interrupts the agent (barge-in).
+
+The two talking states move in opposite directions, which is what makes them tell apart at a glance: while the user speaks, the visual is **drawn inward** by the mic, and while the agent speaks it **swells outward** with its voice. That behaviour ships with the engine, so a visual follows a conversation without a design file; an [FX Spec](/docs/reference/fx-spec) then changes whatever you want on top of it.
+
+<Demo spec="spec/voice-orb.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }, { input: "micLevel", min: 0, max: 1 }, { input: "agentVolume", min: 0, max: 1 }]} />
+
+<Tabs groupId="platform" items={["Web", "SwiftUI", "Compose", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="overview-web.ts"'>../../../../snippets/voice/overview-web.ts</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="overview.swift"'>../../../../snippets/voice/overview.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="overview.kt"'>../../../../snippets/voice/overview.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="overview-react-native.tsx"'>../../../../snippets/voice/overview-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+## Sources
+
+| Source | Connects to | Page |
+|---|---|---|
+| LiveKit | an existing LiveKit room with an agent | [LiveKit](/docs/connect/voice/livekit) |
+| OpenAI Realtime | OpenAI's Realtime API over WebRTC | [OpenAI Realtime](/docs/connect/voice/openai-realtime) |
+| Gemini Live | Google's Gemini Live API | [Gemini Live](/docs/connect/voice/gemini-live) |
+| ElevenLabs | ElevenLabs Conversational AI | [ElevenLabs](/docs/connect/voice/elevenlabs) |
+| Microphone, test tone | the device mic, or a synthetic voice for previews | [Mic & test tone](/docs/connect/voice/mic-and-tone) |
+
+Each vendor source is its own package on iOS and Android, and its own entry point of `@sinua/voice` on the web (`/livekit`, `/openai`, `/gemini`, `/elevenlabs`, `/mic`, `/tone`), so your app only includes the SDKs it uses. On the web, install `@sinua/voice` (and `livekit-client` only if you use LiveKit), pass the source to the view as `voice`, and call `connect()` from a user gesture, such as a button tap: browsers only allow audio and the microphone after one. All of them report the same state names, the same audio shape, and interruption where the vendor signals it.
+
+## Credentials: never ship an API key
+
+A voice source never needs your vendor API key. Keep the key on **your server**, mint a short-lived credential per session there, and hand only that credential to the source:
+
+- **OpenAI:** an ephemeral client secret (`ek_…`), minted with `POST /v1/realtime/client_secrets`.
+- **Gemini:** an ephemeral auth token (`auth_tokens/…`).
+- **ElevenLabs:** a signed URL for a private agent, or just the agent id for a public one.
+- **LiveKit:** an access token from your backend, or a room you've already connected.
+
+Sinua doesn't ship a backend. The mint endpoint is yours, so you decide who gets a session and with which model, voice and instructions.
+
+## Driving the visual yourself
+
+If your app already listens to the agent, skip the source: pass a `VoiceOverrides` you feed yourself as `voice`. Call `push({ level, bands })` for the audio, `setState(...)` for the agent's state and `interrupt()` for a barge-in. The view's easing and cues still apply.
+
+The mute cue is yours to turn on, since sources don't report mute: `voiceOptions: { muted: true }` on the web, or the `muted` option of `VoiceOverrides` on iOS and Android.

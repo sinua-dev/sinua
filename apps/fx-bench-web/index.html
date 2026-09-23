@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>sinua bench</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root { color-scheme: light dark; --paper: #fff; --ink: #111; --muted: #666; }
+      @media (prefers-color-scheme: dark) { :root { --paper: #111; --ink: #eee; --muted: #999; } }
+      body { margin: 0; padding: 20px 16px; background: var(--paper); color: var(--ink); font: 14px/1.4 system-ui, sans-serif; }
+      canvas { width: 256px; height: 256px; display: block; margin: 12px 0; }
+      button { font: inherit; padding: 8px 14px; margin-right: 8px; }
+      #status { color: var(--muted); }
+      table { border-collapse: collapse; font: 12px ui-monospace, monospace; margin-top: 12px; }
+      td, th { padding: 3px 8px; text-align: right; border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); }
+      td:first-child, th:first-child { text-align: left; }
+    </style>
+  </head>
+  <body>
+    <h1 style="font-size: 18px">sinua bench</h1>
+    <p id="note" style="max-width: 640px; color: var(--muted)">
+      Runs every case in <code>spec/bench/cases.json</code> twice (normal, low power) and reports frame, compute and
+      paint times. Keep this tab in the foreground and don't touch the page while it runs. Desktop-browser numbers are
+      not device numbers: run it on the phone for those (docs/bench.md).
+    </p>
+    <button id="run">Run</button><button id="download" disabled>Download JSON</button>
+    <span id="status">idle</span>
+    <canvas id="stage"></canvas>
+    <div id="table"></div>
+    <footer style="margin-top: 24px; color: var(--muted); font-size: 12px">
+      Apache-2.0. Includes thinking-orbs and fflate (MIT):
+      <a href="./THIRD_PARTY_LICENSES.txt">third-party licenses</a>.
+    </footer>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

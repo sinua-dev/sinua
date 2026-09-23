@@ -1,0 +1,102 @@
+{
+  "name": "@sinua/web",
+  "version": "0.1.0-beta.1",
+  "license": "Apache-2.0",
+  "author": "The Sinua Authors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinua-dev/sinua.git",
+    "directory": "packages/web",
+    "directory": "packages/web"
+  },
+  "homepage": "https://github.com/sinua-dev/sinua/tree/main/packages/web#readme",
+  "bugs": {
+    "url": "https://github.com/sinua-dev/sinua/issues"
+  },
+  "keywords": [
+    "animation",
+    "voice-ui",
+    "orb",
+    "visualizer",
+    "canvas",
+    "web-component",
+    "custom-element",
+    "react"
+  ],
+  "private": true,
+  "description": "Drop-in Web renderer for Sinua: the shared paint contract, mount(canvas, options), an optional React <SinuaView/>, and the <sinua-view> custom element",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
+    },
+    "./element": {
+      "types": "./dist/element-define.d.ts",
+      "default": "./dist/element-define.js"
+    },
+    "./components": {
+      "types": "./dist/generated/index.d.ts",
+      "default": "./dist/generated/index.js"
+    },
+    "./elements": {
+      "types": "./dist/generated/elements-define.d.ts",
+      "default": "./dist/generated/elements-define.js"
+    },
+    "./types/vue": {
+      "types": "./types/vue.d.ts"
+    },
+    "./types/svelte": {
+      "types": "./types/svelte.d.ts"
+    },
+    "./types/solid": {
+      "types": "./types/solid.d.ts"
+    },
+    "./types/react": {
+      "types": "./types/react.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "NOTICE",
+    "types",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "test": "node --experimental-wasm-modules --test test/mount.test.mjs test/perf.test.mjs test/materials.test.mjs test/hues.test.mjs test/element.test.mjs test/generated.test.mjs test/materials-cases.test.mjs",
+    "example": "vite example"
+  },
+  "peerDependencies": {
+    "@sinua/core": "0.1.0-beta.1",
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@sinua/core": "file:../core",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vite-plugin-wasm": "^3.6.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "sideEffects": [
+    "./dist/element-define.js",
+    "./dist/generated/elements-define.js"
+  ]
+}

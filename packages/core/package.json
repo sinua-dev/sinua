@@ -1,0 +1,61 @@
+{
+  "name": "@sinua/core",
+  "version": "0.1.0-beta.1",
+  "license": "Apache-2.0",
+  "author": "The Sinua Authors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinua-dev/sinua.git",
+    "directory": "packages/core",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/sinua-dev/sinua/tree/main/packages/core#readme",
+  "bugs": {
+    "url": "https://github.com/sinua-dev/sinua/issues"
+  },
+  "keywords": [
+    "animation",
+    "voice-ui",
+    "orb",
+    "visualizer",
+    "wasm",
+    "rust",
+    "agent",
+    "canvas"
+  ],
+  "private": true,
+  "description": "TypeScript bridge over the Sinua Rust geometry engine (wasm-bindgen; the wasm is inlined, so no bundler config is needed)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "pkg/*.js",
+    "pkg/*.d.ts",
+    "NOTICE",
+    "THIRD_PARTY_LICENSES",
+    "README.md"
+  ],
+  "scripts": {
+    "build:wasm": "cd ../../crates/core_engine && wasm-pack build --target web --out-dir ../../packages/core/pkg --out-name sinua_core && cd ../../packages/core && node scripts/inline-wasm.mjs",
+    "build": "rm -rf dist && npm run build:wasm && tsc -p tsconfig.json",
+    "test": "node --test \"test/**/*.test.mjs\""
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "fflate": "^0.8.3",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "sideEffects": [
+    "./pkg/sinua_core_inline.js"
+  ]
+}

@@ -1,0 +1,16 @@
+---
+title: Android View
+description: Use Sinua from XML layouts and classic Android Views.
+---
+
+`SinuaViewLayout` is a regular Android `View`: put it in an XML layout with its attributes, or create it in code. Under the hood it hosts the Compose view, so it looks and behaves identically.
+
+The layout lives in `res/layout/` (Android resource names are lowercase), and the activity finds the view by id:
+
+<include lang="xml" meta='title="orb_screen.xml"'>../../../snippets/platforms/android-res/layout/orb_screen.xml</include>
+
+<include lang="kotlin" meta='title="android-view.kt"'>../../../snippets/platforms/android-view.kt</include>
+
+- **Attributes:** `app:sinuaPattern="speaking"`, `app:sinuaTheme="auto"`, and `android:contentDescription` for the accessible name. For a design file, use `app:sinuaSpecAsset="assistant.fxspec.json"` (a file in `assets/`) with `app:sinuaState="listening"` for the lifecycle state. Every attribute has a Kotlin property without the `fx` prefix (`fxPattern` → `pattern`, `fxState` → `state`, `fxMaxFps` → `maxFps`), and setting one updates the view. `fxSpecAsset` is the exception: it loads the file into `spec`.
+- **Host:** like any Compose-in-View, it needs a lifecycle owner: a `ComponentActivity`, AppCompat 1.3+ or Fragment 1.3+.
+- **Ids:** give each instance a unique id, so its saved state is restored correctly.

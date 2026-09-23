@@ -1,0 +1,13 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Radar with a filled wedge and real-blur glow",
+  "description": "The scanning radar with its trail as one filled wedge (CodeFronts' 46 degree conic fade, as a linear gradient across the wedge) and a blurred, additive glow. Under low power the blur is shed -- the glow falls back to stacked copies -- and the cap drops to 20 fps.",
+  "object": "beacon",
+  "pattern": "scanning",
+  "size": 64,
+  "color": { "value": "#30A46C", "mix": 0.8 },
+  "materials": { "glow": { "strength": 0.7, "radius": 3, "mode": "blur", "blend": "additive" } },
+  "params": { "trailFill": 1 },
+  "performance": { "maxFps": 30, "lowPower": { "maxFps": 20, "disable": ["blur"] } }
+}

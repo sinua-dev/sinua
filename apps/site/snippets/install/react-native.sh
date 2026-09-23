@@ -1,0 +1,3 @@
+# The native SinuaViews in a Fabric component (iOS + Android), and the typed SinuaOrb / SinuaRing / ...
+npm i @sinua/react-native
+cd ios && pod install

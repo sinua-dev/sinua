@@ -1,0 +1,18 @@
+---
+title: Lifecycle & bindings
+description: Design your app's states and data bindings in the Studio, and preview them with live inputs.
+---
+
+<Callout title="Pro">Studio feature. The same design can be written by hand as an [FX Spec](/docs/reference/fx-spec).</Callout>
+
+The **Spec** panel edits everything an FX Spec holds beyond the look:
+
+- **States:** add your app's lifecycle states (`idle`, `listening`, … for a voice agent). Each state is a patch over the base design: change its pattern, colour, materials or speed, and see only what differs. Switching states in the Studio swaps the design immediately; in your app the view cross-fades over 250 ms.
+
+See [States vs patterns](/docs/connect/states-vs-patterns).
+- **Bindings:** map your app's inputs onto values (`progress`, `audioLevel`, `glow.strength`, …) with input and output ranges and a curve. Sliders for each input let you preview the binding before any code exists. See [Bindings](/docs/connect/bindings).
+- **Performance:** a frame-rate cap, and what to shed in low-power mode.
+
+![Lifecycle states and bindings in the inspector, with steps bound to a ring's progress](/studio/studio-lifecycle.png)
+
+Problems show up as you edit, with the same messages the engine reports at runtime ([Diagnostics](/docs/reference/diagnostics)).

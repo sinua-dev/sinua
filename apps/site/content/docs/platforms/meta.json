@@ -1,0 +1,4 @@
+{
+  "title": "Platforms",
+  "pages": ["react", "web-components", "vanilla", "swiftui", "uikit", "compose", "android-view", "react-native", "..."]
+}

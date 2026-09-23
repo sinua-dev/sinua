@@ -1,0 +1,72 @@
+{
+  "fxSpec": "1.8",
+  "name": "Activity rings",
+  "object": "ring",
+  "pattern": "tracking",
+  "params": {
+    "ringCount": 3
+  },
+  "bindings": {
+    "progress[0]": {
+      "input": "steps",
+      "inputRange": [
+        0,
+        10000,
+        30000
+      ],
+      "outputRange": [
+        0,
+        1,
+        3
+      ],
+      "curve": [
+        "easeOut",
+        "linear"
+      ]
+    },
+    "progress[1]": {
+      "input": "waterMl",
+      "inputRange": [
+        0,
+        2500
+      ]
+    },
+    "progress[2]": {
+      "input": "activeMinutes",
+      "inputRange": [
+        0,
+        30
+      ]
+    },
+    "glow.strength": {
+      "input": "heartRate",
+      "inputRange": [
+        60,
+        100,
+        160
+      ],
+      "outputRange": [
+        0,
+        0.2,
+        0.8
+      ],
+      "curve": [
+        "linear",
+        "easeIn"
+      ]
+    }
+  },
+  "states": {
+    "goalReached": {
+      "pattern": "completing",
+      "params": {
+        "progress": 1
+      },
+      "bindings": {
+        "progress[0]": null,
+        "progress[1]": null,
+        "progress[2]": null
+      }
+    }
+  }
+}

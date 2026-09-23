@@ -1,0 +1,11 @@
+{
+  "fxSpec": "1.8",
+  "object": "beacon",
+  "pattern": "locating",
+  "materials": {
+    "pulse": {
+      "strength": 0.7,
+      "period": 2
+    }
+  }
+}

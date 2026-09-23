@@ -1,0 +1,14 @@
+{
+  "fxSpec": "1.8",
+  "object": "ring",
+  "pattern": "tracking",
+  "gradient": {
+    "stops": [
+      "#0091FF",
+      "#8E4EC6",
+      "#E5484D"
+    ],
+    "angle": 90,
+    "strength": 1
+  }
+}

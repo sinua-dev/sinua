@@ -1,0 +1,20 @@
+---
+title: Holographic
+description: A foil hue sweep over the pattern's own shading.
+---
+
+Holographic recolours every element with an iridescent sweep that shifts with depth and with a slowly circling view point, like a foil card tilting in your hand. It keeps each element's lightness, so the pattern's shading survives.
+
+<include lang="json" meta='title="material-holographic.fxspec.json"'>../../../../snippets/spec/material-holographic.fxspec.json</include>
+
+<Demo spec="spec/material-holographic.fxspec.json" />
+
+## Cost and low power
+
+Free: it only recolours. There's nothing to shed, so it isn't sheddable (and `disable: ["holographic"]` is an error that says so).
+
+`speed` is turns per second of the sweep, in real time. Strokes sweep colour along their length.
+
+## Props
+
+<include>../../../generated/materials/holographic.mdx</include>

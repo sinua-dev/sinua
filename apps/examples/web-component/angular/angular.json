@@ -1,0 +1,25 @@
+{
+  "$schema": "../node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": { "analytics": false, "packageManager": "npm" },
+  "newProjectRoot": ".",
+  "projects": {
+    "example": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": { "base": "dist", "browser": "" },
+            "index": "index.html",
+            "browser": "src/main.ts",
+            "tsConfig": "tsconfig.json",
+            "preserveSymlinks": true
+          }
+        }
+      }
+    }
+  }
+}

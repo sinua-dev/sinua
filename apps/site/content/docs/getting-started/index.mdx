@@ -1,0 +1,30 @@
+---
+title: Introduction
+description: Sinua draws the small, living visuals that show what your app is doing — an orb that listens and speaks, rings that fill, a signal that follows a voice — from one engine on every platform.
+---
+
+Sinua is a visual engine for **status and presence**: the orb next to a voice agent, the progress ring on an upload, the waveform under a recording, the ping when something arrives. You pick an object and a pattern, feed it your app's state and data, and it draws the same frames on the web, iOS, Android and React Native.
+
+<Demo spec="spec/voice-orb.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }, { input: "micLevel", min: 0, max: 1 }]} />
+
+One shape, four states: the orb above never changes pattern. Idle it rests, listening it brightens and draws in on your voice, thinking it churns quickly, speaking it swells with the agent.
+
+## How it fits together
+
+- **Five objects, 34 patterns.** The [orb](/docs/catalog/orb) for voice agents and assistants, the [ring](/docs/catalog/ring) for progress, the [signal](/docs/catalog/signal) for sound, the [core](/docs/catalog/core) for text loading states, the [beacon](/docs/catalog/beacon) for status.
+- **One component per object**, on every platform, with the same props. [Values](/docs/connect/values) connect your data (progress, audio level, quality); [style](/docs/look/color-and-theme) props set the look.
+- **One design file.** An [FX Spec](/docs/reference/fx-spec) describes a visual completely: pattern, colour, materials, your app's [states](/docs/connect/states-vs-patterns) and [bindings](/docs/connect/bindings). It renders identically everywhere.
+- **Voice built in.** Connect LiveKit, OpenAI Realtime, Gemini Live or ElevenLabs, or the device microphone, and the visual follows the conversation. See [Voice](/docs/connect/voice).
+- **Fast and considerate.** A small Rust engine computes each frame; views pause off screen, respect reduced motion, and shed expensive finishes in low-power mode. See [Performance](/docs/performance).
+
+## Free runtime, optional Studio
+
+The runtime packages are open source (Apache-2.0) and free to use in any app. Everything in these docs works in code alone. The **Studio** is an optional, hosted design tool (Pro) for tuning a visual live and exporting it as code or an FX Spec file. See [From Studio to your app](/docs/getting-started/from-studio).
+
+## Next
+
+<Cards>
+  <Card title="Install" href="/docs/getting-started/installation" />
+  <Card title="Your first visual in 1 minute" href="/docs/getting-started/first-visual" />
+  <Card title="Browse the catalog" href="/docs/catalog" />
+</Cards>

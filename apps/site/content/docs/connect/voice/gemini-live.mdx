@@ -1,0 +1,39 @@
+---
+title: Gemini Live
+description: Follow a Gemini Live voice session.
+---
+
+The Gemini source streams audio to Gemini Live and plays the model's reply, reporting state and audio to the visual. Long conversations cross Gemini's connection limit transparently through session resumption.
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="gemini-live-web.ts"'>../../../../snippets/voice/gemini-live-web.ts</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="gemini-live.swift"'>../../../../snippets/voice/gemini-live.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="gemini-live.kt"'>../../../../snippets/voice/gemini-live.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="gemini-live-react-native.tsx"'>../../../../snippets/voice/gemini-live-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+## Credentials
+
+Your server mints an ephemeral auth token (`auth_tokens/…`) with your API key. Lock the model and setup on the server side so the client can't change them, and hand the token to the source.
+
+## Packages
+
+| Platform | Package |
+|---|---|
+| Web | `GeminiLiveVoiceSource` from `@sinua/voice/gemini` |
+| iOS | `SinuaGeminiLive` |
+| Android | `:sinua-gemini` |
+
+## Good to know
+
+- **Ephemeral token in production.** With an `auth_tokens/…` token, the source uses Gemini's constrained endpoint automatically. A raw API key also works, but only for local development: never ship one.
+- **Reconnects are handled.** When Gemini announces the end of a connection (`goAway`) or the socket closes, the source resumes the session on a new connection.
+- **Start from a user gesture on the web**, since the browser only allows the microphone and audio playback after one. On iOS, add `NSMicrophoneUsageDescription`; on Android, declare `RECORD_AUDIO`. **Say where the audio goes:** the user's voice is sent to Google, so your iOS purpose string (and, on Android, the explanation you show before the system prompt, which carries no app text) should say so. For example: "Your voice is sent to Google so the assistant can hear you." App Store review expects the purpose string to explain the use.

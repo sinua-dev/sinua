@@ -1,0 +1,40 @@
+---
+title: From Studio to your app
+description: Design a visual live in the Studio, then take it to your app as code or as an FX Spec file.
+---
+
+<Callout title="Pro">The Studio is a hosted design tool included with a Pro subscription. Everything it produces can also be written by hand, and nothing in your app depends on it.</Callout>
+
+The Studio lets you tune a visual live: pick a pattern, drag its props, add materials, set up your app's states and bindings, and preview it at every size in light and dark. When it looks right, take it to your app in one of two ways.
+
+## Code
+
+**Export code** gives you the component with only the props you changed, for each platform. Paste it into your view. This is best when the visual is fixed in your app and developers own it.
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="Visual.tsx"'>../../../snippets/studio/export-code-react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="Visual.swift"'>../../../snippets/studio/export-code-swiftui.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="Visual.kt"'>../../../snippets/studio/export-code-compose.kt</include>
+</Tab>
+</Tabs>
+
+Each one is the real export for the same design — an orb's `working` pattern with the glow material turned up — so the three read as one visual, not three examples.
+
+## File
+
+**Export file** gives you an [FX Spec](/docs/reference/fx-spec), a `.fxspec.json` file with the whole design, including states and bindings. Load it into the component's `spec` prop. This is best when designers iterate on the look without code changes, or when you ship the design from a server.
+
+The same file opens back in the Studio, so a design can round-trip between design and code.
+
+## Which one?
+
+| | Code | File |
+|---|---|---|
+| Lifecycle states and bindings | as props you wire yourself | included |
+| Change the look without a release | no | yes (load the file remotely) |
+| Review in a pull request | as code | as JSON |

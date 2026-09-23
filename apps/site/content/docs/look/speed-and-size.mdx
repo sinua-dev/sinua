@@ -1,0 +1,34 @@
+---
+title: Speed & size
+description: How fast a visual moves, and how its detail adapts to the size you draw it at.
+---
+
+## Speed
+
+Every pattern has a tuned speed: the rate its designer intended. `speed` multiplies it: `1` is the tuned rate, `0.5` half, `2` twice as fast. `0` holds still. A lifecycle state can set its own speed, e.g. a slightly faster orb while the agent speaks.
+
+<include lang="json" meta='title="speed-size.fxspec.json"'>../../../snippets/spec/speed-size.fxspec.json</include>
+
+<Demo spec="spec/speed-size.fxspec.json" />
+
+Materials with their own timing (a pulse's period, a particle's life, noise drift, the holographic sweep) are set in **real seconds**, so they read the same on a fast pattern and a slow one. `speed` scales them along with the pattern, so "the whole thing, faster" stays one knob.
+
+A view's clock only runs while it's on screen and your app is in the foreground. Pausing resumes from the same pose. With the system's reduced-motion setting on, views draw one still frame (a voice cue keeps redrawing, gently, because it carries information).
+
+## Size
+
+Patterns come in three engine sizes: **20**, **32** and **64** (the default). The size is a level of detail, not pixels. Small sizes use fewer, bolder dots and thicker strokes, so a 20 still reads at icon scale. The view scales whatever you pick to fill its box, crisply, at any resolution.
+
+- **64** for anything larger than about 48 pt / 48 dp on screen.
+- **32** for list rows, chips and avatars.
+- **20** for inline status icons.
+
+Some props have different defaults per size; the [catalog](/docs/catalog) lists them.
+
+## Frame rate and low power
+
+Views run at the display's rate. `maxFps` caps them (30 is plenty for most ambient visuals). In low-power mode, a view drops to 30 fps and turns off the costliest materials, unless your FX Spec says what to shed:
+
+<include lang="json" meta='title="low-power.fxspec.json"'>../../../snippets/spec/low-power.fxspec.json</include>
+
+More in [Performance](/docs/performance).

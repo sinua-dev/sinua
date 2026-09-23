@@ -1,0 +1,39 @@
+---
+title: OpenAI Realtime
+description: Follow an OpenAI Realtime voice session over WebRTC.
+---
+
+The OpenAI source opens a Realtime session over WebRTC with a short-lived client secret from your server, plays the agent's voice, and reports state and audio to the visual. When the user starts speaking over the agent, the visual flashes: the server cancels the response and the source reports the interruption.
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="openai-realtime-web.ts"'>../../../../snippets/voice/openai-realtime-web.ts</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="openai-realtime.swift"'>../../../../snippets/voice/openai-realtime.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="openai-realtime.kt"'>../../../../snippets/voice/openai-realtime.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="openai-realtime-react-native.tsx"'>../../../../snippets/voice/openai-realtime-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+## Credentials
+
+Your server mints an ephemeral client secret (`ek_…`) with your API key and the session's configuration (model, voice, instructions), and returns only that value. It expires quickly, and the session's model, voice and instructions are set when your server mints it. Give the source a function that fetches a fresh one, so reconnects work.
+
+## Packages
+
+| Platform | Package |
+|---|---|
+| Web | `OpenAIRealtimeVoiceSource` from `@sinua/voice/openai` |
+| iOS | `SinuaOpenAI` |
+| Android | `:sinua-openai` |
+
+## Good to know
+
+- **One secret per connection.** An `ek_…` secret works once. Pass a function that fetches a fresh one (`getCredential` on the web, `credentialProvider` on iOS and Android), not a fixed string, or a dropped call can't reconnect.
+- **No second WebRTC on native.** The iOS and Android sources use the WebRTC build that ships with LiveKit's SDK, so an app that has both doesn't carry two copies.
+- **Start from a user gesture on the web**, since the browser only allows the microphone and audio playback after one. On iOS, add `NSMicrophoneUsageDescription`; on Android, declare `RECORD_AUDIO`. **Say where the audio goes:** the user's voice is sent to OpenAI, so your iOS purpose string (and, on Android, the explanation you show before the system prompt, which carries no app text) should say so. For example: "Your voice is sent to OpenAI so the assistant can hear you." App Store review expects the purpose string to explain the use.

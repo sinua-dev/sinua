@@ -1,0 +1,208 @@
+{
+  "note": "Generated from spec/sinua-golden.json by scripts/gen-sinua-checkpoints.mjs -- do not edit by hand.",
+  "tolerance": 0.0001,
+  "cases": [
+    {
+      "key": "scrolling-64-0.6",
+      "state": "scrolling",
+      "size": 64,
+      "t": 0.6,
+      "overrides": {},
+      "dotCount": 0,
+      "lineCount": 0,
+      "polylineCount": 40,
+      "colorMode": "ink",
+      "firstDot": null,
+      "lastDot": null,
+      "firstPolyline": {
+        "style": [
+          0.15,
+          0.06,
+          0.8064,
+          0,
+          200
+        ],
+        "first": [
+          5.5232,
+          27.797795
+        ],
+        "last": [
+          5.5232,
+          36.202205
+        ]
+      },
+      "lastPolyline": {
+        "style": [
+          0.15,
+          0.396,
+          0.8064,
+          0,
+          200
+        ],
+        "first": [
+          57.9392,
+          31.408218
+        ],
+        "last": [
+          57.9392,
+          32.591782
+        ]
+      }
+    },
+    {
+      "key": "metering-64-0.6",
+      "state": "metering",
+      "size": 64,
+      "t": 0.6,
+      "overrides": {},
+      "dotCount": 96,
+      "lineCount": 0,
+      "polylineCount": 0,
+      "colorMode": "ink",
+      "firstDot": [
+        8.533333,
+        48.8,
+        0,
+        1.493333,
+        0.72,
+        0.32,
+        0,
+        200
+      ],
+      "lastDot": [
+        55.466667,
+        15.2,
+        0,
+        1.493333,
+        0.5,
+        0.133333,
+        0,
+        200
+      ],
+      "firstPolyline": null,
+      "lastPolyline": null
+    },
+    {
+      "key": "glowing-64-0.6",
+      "state": "glowing",
+      "size": 64,
+      "t": 0.6,
+      "overrides": {},
+      "dotCount": 260,
+      "lineCount": 0,
+      "polylineCount": 0,
+      "colorMode": "ink",
+      "firstDot": [
+        33.229515,
+        26.1883,
+        -25.6763,
+        0.3,
+        0.354296,
+        0.554834,
+        0.55,
+        78.897024
+      ],
+      "lastDot": [
+        31.107642,
+        29.586878,
+        26.340953,
+        0.52291,
+        0.750769,
+        1.000866,
+        0.55,
+        80.553927
+      ],
+      "firstPolyline": null,
+      "lastPolyline": null
+    },
+    {
+      "key": "tracking-64-0.6-laps",
+      "state": "tracking",
+      "size": 64,
+      "t": 0.6,
+      "overrides": {
+        "progress0": 0.8,
+        "progress1": 0.55,
+        "progress2": 1.2
+      },
+      "dotCount": 0,
+      "lineCount": 0,
+      "polylineCount": 8,
+      "colorMode": "ink",
+      "firstDot": null,
+      "lastDot": null,
+      "firstPolyline": {
+        "style": [
+          0.15,
+          0.18,
+          4.48,
+          0,
+          0
+        ],
+        "first": [
+          32,
+          8
+        ],
+        "last": [
+          32,
+          8
+        ]
+      },
+      "lastPolyline": {
+        "style": [
+          0.29,
+          0.95,
+          4.48,
+          0,
+          200
+        ],
+        "first": [
+          32,
+          19.2
+        ],
+        "last": [
+          44.173523,
+          28.044582
+        ]
+      }
+    },
+    {
+      "key": "working-64-0.6-color-fixed",
+      "state": "working",
+      "size": 64,
+      "t": 0.6,
+      "overrides": {
+        "colorHue": 330,
+        "colorLightness": 0.3,
+        "colorMix": 1,
+        "colorMode": 1
+      },
+      "dotCount": 516,
+      "lineCount": 0,
+      "polylineCount": 0,
+      "colorMode": "fixed",
+      "firstDot": [
+        32.34438,
+        30.683937,
+        -24.13443,
+        0.356187,
+        0.804,
+        0.200238,
+        0.8,
+        330
+      ],
+      "lastDot": [
+        31.65562,
+        33.316063,
+        24.13443,
+        0.356187,
+        0.804,
+        0.499762,
+        0.8,
+        330
+      ],
+      "firstPolyline": null,
+      "lastPolyline": null
+    }
+  ]
+}

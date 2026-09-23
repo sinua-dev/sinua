@@ -1,0 +1,27 @@
+buildscript {
+    ext {
+        // Pinned down from the template's defaults (37 / build-tools 37 /
+        // NDK 27.1.x) to versions already installed on this machine, to
+        // avoid a multi-GB SDK download for what is just a smoke test.
+        buildToolsVersion = "35.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 36
+        targetSdkVersion = 36
+        ndkVersion = "27.0.12077973"
+        kotlinVersion = "2.2.0"
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        // @sinua/react-native's <SinuaView> hosts a Compose view: the Compose
+        // compiler plugin at the app's Kotlin version (docs/fx-view.md).
+        classpath("org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlinVersion")
+    }
+}
+
+apply plugin: "com.facebook.react.rootproject"

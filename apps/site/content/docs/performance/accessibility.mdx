@@ -1,0 +1,44 @@
+---
+title: Accessibility
+description: Labels, reduced motion and contrast — what views do for you and what to set.
+---
+
+## A label
+
+Every view exposes one accessible element with an image role. Its name defaults to the FX Spec's `name`, else the pattern. Set your own (`label` on the web, `accessibilityLabel` in SwiftUI, `contentDescription` on Android) to say what it means in your app: "Assistant is listening", not "listening". Pass an empty label when the visual is purely decorative and the same information is elsewhere on screen.
+
+## Reduced motion
+
+Views follow the system setting: `prefers-reduced-motion` on the web, *Reduce Motion* on iOS, *Remove animations* on Android. With it on, a view draws a single still frame. A connected voice is the exception: the visual still reacts to it, gently (up to 30 redraws a second), because the cue carries information. Override with `reducedMotion: "always"` or `"never"`.
+
+## Colour and contrast
+
+Ink visuals mirror their lightness on dark themes, so they keep contrast on either background. With a fixed brand colour (`color.mode: "fixed"`), check contrast on both themes yourself. Don't rely on colour alone to carry meaning: pair a state change with a label, or with a pattern that changes shape.
+
+Reduced motion:
+
+<Tabs groupId="platform" items={["Web", "SwiftUI", "Compose"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="reduced-motion-web.ts"'>../../../snippets/perf/reduced-motion-web.ts</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="reduced-motion.swift"'>../../../snippets/perf/reduced-motion.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="reduced-motion.kt"'>../../../snippets/perf/reduced-motion.kt</include>
+</Tab>
+</Tabs>
+
+The accessibility label:
+
+<Tabs groupId="platform" items={["Web", "SwiftUI", "Compose"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="accessibility-label-web.ts"'>../../../snippets/perf/accessibility-label-web.ts</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="accessibility-label.swift"'>../../../snippets/perf/accessibility-label.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="accessibility-label.kt"'>../../../snippets/perf/accessibility-label.kt</include>
+</Tab>
+</Tabs>

@@ -1,0 +1,191 @@
+# Release (docs/publishing.md, *How to release*). A `v<VERSION>` tag builds every
+# artefact with scripts/release/build.sh and publishes each target -- but only when
+# that target's credentials exist; a missing secret skips the target with a notice,
+# so nothing half-publishes silently. A manual run (workflow_dispatch) is a dry run:
+# it builds and uploads the artefacts to the run, and publishes nothing.
+#
+# The beta is public: `0.1.0-beta.N` goes to the same
+# registries as the release, under npm's `beta` dist-tag. A prerelease version can
+# never take `latest`.
+#
+# Secrets (repository -> Settings -> Secrets and variables -> Actions):
+#   npm     NPM_TOKEN (an automation token of the `sinua` org)
+#   Maven   CENTRAL_USERNAME, CENTRAL_PASSWORD (a Central Portal user token),
+#           SIGNING_KEY (ASCII-armoured private key), SIGNING_PASSWORD
+#   SwiftPM SWIFT_DIST_TOKEN (write access to sinua-dev/sinua-swift{,-livekit,-openai})
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Version and tag agree
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
+      publish: ${{ steps.v.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: |
+          node scripts/release/set-version.mjs --check
+          v="$(tr -d '[:space:]' < VERSION)"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          case "$v" in *-*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;; *) echo "prerelease=false" >> "$GITHUB_OUTPUT" ;; esac
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            [ "$GITHUB_REF_NAME" = "v$v" ] || { echo "::error::tag $GITHUB_REF_NAME but VERSION says $v"; exit 1; }
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::manual run: a dry run, nothing is published"
+          fi
+
+  npm:
+    name: npm (@sinua/core, @sinua/web, @sinua/voice)
+    needs: version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm provenance (public repository only)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain from rust-toolchain.toml
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustup target add wasm32-unknown-unknown
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack@0.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Build core, web, voice
+        run: |
+          for p in core web voice; do (cd packages/$p && npm ci && npm run build); done
+      - name: Pack
+        run: scripts/release/build.sh --only npm ${{ needs.version.outputs.publish == 'true' && '--publishable' || '' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-${{ needs.version.outputs.version }}
+          path: out/release/${{ needs.version.outputs.version }}/npm
+      - name: Publish
+        if: needs.version.outputs.publish == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          TAG: ${{ needs.version.outputs.prerelease == 'true' && 'beta' || 'latest' }}
+          # npm refuses provenance from a private repository, so it is on only when
+          # this one is public (a private fork's dry run still publishes nothing).
+          PROVENANCE: ${{ github.event.repository.private == false && '--provenance' || '' }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then echo "::notice::npm skipped: NPM_TOKEN is not set"; exit 0; fi
+          # core first: web and voice pin it as a peer at this exact version.
+          for p in core web voice; do
+            npm publish "out/release/${{ needs.version.outputs.version }}/npm/sinua-$p-${{ needs.version.outputs.version }}.tgz" \
+              --access public $PROVENANCE --tag "$TAG"
+          done
+
+  maven:
+    name: Maven Central (dev.sinua)
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-ndk@4.1.2
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Build the bindings + jniLibs
+        run: packages/android/build.sh
+      - name: Stage (signed when SIGNING_KEY is set)
+        env:
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+          PUBLISH: ${{ needs.version.outputs.publish }}
+        run: |
+          # Publishable (placeholders refused, signature required) only for a real
+          # release that has a key; otherwise an unsigned dry-run stage.
+          if [ "$PUBLISH" = true ] && [ -n "$ORG_GRADLE_PROJECT_signingKey" ]; then
+            scripts/release/build.sh --only maven --publishable
+          else
+            scripts/release/build.sh --only maven
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: maven-${{ needs.version.outputs.version }}
+          path: out/release/${{ needs.version.outputs.version }}/maven
+      - name: Upload to the Central Portal
+        if: needs.version.outputs.publish == 'true'
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          if [ -z "$CENTRAL_USERNAME" ] || [ -z "$SIGNING_KEY" ]; then
+            echo "::notice::Maven skipped: CENTRAL_USERNAME / SIGNING_KEY not set"; exit 0
+          fi
+          v="${{ needs.version.outputs.version }}"
+          (cd "out/release/$v/maven" && zip -qr "../central-bundle.zip" .)
+          auth="$(printf '%s:%s' "$CENTRAL_USERNAME" "$CENTRAL_PASSWORD" | base64 -w0)"
+          curl --fail-with-body -sS -X POST -H "Authorization: Bearer $auth" \
+            -F "bundle=@out/release/$v/central-bundle.zip" \
+            "https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC&name=sinua-$v"
+
+  swift:
+    name: SwiftPM (sinua-dev/sinua-swift, -livekit, -openai)
+    needs: version
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install rustup (not preinstalled on the xcode-27 image)
+        run: |
+          if ! command -v rustup >/dev/null; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none --profile minimal
+            echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          fi
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: Build the xcframework
+        run: packages/ios/build.sh
+      - name: Zip, checksum, distribution trees
+        run: scripts/release/build.sh --only swift
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swift-${{ needs.version.outputs.version }}
+          path: out/release/${{ needs.version.outputs.version }}/swift
+      - name: Push the distribution repositories and release the zip
+        if: needs.version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.SWIFT_DIST_TOKEN }}
+          PRERELEASE: ${{ needs.version.outputs.prerelease }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "::notice::SwiftPM skipped: SWIFT_DIST_TOKEN is not set"; exit 0; fi
+          v="${{ needs.version.outputs.version }}"; out="out/release/$v/swift"
+          # sinua-swift first: its release carries the zip the binary target points at,
+          # and the vendor packages depend on it at exactly this version.
+          for repo in sinua-swift sinua-swift-livekit sinua-swift-openai; do
+            dir="$RUNNER_TEMP/$repo"
+            git clone -q "https://x-access-token:$GH_TOKEN@github.com/sinua-dev/$repo.git" "$dir"
+            find "$dir" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+            cp -R "$out/$repo/." "$dir/"
+            git -C "$dir" add -A
+            git -C "$dir" -c user.name="Sinua release" -c user.email="release@sinua.dev" commit -qm "Release $v"
+            git -C "$dir" tag "$v"
+            git -C "$dir" push -q origin HEAD "$v"
+            flags=""; [ "$PRERELEASE" = true ] && flags="--prerelease"
+            if [ "$repo" = sinua-swift ]; then
+              gh release create "$v" "$out/core_engineFFI.xcframework.zip" --repo "sinua-dev/$repo" --title "$v" --notes "Sinua $v" $flags
+            else
+              gh release create "$v" --repo "sinua-dev/$repo" --title "$v" --notes "Sinua $v" $flags
+            fi
+          done

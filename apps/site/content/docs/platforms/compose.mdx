@@ -1,0 +1,12 @@
+---
+title: Jetpack Compose
+description: The Sinua composables for Android (API 24+).
+---
+
+Add the `:sinua-view` module. Each object has a typed composable with its patterns and props, and `FxView` is the generic composable underneath (a pattern name or an FX Spec).
+
+<include lang="kotlin" meta='title="compose.kt"'>../../../snippets/platforms/compose.kt</include>
+
+The composable pauses below the RESUMED lifecycle state, follows the system's *Remove animations* setting, and drops to 30 fps in Battery Saver.
+
+The typed components take the same props on iOS, Android and React Native: `pattern` (or `spec`), [values](/docs/connect/values), [style](/docs/look/color-and-theme), `state`, `voice`, `theme`, `paused`, `reducedMotion`, `maxFps`, `lowPower` and an accessibility label. The [catalog](/docs/catalog) lists every prop per pattern.

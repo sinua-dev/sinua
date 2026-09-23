@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SinuaViewLayout's XML attributes (docs/fx-view.md, *Android Views (XML)*).
+     `fx`-prefixed so they can't clash with another library's attrs. -->
+<resources>
+    <declare-styleable name="SinuaViewLayout">
+        <!-- Pattern path: a pattern name ("speaking", "tracking", ...). -->
+        <attr name="fxPattern" format="string" />
+        <!-- Engine size: 20, 32 or 64 (default); other sizes have no preset and draw nothing. -->
+        <attr name="fxSize" format="integer" />
+        <attr name="fxSpeed" format="float" />
+        <!-- Spec path: FX Spec JSON inline, or the name of a file in assets/. -->
+        <attr name="fxSpec" format="string" />
+        <attr name="fxSpecAsset" format="string" />
+        <!-- The spec's lifecycle state ("listening", ...); default: the voice's state. -->
+        <attr name="fxState" format="string" />
+        <attr name="fxTheme" format="enum">
+            <enum name="auto" value="0" />
+            <enum name="light" value="1" />
+            <enum name="dark" value="2" />
+        </attr>
+        <attr name="fxPaused" format="boolean" />
+        <attr name="fxReducedMotion" format="enum">
+            <enum name="auto" value="0" />
+            <enum name="always" value="1" />
+            <enum name="never" value="2" />
+        </attr>
+        <attr name="fxLowPower" format="enum">
+            <enum name="auto" value="0" />
+            <enum name="on" value="1" />
+            <enum name="off" value="2" />
+        </attr>
+        <!-- Frame cap; 0 or absent = the display's rate. -->
+        <attr name="fxMaxFps" format="float" />
+    </declare-styleable>
+</resources>

@@ -1,0 +1,19 @@
+{
+  "name": "sinua-repo-lint",
+  "private": true,
+  "type": "module",
+  "description": "The repo's TypeScript lint gate and nothing else. This is a Cargo-rooted workspace: the eleven npm installs under apps/ and packages/ each own their own dependencies, and this manifest deliberately has no `workspaces` field so it changes nothing about how they resolve. It exists only because ESLint 9 resolves plugins relative to its config file, so eslint.config.mjs and its node_modules have to live together.",
+  "//lint:fix": "`lint:fix` is scoped to this seat's own areas and must stay scoped. A repo-wide `eslint . --fix` rewrote four files across three other seats on 2026-09-20 and broke packages/web's build: --fix rewrites WARNINGS too, and no-unnecessary-type-assertion gives a different verdict from the repo root than from inside a package, because type-aware results depend on which tsconfig and which node_modules are in play. Never run a fix tool repo-wide in a shared tree.",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint apps packages/snippets --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "globals": "^15.0.0",
+    "typescript": "~5.9.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

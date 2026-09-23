@@ -1,0 +1,21 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Particle orb",
+  "description": "A glowing orb shedding a light drift of ink particles from its rim; listening draws them in (attract), speaking sends them off in a blurred additive glow. Low power sheds the particles and the blur.",
+  "object": "orb",
+  "pattern": "glowing",
+  "size": 64,
+  "materials": { "particles": { "strength": 1, "count": 32, "style": "drift" } },
+  "states": {
+    "listening": { "pattern": "listening", "materials": { "particles": { "style": "attract", "spread": 0.3 } } },
+    "speaking": {
+      "pattern": "speaking",
+      "materials": {
+        "particles": { "style": "drift", "count": 48, "life": 1.4 },
+        "glow": { "strength": 0.7, "mode": "blur", "blend": "additive" }
+      }
+    }
+  },
+  "performance": { "maxFps": 60, "lowPower": { "maxFps": 30, "disable": ["particles", "blur"] } }
+}

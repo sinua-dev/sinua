@@ -1,0 +1,39 @@
+name: FxBench
+# Sinua device bench, iOS (docs/bench.md). Regenerate the project with
+# `xcodegen generate` in this folder (FxBench.xcodeproj is build output).
+options:
+  bundleIdPrefix: dev.sinua
+  deploymentTarget:
+    iOS: "16.0"
+packages:
+  Sinua:
+    path: ../../packages/ios
+targets:
+  FxBench:
+    type: application
+    platform: iOS
+    sources:
+      - path: FxBench
+      # The shared cases, read from the bundle (the same file the Web and Android benches use).
+      - path: ../../spec/bench/cases.json
+        buildPhase: resources
+    dependencies:
+      - package: Sinua
+        product: CoreEngine
+      - package: Sinua
+        product: Sinua
+    info:
+      path: FxBench/Info.plist
+      properties:
+        CFBundleDisplayName: FxBench
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # Documents/bench-*.json visible in the Files app, so a phone run can be shared.
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.sinua.fxbench
+        GENERATE_INFOPLIST_FILE: NO
+        # ProMotion: let the view run above 60 Hz where the device can.
+        INFOPLIST_KEY_CADisableMinimumFrameDurationOnPhone: YES

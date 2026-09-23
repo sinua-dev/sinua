@@ -1,0 +1,57 @@
+---
+title: Performance
+description: What a visual costs, how to cap it, how low-power mode trims it, and how to measure it on your devices.
+---
+
+A visual is a small Rust engine computing one frame, plus the platform drawing it. Views already do the cheap things for you: they pause off screen and in the background, and draw nothing extra while paused.
+
+## Cap the frame rate
+
+`maxFps` limits how often a view draws, on an exact grid (30 on a 60 Hz or 120 Hz display is exactly 30). The animation still runs on real time, so a cap lowers smoothness, never speed. Ambient visuals look fine at 30. An FX Spec can carry its own cap in `performance.maxFps`, and the lower cap wins.
+
+## Low-power mode
+
+When the device is in Low Power Mode (iOS) or Battery Saver (Android), views switch to low power automatically. On the web there is no reliable signal, so pass `lowPower: true` yourself when your app knows. In low power:
+
+- the frame rate drops to 30 fps;
+- the costly finishes are shed: glow and particles by default, or exactly what your FX Spec lists in `performance.lowPower.disable`.
+
+<include lang="json" meta='title="low-power.fxspec.json"'>../../../snippets/spec/low-power.fxspec.json</include>
+
+On iOS and Android, `lowPower` follows the system by default; force it with `.on` / `.off` (SwiftUI) or `ON` / `OFF` (Compose). On the web it's a boolean you set, for example from `watchLowBattery()` where the Battery API exists (Chromium).
+
+## Know the cost
+
+Every pattern and material combination has an estimated cost class (**light**, **medium**, **heavy**) from the number of elements it draws, how much of the canvas they cover, and how much blur they need. `estimateCost(pattern, size, overrides)` returns it (the third argument takes engine keys, as the Studio exports them), and the Studio shows it as a badge. Glow is by far the biggest multiplier. Liquid is the exception: it computes a lot while drawing little, so the badge can rank it too low.
+
+Low power:
+
+<Tabs groupId="platform" items={["Web", "SwiftUI", "Compose"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="low-power-web.ts"'>../../../snippets/perf/low-power-web.ts</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="low-power.swift"'>../../../snippets/perf/low-power.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="low-power.kt"'>../../../snippets/perf/low-power.kt</include>
+</Tab>
+</Tabs>
+
+A frame-rate cap:
+
+<Tabs groupId="platform" items={["Web", "SwiftUI", "Compose"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="max-fps-web.ts"'>../../../snippets/perf/max-fps-web.ts</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="max-fps.swift"'>../../../snippets/perf/max-fps.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="max-fps.kt"'>../../../snippets/perf/max-fps.kt</include>
+</Tab>
+</Tabs>
+
+## Measure on your devices
+
+The cost class is a guide, not a measurement. The **bench** apps run a fixed set of visuals on a real device and report frame times, dropped frames, the hitch ratio (Apple's ms-per-second measure) and CPU, at normal and low power. Run them on your slowest supported phone. The repository's `docs/bench.md` has the steps for iPhone, Android and the web.

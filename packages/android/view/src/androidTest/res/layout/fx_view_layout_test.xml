@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <dev.sinua.view.SinuaViewLayout
+        android:id="@+id/fx_state"
+        android:layout_width="120dp" android:layout_height="120dp"
+        android:contentDescription="Assistant"
+        app:fxPattern="speaking" app:fxSize="20" app:fxSpeed="1.5"
+        app:fxTheme="dark" app:fxLowPower="on" app:fxMaxFps="30" />
+
+    <dev.sinua.view.SinuaViewLayout
+        android:id="@+id/fx_spec"
+        android:layout_width="120dp" android:layout_height="120dp"
+        app:fxSpecAsset="holo-orb.fxspec.json"
+        app:fxState="listening"
+        app:fxPaused="true" app:fxReducedMotion="never" />
+</LinearLayout>

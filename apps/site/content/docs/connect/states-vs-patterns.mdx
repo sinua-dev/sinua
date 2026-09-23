@@ -1,0 +1,89 @@
+---
+title: States vs patterns
+description: A pattern is how a visual looks. A state is where your app is. Keep them apart and one design follows your whole flow.
+---
+
+Every visual has a **pattern**: the look it draws. `breathing` is a slow ribbon of dots, `speaking` is a spectrum of bars, `tracking` is a set of activity rings. A pattern belongs to one object (orb, ring, signal, core or beacon) and never changes on its own.
+
+Your app has **states**: `idle`, `listening`, `thinking`, `speaking`, `goalReached`, whatever your product calls them. A state is a name *you* choose. It picks which pattern (and which colours, materials and bindings) to show.
+
+<Demo object="orb" pattern="breathing" />
+
+## One pattern
+
+The smallest visual is an object and a pattern. In a view it's two props, and in an FX Spec file two keys:
+
+<include lang="json" meta='title="minimal.fxspec.json"'>../../../snippets/spec/minimal.fxspec.json</include>
+
+Browse every pattern in the [catalog](/docs/catalog).
+
+## States: one design for your whole flow
+
+Add a `states` map when the look should follow your app. The top level is the base design. Each state is a patch over it: it overrides what it names and inherits the rest. `null` removes an inherited value.
+
+<include lang="json" meta='title="voice-orb.fxspec.json"'>../../../snippets/spec/voice-orb.fxspec.json</include>
+
+<Demo spec="spec/voice-orb.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }, { input: "micLevel", min: 0, max: 1 }, { input: "agentVolume", min: 0, max: 1 }]} />
+
+The four agent states come with the engine: name them in `states` and the visual already rests when idle, draws inward on the mic while listening, works quietly while thinking and swells with the agent's voice while speaking. You only write what you want to change. It works without a file too — give a view a `pattern` and the current `state`, and the same behaviour applies:
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose", "React Native"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="plain-react.tsx"'>../../../snippets/states/plain-react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="plain-swiftui.swift"'>../../../snippets/states/plain-swiftui.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="plain-compose.kt"'>../../../snippets/states/plain-compose.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="plain-react-native.tsx"'>../../../snippets/states/plain-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+A state name of your own (`"recording"`) is left alone: the visual stays the bare pattern. The repository's `docs/fx-view.md` (*Voice states without a spec*) has the full precedence table — plain input, a 1.8+ spec, an older spec, and your own names.
+
+Here the **pattern never changes**. One shape stays on screen for the whole conversation, and each state changes how it behaves: how fast it moves, how dense and bright it is, whether the mic or the agent's voice drives it. That's what we recommend for a voice assistant, because the visual stays one recognisable thing.
+
+Pass the current state to the view (`state`) and it renders that entry. A state the file doesn't list renders the base design.
+
+### A state can also change the pattern
+
+If you want a different shape per state, name a `pattern` inside the state. The view cross-fades between the two (0.25 s by default).
+
+<include lang="json" meta='title="voice-orb-patterns.fxspec.json"'>../../../snippets/spec/voice-orb-patterns.fxspec.json</include>
+
+<Demo spec="spec/voice-orb-patterns.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }, { input: "micLevel", min: 0, max: 1 }, { input: "agentVolume", min: 0, max: 1 }]} />
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="react.tsx"'>../../../snippets/states/react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="swiftui.swift"'>../../../snippets/states/swiftui.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="compose.kt"'>../../../snippets/states/compose.kt</include>
+</Tab>
+</Tabs>
+
+### Voice agents: use the agent's state names
+
+For a voice agent, name your states after the agent's lifecycle. They match LiveKit's `AgentState`, and every voice source in Sinua reports them:
+
+| State | What the agent is doing | A good pattern |
+|---|---|---|
+| `initializing` | connecting | `initializing` |
+| `idle` | connected, nobody talking | the base design |
+| `listening` | hearing the user | `listening` |
+| `thinking` | working out a reply | `working` |
+| `speaking` | talking | `speaking` |
+
+With a voice attached, the view follows the agent's state automatically. Pass `state` yourself only to override it. See [Voice](/docs/connect/voice).
+
+## Rules of thumb
+
+- **Pick patterns by meaning, not by looks.** A user reads a spinner as "wait" and a spectrum as "sound". The catalog's *when to use* notes say what each pattern means.
+- **Keep the base design calm.** It's what shows when nothing is happening, and whenever a state isn't in the map.
+- **Change look through states, data through values.** A state switch is a discrete moment. A value (progress, audio level) moves continuously inside one pattern. See [Values](/docs/connect/values).

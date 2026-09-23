@@ -1,0 +1,12 @@
+{
+  "fxSpec": "1.8",
+  "object": "orb",
+  "pattern": "working",
+  "size": 64,
+  "materials": {
+    "glow": {
+      "strength": 0.6,
+      "radius": 3
+    }
+  }
+}

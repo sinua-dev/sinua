@@ -1,0 +1,620 @@
+{
+  "colors": [
+    {
+      "colorHue": 0.0,
+      "colorSaturation": 0.0,
+      "h": null,
+      "hex": "#000000",
+      "input": "#000000",
+      "l": 0.0,
+      "s": 0.0
+    },
+    {
+      "colorHue": 0.0,
+      "colorSaturation": 0.0,
+      "h": null,
+      "hex": "#ffffff",
+      "input": "#ffffff",
+      "l": 1.0,
+      "s": 0.0
+    },
+    {
+      "colorHue": 0.0,
+      "colorSaturation": 0.0,
+      "h": null,
+      "hex": "#808080",
+      "input": "#808080",
+      "l": 0.5019607843137255,
+      "s": 0.0
+    },
+    {
+      "colorHue": 180.0,
+      "colorSaturation": 0.004,
+      "h": 180.0,
+      "hex": "#7f8080",
+      "input": "#7f8080",
+      "l": 0.5,
+      "s": 0.0039215686274509665
+    },
+    {
+      "colorHue": 0.0,
+      "colorSaturation": 0.0,
+      "h": null,
+      "hex": "#010101",
+      "input": "#010101",
+      "l": 0.00392156862745098,
+      "s": 0.0
+    },
+    {
+      "colorHue": 0.0,
+      "colorSaturation": 0.0,
+      "h": null,
+      "hex": "#fefefe",
+      "input": "#fefefe",
+      "l": 0.996078431372549,
+      "s": 0.0
+    },
+    {
+      "colorHue": 0.0,
+      "colorSaturation": 1.0,
+      "h": 0.0,
+      "hex": "#ff0000",
+      "input": "#ff0000",
+      "l": 0.5,
+      "s": 1.0
+    },
+    {
+      "colorHue": 120.0,
+      "colorSaturation": 1.0,
+      "h": 120.0,
+      "hex": "#00ff00",
+      "input": "#00ff00",
+      "l": 0.5,
+      "s": 1.0
+    },
+    {
+      "colorHue": 240.0,
+      "colorSaturation": 1.0,
+      "h": 240.0,
+      "hex": "#0000ff",
+      "input": "#0000ff",
+      "l": 0.5,
+      "s": 1.0
+    },
+    {
+      "colorHue": 60.0,
+      "colorSaturation": 1.0,
+      "h": 60.0,
+      "hex": "#ffff00",
+      "input": "#ffff00",
+      "l": 0.5,
+      "s": 1.0
+    },
+    {
+      "colorHue": 180.0,
+      "colorSaturation": 1.0,
+      "h": 180.0,
+      "hex": "#00ffff",
+      "input": "#00ffff",
+      "l": 0.5,
+      "s": 1.0
+    },
+    {
+      "colorHue": 300.0,
+      "colorSaturation": 1.0,
+      "h": 300.0,
+      "hex": "#ff00ff",
+      "input": "#ff00ff",
+      "l": 0.5,
+      "s": 1.0
+    },
+    {
+      "colorHue": 359.8,
+      "colorSaturation": 1.0,
+      "h": 359.7647058823529,
+      "hex": "#ff0001",
+      "input": "#ff0001",
+      "l": 0.5,
+      "s": 1.0
+    },
+    {
+      "colorHue": 300.2,
+      "colorSaturation": 1.0,
+      "h": 300.2352941176471,
+      "hex": "#ff00fe",
+      "input": "#ff00fe",
+      "l": 0.5,
+      "s": 1.0
+    },
+    {
+      "colorHue": 161.9,
+      "colorSaturation": 1.0,
+      "h": 161.8823529411765,
+      "hex": "#00ffb2",
+      "input": "#00FFB2",
+      "l": 0.5,
+      "s": 1.0
+    },
+    {
+      "colorHue": 347.9,
+      "colorSaturation": 0.754,
+      "h": 347.92452830188677,
+      "hex": "#e54666",
+      "input": "#E54666",
+      "l": 0.5862745098039216,
+      "s": 0.7535545023696683
+    },
+    {
+      "colorHue": 251.9,
+      "colorSaturation": 0.558,
+      "h": 251.900826446281,
+      "hex": "#6e56cf",
+      "input": "#6E56CF",
+      "l": 0.5745098039215686,
+      "s": 0.5576036866359447
+    },
+    {
+      "colorHue": 38.9,
+      "colorSaturation": 1.0,
+      "h": 38.90410958904109,
+      "hex": "#ffb224",
+      "input": "#FFB224",
+      "l": 0.5705882352941176,
+      "s": 1.0
+    },
+    {
+      "colorHue": 140.0,
+      "colorSaturation": 0.6,
+      "h": 140.0,
+      "hex": "#33cc66",
+      "input": "#33cc66",
+      "l": 0.5,
+      "s": 0.6000000000000001
+    },
+    {
+      "colorHue": 210.0,
+      "colorSaturation": 0.25,
+      "h": 210.00000000000003,
+      "hex": "#aabbcc",
+      "input": "#abc",
+      "l": 0.7333333333333334,
+      "s": 0.25
+    },
+    {
+      "colorHue": 320.0,
+      "colorSaturation": 1.0,
+      "h": 320.0,
+      "hex": "#ff00aa",
+      "input": "#F0A",
+      "l": 0.5,
+      "s": 1.0
+    },
+    {
+      "colorHue": 200.2,
+      "colorSaturation": 0.804,
+      "h": 200.19512195121953,
+      "hex": "#19a1e6",
+      "input": "#19a1e6",
+      "l": 0.5,
+      "s": 0.803921568627451
+    },
+    {
+      "colorHue": 210.0,
+      "colorSaturation": 0.654,
+      "h": 210.0,
+      "hex": "#123456",
+      "input": "#123456",
+      "l": 0.20392156862745098,
+      "s": 0.653846153846154
+    },
+    {
+      "colorHue": 30.0,
+      "colorSaturation": 0.971,
+      "h": 30.000000000000014,
+      "hex": "#fedcba",
+      "input": "#fedcba",
+      "l": 0.8627450980392157,
+      "s": 0.9714285714285715
+    },
+    {
+      "colorHue": 210.0,
+      "colorSaturation": 0.091,
+      "h": 210.0,
+      "hex": "#0a0b0c",
+      "input": "#0a0b0c",
+      "l": 0.043137254901960784,
+      "s": 0.09090909090909091
+    },
+    {
+      "colorHue": 133.4,
+      "colorSaturation": 0.707,
+      "h": 133.44827586206895,
+      "hex": "#0c4619",
+      "input": "#0c4619",
+      "l": 0.1607843137254902,
+      "s": 0.7073170731707318
+    },
+    {
+      "colorHue": 144.6,
+      "colorSaturation": 0.298,
+      "h": 144.6153846153846,
+      "hex": "#2e553e",
+      "input": "#2e553e",
+      "l": 0.2568627450980392,
+      "s": 0.2977099236641222
+    },
+    {
+      "colorHue": 40.2,
+      "colorSaturation": 0.523,
+      "h": 40.15748031496063,
+      "hex": "#b98f3a",
+      "input": "#b98f3a",
+      "l": 0.4764705882352941,
+      "s": 0.5226337448559671
+    },
+    {
+      "colorHue": 195.6,
+      "colorSaturation": 0.253,
+      "h": 195.60000000000002,
+      "hex": "#83a8b5",
+      "input": "#83a8b5",
+      "l": 0.611764705882353,
+      "s": 0.25252525252525254
+    },
+    {
+      "colorHue": 104.6,
+      "colorSaturation": 0.557,
+      "h": 104.61538461538461,
+      "hex": "#336d1f",
+      "input": "#336d1f",
+      "l": 0.2745098039215686,
+      "s": 0.5571428571428573
+    },
+    {
+      "colorHue": 88.3,
+      "colorSaturation": 0.633,
+      "h": 88.25806451612902,
+      "hex": "#89d237",
+      "input": "#89d237",
+      "l": 0.5196078431372548,
+      "s": 0.6326530612244897
+    },
+    {
+      "colorHue": 238.6,
+      "colorSaturation": 0.698,
+      "h": 238.59649122807016,
+      "hex": "#2529d0",
+      "input": "#2529d0",
+      "l": 0.4803921568627451,
+      "s": 0.6979591836734693
+    },
+    {
+      "colorHue": 46.0,
+      "colorSaturation": 0.882,
+      "h": 46.000000000000014,
+      "hex": "#fbedbf",
+      "input": "#fbedbf",
+      "l": 0.8666666666666667,
+      "s": 0.8823529411764701
+    },
+    {
+      "colorHue": 73.6,
+      "colorSaturation": 0.842,
+      "h": 73.59116022099447,
+      "hex": "#c5ee39",
+      "input": "#c5ee39",
+      "l": 0.5784313725490197,
+      "s": 0.8418604651162791
+    },
+    {
+      "colorHue": 244.2,
+      "colorSaturation": 0.416,
+      "h": 244.15841584158417,
+      "hex": "#5a53b8",
+      "input": "#5a53b8",
+      "l": 0.5235294117647059,
+      "s": 0.41563786008230447
+    },
+    {
+      "colorHue": 220.6,
+      "colorSaturation": 0.75,
+      "h": 220.58823529411765,
+      "hex": "#88a9ee",
+      "input": "#88a9ee",
+      "l": 0.7333333333333334,
+      "s": 0.75
+    },
+    {
+      "colorHue": 184.6,
+      "colorSaturation": 0.765,
+      "h": 184.6153846153846,
+      "hex": "#18a8b4",
+      "input": "#18a8b4",
+      "l": 0.4,
+      "s": 0.7647058823529412
+    },
+    {
+      "colorHue": 288.8,
+      "colorSaturation": 0.46,
+      "h": 288.8,
+      "hex": "#c588d3",
+      "input": "#c588d3",
+      "l": 0.6803921568627451,
+      "s": 0.46012269938650285
+    },
+    {
+      "colorHue": 142.9,
+      "colorSaturation": 0.266,
+      "h": 142.94117647058823,
+      "hex": "#2f513c",
+      "input": "#2f513c",
+      "l": 0.25098039215686274,
+      "s": 0.26562499999999994
+    },
+    {
+      "colorHue": 207.0,
+      "colorSaturation": 0.769,
+      "h": 207.0,
+      "hex": "#1870b8",
+      "input": "#1870b8",
+      "l": 0.40784313725490196,
+      "s": 0.7692307692307693
+    },
+    {
+      "colorHue": 350.3,
+      "colorSaturation": 0.721,
+      "h": 350.3225806451613,
+      "hex": "#e1465f",
+      "input": "#e1465f",
+      "l": 0.5784313725490196,
+      "s": 0.7209302325581395
+    },
+    {
+      "colorHue": 129.5,
+      "colorSaturation": 0.731,
+      "h": 129.47368421052633,
+      "hex": "#78ea8a",
+      "input": "#78ea8a",
+      "l": 0.6941176470588235,
+      "s": 0.7307692307692306
+    },
+    {
+      "colorHue": 189.3,
+      "colorSaturation": 0.769,
+      "h": 189.32642487046633,
+      "hex": "#1dc0de",
+      "input": "#1dc0de",
+      "l": 0.49215686274509807,
+      "s": 0.7689243027888446
+    },
+    {
+      "colorHue": 24.2,
+      "colorSaturation": 0.421,
+      "h": 24.15584415584417,
+      "hex": "#ca9c7d",
+      "input": "#ca9c7d",
+      "l": 0.6411764705882352,
+      "s": 0.42076502732240434
+    },
+    {
+      "colorHue": 3.6,
+      "colorSaturation": 0.778,
+      "h": 3.5714285714285685,
+      "hex": "#e7493f",
+      "input": "#e7493f",
+      "l": 0.5764705882352941,
+      "s": 0.7777777777777778
+    },
+    {
+      "colorHue": 309.3,
+      "colorSaturation": 0.613,
+      "h": 309.2647058823529,
+      "hex": "#d44cbf",
+      "input": "#d44cbf",
+      "l": 0.5647058823529412,
+      "s": 0.6126126126126127
+    },
+    {
+      "colorHue": 176.3,
+      "colorSaturation": 0.803,
+      "h": 176.31284916201116,
+      "hex": "#36e9de",
+      "input": "#36e9de",
+      "l": 0.5627450980392157,
+      "s": 0.8026905829596412
+    },
+    {
+      "colorHue": 241.4,
+      "colorSaturation": 0.35,
+      "h": 241.42857142857142,
+      "hex": "#afaed8",
+      "input": "#afaed8",
+      "l": 0.7647058823529411,
+      "s": 0.3500000000000001
+    },
+    {
+      "colorHue": 68.0,
+      "colorSaturation": 0.788,
+      "h": 68.04878048780489,
+      "hex": "#e9f4a2",
+      "input": "#e9f4a2",
+      "l": 0.7960784313725491,
+      "s": 0.7884615384615387
+    },
+    {
+      "colorHue": 73.3,
+      "colorSaturation": 0.948,
+      "h": 73.30316742081449,
+      "hex": "#c8f91c",
+      "input": "#c8f91c",
+      "l": 0.5431372549019607,
+      "s": 0.9484978540772532
+    }
+  ],
+  "gradients": [
+    {
+      "engine": {
+        "gradientHue": 251.9,
+        "gradientHue2": 347.9
+      },
+      "path": "short",
+      "stops": [
+        "#6E56CF",
+        "#E54666"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 300.0,
+        "gradientHue2": 398.9
+      },
+      "path": "short",
+      "stops": [
+        "#ff00ff",
+        "#ffb224"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 38.9,
+        "gradientHue2": -60.0
+      },
+      "path": "short",
+      "stops": [
+        "#ffb224",
+        "#ff00ff"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 251.9,
+        "gradientHue2": 347.9,
+        "gradientHue3": 398.9
+      },
+      "path": "short",
+      "stops": [
+        "#6E56CF",
+        "#E54666",
+        "#FFB224"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 161.9,
+        "gradientHue2": 240.0,
+        "gradientHue3": 360.0
+      },
+      "path": "short",
+      "stops": [
+        "#00ffb2",
+        "#0000ff",
+        "#ff0000"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 0.0,
+        "gradientHue2": 0.0
+      },
+      "path": "short",
+      "stops": [
+        "#808080",
+        "#ff0000"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 347.9,
+        "gradientHue2": 347.9
+      },
+      "path": "short",
+      "stops": [
+        "#e54666",
+        "#e54666"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 251.9,
+        "gradientHue2": -12.1
+      },
+      "path": "long",
+      "stops": [
+        "#6E56CF",
+        "#E54666"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 300.0,
+        "gradientHue2": 38.9
+      },
+      "path": "long",
+      "stops": [
+        "#ff00ff",
+        "#ffb224"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 38.9,
+        "gradientHue2": 300.0
+      },
+      "path": "long",
+      "stops": [
+        "#ffb224",
+        "#ff00ff"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 251.9,
+        "gradientHue2": -12.1,
+        "gradientHue3": -321.1
+      },
+      "path": "long",
+      "stops": [
+        "#6E56CF",
+        "#E54666",
+        "#FFB224"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 161.9,
+        "gradientHue2": -120.0,
+        "gradientHue3": -360.0
+      },
+      "path": "long",
+      "stops": [
+        "#00ffb2",
+        "#0000ff",
+        "#ff0000"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 0.0,
+        "gradientHue2": 0.0
+      },
+      "path": "long",
+      "stops": [
+        "#808080",
+        "#ff0000"
+      ]
+    },
+    {
+      "engine": {
+        "gradientHue": 347.9,
+        "gradientHue2": 347.9
+      },
+      "path": "long",
+      "stops": [
+        "#e54666",
+        "#e54666"
+      ]
+    }
+  ],
+  "note": "FX Spec color vectors: hex -> CSS Color 4 HSL (h null = achromatic) -> colorHue (h rounded to 1 dp, JS Math.round) / colorSaturation (s to 3 dp); gradient stops -> unwrapped gradientHue/2/3. Checked by crates/core_engine/tests/fx_color_vectors.rs and packages/core/test/fx-color-parity.test.mjs (Studio kit/color.ts + wasm).",
+  "specVersion": "1.0.0"
+}

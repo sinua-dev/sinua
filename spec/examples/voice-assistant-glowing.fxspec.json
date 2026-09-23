@@ -1,0 +1,51 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Voice assistant (one shape)",
+  "description": "The showcase: one shape for the whole conversation. The pattern never changes -- `glowing` in every state -- and the agent's state changes how it behaves. Almost nothing is written here, because FX Spec 1.8 ships the state language in the engine: for a `states` key that is a voice state, the built-in profile (`spec/voice-state-profile.json`) supplies the tempo, `ink`, the audio direction, particles and glow, and anything this file writes wins over it. So idle rests below full ink and moves slowly, listening comes to full ink while the mic **draws the sphere inward** and particles flow in, thinking churns a fine grain quietly, and speaking is the boldest, swelling outward with the agent's voice -- all of it from the profile. What this file adds is the identity: the brand colour pinned (aurora cycles its own hues, so without the pin the states would differ by colour instead of by energy), the glow, and which app input drives each state's level. Keys follow LiveKit's AgentState names. The base design is 'idle' and the fallback for any state the file doesn't list.",
+  "object": "orb",
+  "pattern": "glowing",
+  "size": 64,
+  "color": {
+    "value": "#6E56CF",
+    "mix": 0.92
+  },
+  "params": {
+    "hueSpread": 30,
+    "hueSpeed": 0
+  },
+  "materials": {
+    "glow": {
+      "radius": 3
+    }
+  },
+  "bindings": {
+    "muted": {
+      "input": "micMuted"
+    }
+  },
+  "states": {
+    "initializing": {},
+    "idle": {},
+    "listening": {
+      "bindings": {
+        "audioLevel": {
+          "input": "micLevel",
+          "curve": "easeOut"
+        }
+      }
+    },
+    "thinking": {},
+    "speaking": {
+      "bindings": {
+        "audioLevel": {
+          "input": "agentVolume",
+          "inputRange": [
+            0,
+            0.8
+          ]
+        }
+      }
+    }
+  }
+}

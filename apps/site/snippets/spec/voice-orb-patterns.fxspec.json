@@ -1,0 +1,44 @@
+{
+  "fxSpec": "1.8",
+  "name": "Voice orb (a pattern per state)",
+  "object": "orb",
+  "pattern": "breathing",
+  "size": 64,
+  "color": {
+    "value": "#6E56CF",
+    "mix": 0.7
+  },
+  "bindings": {
+    "muted": {
+      "input": "micMuted"
+    }
+  },
+  "states": {
+    "idle": {},
+    "listening": {
+      "pattern": "listening",
+      "bindings": {
+        "audioLevel": {
+          "input": "micLevel",
+          "curve": "easeOut"
+        }
+      }
+    },
+    "thinking": {
+      "pattern": "working"
+    },
+    "speaking": {
+      "pattern": "speaking",
+      "bindings": {
+        "audioLevel": {
+          "input": "agentVolume",
+          "inputRange": [
+            0,
+            0.8
+          ]
+        }
+      }
+    }
+  },
+  "description": "The advanced form: each state picks a different pattern."
+}

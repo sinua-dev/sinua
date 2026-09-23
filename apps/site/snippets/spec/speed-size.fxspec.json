@@ -1,0 +1,7 @@
+{
+  "fxSpec": "1.8",
+  "object": "signal",
+  "pattern": "waveform",
+  "size": 32,
+  "speed": 1.5
+}

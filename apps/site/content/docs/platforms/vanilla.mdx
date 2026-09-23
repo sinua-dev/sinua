@@ -1,0 +1,10 @@
+---
+title: Vanilla mount
+description: Draw into any canvas with one function call, without a framework.
+---
+
+`mount(canvas, options)` draws a visual into a canvas you own and returns a handle: `update()` to change any option, `pause()` / `resume()`, and `destroy()` to stop. It's the layer the React component and the custom element are built on.
+
+<include lang="ts" meta='title="vanilla-mount.ts"'>../../../snippets/web/vanilla-mount.ts</include>
+
+Typed components take the same props on every platform: `pattern` (or `spec`), [values](/docs/connect/values), [style](/docs/look/color-and-theme), `state`, `voice`, `theme`, `paused`, `reducedMotion`, `maxFps`, `lowPower` and an accessibility label. The [catalog](/docs/catalog) lists every prop per pattern.

@@ -1,0 +1,11 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Glowing radar",
+  "object": "beacon",
+  "pattern": "scanning",
+  "size": 64,
+  "color": { "value": { "colorSpace": "srgb", "components": [0.2, 0.8, 0.4], "hex": "#33cc66" }, "mix": 0.8 },
+  "materials": { "glow": { "strength": 0.6, "radius": 3 } },
+  "params": { "blipCount": 4 }
+}

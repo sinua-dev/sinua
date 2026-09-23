@@ -1,0 +1,12 @@
+---
+title: SwiftUI
+description: The Sinua views for SwiftUI (iOS 15+).
+---
+
+Add the `CoreEngine` Swift package and import `Sinua`. Each object has a typed view with its patterns as an enum and its props as parameters. `FxView` is the generic view underneath it: it takes a pattern name or an FX Spec.
+
+<include lang="swift" meta='title="swiftui.swift"'>../../../snippets/platforms/swiftui.swift</include>
+
+The view animates with the display, pauses when it disappears or the scene isn't active, follows `accessibilityReduceMotion`, and drops to 30 fps in Low Power Mode. It draws vectors at display scale, so it's crisp at any size.
+
+The typed components take the same props on iOS, Android and React Native: `pattern` (or `spec`), [values](/docs/connect/values), [style](/docs/look/color-and-theme), `state`, `voice`, `theme`, `paused`, `reducedMotion`, `maxFps`, `lowPower` and an accessibility label. The [catalog](/docs/catalog) lists every prop per pattern.

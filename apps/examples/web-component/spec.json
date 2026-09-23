@@ -1,0 +1,29 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Voice assistant",
+  "description": "One orb for a voice agent's whole lifecycle. Keys follow LiveKit's AgentState names; the app passes the current one plus its mic/agent levels. The base design is 'idle' and the fallback for any state the file doesn't list.",
+  "object": "orb",
+  "pattern": "breathing",
+  "size": 64,
+  "color": { "value": "#6E56CF", "mix": 0.7 },
+  "materials": { "glow": { "strength": 0.25, "radius": 3 } },
+  "bindings": {
+    "muted": { "input": "micMuted" }
+  },
+  "states": {
+    "initializing": { "pattern": "initializing" },
+    "idle": {},
+    "listening": {
+      "pattern": "listening",
+      "bindings": { "audioLevel": { "input": "micLevel", "curve": "easeOut" } }
+    },
+    "thinking": { "pattern": "working", "materials": { "glow": null } },
+    "speaking": {
+      "pattern": "speaking",
+      "speed": 1.1,
+      "materials": { "glow": { "strength": 0.4 } },
+      "bindings": { "audioLevel": { "input": "agentVolume", "inputRange": [0, 0.8] } }
+    }
+  }
+}

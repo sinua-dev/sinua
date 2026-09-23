@@ -1,0 +1,29 @@
+---
+title: Your first visual in 1 minute
+description: One component, one pattern, on screen.
+---
+
+Put the orb component in your view with a pattern. That's the whole integration: it animates, follows the theme, pauses off screen and respects reduced motion on its own.
+
+<Demo object="orb" pattern="breathing" />
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose", "React Native"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="react.tsx"'>../../../snippets/first-visual/react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="swiftui.swift"'>../../../snippets/first-visual/swiftui.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="compose.kt"'>../../../snippets/first-visual/compose.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="react-native.tsx"'>../../../snippets/first-visual/react-native.tsx</include>
+</Tab>
+</Tabs>
+
+## Make it yours
+
+- **Change the look:** try another pattern from the [catalog](/docs/catalog), a [colour](/docs/look/color-and-theme), or a [material](/docs/look/materials) such as glow.
+- **Connect your app:** drive it with [values](/docs/connect/values), such as a ring's `progress`, or follow a [voice agent](/docs/connect/voice).
+- **Follow your app's flow:** switch looks with [states](/docs/connect/states-vs-patterns), all described in one [FX Spec](/docs/reference/fx-spec) file.

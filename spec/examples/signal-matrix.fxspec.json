@@ -1,0 +1,11 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "LED meter",
+  "object": "signal",
+  "pattern": "metering",
+  "size": 32,
+  "speed": 1.25,
+  "color": "#E54666",
+  "params": { "columnCount": 7, "ledCount": 5 }
+}

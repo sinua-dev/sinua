@@ -1,0 +1,13 @@
+<!-- Register <sinua-view> once, then use the tag. Scalars are attributes; objects are properties. -->
+<script type="module">
+  import "@sinua/web/element";
+  import voiceOrb from "./voice-orb.fxspec.json" with { type: "json" };
+
+  const orb = document.querySelector("#orb");
+  orb.spec = voiceOrb;
+  orb.inputs = { micMuted: 0 };
+  orb.addEventListener("fxerror", (e) => console.warn(e.detail));
+</script>
+
+<sinua-view id="orb" state="listening" style="width: 160px"></sinua-view>
+<sinua-view pattern="breathing" theme="dark" style="width: 64px"></sinua-view>

@@ -1,0 +1,11 @@
+{
+  "fxSpec": "1.8",
+  "object": "orb",
+  "pattern": "composing",
+  "materials": {
+    "holographic": {
+      "strength": 1,
+      "span": 300
+    }
+  }
+}

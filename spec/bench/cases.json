@@ -1,0 +1,17 @@
+{
+  "note": "Sinua device bench cases (docs/bench.md). Every case runs twice, power 'normal' and 'low' (the view's lowPower on: 30 fps cap, glow and particles off -- docs/fx-view.md, Performance and power). Shared by apps/fx-bench-web, apps/fx-bench-ios and apps/fx-bench-android; results follow result.schema.json.",
+  "version": 1,
+  "size": 64,
+  "warmupSeconds": 1,
+  "measureSeconds": 10,
+  "cases": [
+    { "id": "orbs-breathing", "label": "Orbs · breathing", "state": "breathing", "overrides": {} },
+    { "id": "orbs-liquid", "label": "Orbs · breathing + liquid", "state": "breathing", "overrides": { "liquidStrength": 1 } },
+    { "id": "orbs-particles", "label": "Orbs · breathing + particles", "state": "breathing", "overrides": { "particleStrength": 1 } },
+    { "id": "orbs-holo", "label": "Orbs · glowing + holographic", "state": "glowing", "overrides": { "holoStrength": 1 } },
+    { "id": "orbs-glow-heavy", "label": "Orbs · working + glow (heavy)", "state": "working", "overrides": { "glowStrength": 1 } },
+    { "id": "ring-holo-hues", "label": "Ring · tracking + holographic (per-vertex hues)", "state": "tracking", "overrides": { "holoStrength": 1 } },
+    { "id": "signal-waveform", "label": "Signal · waveform", "state": "waveform", "overrides": {} },
+    { "id": "beacon-locating", "label": "Beacon · locating", "state": "locating", "overrides": {} }
+  ]
+}

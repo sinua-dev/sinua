@@ -1,0 +1,46 @@
+---
+title: Values
+description: The numbers your app feeds a visual — progress, audio level, quality — as direct props.
+---
+
+A **value** is app data that a pattern draws: how far an upload is, how loud the user speaks, how good the connection is. Values are plain props on the component, and they can change every frame.
+
+<Demo spec="spec/ring-progress.fxspec.json" controls={[{ input: "uploaded", min: 0, max: 100 }]} />
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="react.tsx"'>../../../snippets/values/react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="swiftui.swift"'>../../../snippets/values/swiftui.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="compose.kt"'>../../../snippets/values/compose.kt</include>
+</Tab>
+</Tabs>
+
+## Every value
+
+Which patterns read which value, with its range. Everything outside the range is clamped by the engine.
+
+<include>../../generated/values.mdx</include>
+
+## Lists of values
+
+Some patterns take one value per item. `tracking` draws up to four activity rings, so `progress` is a list with one entry per ring (the length follows `ringCount`). A ring's value past 1 draws extra laps, up to 3.
+
+<include lang="json" meta='title="fixed-progress.fxspec.json"'>../../../snippets/spec/fixed-progress.fxspec.json</include>
+
+In a binding, address one ring with `progress[0]`, `progress[1]`, … (see [Bindings](/docs/connect/bindings)).
+
+## Values vs style
+
+Every prop in the [catalog](/docs/catalog) is either a **value** (app data, above) or **style** (how it looks: shape, colour, materials, speed). Values change with your data. Style is a design decision you usually set once, or per state.
+
+## Catching mistakes
+
+The engine clamps every value to its range. Typed components (Swift, Kotlin, React Native) catch unknown names and wrong types at compile time. A view doesn't validate plain-pattern props at runtime: warnings (unknown names, out-of-range numbers, fractions for whole-number props) come from resolving an FX Spec, or from checking a set of props yourself. The visual still renders either way:
+
+<include lang="ts" meta='title="check-overrides.ts"'>../../../snippets/ts/check-overrides.ts</include>
+
+The full list of messages is in [Diagnostics](/docs/reference/diagnostics).

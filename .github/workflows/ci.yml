@@ -1,0 +1,442 @@
+# CI (docs/testing.md "CI"): the Linux jobs (rust, web, site) plus the native
+# legs (ios: XCTest on a simulator; android: JVM + instrumented tests on an
+# emulator). The React Native package and its example app both run here: the JS
+# half in the web job, the pod in ios and the app in android.
+# The web job also builds and smoke-tests apps/examples/web-component -- the
+# five framework apps are the only automated consumer of <sinua-view> custom
+# element *registration*, and that path has broken silently before.
+# scripts/ci-local.sh mirrors this locally: its default covers the rust and web
+# jobs, and `--all` runs every job below. It prints what it did not run, so a
+# partial local run is never mistaken for a full one.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: # a manual run is always a full run, iOS included
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Whether the iOS job runs. It is the one macOS job, and macOS minutes count
+  # ~10x against the Actions quota: on 2026-09-21 it was 2,800 of the day's
+  # ~3,200 counted minutes and used up the month's free quota in one day. So
+  # it runs on every push to main (the branch everything lands on, so every
+  # change is still checked on iOS before it counts as landed), on manual runs,
+  # and on other pushes / PRs only when they touch iOS-specific files. An
+  # engine or spec change on a work branch is checked on iOS when it reaches
+  # main; `scripts/ci-local.sh --native` checks it locally before that.
+  changes:
+    name: Which native legs this change needs
+    runs-on: ubuntu-latest
+    outputs:
+      ios: ${{ steps.decide.outputs.ios }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          BEFORE: ${{ github.event.before }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          full() { echo "ios=true" >> "$GITHUB_OUTPUT"; echo "iOS: runs ($1)"; exit 0; }
+          [ "$EVENT" = workflow_dispatch ] && full "manual run"
+          [ "$EVENT" = push ] && [ "$REF" = refs/heads/main ] && full "push to main"
+          base="${BASE:-$BEFORE}"
+          # A new branch has no "before"; an unknown base means we can't tell, so run.
+          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then full "no base to diff against"; fi
+          changed="$(git diff --name-only "$base" HEAD)"
+          echo "$changed" | sed 's/^/  changed: /'
+          if echo "$changed" | grep -qE '^(packages/ios|packages/ios-livekit|packages/ios-openai|packages/react-native/(ios/|SinuaCore\.podspec|example/ios/)|apps/site/snippets/.*\.swift$|scripts/(ci-native-ios|lint-swift|ci-rn)\.sh$|\.swift-format$|\.github/workflows/)'; then
+            full "iOS-specific files changed"
+          fi
+          echo "ios=false" >> "$GITHUB_OUTPUT"
+          echo "iOS: skipped (no iOS-specific change; it runs when this reaches main)"
+
+  rust:
+    name: Rust (fmt, clippy, tests + both golden sets)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # rust-toolchain.toml pins the version. rustup 1.28.0 stopped installing
+      # it implicitly (1.28.1 restored auto-install); this is the rustup
+      # blog's command that works either way. `toolchain install` alone
+      # doesn't add the toml's components, hence the explicit add.
+      - name: Install toolchain from rust-toolchain.toml
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustup component add rustfmt clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo fmt
+        run: cargo fmt --all --check
+      - name: cargo clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: cargo test (unit + spec/orbs-golden.json + spec/sinua-golden.json)
+        run: cargo test --workspace
+
+  web:
+    name: Web (wasm build + npm test, @sinua/web build + test, docs checks, framework examples)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain from rust-toolchain.toml
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustup target add wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack@0.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            packages/core/package-lock.json
+            packages/core/bundler-check/package-lock.json
+            packages/web/package-lock.json
+            packages/snippets/package-lock.json
+            packages/voice/package-lock.json
+            packages/react-native/package-lock.json
+            apps/examples/web-component/package-lock.json
+            apps/site/package-lock.json
+            package-lock.json
+      # Typed components (SinuaOrb, …) are generated from spec/parameters.json and checked in:
+      # fail when they're stale (docs/fx-view.md, *Typed components*). Node only, no install.
+      # One version for every package (VERSION; docs/publishing.md, *How to release*):
+      # a hand-edited package.json or gradle.properties fails here, not at release.
+      - name: release -- every package at VERSION
+        run: node scripts/release/set-version.mjs --check
+      - name: codegen -- generated components up to date
+        run: node scripts/codegen/generate.mjs --check
+      # The bytes check above passes any catalog edit once regenerated; this one pins the
+      # public names and types. An intended API change: --update, and review the JSON diff.
+      - name: codegen -- public API snapshot unchanged
+        run: node scripts/codegen/api-snapshot.mjs
+      - name: codegen -- tests (model, emitters, prefix config, RN mapping)
+        run: node --test 'scripts/codegen/test/*.test.mjs'
+      - name: packages/core -- install
+        working-directory: packages/core
+        run: npm ci
+      - name: packages/core -- build (wasm-pack + tsc)
+        working-directory: packages/core
+        run: npm run build
+      - name: packages/core -- test (reactive, 210-case wasm parity, RN checkpoint sync)
+        working-directory: packages/core
+        run: npm test
+      # The docs site's generated tables and code samples (apps/site, scripts/docs).
+      - name: docs -- generated partials up to date
+        run: node scripts/docs/gen.mjs --check
+      - name: docs -- snippets resolve and type-check
+        run: node scripts/docs/check-snippets.mjs
+      # packages/web next: it links @sinua/core (file:../core, needs its
+      # dist + wasm above).
+      - name: packages/web -- install
+        working-directory: packages/web
+        run: npm ci
+      - name: packages/web -- build (tsc)
+        working-directory: packages/web
+        run: npm run build
+      - name: packages/web -- test (mount/SinuaView under node, stubbed browser APIs)
+        working-directory: packages/web
+        run: npm test
+      # The inline wasm init must survive production tree-shaking (esbuild, Vite/Rollup,
+      # webpack), for the packed tarball and for file: consumers (docs/platforms/web.md).
+      # After packages/web's build, not before: it also bundles @sinua/web/element(s),
+      # which resolve to packages/web/dist. Run before it, the first Actions run
+      # (2026-09-21) failed 18 cases on a clean runner, while local runs passed on a
+      # stale dist/.
+      - name: packages/core -- bundler check (esbuild, Vite, webpack production bundles, run)
+        working-directory: packages/core/bundler-check
+        run: npm ci && npm test
+      # The export text the Studio and the docs site hand out (text only, no engine).
+      - name: packages/snippets -- install
+        working-directory: packages/snippets
+        run: npm ci
+      - name: packages/snippets -- build (tsc)
+        working-directory: packages/snippets
+        run: npm run build
+      - name: packages/snippets -- test (the byte-for-byte export text)
+        working-directory: packages/snippets
+        run: npm test
+      - name: packages/voice -- install
+        working-directory: packages/voice
+        run: npm ci
+      - name: packages/voice -- build (tsc)
+        working-directory: packages/voice
+        run: npm run build
+      - name: packages/voice -- test (sources on fakes, subpath hygiene; no audio)
+        working-directory: packages/voice
+        run: npm test
+      # After packages/web + packages/voice: the samples type-check against their dist.
+      - name: packages/react-native -- install (types for the docs' RN samples; no native build)
+        working-directory: packages/react-native
+        run: npm ci --ignore-scripts
+      - name: docs -- code samples (Web + RN type-check, install names; apps/site/snippets)
+        run: scripts/docs/check-code-snippets.sh --web
+      - name: scripts/test -- the install-snippet checker fails when it checked nothing
+        run: node --test 'scripts/test/*.test.mjs'
+      # The RN package itself: nothing else in CI compiled it, and a change to the
+      # shared native code broke it unnoticed on 2026-09-20.
+      - name: packages/react-native -- build + JS tests
+        run: scripts/ci-rn.sh --js
+      # The <sinua-view> framework examples (HTML, Vue, Svelte, Solid, Angular).
+      # They are the only automated consumer of custom-element *registration*:
+      # the site uses mount(), and the snippets that `import "@sinua/web/element"`
+      # are type-checked, never executed. `sideEffects: false` once reduced that
+      # import to a 131-byte bundle with the tag never upgrading, and running
+      # these apps by hand is what caught it.
+      # They live in this job rather than their own because they resolve the
+      # engine through `file:` links to packages/{core,web}, which this job has
+      # just built. Splitting them out would mean rebuilding the wasm engine or
+      # carrying both dists across jobs as artifacts; worth doing if this job
+      # gets too long, not before.
+      - name: apps/examples -- install
+        working-directory: apps/examples/web-component
+        run: npm ci
+      - name: apps/examples -- build (5 framework apps)
+        working-directory: apps/examples/web-component
+        run: npm run build
+      - name: apps/examples -- typecheck (Vue, Svelte, Solid, React 19 typings)
+        working-directory: apps/examples/web-component
+        run: npm run typecheck
+      - name: apps/examples -- headless smoke (draws, fxframe, inputs, teardown)
+        working-directory: apps/examples/web-component
+        run: npx playwright install --with-deps chromium && npm run smoke
+      # The docs site. It was its own job until the first Actions run (2026-09-21),
+      # which failed there on a clean runner: apps/site depends on @sinua/{web,core,snippets}
+      # through file:, and those need their dist/ (core's wasm too) plus their own
+      # node_modules, which is what this job has just built. ci-local.sh --site
+      # has always run it last, after the packages, which is why it passed locally.
+      - name: apps/site -- install
+        working-directory: apps/site
+        run: npm ci
+      - name: apps/site -- build (next build, static export)
+        working-directory: apps/site
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+        run: npm run build
+      - name: apps/site -- headless check (every page, no console errors, search)
+        working-directory: apps/site
+        run: npx playwright install chromium && npm run smoke
+      # The repo-wide TypeScript gate, last: its type-aware rules resolve imports
+      # through each linted area's own node_modules and dist/. Until the second
+      # Actions run (2026-09-21) it ran right after packages/web, before voice,
+      # react-native and apps/site were installed. There, every
+      # import from those areas was an unresolved (error) type, and
+      # no-unsafe-member-access, an error, fired 3,348 times. Locally everything
+      # was already installed, so it passed. (Until 2026-09-20 nothing linted
+      # TypeScript anywhere.)
+      - name: lint -- TypeScript (repo-wide)
+        run: npm ci && npm run lint
+      # The Web half of the materials cross-platform check. It lives here
+      # rather than in the `materials` job because resolving the frames needs
+      # the wasm engine this job already built; the comparison job then needs
+      # only Chrome, the frames and the two render sets.
+      - name: materials -- the Web's frames for the cross-platform check
+        working-directory: packages/web/scripts/materials
+        run: node --experimental-wasm-modules frames.mjs "$GITHUB_WORKSPACE/out/materials/frames.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: materials-web
+          path: |
+            out/materials/frames.json
+            packages/web/dist/paint.js
+
+  ios:
+    name: iOS (xcframework + XCTest on a simulator)
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
+    # The xcode-27 image: Xcode 27.0 (27A266a) and an iOS 27.0 simulator runtime,
+    # the exact Xcode build these packages are developed and verified on. It was
+    # macos-15 (default Xcode 16.4) until the first Actions run (2026-09-21):
+    # there, Swift 6.1's `swift format` couldn't decode the repo's .swift-format
+    # (written by the 6.4 toolchain), and the lint gate failed on every file
+    # before anything compiled. The image is labelled "preview" by
+    # actions/runner-images. It has no Rust preinstalled, hence the rustup step.
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install rustup (not preinstalled on the xcode-27 image)
+        run: |
+          if ! command -v rustup >/dev/null; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none --profile minimal
+            echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          fi
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      # SwiftPM clones for packages/ios-livekit (client-sdk-swift + WebRTC).
+      - name: SwiftPM cache
+        uses: actions/cache@v4
+        with:
+          path: .spm
+          key: spm-${{ runner.os }}-${{ hashFiles('packages/ios-livekit/Package.resolved') }}
+      # build.sh + simulator pick + xcodebuild test with -only-testing for all
+      # the package test targets and -collect-test-diagnostics never.
+      - name: Build xcframework, run XCTest
+        run: scripts/ci-native-ios.sh
+        env:
+          SPM_CACHE_DIR: ${{ github.workspace }}/.spm
+      # The React Native pod (our Swift + the Fabric component) against the xcframework
+      # built above. The example *app* link fails inside React Native's own prebuilt
+      # Hermes, so it isn't attempted; see scripts/ci-rn.sh.
+      # SinuaTests above already ran MaterialsRenderTests; -resultBundlePath in
+      # ci-native-ios.sh is what keeps its 42 attachments. `always()` so a
+      # failure elsewhere in the job still yields the renders to look at.
+      - name: materials -- collect the iOS renders
+        if: always()
+        run: node packages/web/scripts/materials/collect-ios.mjs out/materials/R.xcresult out/materials/ios
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: materials-ios
+          path: out/materials/ios
+      - name: React Native -- the SinuaCore pod
+        run: scripts/ci-rn.sh --ios
+
+  android:
+    name: Android (bindings + JVM tests, instrumented tests on an emulator)
+    # Linux + KVM: android-emulator-runner's recommended setup (hardware-
+    # accelerated, faster and cheaper than macOS runners). The image ships
+    # NDK 27 at $ANDROID_NDK_HOME and JDK 17 as default.
+    runs-on: ubuntu-latest
+    env:
+      API_LEVEL: 35
+    steps:
+      # The second Actions run (2026-09-21) ran out of disk while installing the
+      # emulator: four Rust Android targets, Gradle and the two React Native
+      # example builds fill ubuntu-latest's root volume before the emulator steps.
+      # Remove preinstalled toolchains this job never uses; the Android SDK, the
+      # NDK ($ANDROID_NDK_HOME), JDK, Node and Rust stay. df before and after, so
+      # the headroom is measured on every run.
+      - name: Free disk space (unused preinstalled toolchains)
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
+            /usr/share/swift /opt/hostedtoolcache/CodeQL /usr/local/share/powershell \
+            /usr/local/share/chromium /usr/local/lib/android/sdk/emulator-old 2>/dev/null || true
+          sudo docker image prune --all --force >/dev/null 2>&1 || true
+          df -h /
+      - uses: actions/checkout@v4
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      # Not in install-action's own list; it falls back to cargo-binstall.
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-ndk@4.1.2
+      - uses: gradle/actions/setup-gradle@v6
+      # scripts/lint-kotlin.sh fetches a pinned ktlint CLI (81 MB) into .cache/
+      # rather than adding a Gradle plugin, because three areas build
+      # packages/android and a plugin would change the build for all of them.
+      # Cache it on the pinned version so the download happens once, not once
+      # per run; a miss just re-downloads.
+      # Keyed on the pinned ktlint version, read from the script, not on the whole
+      # script's hash: editing lint-kotlin.sh (e.g. adding a lint root) used to miss the
+      # cache and re-download the 81 MB CLI, which is how a GitHub 504 failed a run.
+      - name: ktlint version
+        id: ktlint
+        run: echo "version=$(sed -n 's/^KTLINT_VERSION="\(.*\)"$/\1/p' scripts/lint-kotlin.sh)" >> "$GITHUB_OUTPUT"
+      - name: ktlint cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/ktlint
+          key: ktlint-${{ steps.ktlint.outputs.version }}
+      - name: Build bindings + jniLibs, run JVM tests, assemble :sinua-livekit
+        run: scripts/ci-native-android.sh build
+      # The React Native example app against the bindings built above, in both voice-vendor
+      # configurations (the opt-in source sets and dependencies).
+      - name: React Native -- the example app (both vendor configurations)
+        run: scripts/ci-rn.sh --android
+      - name: Disk headroom before the emulator
+        run: df -h /
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.API_LEVEL }}-google_apis-x86_64
+      - name: Create AVD + snapshot for the cache
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.API_LEVEL }}
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+      - name: Instrumented tests (root + :sinua-view)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.API_LEVEL }}
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: scripts/ci-native-android.sh connected
+      # renderMaterialsGoldenCases ran inside the instrumented tests above and
+      # emitted its PNGs as base64 chunks on logcat, because the test APK's own
+      # files are deleted with it. Gradle wrote the whole log to build/outputs,
+      # so this needs no adb and no second emulator boot -- and the collector
+      # checks every |END|<len>, since a truncated log is the expected failure.
+      - name: materials -- collect the Android renders
+        if: always()
+        run: node packages/web/scripts/materials/collect-android.mjs packages/android/view/build/outputs/androidTest-results out/materials/android
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: materials-android
+          path: out/materials/android
+
+  materials:
+    name: Materials (the same frame on Web, iOS and Android)
+    # The pixel half of the cross-platform claim; the colour half is
+    # spec/paint-ink-vectors.json, checked inside the native test suites.
+    # Everything it compares was produced by the three jobs above and, until
+    # now, thrown away -- so this job costs one Chromium and no device time.
+    needs: [web, ios, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: materials-web
+      - uses: actions/download-artifact@v4
+        with:
+          name: materials-ios
+          path: out/materials/png
+      - uses: actions/download-artifact@v4
+        with:
+          name: materials-android
+          path: out/materials/png
+      - name: Chromium for the Web render
+        run: npm ci && npx playwright install --with-deps chromium
+        working-directory: apps/examples/web-component
+      - name: Compare (mean <= 2/255, p99 <= 24/255 -- docs/fx-view.md)
+        run: scripts/materials-check.sh --compare-only
+        env:
+          PLAYWRIGHT: ${{ github.workspace }}/apps/examples/web-component/node_modules/playwright
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: materials-contact-sheet
+          path: out/materials/sheet.png

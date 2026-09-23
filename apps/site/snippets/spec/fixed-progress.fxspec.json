@@ -1,0 +1,13 @@
+{
+  "fxSpec": "1.8",
+  "object": "ring",
+  "pattern": "tracking",
+  "params": {
+    "ringCount": 3,
+    "progress": [
+      0.8,
+      0.45,
+      1.2
+    ]
+  }
+}

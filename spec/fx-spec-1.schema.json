@@ -1,0 +1,910 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sinua.dev/spec/fx-spec-1.schema.json",
+  "title": "FX Spec v1 (1.8 and later)",
+  "description": "One Sinua object in one pattern. Editor aid only: the runtime validator (core_engine::fx_spec, exported as resolveFxSpec / resolve_fx_spec) is the authority -- it also checks that `object` matches the pattern's family, that every `params` key is one the pattern's mode reads, and applies the glTF minor-version rule (unknown keys are errors in a file this runtime fully knows, warnings in a newer 1.x file). The oldest version the runtime reads is 1.8: 1.0-1.7 were never published, so their acceptance (and the old names 1.7 replaced -- `state`, engine-key binding targets) was dropped before the first release. What each minor added, for reference: 1.1 `states` (a lifecycle map merged over the top-level design, RFC 7396) and `bindings` (app inputs -> curated Reactive targets); 1.2 `performance`; 1.3 glow `mode`/`blend` and shedding `blur`; 1.4 `materials.liquid`; 1.5 `materials.particles`; 1.6 `materials.holographic` and particles `sync`/`audio`; 1.7 the parameter catalog's names (`pattern`, dotted binding targets, array params); 1.8 `ink` and the built-in voice-state profile. See docs/fx-spec.md.",
+  "type": "object",
+  "required": [
+    "fxSpec",
+    "object",
+    "pattern"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "fxSpec": {
+      "type": "string",
+      "pattern": "^1\\.([8-9]|[1-9][0-9]+)$",
+      "description": "\"major.minor\", 1.8 or later (the runtime's floor; 1.0-1.7 are rejected). A newer 1.x file resolves, with its unknown keys reported as warnings."
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "object": {
+      "enum": [
+        "orb",
+        "signal",
+        "ring",
+        "beacon",
+        "core"
+      ]
+    },
+    "pattern": {
+      "type": "string",
+      "description": "The visual pattern, e.g. working, metering, tracking, scanning, generating. Must belong to `object`'s family."
+    },
+    "size": {
+      "enum": [
+        20,
+        32,
+        64
+      ],
+      "default": 64
+    },
+    "speed": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 1,
+      "description": "Multiplier on the preset's tuned speed; frameFromFxSpec applies elapsed * presetSpeed * speed."
+    },
+    "ink": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 1,
+      "description": "FX Spec 1.8: the whole visual's opacity, 0 to 1. 1 draws it as the pattern defines it; lower fades everything, halos included. A state patches it (a voice assistant's idle typically sits below 1)."
+    },
+    "color": {
+      "description": "A color (shorthand for { value, mix: 1 }) or the full section.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/color"
+        },
+        {
+          "$ref": "#/$defs/colorSection"
+        }
+      ]
+    },
+    "gradient": {
+      "$ref": "#/$defs/gradient"
+    },
+    "materials": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "glow": {
+          "$ref": "#/$defs/glow"
+        },
+        "noise": {
+          "$ref": "#/$defs/noise"
+        },
+        "pulse": {
+          "$ref": "#/$defs/pulse"
+        },
+        "liquid": {
+          "$ref": "#/$defs/liquid"
+        },
+        "particles": {
+          "$ref": "#/$defs/particles"
+        },
+        "holographic": {
+          "$ref": "#/$defs/holographic"
+        }
+      }
+    },
+    "params": {
+      "type": "object",
+      "description": "Per-state engine opts (docs/parameters.md). Runtime inputs (pointer*, audio*, history*, interrupt*, muted*, voiceStateCode, peakN) and section-owned keys (color*, gradient*, glow*, noise*, pulse*) are rejected here. FX Spec 1.7: `progress` / `segment` may be arrays.",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 1,
+            "maxItems": 24,
+            "description": "FX Spec 1.7: `progress` (tracking, 1-4 values, one per ring) and `segment` (stepping, 1-24 values) as lists. One key per item (`progress0`, `segment12`) is also accepted."
+          }
+        ]
+      }
+    },
+    "bindings": {
+      "$ref": "#/$defs/bindings"
+    },
+    "states": {
+      "type": "object",
+      "description": "Lifecycle key -> design entry, merged over the top-level design (RFC 7396: objects merge, null deletes, arrays replace). Keys are free-form; LiveKit's AgentState names (initializing, idle, listening, thinking, speaking) are the convention. A state not listed renders the top-level design.",
+      "additionalProperties": {
+        "$ref": "#/$defs/stateEntry"
+      }
+    },
+    "performance": {
+      "$ref": "#/$defs/performance"
+    }
+  },
+  "$defs": {
+    "hex": {
+      "type": "string",
+      "pattern": "^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+    },
+    "dtcgColor": {
+      "description": "W3C Design Tokens Color Module 2025.10 color value. srgb and hsl convert exactly; other color spaces need `hex` (used as a fallback, with a warning).",
+      "type": "object",
+      "required": [
+        "colorSpace",
+        "components"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "colorSpace": {
+          "enum": [
+            "srgb",
+            "srgb-linear",
+            "hsl",
+            "hwb",
+            "lab",
+            "lch",
+            "oklab",
+            "oklch",
+            "display-p3",
+            "a98-rgb",
+            "prophoto-rgb",
+            "rec2020",
+            "xyz-d65",
+            "xyz-d50"
+          ]
+        },
+        "components": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "const": "none"
+              }
+            ]
+          }
+        },
+        "alpha": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "hex": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        }
+      }
+    },
+    "color": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/hex"
+        },
+        {
+          "$ref": "#/$defs/dtcgColor"
+        }
+      ]
+    },
+    "colorSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/color"
+        },
+        "mix": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1
+        },
+        "lightness": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1,
+          "default": 0
+        },
+        "mode": {
+          "enum": [
+            "ink",
+            "fixed"
+          ],
+          "default": "ink"
+        }
+      }
+    },
+    "gradient": {
+      "type": "object",
+      "required": [
+        "stops"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "stops": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/color"
+          }
+        },
+        "angle": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 720,
+          "default": 90
+        },
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1
+        },
+        "saturation": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8
+        },
+        "mid": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 0.95,
+          "default": 0.5
+        },
+        "path": {
+          "enum": [
+            "short",
+            "long"
+          ],
+          "default": "short"
+        }
+      }
+    },
+    "glow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "radius": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 8,
+          "default": 2.5
+        },
+        "layers": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 8,
+          "default": 4
+        },
+        "tint": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0
+        },
+        "hue": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 360,
+          "default": 200
+        },
+        "mode": {
+          "enum": [
+            "stacked",
+            "blur"
+          ],
+          "default": "stacked",
+          "description": "stacked = concentric copies (every renderer); blur = one Gaussian-blurred halo per element (paint-contract blur). Low power with disable: [\"blur\"] falls back to stacked."
+        },
+        "blend": {
+          "enum": [
+            "normal",
+            "additive"
+          ],
+          "default": "normal",
+          "description": "How blur-mode halos composite: additive = Canvas `lighter` / SwiftUI plusLighter / Compose BlendMode.Plus."
+        }
+      }
+    },
+    "noise": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "amplitude": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.04
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 64,
+          "default": 2
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 16,
+          "default": 0.4
+        },
+        "seed": {
+          "type": "number",
+          "default": 0
+        }
+      }
+    },
+    "pulse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "period": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 60
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "phase": {
+          "type": "number"
+        }
+      }
+    },
+    "curve": {
+      "enum": [
+        "linear",
+        "ease",
+        "easeIn",
+        "easeOut",
+        "easeInOut"
+      ]
+    },
+    "binding": {
+      "type": "object",
+      "required": [
+        "input"
+      ],
+      "additionalProperties": false,
+      "description": "Maps the app's own input value to one Reactive target (docs/parameters.md): multi-stop, either direction, one CSS keyword curve per segment, always clamped to the target's range.",
+      "properties": {
+        "input": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The app's input name (e.g. micLevel, steps, heartRate); the engine never interprets it. Missing at runtime = binding inactive."
+        },
+        "inputRange": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "number"
+          },
+          "default": [
+            0,
+            1
+          ]
+        },
+        "outputRange": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "number"
+          },
+          "description": "Default: the target's range, except the per-ring `progress[0]`…`progress[3]`, which default to [0, 1] (the goal = one lap); for extra laps (up to 3) pass a multi-stop outputRange, e.g. [0, 1, 3]."
+        },
+        "curve": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/curve"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/curve"
+              }
+            }
+          ],
+          "default": "linear"
+        }
+      }
+    },
+    "bindings": {
+      "type": "object",
+      "description": "Keyed by target, so each target is bound once and a state can override or delete (null) one. FX Spec 1.7 names the targets like the parameter catalog's paths: `glow.strength`, `noise.strength`, `gradient.strength`, `pulse.strength`, `color.mix`, `progress[0..3]`; the engine-key names (`glowStrength`, `progress0`) are errors that name the path to use.",
+      "propertyNames": {
+        "enum": [
+          "progress",
+          "progress0",
+          "progress1",
+          "progress2",
+          "progress3",
+          "quality",
+          "accuracy",
+          "audioLevel",
+          "glowStrength",
+          "noiseStrength",
+          "gradientStrength",
+          "pulseStrength",
+          "colorMix",
+          "muted",
+          "progress[0]",
+          "progress[1]",
+          "progress[2]",
+          "progress[3]",
+          "glow.strength",
+          "noise.strength",
+          "gradient.strength",
+          "pulse.strength",
+          "color.mix"
+        ]
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/binding"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "stateEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A design override for one lifecycle state. `object` and `size` are file-wide. null deletes an inherited value.",
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "description": "The pattern for this lifecycle key; defaults to the top-level pattern."
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "ink": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "FX Spec 1.8: this state's opacity; inherits the top-level `ink` when absent."
+        },
+        "color": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/color"
+            },
+            {
+              "$ref": "#/$defs/colorSection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gradient": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/gradientPatch"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "materials": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "glow": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/glow"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "noise": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/noise"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "pulse": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/pulse"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "liquid": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/liquid"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "particles": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/particles"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "holographic": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/holographic"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "params": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          ]
+        },
+        "bindings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/bindings"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "gradientPatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stops": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/color"
+          }
+        },
+        "angle": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 720,
+          "default": 90
+        },
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1
+        },
+        "saturation": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8
+        },
+        "mid": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 0.95,
+          "default": 0.5
+        },
+        "path": {
+          "enum": [
+            "short",
+            "long"
+          ],
+          "default": "short"
+        }
+      },
+      "description": "A state's gradient override: merged over the inherited gradient, so `stops` may be omitted."
+    },
+    "performance": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "File-wide. The host paces frames and detects power state (iOS Low Power Mode, Android Battery Saver, or an app policy) and passes lowPower; the spec declares the cap and what to shed.",
+      "properties": {
+        "maxFps": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 120,
+          "description": "Frame-rate cap the host should honour. Absent = the host's default."
+        },
+        "lowPower": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxFps": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 120,
+              "description": "Cap under low power; absent = maxFps."
+            },
+            "disable": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "glow",
+                  "noise",
+                  "pulse",
+                  "gradient",
+                  "blur",
+                  "liquid",
+                  "particles"
+                ]
+              },
+              "description": "Materials whose strength goes to 0 under low power (after bindings)."
+            }
+          }
+        }
+      }
+    },
+    "liquid": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Material (1.4): the frame's dots melted into a metaball field (compact kernel), re-drawn as its iso-contours -- ink outlines (default), contour-sampled dots, or filled blobs (even-odd holes). Stateless.",
+      "properties": {
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "0 = off; also the liquid ink's alpha multiplier."
+        },
+        "reach": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 12,
+          "default": 2.5,
+          "description": "Influence radius x max(dot radius, half the median nearest-neighbour distance)."
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 4,
+          "default": 0.5
+        },
+        "cells": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 96,
+          "default": 40,
+          "description": "Field grid resolution across the frame."
+        },
+        "style": {
+          "enum": [
+            "outline",
+            "dots",
+            "fill"
+          ],
+          "default": "outline"
+        },
+        "spacing": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 12,
+          "default": 2.25,
+          "description": "dots style: spacing x median dot diameter."
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 8,
+          "default": 0.8,
+          "description": "outline style: stroke x median dot radius."
+        },
+        "keep": {
+          "type": "boolean",
+          "default": false,
+          "description": "Keep the source dots on top."
+        },
+        "blur": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 32,
+          "default": 0,
+          "description": "fill style: Gaussian sigma for a soft edge (paint effect)."
+        }
+      }
+    },
+    "particles": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Material (1.5): plain ink dots emitted from the state's own dots, strokes and fills -- drifting out, flowing in, orbiting or rising, then fading. Stateless (a pure function of t + seed); composes with noise, liquid, colour, gradient, glow. Unset keys take the state's own defaults (1.6 engine: rise on rings, attract on scanning, a burst on notifying, audio-coupled drift on speaking/signal, a slow orbit on ambient orbs; see particleDefaults).",
+      "properties": {
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "0 = off; alpha master."
+        },
+        "count": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 200,
+          "default": 28
+        },
+        "size": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 4,
+          "default": 0.8,
+          "description": "x the state's dot size (0.6 = the base radius, clamped to 0.8-1.8% of the frame; default 0.8)."
+        },
+        "spread": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.18,
+          "description": "Travel distance as a fraction of the frame."
+        },
+        "life": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 30,
+          "default": 4.5,
+          "description": "Real (wall-clock) seconds per life: the engine divides the state's preset speed back out; a spec's own `speed` still scales it."
+        },
+        "style": {
+          "enum": [
+            "drift",
+            "attract",
+            "orbit",
+            "rise"
+          ],
+          "default": "drift"
+        },
+        "seed": {
+          "type": "number",
+          "default": 0
+        },
+        "sync": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "description": "1.6: 0 = staggered births; 1 = every particle born together (a burst each life)."
+        },
+        "audio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "description": "1.6: couples brightness to the host's audioLevel when present (alpha x lerp(1, 0.25 + 0.75 level, audio)); positions never depend on it."
+        }
+      }
+    },
+    "holographic": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Material (1.6): holographic-lite -- a foil/iridescent hue sweep over each element's kept lightness, no shader. hue = hue + span x (depth x (z+1)/2 + facing x (1 - sqrt(1 - rho^2))) + 360 x speed x t, rho = distance from a view point circling the frame centre (a tilting card). Recolour only: geometry, alpha and lightness are untouched, so it has no cost and is not sheddable.",
+      "properties": {
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "0 = off; how far saturation/hue move to the sweep."
+        },
+        "hue": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 360,
+          "default": 180,
+          "description": "Base hue, degrees."
+        },
+        "span": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 720,
+          "default": 300,
+          "description": "Degrees of the wheel the sweep covers."
+        },
+        "saturation": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.7
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "description": "Weight of the z (depth) term; dots only."
+        },
+        "facing": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "description": "Weight of the Fresnel-like distance-from-view-point term."
+        },
+        "speed": {
+          "type": "number",
+          "minimum": -4,
+          "maximum": 4,
+          "default": 0.05,
+          "description": "Turns per second of engine time: hue drift and the view point's orbit."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2102 @@
+{
+  "cases": [
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "progress": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "progress": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "progress": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "progress": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "progress": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "progress": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "progress"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "progress0": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "progress0": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress0": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "progress0": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "progress0": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "progress0": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "progress0": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "progress0": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "progress0": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "progress0": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "progress0": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "progress0"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "progress1": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "progress1": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress1": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "progress1": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "progress1": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "progress1": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "progress1": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "progress1": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "progress1": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "progress1": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "progress1": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "progress1"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "progress2": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "progress2": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress2": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "progress2": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "progress2": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "progress2": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "progress2": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "progress2": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "progress2": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "progress2": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "progress2": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "progress2"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "progress3": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "progress3": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress3": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "progress3": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "progress3": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "progress3": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "progress3": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "progress3": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "progress3": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "progress3": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "progress3": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "progress3"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "quality": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "quality": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "quality": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "quality": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "quality": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "quality": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "quality": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "quality": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "quality": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "quality": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "quality": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "quality"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "accuracy": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "accuracy": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "accuracy": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "accuracy": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "accuracy": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "accuracy": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "accuracy": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "accuracy": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "accuracy": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "accuracy": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "accuracy": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "accuracy"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "audioLevel": 0.0,
+            "audioStrength": 0.18
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.0,
+            "audioStrength": 0.18
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.125,
+            "audioStrength": 0.18
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.25,
+            "audioStrength": 0.18
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.375,
+            "audioStrength": 0.18
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.5,
+            "audioStrength": 0.18
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.625,
+            "audioStrength": 0.18
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.75,
+            "audioStrength": 0.18
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.875,
+            "audioStrength": 0.18
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "audioLevel": 1.0,
+            "audioStrength": 0.18
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "audioLevel": 1.0,
+            "audioStrength": 0.18
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "audioLevel"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "glowStrength": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "glowStrength": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "glowStrength": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "glowStrength"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "noiseStrength": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "noiseStrength": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "noiseStrength": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "noiseStrength": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "noiseStrength": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "noiseStrength": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "noiseStrength": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "noiseStrength": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "noiseStrength": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "noiseStrength": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "noiseStrength": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "noiseStrength"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "gradientStrength": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "gradientStrength": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "gradientStrength": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "gradientStrength": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "gradientStrength": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "gradientStrength": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "gradientStrength": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "gradientStrength": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "gradientStrength": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "gradientStrength": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "gradientStrength": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "gradientStrength"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "pulseStrength": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "pulseStrength": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "pulseStrength": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "pulseStrength": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "pulseStrength": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "pulseStrength": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "pulseStrength": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "pulseStrength": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "pulseStrength": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "pulseStrength": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "pulseStrength": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "pulseStrength"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "colorMix": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "colorMix": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "colorMix": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "colorMix": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "colorMix": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "colorMix": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "colorMix": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "colorMix": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "colorMix": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "colorMix": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "colorMix": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "colorMix"
+    },
+    {
+      "curve": null,
+      "inputRange": null,
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "muted": 0.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "muted": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "muted": 0.125
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "muted": 0.25
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "muted": 0.375
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "muted": 0.5
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "muted": 0.625
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "muted": 0.75
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "muted": 0.875
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "muted": 1.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "muted": 1.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "muted"
+    },
+    {
+      "curve": "linear",
+      "inputRange": [
+        0.0,
+        10000.0
+      ],
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": -5000.0
+        },
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress": 0.125
+          },
+          "value": 1250.0
+        },
+        {
+          "overrides": {
+            "progress": 0.25
+          },
+          "value": 2500.0
+        },
+        {
+          "overrides": {
+            "progress": 0.375
+          },
+          "value": 3750.0
+        },
+        {
+          "overrides": {
+            "progress": 0.5
+          },
+          "value": 5000.0
+        },
+        {
+          "overrides": {
+            "progress": 0.625
+          },
+          "value": 6250.0
+        },
+        {
+          "overrides": {
+            "progress": 0.75
+          },
+          "value": 7500.0
+        },
+        {
+          "overrides": {
+            "progress": 0.875
+          },
+          "value": 8750.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 10000.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 15000.0
+        }
+      ],
+      "target": "progress"
+    },
+    {
+      "curve": "ease",
+      "inputRange": [
+        0.0,
+        10000.0
+      ],
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": -5000.0
+        },
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress": 0.13688841485441522
+          },
+          "value": 1250.0
+        },
+        {
+          "overrides": {
+            "progress": 0.4085105930156005
+          },
+          "value": 2500.0
+        },
+        {
+          "overrides": {
+            "progress": 0.6453214475225826
+          },
+          "value": 3750.0
+        },
+        {
+          "overrides": {
+            "progress": 0.8024033876954126
+          },
+          "value": 5000.0
+        },
+        {
+          "overrides": {
+            "progress": 0.9013677794554154
+          },
+          "value": 6250.0
+        },
+        {
+          "overrides": {
+            "progress": 0.9604589783489903
+          },
+          "value": 7500.0
+        },
+        {
+          "overrides": {
+            "progress": 0.9909690025998823
+          },
+          "value": 8750.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 10000.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 15000.0
+        }
+      ],
+      "target": "progress"
+    },
+    {
+      "curve": "easeIn",
+      "inputRange": [
+        0.0,
+        10000.0
+      ],
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": -5000.0
+        },
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress": 0.025984598529634303
+          },
+          "value": 1250.0
+        },
+        {
+          "overrides": {
+            "progress": 0.09346465099396767
+          },
+          "value": 2500.0
+        },
+        {
+          "overrides": {
+            "progress": 0.19202194858671282
+          },
+          "value": 3750.0
+        },
+        {
+          "overrides": {
+            "progress": 0.3153568125058931
+          },
+          "value": 5000.0
+        },
+        {
+          "overrides": {
+            "progress": 0.45946527701860884
+          },
+          "value": 6250.0
+        },
+        {
+          "overrides": {
+            "progress": 0.621861869173901
+          },
+          "value": 7500.0
+        },
+        {
+          "overrides": {
+            "progress": 0.8014199840400743
+          },
+          "value": 8750.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 10000.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 15000.0
+        }
+      ],
+      "target": "progress"
+    },
+    {
+      "curve": "easeOut",
+      "inputRange": [
+        0.0,
+        10000.0
+      ],
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": -5000.0
+        },
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress": 0.19858001595992567
+          },
+          "value": 1250.0
+        },
+        {
+          "overrides": {
+            "progress": 0.378138130826099
+          },
+          "value": 2500.0
+        },
+        {
+          "overrides": {
+            "progress": 0.5405347229813912
+          },
+          "value": 3750.0
+        },
+        {
+          "overrides": {
+            "progress": 0.6846431874941069
+          },
+          "value": 5000.0
+        },
+        {
+          "overrides": {
+            "progress": 0.8079780514132872
+          },
+          "value": 6250.0
+        },
+        {
+          "overrides": {
+            "progress": 0.9065353490060324
+          },
+          "value": 7500.0
+        },
+        {
+          "overrides": {
+            "progress": 0.9740154014703657
+          },
+          "value": 8750.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 10000.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 15000.0
+        }
+      ],
+      "target": "progress"
+    },
+    {
+      "curve": "easeInOut",
+      "inputRange": [
+        0.0,
+        10000.0
+      ],
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": -5000.0
+        },
+        {
+          "overrides": {
+            "progress": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress": 0.03111403690961987
+          },
+          "value": 1250.0
+        },
+        {
+          "overrides": {
+            "progress": 0.1291619005687877
+          },
+          "value": 2500.0
+        },
+        {
+          "overrides": {
+            "progress": 0.2927708009177443
+          },
+          "value": 3750.0
+        },
+        {
+          "overrides": {
+            "progress": 0.5
+          },
+          "value": 5000.0
+        },
+        {
+          "overrides": {
+            "progress": 0.7072291990822557
+          },
+          "value": 6250.0
+        },
+        {
+          "overrides": {
+            "progress": 0.8708380994312122
+          },
+          "value": 7500.0
+        },
+        {
+          "overrides": {
+            "progress": 0.9688859630903801
+          },
+          "value": 8750.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 10000.0
+        },
+        {
+          "overrides": {
+            "progress": 1.0
+          },
+          "value": 15000.0
+        }
+      ],
+      "target": "progress"
+    },
+    {
+      "curve": [
+        "linear",
+        "easeIn"
+      ],
+      "inputRange": [
+        60.0,
+        100.0,
+        160.0
+      ],
+      "outputRange": [
+        0.0,
+        0.2,
+        0.8
+      ],
+      "results": [
+        {
+          "overrides": {
+            "glowStrength": 0.0
+          },
+          "value": 10.0
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.0
+          },
+          "value": 60.0
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.0625
+          },
+          "value": 72.5
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.125
+          },
+          "value": 85.0
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.1875
+          },
+          "value": 97.5
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.2266989642987387
+          },
+          "value": 110.0
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.3152131691520277
+          },
+          "value": 122.5
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.44558075997249136
+          },
+          "value": 135.0
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.6078900697063764
+          },
+          "value": 147.5
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.8
+          },
+          "value": 160.0
+        },
+        {
+          "overrides": {
+            "glowStrength": 0.8
+          },
+          "value": 210.0
+        }
+      ],
+      "target": "glowStrength"
+    },
+    {
+      "curve": "easeOut",
+      "inputRange": [
+        300.0,
+        20.0
+      ],
+      "outputRange": null,
+      "results": [
+        {
+          "overrides": {
+            "quality": 1.0
+          },
+          "value": -120.0
+        },
+        {
+          "overrides": {
+            "quality": 1.0
+          },
+          "value": 20.0
+        },
+        {
+          "overrides": {
+            "quality": 0.9740154014703657
+          },
+          "value": 55.0
+        },
+        {
+          "overrides": {
+            "quality": 0.9065353490060324
+          },
+          "value": 90.0
+        },
+        {
+          "overrides": {
+            "quality": 0.8079780514132872
+          },
+          "value": 125.0
+        },
+        {
+          "overrides": {
+            "quality": 0.6846431874941069
+          },
+          "value": 160.0
+        },
+        {
+          "overrides": {
+            "quality": 0.5405347229813912
+          },
+          "value": 195.0
+        },
+        {
+          "overrides": {
+            "quality": 0.378138130826099
+          },
+          "value": 230.0
+        },
+        {
+          "overrides": {
+            "quality": 0.19858001595992567
+          },
+          "value": 265.0
+        },
+        {
+          "overrides": {
+            "quality": 0.0
+          },
+          "value": 300.0
+        },
+        {
+          "overrides": {
+            "quality": 0.0
+          },
+          "value": 440.0
+        }
+      ],
+      "target": "quality"
+    },
+    {
+      "curve": null,
+      "inputRange": [
+        0.0,
+        2500.0
+      ],
+      "outputRange": [
+        0.0,
+        5.0
+      ],
+      "results": [
+        {
+          "overrides": {
+            "progress1": 0.0
+          },
+          "value": -1250.0
+        },
+        {
+          "overrides": {
+            "progress1": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress1": 0.625
+          },
+          "value": 312.5
+        },
+        {
+          "overrides": {
+            "progress1": 1.25
+          },
+          "value": 625.0
+        },
+        {
+          "overrides": {
+            "progress1": 1.875
+          },
+          "value": 937.5
+        },
+        {
+          "overrides": {
+            "progress1": 2.5
+          },
+          "value": 1250.0
+        },
+        {
+          "overrides": {
+            "progress1": 3.0
+          },
+          "value": 1562.5
+        },
+        {
+          "overrides": {
+            "progress1": 3.0
+          },
+          "value": 1875.0
+        },
+        {
+          "overrides": {
+            "progress1": 3.0
+          },
+          "value": 2187.5
+        },
+        {
+          "overrides": {
+            "progress1": 3.0
+          },
+          "value": 2500.0
+        },
+        {
+          "overrides": {
+            "progress1": 3.0
+          },
+          "value": 3750.0
+        }
+      ],
+      "target": "progress1"
+    },
+    {
+      "curve": [
+        "easeOut",
+        "linear"
+      ],
+      "inputRange": [
+        0.0,
+        10000.0,
+        30000.0
+      ],
+      "outputRange": [
+        0.0,
+        1.0,
+        3.0
+      ],
+      "results": [
+        {
+          "overrides": {
+            "progress0": 0.0
+          },
+          "value": -15000.0
+        },
+        {
+          "overrides": {
+            "progress0": 0.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "progress0": 0.5405347229813912
+          },
+          "value": 3750.0
+        },
+        {
+          "overrides": {
+            "progress0": 0.9065353490060324
+          },
+          "value": 7500.0
+        },
+        {
+          "overrides": {
+            "progress0": 1.125
+          },
+          "value": 11250.0
+        },
+        {
+          "overrides": {
+            "progress0": 1.5
+          },
+          "value": 15000.0
+        },
+        {
+          "overrides": {
+            "progress0": 1.875
+          },
+          "value": 18750.0
+        },
+        {
+          "overrides": {
+            "progress0": 2.25
+          },
+          "value": 22500.0
+        },
+        {
+          "overrides": {
+            "progress0": 2.625
+          },
+          "value": 26250.0
+        },
+        {
+          "overrides": {
+            "progress0": 3.0
+          },
+          "value": 30000.0
+        },
+        {
+          "overrides": {
+            "progress0": 3.0
+          },
+          "value": 45000.0
+        }
+      ],
+      "target": "progress0"
+    },
+    {
+      "curve": "ease",
+      "inputRange": [
+        0.0,
+        0.8
+      ],
+      "outputRange": [
+        0.1,
+        1.0
+      ],
+      "results": [
+        {
+          "overrides": {
+            "audioLevel": 0.1,
+            "audioStrength": 0.18
+          },
+          "value": -0.4
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.1,
+            "audioStrength": 0.18
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.22319957336897372,
+            "audioStrength": 0.18
+          },
+          "value": 0.1
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.46765953371404045,
+            "audioStrength": 0.18
+          },
+          "value": 0.2
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.6807893027703246,
+            "audioStrength": 0.18
+          },
+          "value": 0.30000000000000004
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.8221630489258713,
+            "audioStrength": 0.18
+          },
+          "value": 0.4
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.9112310015098738,
+            "audioStrength": 0.18
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.9644130805140912,
+            "audioStrength": 0.18
+          },
+          "value": 0.6000000000000001
+        },
+        {
+          "overrides": {
+            "audioLevel": 0.9918721023398941,
+            "audioStrength": 0.18
+          },
+          "value": 0.7000000000000001
+        },
+        {
+          "overrides": {
+            "audioLevel": 1.0,
+            "audioStrength": 0.18
+          },
+          "value": 0.8
+        },
+        {
+          "overrides": {
+            "audioLevel": 1.0,
+            "audioStrength": 0.18
+          },
+          "value": 1.2000000000000002
+        }
+      ],
+      "target": "audioLevel"
+    },
+    {
+      "curve": [
+        "easeInOut",
+        "linear",
+        "easeOut"
+      ],
+      "inputRange": [
+        0.0,
+        0.25,
+        0.5,
+        1.0
+      ],
+      "outputRange": [
+        1.0,
+        0.2,
+        0.9,
+        0.0
+      ],
+      "results": [
+        {
+          "overrides": {
+            "colorMix": 1.0
+          },
+          "value": -0.5
+        },
+        {
+          "overrides": {
+            "colorMix": 1.0
+          },
+          "value": 0.0
+        },
+        {
+          "overrides": {
+            "colorMix": 0.6
+          },
+          "value": 0.125
+        },
+        {
+          "overrides": {
+            "colorMix": 0.19999999999999996
+          },
+          "value": 0.25
+        },
+        {
+          "overrides": {
+            "colorMix": 0.55
+          },
+          "value": 0.375
+        },
+        {
+          "overrides": {
+            "colorMix": 0.8999999999999999
+          },
+          "value": 0.5
+        },
+        {
+          "overrides": {
+            "colorMix": 0.559675682256511
+          },
+          "value": 0.625
+        },
+        {
+          "overrides": {
+            "colorMix": 0.28382113125530384
+          },
+          "value": 0.75
+        },
+        {
+          "overrides": {
+            "colorMix": 0.08411818589457087
+          },
+          "value": 0.875
+        },
+        {
+          "overrides": {
+            "colorMix": 0.0
+          },
+          "value": 1.0
+        },
+        {
+          "overrides": {
+            "colorMix": 0.0
+          },
+          "value": 1.5
+        }
+      ],
+      "target": "colorMix"
+    }
+  ],
+  "note": "Reactive-binding vectors: targets table + value -> overrides through FX Spec bindings (core_engine::reactive). Checked by crates/core_engine/tests/reactive_vectors.rs and packages/core/test/reactive-parity.test.mjs (reactive.ts). null range/curve = the default.",
+  "specVersion": "1.0.0",
+  "targets": {
+    "accuracy": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
+    "audioLevel": {
+      "companions": {
+        "audioStrength": 0.18
+      },
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
+    "colorMix": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
+    "glowStrength": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
+    "gradientStrength": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
+    "muted": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
+    "noiseStrength": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
+    "progress": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
+    "progress0": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        3.0
+      ]
+    },
+    "progress1": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        3.0
+      ]
+    },
+    "progress2": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        3.0
+      ]
+    },
+    "progress3": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        3.0
+      ]
+    },
+    "pulseStrength": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
+    "quality": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    }
+  }
+}

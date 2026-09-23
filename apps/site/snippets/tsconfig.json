@@ -1,0 +1,16 @@
+{
+  "//": "Type-checks the docs' TypeScript snippets against @sinua/core's published types (scripts/docs/check-snippets.mjs). Not a build.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": { "@sinua/core": ["../../../packages/core/dist/index.d.ts"] }
+  },
+  "include": ["ts/**/*.ts"]
+}

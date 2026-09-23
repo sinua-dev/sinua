@@ -1,0 +1,5 @@
+<!-- Signaling + the WebRTC call need the network; merged into the app's manifest.
+     RECORD_AUDIO stays the app's to declare and request. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

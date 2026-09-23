@@ -1,0 +1,20 @@
+---
+title: Pulse
+description: A periodic breathe of opacity and scale on any pattern.
+---
+
+Pulse makes any pattern breathe: it dips opacity and scale once per `period` seconds. Use it for a gentle "waiting" feel on patterns that are otherwise still, or bind `pulse.strength` to a value so the breathing deepens as it rises.
+
+<include lang="json" meta='title="material-pulse.fxspec.json"'>../../../../snippets/spec/material-pulse.fxspec.json</include>
+
+<Demo spec="spec/material-pulse.fxspec.json" />
+
+## Cost and low power
+
+Free to draw: it scales and fades what's already there. Sheddable in low power (`disable: ["pulse"]`).
+
+The period is in real seconds on every pattern, whatever the pattern's own speed.
+
+## Props
+
+<include>../../../generated/materials/pulse.mdx</include>

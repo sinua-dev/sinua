@@ -1,0 +1,293 @@
+/*
+ * The landing page's own skin: a conversation running down a spine, with the
+ * live visual as the only loud element. The docs keep the Fumadocs theme --
+ * nothing here leaks out of `.lp`.
+ */
+.lp {
+  --paper: #f6f6f4;
+  --ink: #15171c;
+  --slate: #545966;
+  --violet: #6552e4;
+  --mint: #17a98a;
+  --hairline: #dddcd6;
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--lp-text), Georgia, serif;
+  min-height: 100vh;
+}
+:root.dark .lp {
+  --paper: #101216;
+  --ink: #eceef2;
+  --slate: #9aa1b1;
+  --hairline: #272a32;
+}
+
+.lp a {
+  color: inherit;
+}
+
+.lp-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem clamp(1rem, 5vw, 4rem);
+  border-bottom: 1px solid var(--hairline);
+}
+.lp-wordmark {
+  font-family: var(--lp-display), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-size: 1.05rem;
+}
+.lp-nav {
+  display: flex;
+  gap: 1.25rem;
+  font-family: var(--lp-display), system-ui, sans-serif;
+  font-size: 0.95rem;
+}
+.lp-nav a:hover {
+  color: var(--violet);
+}
+
+.lp-main {
+  padding: clamp(2rem, 6vw, 4.5rem) clamp(1rem, 5vw, 4rem) 5rem;
+}
+
+/*
+ * The spine: the conversation runs down it, and each section's marker sits on
+ * it. Decorative on small screens, where there is no room beside the text.
+ */
+.lp-section {
+  position: relative;
+  max-width: 68rem;
+  margin: 0 auto;
+}
+@media (min-width: 960px) {
+  .lp-section {
+    padding-left: 3rem;
+  }
+  .lp-section::before {
+    content: "";
+    position: absolute;
+    left: 0.4rem;
+    top: 0.75rem;
+    bottom: 0;
+    border-left: 1px solid var(--hairline);
+  }
+  .lp-section::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55rem;
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 50%;
+    background: var(--mint);
+  }
+}
+
+/* The spine: one hairline down the page, with the section marker sitting on it. */
+.lp-hero {
+  display: grid;
+  gap: clamp(2rem, 5vw, 3.5rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 960px) {
+  .lp-hero {
+    grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
+    align-items: center;
+  }
+}
+
+.lp-h1 {
+  font-family: var(--lp-display), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  font-size: clamp(2.5rem, 7vw, 3.75rem);
+  margin: 0 0 1.25rem;
+  max-width: 14ch;
+}
+.lp-lead {
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--slate);
+  max-width: 58ch;
+  margin: 0 0 1.75rem;
+}
+
+.lp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  font-family: var(--lp-display), system-ui, sans-serif;
+  font-size: 0.95rem;
+}
+.lp-install {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--hairline);
+  background: transparent;
+}
+.lp-link {
+  border-bottom: 1px solid var(--violet);
+  padding-bottom: 2px;
+  text-decoration: none;
+}
+.lp-link:hover {
+  color: var(--violet);
+}
+
+.lp-hero-visual {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+.lp-orb {
+  width: min(30rem, 86vw);
+  aspect-ratio: 1;
+}
+.lp-states {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0.5rem;
+  font-family: var(--lp-display), system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+.lp-state {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: var(--slate);
+  cursor: pointer;
+  padding: 0.25rem 0.35rem;
+}
+.lp-state[data-on="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--mint);
+}
+.lp :is(button, a):focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 3px;
+}
+
+/* Sections below the hero: the same spine, quiet type, one live visual each. */
+.lp-block {
+  margin-top: clamp(4rem, 9vw, 7rem);
+}
+.lp-h2 {
+  font-family: var(--lp-display), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+  margin: 0 0 0.75rem;
+}
+.lp-h3 {
+  font-family: var(--lp-display), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 1.125rem;
+  margin: 0 0 0.35rem;
+}
+.lp-case-line {
+  color: var(--slate);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 56ch;
+}
+
+.lp-cases {
+  list-style: none;
+  margin: 2rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 2.25rem;
+}
+.lp-case {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--hairline);
+}
+.lp-case-visual {
+  width: 7rem;
+  aspect-ratio: 1;
+}
+
+.lp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1.75rem 0 1rem;
+  font-family: var(--lp-display), system-ui, sans-serif;
+  font-size: 0.95rem;
+}
+.lp-tab {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: var(--slate);
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+.lp-tab[data-on="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--violet);
+}
+.lp-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--hairline);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.lp-plans {
+  display: grid;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+@media (min-width: 720px) {
+  .lp-plans {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+}
+.lp-plan {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--hairline);
+}
+.lp-plan-paid {
+  border-top-color: var(--violet);
+}
+
+.lp-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1rem 1.5rem;
+  margin-top: clamp(4rem, 9vw, 7rem);
+  padding: 1.5rem clamp(1rem, 5vw, 4rem);
+  border-top: 1px solid var(--hairline);
+}
+.lp-foot-note {
+  color: var(--slate);
+  font-size: 0.9375rem;
+  margin: 0;
+  margin-left: auto;
+}

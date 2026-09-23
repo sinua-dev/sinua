@@ -1,0 +1,20 @@
+---
+title: Liquid
+description: Dots and strokes melt into metaball blobs.
+---
+
+Liquid treats every element as a soft field and draws the contour where the fields merge: filled blobs, outlines, or dots resampled along the contour. Nearby dots flow together into droplets and pull apart as the pattern moves.
+
+<include lang="json" meta='title="material-liquid.fxspec.json"'>../../../../snippets/spec/material-liquid.fxspec.json</include>
+
+<Demo spec="spec/material-liquid.fxspec.json" />
+
+## Cost and low power
+
+Liquid is compute-heavy (the contour is traced every frame) while drawing few elements, so the cost badge can under-rate it. Measure on your target devices ([Performance](/docs/performance)). Sheddable in low power (`disable: ["liquid"]`).
+
+Some patterns suit it better than others; each pattern gets its own tuned liquid defaults, listed below the table.
+
+## Props
+
+<include>../../../generated/materials/liquid.mdx</include>

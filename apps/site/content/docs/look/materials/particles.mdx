@@ -1,0 +1,20 @@
+---
+title: Particles
+description: A light layer of particles emitted from the pattern.
+---
+
+Particles lift off the pattern: they drift out, flow in, orbit or rise, then fade. Each pattern has its own default behaviour: ring patterns rise gently, scanning gathers particles in, speaking follows the voice.
+
+<include lang="json" meta='title="material-particles.fxspec.json"'>../../../../snippets/spec/material-particles.fxspec.json</include>
+
+<Demo spec="spec/material-particles.fxspec.json" />
+
+## Cost and low power
+
+Particles are ordinary dots, so they count like any other element. Sheddable in low power (`disable: ["particles"]`), and off by default in low power when your spec says nothing.
+
+`life` is in real seconds. `sync: 1` turns a steady stream into one burst per life; `audio` couples brightness to the voice level.
+
+## Props
+
+<include>../../../generated/materials/particles.mdx</include>

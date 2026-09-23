@@ -1,0 +1,20 @@
+---
+title: Catalog
+description: Every object and pattern, what each one means, and every prop it takes.
+---
+
+Sinua has five **objects**. Each has a set of **patterns**: the looks it can take. Pick the object by what you're showing, and the pattern by what's happening.
+
+| Object | Shows | Patterns |
+|---|---|---|
+| [Orb](/docs/catalog/orb) | voice agents and assistants | 18 |
+| [Signal](/docs/catalog/signal) | sound: levels, waveforms, meters | 4 |
+| [Ring](/docs/catalog/ring) | progress: arcs, goals, steps, gauges | 5 |
+| [Core](/docs/catalog/core) | loading states for text | 2 |
+| [Beacon](/docs/catalog/beacon) | status: pings, quality, location, scans | 5 |
+
+Every object takes the same [materials](/docs/look/materials), [colour](/docs/look/color-and-theme) and [speed & size](/docs/look/speed-and-size) props. The tables on each object's page are generated from the engine's parameter catalog, so they are always current.
+
+You can read that catalog yourself — `parameterCatalog()` returns the same data these tables are built from, so a tool of your own can list a pattern's props, their ranges and their defaults without hard-coding anything:
+
+<include lang="ts" meta='title="parameter-catalog.ts"'>../../../snippets/ts/parameter-catalog.ts</include>

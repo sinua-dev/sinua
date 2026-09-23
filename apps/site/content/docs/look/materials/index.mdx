@@ -1,0 +1,20 @@
+---
+title: Materials
+description: Seven finishes you can layer on any pattern — glow, noise, pulse, gradient, liquid, particles and holographic.
+---
+
+Materials change how a pattern is finished, not what it is. Each one works on every object and pattern, has a single **strength** that turns it on (0 is off), and can differ per lifecycle state. In an FX Spec they live under `materials` (gradient and colour have their own top-level sections).
+
+| Material | What it does | Cost |
+|---|---|---|
+| [Glow](/docs/look/materials/glow) | halos around dots and strokes | highest; first to go in low power |
+| [Noise](/docs/look/materials/noise) | organic jitter | low |
+| [Pulse](/docs/look/materials/pulse) | periodic breathe of opacity and scale | none |
+| [Gradient](/docs/look/materials/gradient) | colour ramp by position | none |
+| [Liquid](/docs/look/materials/liquid) | metaball blobs | compute-heavy |
+| [Particles](/docs/look/materials/particles) | particles lifting off the pattern | moderate |
+| [Holographic](/docs/look/materials/holographic) | foil hue sweep | none |
+
+Materials combine: noise before liquid makes wobbling droplets, glow on top of holographic makes a lit foil. Five strengths (`glow`, `noise`, `gradient`, `pulse`, and colour's `mix`) can be driven by your data through [bindings](/docs/connect/bindings).
+
+Under low power, a view sheds the costly materials. Your FX Spec decides which with `performance.lowPower.disable`, or the host default (30 fps, glow and particles off) applies. See [Speed & size](/docs/look/speed-and-size#frame-rate-and-low-power).

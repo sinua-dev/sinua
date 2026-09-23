@@ -1,0 +1,44 @@
+---
+title: Colour & theme
+description: Give a visual your brand colour, a gradient, or leave it as ink that adapts to light and dark themes.
+---
+
+Out of the box every pattern is **ink**: shades of grey that follow the theme. It's dark on a light background and light on a dark one, and the view's background is transparent, so your app's surface shows through. From there you have three tools: a **colour**, a **gradient**, and the **mode** that decides how colours behave across themes.
+
+<Demo object="orb" pattern="breathing" />
+
+## A brand colour
+
+<include lang="json" meta='title="brand-color.fxspec.json"'>../../../snippets/spec/brand-color.fxspec.json</include>
+
+<Demo spec="spec/brand-color.fxspec.json" />
+
+| Key | Meaning |
+|---|---|
+| `color.value` | The colour: a hex string (`#E5484D`) or a DTCG colour object. |
+| `color.mix` | How far every element moves toward it, 0–1. A binding can drive it (`color.mix`), e.g. to warm the visual up as a value rises. |
+| `color.lightness` | A bias from −1 (darker) to +1 (lighter); 0 keeps the pattern's own depth shading. |
+| `color.mode` | `ink` (default) or `fixed`, below. |
+
+## Ink or fixed
+
+- **`ink`** keeps the pattern's shading readable on every theme: on a dark theme, lightness is mirrored, so dark ink turns light. Use it when the visual should feel like part of your UI.
+- **`fixed`** keeps the exact colour on every theme. Use it for a brand mark, or when the visual always sits on the same surface.
+
+The theme itself comes from the system by default. Views take `theme: "auto" | "light" | "dark"` when your app manages its own.
+
+## A gradient
+
+A gradient colours elements by their position across the frame (CSS `linear-gradient` angles: 0° points up, 90° to the right). On rings, beacons and signal traces the colour also sweeps along each stroke.
+
+<include lang="json" meta='title="gradient.fxspec.json"'>../../../snippets/spec/gradient.fxspec.json</include>
+
+<Demo spec="spec/gradient.fxspec.json" />
+
+Two or three `stops`; `mid` places the middle one. `path: "long"` goes the long way round the colour wheel. `strength` fades the whole gradient in and out, and is bindable as `gradient.strength`.
+
+## Every colour prop
+
+<include>../../generated/materials/color.mdx</include>
+
+<include>../../generated/materials/gradient.mdx</include>

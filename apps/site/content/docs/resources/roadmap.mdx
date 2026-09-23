@@ -1,0 +1,30 @@
+---
+title: Current limits
+description: What Sinua doesn't do today, and what to do instead.
+---
+
+Plain statements of where the edges are right now. Each one says what to do in the meantime.
+
+## The packages aren't published
+
+npm, Swift Package Index and Maven don't have them yet. Build them from the repository — [Installation](/docs/getting-started/installation) has the steps, and every package's build script regenerates its bindings from the engine.
+
+## An FX Spec holds one object
+
+One file describes one object in its states. For a screen with an orb *and* a progress ring, write a file each and mount two views.
+
+## Colour is hex, HSL or a named CSS colour
+
+There's no OKLCH or wide-gamut input; a colour you give is converted with the same maths on every platform. See [Colour & theme](/docs/look/color-and-theme).
+
+## Transitions aren't part of the file
+
+A spec can't declare per-state durations or curves. Views cross-fade between states over 250 ms, and you can change that with `crossFade` — but it's a view setting, not a design decision the file carries.
+
+## The cost badge doesn't measure compute
+
+[`estimateCost`](/docs/performance) counts elements, how much of the canvas they cover and how much blur they need. A pattern that computes a lot while drawing little — liquid is the clear case — ranks lower than it should. For anything performance-critical, measure on the device rather than trusting the badge.
+
+## Where to follow along
+
+The repository is the source of truth for what exists today: the engine, the specs, the tests and the docs you're reading are all in it.

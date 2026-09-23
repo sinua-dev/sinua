@@ -1,0 +1,88 @@
+{
+  "name": "@sinua/voice",
+  "version": "0.1.0-beta.1",
+  "license": "Apache-2.0",
+  "author": "The Sinua Authors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinua-dev/sinua.git",
+    "directory": "packages/voice",
+    "directory": "packages/voice"
+  },
+  "homepage": "https://github.com/sinua-dev/sinua/tree/main/packages/voice#readme",
+  "bugs": {
+    "url": "https://github.com/sinua-dev/sinua/issues"
+  },
+  "keywords": [
+    "voice",
+    "realtime",
+    "speech",
+    "openai-realtime",
+    "gemini-live",
+    "elevenlabs",
+    "livekit",
+    "webrtc"
+  ],
+  "private": true,
+  "description": "Web VoiceSources for Sinua: LiveKit, OpenAI Realtime, Gemini Live, ElevenLabs, the local mic and a test tone, one subpath each",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./livekit": {
+      "types": "./dist/livekit.d.ts",
+      "default": "./dist/livekit.js"
+    },
+    "./openai": {
+      "types": "./dist/openai.d.ts",
+      "default": "./dist/openai.js"
+    },
+    "./gemini": {
+      "types": "./dist/gemini.d.ts",
+      "default": "./dist/gemini.js"
+    },
+    "./elevenlabs": {
+      "types": "./dist/elevenlabs.d.ts",
+      "default": "./dist/elevenlabs.js"
+    },
+    "./mic": {
+      "types": "./dist/mic.d.ts",
+      "default": "./dist/mic.js"
+    },
+    "./tone": {
+      "types": "./dist/tone.d.ts",
+      "default": "./dist/tone.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "NOTICE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "test": "node --test test/*.test.mjs"
+  },
+  "peerDependencies": {
+    "@sinua/core": "0.1.0-beta.1",
+    "livekit-client": "^2.22.3"
+  },
+  "peerDependenciesMeta": {
+    "livekit-client": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@sinua/core": "file:../core",
+    "livekit-client": "^2.22.3",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "fxSpec": "1.8",
+  "object": "orb",
+  "pattern": "glowing",
+  "materials": {
+    "particles": {
+      "strength": 1,
+      "style": "drift",
+      "count": 24
+    }
+  }
+}

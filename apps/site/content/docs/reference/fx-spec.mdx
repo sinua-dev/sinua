@@ -1,0 +1,38 @@
+---
+title: FX Spec
+description: The design file format — one JSON file that describes a visual, its lifecycle states, bindings and performance rules, and renders identically on every platform.
+---
+
+An **FX Spec** is a small JSON file that describes a visual completely: the object and pattern, colour, materials, lifecycle states, data bindings and low-power rules. Every platform resolves it with the same engine, so one file renders the same on the web, iOS, Android and React Native. Designers can hand it over, and apps can ship it, load it from a server, or build it in code.
+
+<include lang="json" meta='title="voice-orb.fxspec.json"'>../../../snippets/spec/voice-orb.fxspec.json</include>
+
+## Structure
+
+- **`fxSpec`** (required): the version, `"1.8"`.
+- **`object`** (required) and **`pattern`** (required): what to draw. See the [catalog](/docs/catalog).
+- **`size`** (20 · 32 · 64) and **`speed`**: see [Speed & size](/docs/look/speed-and-size).
+- **`ink`** (1.8): how present the visual is, `0` to `1` (default `1`). It fades everything, halos included, and a state can patch it — an assistant rests below full ink when idle and comes to full ink when it listens.
+- **`color`**, **`gradient`**: see [Colour & theme](/docs/look/color-and-theme).
+- **`materials`**: `glow`, `noise`, `pulse`, `liquid`, `particles`, `holographic`. See [Materials](/docs/look/materials).
+- **`params`**: the pattern's own props (the catalog's style props), e.g. `"ringCount": 3`.
+- **`bindings`**: map your app's inputs onto values. See [Bindings](/docs/connect/bindings).
+- **`states`**: a patch per lifecycle state. See [States vs patterns](/docs/connect/states-vs-patterns).
+- **`performance`**: `maxFps`, and what to shed under low power.
+- **`name`**, **`description`**, **`$schema`**: for people and editors.
+
+Point `$schema` at `fx-spec-1.schema.json` for completion and validation in your editor.
+
+## Versioning
+
+`fxSpec` is `"1.8"`, written as `major.minor`. A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error, so write `"1.8"` and use whatever this page documents.
+
+## Resolving a spec yourself
+
+Views resolve specs for you. To inspect what the engine will draw, for tooling or tests, resolve one directly:
+
+<include lang="ts" meta='title="mount-spec.ts"'>../../../snippets/ts/mount-spec.ts</include>
+
+## Every key
+
+<include>../../generated/fx-spec/keys.mdx</include>

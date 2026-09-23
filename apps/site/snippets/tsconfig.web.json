@@ -1,0 +1,45 @@
+{
+  "//": "Type-checks the Web code samples (scripts/docs/check-code-snippets.sh --web) against the packages' built types. Not a build.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@sinua/core": ["../../../packages/core/dist/index.d.ts"],
+      "@sinua/web": ["../../../packages/web/dist/index.d.ts"],
+      "@sinua/web/react": ["../../../packages/web/dist/react.d.ts"],
+      "@sinua/voice": ["../../../packages/voice/dist/index.d.ts"],
+      "@sinua/voice/*": ["../../../packages/voice/dist/*.d.ts"],
+      "livekit-client": ["../../../packages/voice/node_modules/livekit-client"],
+      "react": ["../../../packages/web/node_modules/@types/react"],
+      "react/*": ["../../../packages/web/node_modules/@types/react/*"]
+    }
+  },
+  "files": [
+    "web/react.tsx",
+    "studio/export-code-react.tsx",
+    "web/vanilla-mount.ts",
+    "first-visual/react.tsx",
+    "values/react.tsx",
+    "states/react.tsx",
+    "states/plain-react.tsx",
+    "bindings/react.tsx",
+    "voice/overview-web.ts",
+    "voice/openai-realtime-web.ts",
+    "voice/gemini-live-web.ts",
+    "voice/elevenlabs-web.ts",
+    "voice/livekit-web.ts",
+    "voice/mic-and-tone-web.ts",
+    "perf/low-power-web.ts",
+    "perf/max-fps-web.ts",
+    "perf/reduced-motion-web.ts",
+    "perf/accessibility-label-web.ts"
+  ]
+}

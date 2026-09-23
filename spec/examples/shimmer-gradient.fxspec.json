@@ -1,0 +1,11 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Gradient shimmer",
+  "description": "The generating shimmer drawn with the fill primitive: the track as a solid pill, the highlight as the same pill with a real linear-gradient band -- react-loading-skeleton's linear-gradient, instead of nine stacked stroke layers.",
+  "object": "core",
+  "pattern": "generating",
+  "size": 64,
+  "color": { "value": "#6E56CF", "mix": 0.6 },
+  "params": { "highlightFill": 1 }
+}

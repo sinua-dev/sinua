@@ -1,0 +1,47 @@
+# Kotlin style for the ktlint gate (scripts/lint-kotlin.sh).
+#
+# Scoped to [*.kt] on purpose: this is a shared repo root, and nothing here
+# should reach the TypeScript, Swift, Rust or MDX another area owns. Swift has
+# its own file (.swift-format) because swift-format does not read .editorconfig.
+#
+# ktlint takes its code style from here -- the `--code-style=` flag was removed
+# in ktlint 1.8. Measured against the 49 hand-written Kotlin files before
+# choosing:
+#
+#     intellij_idea    1245 findings
+#     android_studio   1353
+#     ktlint_official  2100
+#
+# `intellij_idea` it is: the lowest, and the style this code was written in.
+# After `ktlint -F` only 13 findings remained, which were fixed by hand.
+root = true
+
+[*.kt]
+ktlint_code_style = intellij_idea
+
+# 4 spaces is what this codebase has always used, and matches the Swift gate.
+indent_size = 4
+indent_style = space
+
+# 120 matches .swift-format's lineLength, so the two native sides agree.
+max_line_length = 120
+
+# Compose composables are PascalCase by convention -- `SinuaView`, `FxView`,
+# `KnobRow`. Without this, ktlint's function-naming rule flags every one of them
+# as a defect: it was 115 of the findings on my first (wrong) measurement, and
+# all of them were `@Composable`. This tells the rule about the convention
+# rather than suppressing the rule or renaming correct code.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+
+# Test sources carry wire-protocol payloads as string literals -- a Gemini
+# `serverContent` frame, an ElevenLabs `agent_response`, a base64 PCM chunk.
+# Breaking those lines would either change the bytes the test sends or bury the
+# fixture in concatenation. Production code holds the 120 limit above; these do
+# not. Measured: 6 lines, 122-365 chars, all of them embedded JSON or base64.
+#
+# Note it disables the *rule*, not the limit. Setting `max_line_length = off`
+# here instead made four `function-signature` findings appear out of nowhere:
+# that rule reads the limit to decide whether a body fits on the signature line,
+# so removing the limit changed its answer. Disable the rule you mean.
+[**/src/{test,androidTest}/**/*.kt]
+ktlint_standard_max-line-length = disabled

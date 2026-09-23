@@ -1,0 +1,26 @@
+---
+title: Core
+description: "The smallest loading states for text: a shimmer and typing dots."
+---
+
+The core is the smallest object: loading states for text, a shimmer while content generates and dots while someone types.
+
+<div className="demo-gallery">
+<Demo object="core" pattern="generating" />
+<Demo object="core" pattern="typing" />
+</div>
+
+<GalleryLink family="core" />
+
+## When to use which pattern
+
+| Pattern | `pattern` | When to use it |
+|---|---|---|
+| [Generating](#generating) | `generating` | Content is being generated: a shimmering skeleton line. |
+| [Typing](#typing) | `typing` | Someone is typing: three bouncing dots. |
+
+## Props
+
+Every prop, per pattern. **Values** are your app's data; everything else is style. Defaults can differ per size (20 · 32 · 64).
+
+<include>../../generated/catalog/core.mdx</include>

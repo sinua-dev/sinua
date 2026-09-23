@@ -1,0 +1,18 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.8",
+  "name": "Status beacon (power-aware)",
+  "description": "An always-on radar with glow and a noise shimmer. It never needs more than 30 fps; when the host reports low power (iOS Low Power Mode, Android Battery Saver, or an app policy) it drops to 15 fps and sheds the glow and noise -- the two materials that multiply what the renderer draws.",
+  "object": "beacon",
+  "pattern": "scanning",
+  "size": 64,
+  "color": { "value": "#30A46C", "mix": 0.8 },
+  "materials": {
+    "glow": { "strength": 0.6, "radius": 3 },
+    "noise": { "strength": 0.4, "amplitude": 0.02 }
+  },
+  "performance": {
+    "maxFps": 30,
+    "lowPower": { "maxFps": 15, "disable": ["glow", "noise"] }
+  }
+}

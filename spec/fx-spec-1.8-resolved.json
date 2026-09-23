@@ -1,0 +1,1694 @@
+{
+  "examples": {
+    "beacon-radar-glow.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "blipCount": 4.0,
+          "colorHue": 140.0,
+          "colorMix": 0.8,
+          "colorSaturation": 0.6,
+          "glowRadius": 3.0,
+          "glowStrength": 0.6
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "scanning",
+        "stateKey": "",
+        "stateKeys": []
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "blipCount": 4.0,
+          "colorHue": 140.0,
+          "colorMix": 0.8,
+          "colorSaturation": 0.6,
+          "glowRadius": 3.0,
+          "glowStrength": 0.6
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "scanning",
+        "stateKey": "",
+        "stateKeys": []
+      }
+    },
+    "fitness-rings.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 151.0,
+          "colorMix": 0.6,
+          "colorSaturation": 0.547,
+          "glowRadius": 3.0,
+          "glowStrength": 0.36818122874110915,
+          "progress0": 0.8034877415330577,
+          "progress1": 0.72,
+          "progress2": 0.4,
+          "ringCount": 3.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "tracking",
+        "stateKey": "",
+        "stateKeys": [
+          "goalReached"
+        ]
+      },
+      "goalReached": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 151.0,
+          "colorMix": 0.6,
+          "colorSaturation": 0.547,
+          "glowRadius": 3.0,
+          "glowStrength": 0.7,
+          "progress": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "completing",
+        "stateKey": "goalReached",
+        "stateKeys": [
+          "goalReached"
+        ]
+      },
+      "goalReached|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 151.0,
+          "colorMix": 0.6,
+          "colorSaturation": 0.547,
+          "glowRadius": 3.0,
+          "glowStrength": 0.7,
+          "progress": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "completing",
+        "stateKey": "goalReached",
+        "stateKeys": [
+          "goalReached"
+        ]
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 151.0,
+          "colorMix": 0.6,
+          "colorSaturation": 0.547,
+          "glowRadius": 3.0,
+          "glowStrength": 0.36818122874110915,
+          "progress0": 0.8034877415330577,
+          "progress1": 0.72,
+          "progress2": 0.4,
+          "ringCount": 3.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "tracking",
+        "stateKey": "",
+        "stateKeys": [
+          "goalReached"
+        ]
+      }
+    },
+    "holo-orb.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "holoHue": 200.0,
+          "holoSpan": 300.0,
+          "holoSpeed": 0.08,
+          "holoStrength": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "composing",
+        "stateKey": "",
+        "stateKeys": [
+          "speaking"
+        ]
+      },
+      "speaking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.5,
+          "barCount": 28.0,
+          "glowMode": 1.0,
+          "glowStrength": 0.6,
+          "holoDepth": 0.2,
+          "holoFacing": 0.8,
+          "holoHue": 200.0,
+          "holoSpan": 300.0,
+          "holoSpeed": 0.08,
+          "holoStrength": 1.0,
+          "ink": 1.0,
+          "jumpSpeed": 5.0,
+          "particleAudio": 1.0,
+          "particleCount": 32.0,
+          "particleLife": 1.4,
+          "particleStrength": 1.0,
+          "particleStyle": 0.0
+        },
+        "size": 64,
+        "speed": 1.15,
+        "state": "speaking",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "speaking"
+        ]
+      },
+      "speaking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "glow"
+        ],
+        "inactiveBindings": [],
+        "maxFps": 30.0,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.5,
+          "barCount": 28.0,
+          "glowMode": 1.0,
+          "glowStrength": 0.0,
+          "holoDepth": 0.2,
+          "holoFacing": 0.8,
+          "holoHue": 200.0,
+          "holoSpan": 300.0,
+          "holoSpeed": 0.08,
+          "holoStrength": 1.0,
+          "ink": 1.0,
+          "jumpSpeed": 5.0,
+          "particleAudio": 1.0,
+          "particleCount": 32.0,
+          "particleLife": 1.4,
+          "particleStrength": 1.0,
+          "particleStyle": 0.0
+        },
+        "size": 64,
+        "speed": 1.15,
+        "state": "speaking",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "speaking"
+        ]
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "glow"
+        ],
+        "inactiveBindings": [],
+        "maxFps": 30.0,
+        "ok": true,
+        "overrides": {
+          "holoHue": 200.0,
+          "holoSpan": 300.0,
+          "holoSpeed": 0.08,
+          "holoStrength": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "composing",
+        "stateKey": "",
+        "stateKeys": [
+          "speaking"
+        ]
+      }
+    },
+    "liquid-orb.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": 60.0,
+        "ok": true,
+        "overrides": {
+          "liquidReach": 2.5,
+          "liquidStrength": 1.0,
+          "liquidStyle": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "glowing",
+        "stateKey": "",
+        "stateKeys": [
+          "speaking",
+          "thinking"
+        ]
+      },
+      "speaking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": 60.0,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.5,
+          "barCount": 28.0,
+          "glowStrength": 0.4,
+          "ink": 1.0,
+          "jumpSpeed": 5.0,
+          "liquidKeep": 1.0,
+          "liquidReach": 2.5,
+          "liquidStrength": 1.0,
+          "liquidStyle": 0.0,
+          "particleAudio": 1.0,
+          "particleCount": 32.0,
+          "particleLife": 1.4,
+          "particleStrength": 1.0,
+          "particleStyle": 0.0
+        },
+        "size": 64,
+        "speed": 1.15,
+        "state": "speaking",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "speaking",
+          "thinking"
+        ]
+      },
+      "speaking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "liquid"
+        ],
+        "inactiveBindings": [],
+        "maxFps": 24.0,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.5,
+          "barCount": 28.0,
+          "glowStrength": 0.4,
+          "ink": 1.0,
+          "jumpSpeed": 5.0,
+          "liquidKeep": 1.0,
+          "liquidReach": 2.5,
+          "liquidStrength": 0.0,
+          "liquidStyle": 0.0,
+          "particleAudio": 1.0,
+          "particleCount": 32.0,
+          "particleLife": 1.4,
+          "particleStrength": 1.0,
+          "particleStyle": 0.0
+        },
+        "size": 64,
+        "speed": 1.15,
+        "state": "speaking",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "speaking",
+          "thinking"
+        ]
+      },
+      "thinking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": 60.0,
+        "ok": true,
+        "overrides": {
+          "colorHue": 271.9,
+          "glowStrength": 0.25,
+          "ink": 1.0,
+          "liquidBlur": 0.6,
+          "liquidReach": 2.5,
+          "liquidStrength": 1.0,
+          "liquidStyle": 0.0,
+          "particleCount": 16.0,
+          "particleStrength": 0.8,
+          "particleStyle": 2.0,
+          "pulseOpacity": 0.45,
+          "pulsePeriod": 1.8,
+          "pulseScale": 0.015,
+          "pulseStrength": 0.6
+        },
+        "size": 64,
+        "speed": 1.05,
+        "state": "drifting",
+        "stateKey": "thinking",
+        "stateKeys": [
+          "speaking",
+          "thinking"
+        ]
+      },
+      "thinking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "liquid"
+        ],
+        "inactiveBindings": [],
+        "maxFps": 24.0,
+        "ok": true,
+        "overrides": {
+          "colorHue": 271.9,
+          "glowStrength": 0.25,
+          "ink": 1.0,
+          "liquidBlur": 0.6,
+          "liquidReach": 2.5,
+          "liquidStrength": 0.0,
+          "liquidStyle": 0.0,
+          "particleCount": 16.0,
+          "particleStrength": 0.8,
+          "particleStyle": 2.0,
+          "pulseOpacity": 0.45,
+          "pulsePeriod": 1.8,
+          "pulseScale": 0.015,
+          "pulseStrength": 0.6
+        },
+        "size": 64,
+        "speed": 1.05,
+        "state": "drifting",
+        "stateKey": "thinking",
+        "stateKeys": [
+          "speaking",
+          "thinking"
+        ]
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "liquid"
+        ],
+        "inactiveBindings": [],
+        "maxFps": 24.0,
+        "ok": true,
+        "overrides": {
+          "liquidReach": 2.5,
+          "liquidStrength": 0.0,
+          "liquidStyle": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "glowing",
+        "stateKey": "",
+        "stateKeys": [
+          "speaking",
+          "thinking"
+        ]
+      }
+    },
+    "orb-brand-fixed.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 161.9,
+          "colorMix": 1.0,
+          "colorMode": 1.0,
+          "colorSaturation": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "working",
+        "stateKey": "",
+        "stateKeys": []
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 161.9,
+          "colorMix": 1.0,
+          "colorMode": 1.0,
+          "colorSaturation": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "working",
+        "stateKey": "",
+        "stateKeys": []
+      }
+    },
+    "particles-orb.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": 60.0,
+        "ok": true,
+        "overrides": {
+          "particleCount": 32.0,
+          "particleStrength": 1.0,
+          "particleStyle": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "glowing",
+        "stateKey": "",
+        "stateKeys": [
+          "listening",
+          "speaking"
+        ]
+      },
+      "listening": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": 60.0,
+        "ok": true,
+        "overrides": {
+          "audioStrength": -0.35,
+          "glowStrength": 0.3,
+          "ink": 1.0,
+          "particleAudio": 1.0,
+          "particleCount": 32.0,
+          "particleLife": 1.8,
+          "particleSize": 1.4,
+          "particleSpread": 0.3,
+          "particleStrength": 1.0,
+          "particleStyle": 1.0
+        },
+        "size": 64,
+        "speed": 0.9,
+        "state": "listening",
+        "stateKey": "listening",
+        "stateKeys": [
+          "listening",
+          "speaking"
+        ]
+      },
+      "listening|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "particles",
+          "blur"
+        ],
+        "inactiveBindings": [],
+        "maxFps": 30.0,
+        "ok": true,
+        "overrides": {
+          "audioStrength": -0.35,
+          "blurScale": 0.0,
+          "glowStrength": 0.3,
+          "ink": 1.0,
+          "particleAudio": 1.0,
+          "particleCount": 32.0,
+          "particleLife": 1.8,
+          "particleSize": 1.4,
+          "particleSpread": 0.3,
+          "particleStrength": 0.0,
+          "particleStyle": 1.0
+        },
+        "size": 64,
+        "speed": 0.9,
+        "state": "listening",
+        "stateKey": "listening",
+        "stateKeys": [
+          "listening",
+          "speaking"
+        ]
+      },
+      "speaking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": 60.0,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.5,
+          "barCount": 28.0,
+          "glowBlend": 1.0,
+          "glowMode": 1.0,
+          "glowStrength": 0.7,
+          "ink": 1.0,
+          "jumpSpeed": 5.0,
+          "particleAudio": 1.0,
+          "particleCount": 48.0,
+          "particleLife": 1.4,
+          "particleStrength": 1.0,
+          "particleStyle": 0.0
+        },
+        "size": 64,
+        "speed": 1.15,
+        "state": "speaking",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "listening",
+          "speaking"
+        ]
+      },
+      "speaking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "particles",
+          "blur"
+        ],
+        "inactiveBindings": [],
+        "maxFps": 30.0,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.5,
+          "barCount": 28.0,
+          "blurScale": 0.0,
+          "glowBlend": 1.0,
+          "glowMode": 1.0,
+          "glowStrength": 0.7,
+          "ink": 1.0,
+          "jumpSpeed": 5.0,
+          "particleAudio": 1.0,
+          "particleCount": 48.0,
+          "particleLife": 1.4,
+          "particleStrength": 0.0,
+          "particleStyle": 0.0
+        },
+        "size": 64,
+        "speed": 1.15,
+        "state": "speaking",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "listening",
+          "speaking"
+        ]
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "particles",
+          "blur"
+        ],
+        "inactiveBindings": [],
+        "maxFps": 30.0,
+        "ok": true,
+        "overrides": {
+          "blurScale": 0.0,
+          "particleCount": 32.0,
+          "particleStrength": 0.0,
+          "particleStyle": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "glowing",
+        "stateKey": "",
+        "stateKeys": [
+          "listening",
+          "speaking"
+        ]
+      }
+    },
+    "radar-wedge-blur.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": 30.0,
+        "ok": true,
+        "overrides": {
+          "colorHue": 151.0,
+          "colorMix": 0.8,
+          "colorSaturation": 0.547,
+          "glowBlend": 1.0,
+          "glowMode": 1.0,
+          "glowRadius": 3.0,
+          "glowStrength": 0.7,
+          "trailFill": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "scanning",
+        "stateKey": "",
+        "stateKeys": []
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "blur"
+        ],
+        "inactiveBindings": [],
+        "maxFps": 20.0,
+        "ok": true,
+        "overrides": {
+          "blurScale": 0.0,
+          "colorHue": 151.0,
+          "colorMix": 0.8,
+          "colorSaturation": 0.547,
+          "glowBlend": 1.0,
+          "glowMode": 1.0,
+          "glowRadius": 3.0,
+          "glowStrength": 0.7,
+          "trailFill": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "scanning",
+        "stateKey": "",
+        "stateKeys": []
+      }
+    },
+    "ring-tracking-gradient.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "gradientAngle": 45.0,
+          "gradientHue": 251.9,
+          "gradientHue2": 330.0,
+          "gradientHue3": 398.9,
+          "gradientMid": 0.4,
+          "gradientStrength": 1.0,
+          "progress0": 0.8,
+          "progress1": 0.55,
+          "progress2": 0.3
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "tracking",
+        "stateKey": "",
+        "stateKeys": []
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "gradientAngle": 45.0,
+          "gradientHue": 251.9,
+          "gradientHue2": 330.0,
+          "gradientHue3": 398.9,
+          "gradientMid": 0.4,
+          "gradientStrength": 1.0,
+          "progress0": 0.8,
+          "progress1": 0.55,
+          "progress2": 0.3
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "tracking",
+        "stateKey": "",
+        "stateKeys": []
+      }
+    },
+    "shimmer-gradient.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.6,
+          "colorSaturation": 0.558,
+          "highlightFill": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "generating",
+        "stateKey": "",
+        "stateKeys": []
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.6,
+          "colorSaturation": 0.558,
+          "highlightFill": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "generating",
+        "stateKey": "",
+        "stateKeys": []
+      }
+    },
+    "signal-matrix.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 347.9,
+          "colorMix": 1.0,
+          "colorSaturation": 0.754,
+          "columnCount": 7.0,
+          "ledCount": 5.0
+        },
+        "size": 32,
+        "speed": 1.25,
+        "state": "metering",
+        "stateKey": "",
+        "stateKeys": []
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 347.9,
+          "colorMix": 1.0,
+          "colorSaturation": 0.754,
+          "columnCount": 7.0,
+          "ledCount": 5.0
+        },
+        "size": 32,
+        "speed": 1.25,
+        "state": "metering",
+        "stateKey": "",
+        "stateKeys": []
+      }
+    },
+    "status-beacon-power.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": 30.0,
+        "ok": true,
+        "overrides": {
+          "colorHue": 151.0,
+          "colorMix": 0.8,
+          "colorSaturation": 0.547,
+          "glowRadius": 3.0,
+          "glowStrength": 0.6,
+          "noiseAmplitude": 0.02,
+          "noiseStrength": 0.4
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "scanning",
+        "stateKey": "",
+        "stateKeys": []
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "glow",
+          "noise"
+        ],
+        "inactiveBindings": [],
+        "maxFps": 15.0,
+        "ok": true,
+        "overrides": {
+          "colorHue": 151.0,
+          "colorMix": 0.8,
+          "colorSaturation": 0.547,
+          "glowRadius": 3.0,
+          "glowStrength": 0.0,
+          "noiseAmplitude": 0.02,
+          "noiseStrength": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "scanning",
+        "stateKey": "",
+        "stateKeys": []
+      }
+    },
+    "voice-assistant-glowing.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "muted": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "glowing",
+        "stateKey": "",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "idle": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "ink": 0.8,
+          "muted": 0.0,
+          "nodeCount": 220.0,
+          "nodeSize": 1.15,
+          "pulseOpacity": 0.25,
+          "pulsePeriod": 4.5,
+          "pulseScale": 0.04,
+          "pulseStrength": 0.6,
+          "saturation": 0.5,
+          "surfaceScale": 1.2,
+          "surfaceSpeed": 0.1
+        },
+        "size": 64,
+        "speed": 0.6,
+        "state": "glowing",
+        "stateKey": "idle",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "idle|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "ink": 0.8,
+          "muted": 0.0,
+          "nodeCount": 220.0,
+          "nodeSize": 1.15,
+          "pulseOpacity": 0.25,
+          "pulsePeriod": 4.5,
+          "pulseScale": 0.04,
+          "pulseStrength": 0.6,
+          "saturation": 0.5,
+          "surfaceScale": 1.2,
+          "surfaceSpeed": 0.1
+        },
+        "size": 64,
+        "speed": 0.6,
+        "state": "glowing",
+        "stateKey": "idle",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "initializing": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "ink": 0.7,
+          "muted": 0.0,
+          "nodeCount": 160.0,
+          "nodeSize": 1.0,
+          "particleStrength": 0.0,
+          "saturation": 0.4,
+          "surfaceScale": 1.2,
+          "surfaceSpeed": 0.6
+        },
+        "size": 64,
+        "speed": 0.8,
+        "state": "glowing",
+        "stateKey": "initializing",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "initializing|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "ink": 0.7,
+          "muted": 0.0,
+          "nodeCount": 160.0,
+          "nodeSize": 1.0,
+          "particleStrength": 0.0,
+          "saturation": 0.4,
+          "surfaceScale": 1.2,
+          "surfaceSpeed": 0.6
+        },
+        "size": 64,
+        "speed": 0.8,
+        "state": "glowing",
+        "stateKey": "initializing",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "listening": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.7851390612472535,
+          "audioStrength": -0.35,
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.3,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "ink": 1.0,
+          "muted": 0.0,
+          "nodeCount": 260.0,
+          "nodeSize": 1.3,
+          "particleAudio": 1.0,
+          "particleCount": 36.0,
+          "particleLife": 1.8,
+          "particleSize": 1.4,
+          "particleSpread": 0.4,
+          "particleStrength": 1.0,
+          "particleStyle": 1.0,
+          "saturation": 0.6,
+          "surfaceScale": 1.2,
+          "surfaceSpeed": 0.28
+        },
+        "size": 64,
+        "speed": 0.9,
+        "state": "glowing",
+        "stateKey": "listening",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "listening|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.7851390612472535,
+          "audioStrength": -0.35,
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.3,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "ink": 1.0,
+          "muted": 0.0,
+          "nodeCount": 260.0,
+          "nodeSize": 1.3,
+          "particleAudio": 1.0,
+          "particleCount": 36.0,
+          "particleLife": 1.8,
+          "particleSize": 1.4,
+          "particleSpread": 0.4,
+          "particleStrength": 1.0,
+          "particleStyle": 1.0,
+          "saturation": 0.6,
+          "surfaceScale": 1.2,
+          "surfaceSpeed": 0.28
+        },
+        "size": 64,
+        "speed": 0.9,
+        "state": "glowing",
+        "stateKey": "listening",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "speaking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.625,
+          "audioStrength": 0.5,
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.45,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "ink": 1.0,
+          "muted": 0.0,
+          "nodeCount": 260.0,
+          "nodeSize": 1.5,
+          "particleAudio": 1.0,
+          "particleCount": 32.0,
+          "particleLife": 1.4,
+          "particleStrength": 1.0,
+          "particleStyle": 0.0,
+          "saturation": 0.62,
+          "surfaceScale": 1.5,
+          "surfaceSpeed": 0.5
+        },
+        "size": 64,
+        "speed": 1.15,
+        "state": "glowing",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "speaking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.625,
+          "audioStrength": 0.5,
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.45,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "ink": 1.0,
+          "muted": 0.0,
+          "nodeCount": 260.0,
+          "nodeSize": 1.5,
+          "particleAudio": 1.0,
+          "particleCount": 32.0,
+          "particleLife": 1.4,
+          "particleStrength": 1.0,
+          "particleStyle": 0.0,
+          "saturation": 0.62,
+          "surfaceScale": 1.5,
+          "surfaceSpeed": 0.5
+        },
+        "size": 64,
+        "speed": 1.15,
+        "state": "glowing",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "thinking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.28,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "ink": 1.0,
+          "muted": 0.0,
+          "nodeCount": 340.0,
+          "nodeSize": 1.05,
+          "particleCount": 16.0,
+          "particleStrength": 0.0,
+          "particleStyle": 2.0,
+          "pulseOpacity": 0.45,
+          "pulsePeriod": 1.8,
+          "pulseScale": 0.015,
+          "pulseStrength": 0.6,
+          "saturation": 0.8,
+          "surfaceScale": 3.0,
+          "surfaceSpeed": 0.55
+        },
+        "size": 64,
+        "speed": 1.05,
+        "state": "glowing",
+        "stateKey": "thinking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "thinking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.28,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "ink": 1.0,
+          "muted": 0.0,
+          "nodeCount": 340.0,
+          "nodeSize": 1.05,
+          "particleCount": 16.0,
+          "particleStrength": 0.0,
+          "particleStyle": 2.0,
+          "pulseOpacity": 0.45,
+          "pulsePeriod": 1.8,
+          "pulseScale": 0.015,
+          "pulseStrength": 0.6,
+          "saturation": 0.8,
+          "surfaceScale": 3.0,
+          "surfaceSpeed": 0.55
+        },
+        "size": 64,
+        "speed": 1.05,
+        "state": "glowing",
+        "stateKey": "thinking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.92,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "hueSpeed": 0.0,
+          "hueSpread": 30.0,
+          "muted": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "glowing",
+        "stateKey": "",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      }
+    },
+    "voice-assistant.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "muted": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "breathing",
+        "stateKey": "",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "idle": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "ink": 0.72,
+          "muted": 0.0,
+          "pulseOpacity": 0.25,
+          "pulsePeriod": 4.5,
+          "pulseScale": 0.04,
+          "pulseStrength": 0.6
+        },
+        "size": 64,
+        "speed": 0.6,
+        "state": "breathing",
+        "stateKey": "idle",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "idle|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "ink": 0.72,
+          "muted": 0.0,
+          "pulseOpacity": 0.25,
+          "pulsePeriod": 4.5,
+          "pulseScale": 0.04,
+          "pulseStrength": 0.6
+        },
+        "size": 64,
+        "speed": 0.6,
+        "state": "breathing",
+        "stateKey": "idle",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "initializing": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "ink": 0.7,
+          "muted": 0.0,
+          "particleStrength": 0.0
+        },
+        "size": 64,
+        "speed": 0.8,
+        "state": "initializing",
+        "stateKey": "initializing",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "initializing|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "ink": 0.7,
+          "muted": 0.0,
+          "particleStrength": 0.0
+        },
+        "size": 64,
+        "speed": 0.8,
+        "state": "initializing",
+        "stateKey": "initializing",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "listening": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.7851390612472535,
+          "audioStrength": -0.35,
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "ink": 1.0,
+          "muted": 0.0,
+          "particleAudio": 1.0,
+          "particleCount": 36.0,
+          "particleLife": 1.8,
+          "particleSize": 1.4,
+          "particleSpread": 0.4,
+          "particleStrength": 1.0,
+          "particleStyle": 1.0
+        },
+        "size": 64,
+        "speed": 0.9,
+        "state": "listening",
+        "stateKey": "listening",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "listening|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.7851390612472535,
+          "audioStrength": -0.35,
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "ink": 1.0,
+          "muted": 0.0,
+          "particleAudio": 1.0,
+          "particleCount": 36.0,
+          "particleLife": 1.8,
+          "particleSize": 1.4,
+          "particleSpread": 0.4,
+          "particleStrength": 1.0,
+          "particleStyle": 1.0
+        },
+        "size": 64,
+        "speed": 0.9,
+        "state": "listening",
+        "stateKey": "listening",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "speaking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.625,
+          "audioStrength": 0.5,
+          "barCount": 28.0,
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.4,
+          "ink": 1.0,
+          "jumpSpeed": 5.0,
+          "muted": 0.0,
+          "particleAudio": 1.0,
+          "particleCount": 32.0,
+          "particleLife": 1.4,
+          "particleStrength": 1.0,
+          "particleStyle": 0.0
+        },
+        "size": 64,
+        "speed": 1.1,
+        "state": "speaking",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "speaking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.625,
+          "audioStrength": 0.5,
+          "barCount": 28.0,
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.4,
+          "ink": 1.0,
+          "jumpSpeed": 5.0,
+          "muted": 0.0,
+          "particleAudio": 1.0,
+          "particleCount": 32.0,
+          "particleLife": 1.4,
+          "particleStrength": 1.0,
+          "particleStyle": 0.0
+        },
+        "size": 64,
+        "speed": 1.1,
+        "state": "speaking",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "thinking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "ink": 1.0,
+          "muted": 0.0,
+          "particleCount": 16.0,
+          "particleStrength": 0.8,
+          "particleStyle": 2.0,
+          "pulseOpacity": 0.45,
+          "pulsePeriod": 1.8,
+          "pulseScale": 0.015,
+          "pulseStrength": 0.6
+        },
+        "size": 64,
+        "speed": 1.05,
+        "state": "working",
+        "stateKey": "thinking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "thinking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "ink": 1.0,
+          "muted": 0.0,
+          "particleCount": 16.0,
+          "particleStrength": 0.8,
+          "particleStyle": 2.0,
+          "pulseOpacity": 0.45,
+          "pulsePeriod": 1.8,
+          "pulseScale": 0.015,
+          "pulseStrength": 0.6
+        },
+        "size": 64,
+        "speed": 1.05,
+        "state": "working",
+        "stateKey": "thinking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "colorHue": 251.9,
+          "colorMix": 0.7,
+          "colorSaturation": 0.558,
+          "glowRadius": 3.0,
+          "glowStrength": 0.25,
+          "muted": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "breathing",
+        "stateKey": "",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      }
+    }
+  },
+  "inputs": {
+    "activeMinutes": 12.0,
+    "agentVolume": 0.5,
+    "heartRate": 128.0,
+    "micLevel": 0.6,
+    "micMuted": 0.0,
+    "steps": 6200.0,
+    "waterMl": 1800.0
+  },
+  "note": "Identity lock: how the FX Spec 1.8 runtime resolved all spec/examples (every state key, base = \"\"; \"|lowPower\" = ctx.lowPower) with the parity tests' fixed inputs, captured from the 1.8 build. crates/core_engine/src/fx_spec.rs (v1_8_examples_resolve_identically) requires every later runtime to reproduce it exactly. Regenerate only when deliberately capturing a new minor: crates/core_engine/tests/fx_spec_lock.rs."
+}

@@ -1,0 +1,26 @@
+---
+title: Web Components
+description: Use Sinua from Vue, Svelte, Angular, Solid or plain HTML through a custom element.
+---
+
+`<sinua-view>` is a standard custom element, so it works in any framework, or none. Register it once with `import "@sinua/web/element"`, then use the tag. For the typed tags — `<sinua-orb>`, `<sinua-ring>`, `<sinua-signal>`, `<sinua-core>`, `<sinua-beacon>`, each with its pattern's own attributes — `import "@sinua/web/elements"` registers all five. Properties and attributes map to the same props as everywhere else, and the element fires a `fxframe` event per drawn frame when you ask for frame stats.
+
+<Tabs groupId="web-framework" items={["HTML", "Vue", "Svelte", "Angular", "Solid"]} persist>
+<Tab value="HTML">
+<include lang="html" meta='title="index.html"'>../../../snippets/web/web-component.html</include>
+</Tab>
+<Tab value="Vue">
+<include lang="vue" meta='title="AssistantOrb.vue"'>../../../snippets/web/vue.vue</include>
+</Tab>
+<Tab value="Svelte">
+<include lang="svelte" meta='title="AssistantOrb.svelte"'>../../../snippets/web/svelte.svelte</include>
+</Tab>
+<Tab value="Angular">
+<include lang="ts" meta='title="assistant-orb.component.ts"'>../../../snippets/web/angular.ts</include>
+</Tab>
+<Tab value="Solid">
+<include lang="tsx" meta='title="AssistantOrb.tsx"'>../../../snippets/web/solid.tsx</include>
+</Tab>
+</Tabs>
+
+Typed components take the same props on every platform: `pattern` (or `spec`), [values](/docs/connect/values), [style](/docs/look/color-and-theme), `state`, `voice`, `theme`, `paused`, `reducedMotion`, `maxFps`, `lowPower` and an accessibility label. The [catalog](/docs/catalog) lists every prop per pattern.

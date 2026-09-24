@@ -65,6 +65,8 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.foundation:foundation")
+    // The copied SinuaView frame loop uses withInfiniteAnimationFrameNanos (as packages/android/view).
+    implementation("androidx.compose.animation:animation-core")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
 
     // The voice sources: dev.sinua.voice + the vendor glue copied in by build.sh.

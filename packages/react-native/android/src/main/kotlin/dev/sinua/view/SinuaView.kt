@@ -1,6 +1,7 @@
 package dev.sinua.view
 
 import android.provider.Settings
+import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -9,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.platform.LocalContext
@@ -236,9 +236,12 @@ private fun FxCanvas(
         model.resetTick()
         if (!running || (reduced && !model.hasVoice)) return@LaunchedEffect
         // Frame cap: skipped vsyncs don't write the frame state, so nothing redraws.
+        // An infinite animation: `withInfiniteAnimationFrameNanos` honours
+        // `InfiniteAnimationPolicy`, so a host app's Compose UI tests can go idle while a
+        // view animates (a plain `withFrameNanos` loop kept the Recomposer busy forever).
         val pacer = FramePacer(cap)
         while (true) {
-            withFrameNanos {
+            withInfiniteAnimationFrameNanos {
                 if (pacer.shouldDraw(it / 1e6)) {
                     frameNanos.longValue = it
                     model.pacedFrames++

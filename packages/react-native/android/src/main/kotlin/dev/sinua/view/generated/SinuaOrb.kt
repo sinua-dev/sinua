@@ -120,6 +120,8 @@ data class SinuaOrbProps(
     val iconD: Double? = null,
     /** Dot radius as a fraction of the frame. Range 0.002...0.1 (fraction). Patterns: shaping. */
     val rDot: Double? = null,
+    /** Tone difference between front and back dots (0 = one tone). Range 0...1 (fraction). Patterns: glowing. */
+    val depthTone: Double? = null,
     /** Starting hue of the aurora colours. Range 0...360 (deg). Patterns: glowing. */
     val hueOffset: Double? = null,
     /** Range of hues across the sphere. Range 0...720 (deg). Patterns: glowing. */
@@ -226,6 +228,7 @@ data class SinuaOrbProps(
         segs?.let { o["segs"] = it.toDouble() }
         iconD?.let { o["iconD"] = it }
         rDot?.let { o["rDot"] = it }
+        depthTone?.let { o["depthTone"] = it }
         hueOffset?.let { o["hueOffset"] = it }
         hueSpread?.let { o["hueSpread"] = it }
         saturation?.let { o["saturation"] = it }
@@ -314,6 +317,7 @@ fun SinuaOrb(
     segs: Int? = null,
     iconD: Double? = null,
     rDot: Double? = null,
+    depthTone: Double? = null,
     hueOffset: Double? = null,
     hueSpread: Double? = null,
     saturation: Double? = null,
@@ -368,7 +372,7 @@ fun SinuaOrb(
     lowPower: FxLowPower = FxLowPower.AUTO,
     onFrame: ((FxFrameStats) -> Unit)? = null,
 ) {
-    val overrides = SinuaOrbProps(pattern = pattern, size = size, ghostA = ghostA, ink = ink, orbitParticles = orbitParticles, ghostN = ghostN, ghostR = ghostR, orbitN = orbitN, partR = partR, partRDepth = partRDepth, rMin = rMin, rsPow = rsPow, dimBase = dimBase, scanMul = scanMul, inkFar = inkFar, inkSpan = inkSpan, latRings = latRings, lonDensity = lonDensity, rBase = rBase, rDepth = rDepth, rBoost = rBoost, moveCount = moveCount, rActive = rActive, rings = rings, lineW = lineW, spread = spread, thr = thr, signals = signals, nodeN = nodeN, nodeR = nodeR, nodeRDepth = nodeRDepth, turns = turns, strandN = strandN, bandMul = bandMul, spin = spin, wobMul = wobMul, faceOn = faceOn, lanes = lanes, segs = segs, iconD = iconD, rDot = rDot, hueOffset = hueOffset, hueSpread = hueSpread, saturation = saturation, surfaceScale = surfaceScale, hueSpeed = hueSpeed, surfaceSpeed = surfaceSpeed, nodeCount = nodeCount, nodeSize = nodeSize, barCount = barCount, hue = hue, jumpSpeed = jumpSpeed, barDotCount = barDotCount, dotSize = dotSize, period = period, echoCount = echoCount, coreSize = coreSize, ringCount = ringCount, echoSpacing = echoSpacing, starCount = starCount, warpSpeed = warpSpeed, decay = decay, holdDuration = holdDuration, progress = progress, driftAmplitude = driftAmplitude, lineWidth = lineWidth, dim = dim, pulseAmplitude = pulseAmplitude, yaw = yaw, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
+    val overrides = SinuaOrbProps(pattern = pattern, size = size, ghostA = ghostA, ink = ink, orbitParticles = orbitParticles, ghostN = ghostN, ghostR = ghostR, orbitN = orbitN, partR = partR, partRDepth = partRDepth, rMin = rMin, rsPow = rsPow, dimBase = dimBase, scanMul = scanMul, inkFar = inkFar, inkSpan = inkSpan, latRings = latRings, lonDensity = lonDensity, rBase = rBase, rDepth = rDepth, rBoost = rBoost, moveCount = moveCount, rActive = rActive, rings = rings, lineW = lineW, spread = spread, thr = thr, signals = signals, nodeN = nodeN, nodeR = nodeR, nodeRDepth = nodeRDepth, turns = turns, strandN = strandN, bandMul = bandMul, spin = spin, wobMul = wobMul, faceOn = faceOn, lanes = lanes, segs = segs, iconD = iconD, rDot = rDot, depthTone = depthTone, hueOffset = hueOffset, hueSpread = hueSpread, saturation = saturation, surfaceScale = surfaceScale, hueSpeed = hueSpeed, surfaceSpeed = surfaceSpeed, nodeCount = nodeCount, nodeSize = nodeSize, barCount = barCount, hue = hue, jumpSpeed = jumpSpeed, barDotCount = barDotCount, dotSize = dotSize, period = period, echoCount = echoCount, coreSize = coreSize, ringCount = ringCount, echoSpacing = echoSpacing, starCount = starCount, warpSpeed = warpSpeed, decay = decay, holdDuration = holdDuration, progress = progress, driftAmplitude = driftAmplitude, lineWidth = lineWidth, dim = dim, pulseAmplitude = pulseAmplitude, yaw = yaw, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,

@@ -1,6 +1,6 @@
 {
   "name": "@sinua/web",
-  "version": "0.1.0-beta.4",
+  "version": "0.1.0-beta.5",
   "license": "Apache-2.0",
   "author": "The Sinua Authors",
   "repository": {
@@ -74,7 +74,7 @@
     "example": "vite example"
   },
   "peerDependencies": {
-    "@sinua/core": "0.1.0-beta.4",
+    "@sinua/core": "0.1.0-beta.5",
     "react": ">=18"
   },
   "peerDependenciesMeta": {

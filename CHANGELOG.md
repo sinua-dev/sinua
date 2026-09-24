@@ -11,6 +11,17 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 ## Unreleased
 
+## 0.1.0-beta.5
+
+### Fixed
+
+- Android: `sinua-core` now ships consumer R8/ProGuard rules (JNA and the UniFFI bindings).
+  In an app built with R8 (a minified release build), the first engine call threw
+  `UnsatisfiedLinkError: Can't obtain peer field ID for class com.sun.jna.Pointer`: a
+  plain app crashed on its first SinuaView. Apps no longer need their own rules for Sinua.
+
+No change on iOS or the Web: npm and SwiftPM move to beta.5 in lockstep.
+
 ## 0.1.0-beta.4
 
 ### Fixed

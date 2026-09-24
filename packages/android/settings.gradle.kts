@@ -26,6 +26,11 @@ rootProject.name = "sinua-android"
 include(":fx-bench-android")
 project(":fx-bench-android").projectDir = file("$rootDir/../../apps/fx-bench-android")
 
+// A minified (R8) release app drawing one SinuaView: the CI's check that the consumer
+// rules shipped with sinua-core are enough (scripts/android-minify-smoke.sh).
+include(":android-minify-smoke")
+project(":android-minify-smoke").projectDir = file("$rootDir/../../apps/android-minify-smoke")
+
 // The drop-in Compose renderer (SinuaView + the shared paint contract). Its own
 // module so this library stays Compose-free -- see view/build.gradle.kts.
 include(":sinua-view")

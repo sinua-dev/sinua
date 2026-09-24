@@ -9,7 +9,8 @@
 #              has no tests of its own, its tracker logic is tested in the root)
 #   connected  instrumented tests on the connected device/emulator: both golden
 #              sets + FX Spec (root module) and the SinuaView render test
-#              (:sinua-view).
+#              (:sinua-view), then the minified-release smoke
+#              (scripts/android-minify-smoke.sh: R8 on, consumer rules only).
 #
 # ANDROID_NDK_HOME (build) and ANDROID_HOME/ANDROID_SDK_ROOT (Gradle) come from
 # the environment; the ubuntu runner sets both.
@@ -52,6 +53,8 @@ case "${1:-}" in
     fi
     step "android: instrumented tests (root + :sinua-view)"
     (cd packages/android && ./gradlew --no-daemon :connectedDebugAndroidTest :sinua-view:connectedDebugAndroidTest)
+    step "android: minified release smoke (R8 on, consumer rules only)"
+    scripts/android-minify-smoke.sh
     ;;
   *)
     echo "usage: $0 build|connected" >&2

@@ -11,6 +11,17 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 ## Unreleased
 
+## 0.1.0-beta.4
+
+### Fixed
+
+- Android: `SinuaView`'s frame loop now runs as an infinite animation
+  (`withInfiniteAnimationFrameNanos`), so an app's Compose UI tests can go idle while a
+  view animates on screen. Before, `ComposeTestRule.waitForIdle` failed with
+  `ComposeNotIdleException` on any screen showing a SinuaView. Drawing is unchanged.
+
+No change on iOS or the Web: npm and SwiftPM move to beta.4 in lockstep.
+
 ## 0.1.0-beta.3
 
 ### Changed

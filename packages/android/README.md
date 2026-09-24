@@ -31,9 +31,9 @@ Until the artifacts are published, include the build and depend on the modules
 by project. Once published:
 
 ```kotlin
-implementation("dev.sinua:sinua-core:0.1.0-beta.2")
-implementation("dev.sinua:sinua-view:0.1.0-beta.2")
-implementation("dev.sinua:sinua-gemini:0.1.0-beta.2")   // only the vendors you use
+implementation("dev.sinua:sinua-core:0.1.0-beta.3")
+implementation("dev.sinua:sinua-view:0.1.0-beta.3")
+implementation("dev.sinua:sinua-gemini:0.1.0-beta.3")   // only the vendors you use
 ```
 
 The POM's URL, SCM and developer fields default to the public repository

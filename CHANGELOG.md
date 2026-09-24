@@ -11,6 +11,21 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 ## Unreleased
 
+## 0.1.0-beta.3
+
+### Changed
+
+- iOS: the xcframework's static libraries no longer carry debug info (`strip -S` in
+  `packages/ios/build.sh`). The release zip drops from 23 MB to about 4 MB; the size an app
+  gains is unchanged (checked byte for byte against beta.2).
+
+### Added
+
+- CONTRIBUTING.md (maintainers only for now), SECURITY.md (private vulnerability
+  reporting), CODEOWNERS.
+
+No runtime or API change from beta.2.
+
 ## 0.1.0-beta.2
 
 ### Added

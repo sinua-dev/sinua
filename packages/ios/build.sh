@@ -35,10 +35,18 @@ lipo -create \
   "$ROOT/target/x86_64-apple-ios/release/libcore_engine.a" \
   -output "$ROOT/target/ios-sim-universal/libcore_engine.a"
 
+# Debug info (DWARF) is ~84% of each static lib (device 23 MB -> 3.6 MB). An app never
+# ships it (Xcode strips the final binary), but the release zip every consumer downloads
+# would. `strip -S` drops only debug symbols; the global symbols the linker needs stay.
+echo "==> stripping debug info from the static libs"
+mkdir -p "$ROOT/target/ios-device"
+cp "$ROOT/target/aarch64-apple-ios/release/libcore_engine.a" "$ROOT/target/ios-device/libcore_engine.a"
+xcrun strip -S "$ROOT/target/ios-device/libcore_engine.a" "$ROOT/target/ios-sim-universal/libcore_engine.a"
+
 echo "==> creating core_engineFFI.xcframework"
 rm -rf core_engineFFI.xcframework
 xcodebuild -create-xcframework \
-  -library "$ROOT/target/aarch64-apple-ios/release/libcore_engine.a" -headers "$BINDINGS/Headers" \
+  -library "$ROOT/target/ios-device/libcore_engine.a" -headers "$BINDINGS/Headers" \
   -library "$ROOT/target/ios-sim-universal/libcore_engine.a" -headers "$BINDINGS/Headers" \
   -output core_engineFFI.xcframework
 

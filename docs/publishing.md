@@ -99,6 +99,17 @@ outside the repository:
 - **release.yml:** `actionlint` is clean (with the custom `xcode-27` runner label
   allowed). It hasn't run on GitHub yet: the Actions quota is spent until 1 October.
 
+### Maven Central limits
+
+Central meters every organisation monthly (Usage Center, 2026-09): **1,000 files**, 80 MB and
+7 releases, enforced from 1 October 2026; open-source projects can ask for an adjustment.
+Files are the tight one. Gradle's staging repository writes, per file, `.md5`, `.sha1`,
+`.sha256`, `.sha512`, an `.asc` and four checksums of the `.asc`, plus `maven-metadata.xml`:
+385 files for the seven modules. Central needs only the file, its `.asc`, `.md5` and `.sha1`,
+so `release.yml` zips the bundle without the rest: **140 files per release** (5 files × 4 ×
+7 modules), which keeps even seven releases a month under 1,000. Batch fixes into fewer
+releases anyway.
+
 ## npm packages
 
 Verified 2026-09-20 by packing each one, installing the tarballs into a scratch app, and

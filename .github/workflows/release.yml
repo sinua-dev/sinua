@@ -135,7 +135,13 @@ jobs:
             echo "::notice::Maven skipped: CENTRAL_USERNAME / SIGNING_KEY not set"; exit 0
           fi
           v="${{ needs.version.outputs.version }}"
-          (cd "out/release/$v/maven" && zip -qr "../central-bundle.zip" .)
+          # Central counts every file against a monthly limit (1,000 files, 2026-09) and
+          # needs only file + .asc + .md5 + .sha1. Gradle's staging repo also writes
+          # .sha256/.sha512, checksums of the .asc files and maven-metadata.xml: left out,
+          # 385 -> 140 files per release (docs/publishing.md, *Maven Central limits*).
+          (cd "out/release/$v/maven" && zip -qr "../central-bundle.zip" . \
+            -x '*.sha256' '*.sha512' '*.asc.md5' '*.asc.sha1' '*maven-metadata*')
+          echo "central bundle: $(unzip -Z1 "out/release/$v/central-bundle.zip" | grep -vc '/$') files"
           auth="$(printf '%s:%s' "$CENTRAL_USERNAME" "$CENTRAL_PASSWORD" | base64 -w0)"
           curl --fail-with-body -sS -X POST -H "Authorization: Bearer $auth" \
             -F "bundle=@out/release/$v/central-bundle.zip" \

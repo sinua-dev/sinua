@@ -69,6 +69,8 @@ dependencies {
     api("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.foundation:foundation")
+    // withInfiniteAnimationFrameNanos: the frame loop is an infinite animation (idle-friendly in tests).
+    implementation("androidx.compose.animation:animation-core")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
 
     testImplementation("junit:junit:4.13.2")

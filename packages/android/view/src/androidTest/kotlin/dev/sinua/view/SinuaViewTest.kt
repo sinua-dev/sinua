@@ -117,6 +117,26 @@ class SinuaViewTest {
         assertNull(end.previous)
     }
 
+    /**
+     * An app's own Compose UI tests must be able to go idle while a SinuaView animates on
+     * screen. The frame loop is an infinite animation, so it has to use
+     * `withInfiniteAnimationFrameNanos` (it honours `InfiniteAnimationPolicy`); a plain
+     * `withFrameNanos` loop kept the Recomposer busy and `waitForIdle` threw
+     * `ComposeNotIdleException` (found by a consuming app's chat-screen tests, 2026-09-24).
+     */
+    @Test
+    fun anAnimatingViewLetsTheHostTestGoIdle() {
+        compose.setContent {
+            SinuaView(
+                pattern = "glowing",
+                modifier = Modifier.size(64.dp),
+                reducedMotion = FxReducedMotion.NEVER,
+            )
+        }
+        compose.waitForIdle() // autoAdvance on, as in an app's tests
+        compose.onRoot().assertExists()
+    }
+
     @Test
     fun fxViewRendersAndAnimates() {
         val json = spec("voice-assistant.fxspec.json")

@@ -27,6 +27,8 @@ android {
     compileSdk = 36
 
     defaultConfig {
+        // JNA + UniFFI keep rules for apps built with R8 (see the file).
+        consumerProguardFiles("consumer-rules.pro")
         minSdk = 24
     }
 

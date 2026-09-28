@@ -1,0 +1,10 @@
+# Cloudflare Pages response headers (https://developers.cloudflare.com/pages/configuration/headers/).
+# Next's hashed build output never changes under a name, so it can be cached for good.
+# The site never opens a microphone (every voice demo runs on a simulated level), so none is allowed.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: microphone=(), camera=(), geolocation=()

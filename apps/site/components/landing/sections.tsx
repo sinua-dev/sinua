@@ -86,20 +86,22 @@ export function Pricing() {
   return (
     <section className="lp-section lp-block" aria-labelledby="lp-pricing">
       <h2 id="lp-pricing" className="lp-h2">
-        What costs money
+        Free runtime, separate Studio
       </h2>
       <p className="lp-lead">{brand.copy.pricingLead}</p>
       <div className="lp-plans">
         <div className="lp-plan">
           <h3 className="lp-h3">{brand.copy.pricingFree}</h3>
           <p className="lp-case-line">{brand.copy.packagesPitch}</p>
-          <code className="lp-install">npm i {brand.packages.web}</code>
+          <code className="lp-install">
+            npm i {brand.packages.web}@{brand.npmTag}
+          </code>
         </div>
         <div className="lp-plan lp-plan-paid">
           <h3 className="lp-h3">{brand.copy.pricingPaid}</h3>
           <p className="lp-case-line">{brand.copy.studioPitch}</p>
-          <Link className="lp-link" href={brand.links.docs}>
-            How it fits your app
+          <Link className="lp-link" href={brand.links.studioTour}>
+            Take the tour
           </Link>
         </div>
       </div>

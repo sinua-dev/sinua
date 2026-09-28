@@ -41,7 +41,9 @@ export function Hero() {
         <h1 className="lp-h1">{brand.copy.tagline}</h1>
         <p className="lp-lead">{brand.copy.heroLead}</p>
         <div className="lp-actions">
-          <code className="lp-install">npm i {brand.packages.web}</code>
+          <code className="lp-install">
+            npm i {brand.packages.web}@{brand.npmTag}
+          </code>
           <Link className="lp-link" href={brand.links.docs}>
             Read the docs
           </Link>

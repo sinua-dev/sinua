@@ -5,3 +5,4 @@
 *.tsbuildinfo
 next-env.d.ts
 /public/spec
+/content/changelog.generated.mdx

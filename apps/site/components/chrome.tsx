@@ -14,6 +14,7 @@ export function SiteHeader() {
       <nav className="lp-nav">
         <Link href={brand.links.docs}>Docs</Link>
         <Link href={brand.links.gallery}>Gallery</Link>
+        <a href={brand.links.repo}>GitHub</a>
       </nav>
     </header>
   );
@@ -28,7 +29,7 @@ export function SiteFooter() {
       <nav className="lp-nav">
         <Link href={brand.links.docs}>Docs</Link>
         <Link href={brand.links.gallery}>Gallery</Link>
-        {brand.links.repo ? <a href={brand.links.repo}>Source</a> : null}
+        <a href={brand.links.repo}>GitHub</a>
       </nav>
       <p className="lp-foot-note">{brand.copy.footerNote}</p>
     </footer>

@@ -62,7 +62,9 @@ for (const f of readdirSync(dir).filter((f) => f.endsWith(".sh"))) {
       continue;
     }
     installLines++;
-    for (const name of hit[1].split(/\s+/).filter((t) => t && !t.startsWith("-") && !t.startsWith("."))) {
+    for (const token of hit[1].split(/\s+/).filter((t) => t && !t.startsWith("-") && !t.startsWith("."))) {
+      // `@sinua/web@beta` installs `@sinua/web`: the dist-tag or version is not part of the name.
+      const name = token.replace(/^(@?[^@]+)@.*$/, "$1");
       checked.add(name);
       if (!ours.has(name) && !THIRD_PARTY.has(name)) {
         bad++;

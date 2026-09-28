@@ -5,9 +5,17 @@ description: What Sinua doesn't do today, and what to do instead.
 
 Plain statements of where the edges are right now. Each one says what to do in the meantime.
 
-## The packages aren't published
+## It's a beta
 
-npm, Swift Package Index and Maven don't have them yet. Build them from the repository — [Installation](/docs/getting-started/installation) has the steps, and every package's build script regenerates its bindings from the engine.
+The packages are published as `0.1.0-beta.N`: npm's `beta` tag, Maven Central and SwiftPM. The API can still change between betas; the [changelog](/docs/resources/changelog) says what did. On npm, install with `@beta`: the untagged name still resolves to the first beta.
+
+## React Native isn't on npm yet
+
+`@sinua/react-native` is built from the repository for now — [Installation](/docs/getting-started/installation) has the steps. The web, iOS and Android packages are published.
+
+## The voice adapters are beta
+
+The LiveKit, OpenAI Realtime, Gemini Live and ElevenLabs sources are tested against simulated sessions, not yet against each live service. If one misbehaves with your agent, an issue with the vendor and platform helps most.
 
 ## An FX Spec holds one object
 
@@ -27,4 +35,4 @@ A spec can't declare per-state durations or curves. Views cross-fade between sta
 
 ## Where to follow along
 
-The repository is the source of truth for what exists today: the engine, the specs, the tests and the docs you're reading are all in it.
+The [repository](https://github.com/sinua-dev/sinua) is the source of truth for what exists today: the engine, the specs, the tests and the docs you're reading are all in it. Bug reports go to its issues.

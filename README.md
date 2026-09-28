@@ -10,9 +10,10 @@ vectors, not by reading the code side by side.
 A design is either a few typed props or an **FX Spec** file (`.fxspec.json`,
 currently 1.8) that every platform resolves the same way.
 
-> **Nothing is published yet.** The first public beta (`0.1.0-beta.1`) goes to npm,
-> Maven Central and SwiftPM through this repository's release pipeline; until then,
-> build from source. See [docs/publishing.md](docs/publishing.md).
+> **Public beta.** The packages are on npm (`@sinua/*`, `beta` tag), Maven Central
+> (`dev.sinua:sinua-*`) and SwiftPM ([`sinua-dev/sinua-swift`](https://github.com/sinua-dev/sinua-swift))
+> as `0.1.0-beta.N`; the API can still change. Docs, install steps and a live gallery:
+> **[sinua.dev](https://sinua.dev)**.
 
 ## Licensing
 

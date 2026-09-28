@@ -70,3 +70,10 @@ test("a valid snippet passes and the success line states the denominator", () =>
   assert.equal(code, 0, out);
   assert.match(out, /2 name\(s\) on 1 install line\(s\) across 1 file\(s\)/);
 });
+
+test("a dist-tag or version after the name is not part of the name", () => {
+  assert.equal(run("npm i @sinua/web@beta @sinua/core@0.1.0-beta.5\n").code, 0);
+  const { code, out } = run("npm i @sinua/invented@beta\n");
+  assert.equal(code, 1);
+  assert.match(out, /"@sinua\/invented"/);
+});

@@ -1,4 +1,4 @@
-# Until the packages are published, build them from the repository.
+# To build the packages yourself instead of installing the published ones.
 git clone https://github.com/sinua-dev/sinua.git sinua && cd sinua
 
 # Web: build the engine (Rust + wasm-pack) and the packages, then depend on them by path.

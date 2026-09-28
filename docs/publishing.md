@@ -1,9 +1,9 @@
 # Publishing: how to release, and what a consumer gets
 
-Nothing is published yet. The pipeline is built and dry-run end to end (2026-09-21): one
-command produces every artefact a release would publish, and each was installed and
-consumed from outside the repository. What's left needs the accounts
-and their secrets, nothing else.
+Published since `0.1.0-beta.1` (2026-09-23): npm (`beta` tag), Maven Central from
+`0.1.0-beta.2`, and SwiftPM, all from one tag through `release.yml`. The root `VERSION` and
+[`CHANGELOG.md`](../CHANGELOG.md) say which beta is current. The docs site (sinua.dev) is
+deployed separately, from every push to `main` (*The site*, below).
 
 **The names are decided and filled in** (2026-09-22): `@sinua/*` on npm and
 `dev.sinua:sinua-*` on Maven, from the public repository `https://github.com/sinua-dev/sinua`
@@ -109,6 +109,30 @@ Files are the tight one. Gradle's staging repository writes, per file, `.md5`, `
 so `release.yml` zips the bundle without the rest: **140 files per release** (5 files × 4 ×
 7 modules), which keeps even seven releases a month under 1,000. Batch fixes into fewer
 releases anyway.
+
+## The site (sinua.dev)
+
+`apps/site` is a static export (`next build` → `apps/site/out/`) served by Cloudflare Pages,
+project `sinua`, with `sinua.dev` as its custom domain.
+
+- **When:** every push to `main`, and a manual CI run on `main`. CI's `web` job builds the
+  site and runs its headless check (`npm run smoke`); only then does `site-deploy` publish
+  that same `out/` with `wrangler pages deploy`. A pull request, another branch or a tag
+  never publishes. So the site follows `main`, not the last release: a change to a public
+  API should land together with its release, or its docs page says so.
+- **Secrets**, in the GitHub environment `sinua.dev`: `CLOUDFLARE_API_TOKEN` (an account
+  token with *Cloudflare Pages: Edit* only) and `CLOUDFLARE_ACCOUNT_ID`. Without them the
+  step prints a notice and publishes nothing, like the release jobs.
+- **Headers** come from `apps/site/public/_headers` (long cache for `/_next/static/`, no
+  microphone or camera). `sitemap.xml` and `robots.txt` are generated from `brand.siteUrl`.
+- **The changelog page** is the root `CHANGELOG.md`, copied in at build time
+  (`apps/site/scripts/changelog.mjs`), so a release's entry is on the site with the next
+  push.
+- **Rolling back:** Cloudflare's dashboard (Pages → `sinua` → Deployments) can promote any
+  earlier deployment instantly; a revert on `main` does the same through CI.
+
+The Studio is not part of this site or repository: it is a separate product, not open yet.
+The site describes it (the Studio docs pages) but links to no Studio origin until it opens.
 
 ## npm packages
 

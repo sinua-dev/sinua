@@ -4,7 +4,11 @@ import { Provider } from "@/components/provider";
 import "./global.css";
 
 export const metadata: Metadata = {
-  title: { template: `%s · ${brand.name}`, default: brand.name },
+  metadataBase: new URL(brand.siteUrl),
+  title: { template: `%s · ${brand.name}`, default: `${brand.name}: ${brand.copy.tagline}` },
+  description: brand.description,
+  openGraph: { type: "website", siteName: brand.name, url: "/", description: brand.description },
+  twitter: { card: "summary", description: brand.description },
 };
 
 export default function Layout({ children }: LayoutProps<"/">) {

@@ -7,17 +7,23 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 TSC=packages/core/node_modules/.bin/tsc
+# One command per line, never `cmd && echo ok`: set -e does not stop on a failure inside an
+# && list, so that form printed type errors and still exited 0 (found 2026-09-28).
 case "${1:-}" in
   --web)
-    "$TSC" -p apps/site/snippets/tsconfig.web.json && echo "web snippets: type-check ok"
-    "$TSC" -p apps/site/snippets/tsconfig.rn.json && echo "react-native snippets: type-check ok"
+    "$TSC" -p apps/site/snippets/tsconfig.web.json
+    echo "web snippets: type-check ok"
+    "$TSC" -p apps/site/snippets/tsconfig.rn.json
+    echo "react-native snippets: type-check ok"
     node scripts/docs/check-install-snippets.mjs
     ;;
   --native|--native-swift)
     (cd apps/site/snippets && xcodebuild build -quiet -scheme SiteSnippets -destination 'generic/platform=iOS Simulator' \
-      -derivedDataPath "${SNIPPETS_DERIVED_DATA:-build/snippets-derived-data}") && echo "swift snippets: build ok"
+      -derivedDataPath "${SNIPPETS_DERIVED_DATA:-build/snippets-derived-data}")
+    echo "swift snippets: build ok"
     [ "$1" = --native-swift ] && exit 0   # ci-native-android.sh builds :site-snippets with its other modules
-    (cd packages/android && ./gradlew --no-daemon -q :site-snippets:assembleDebug) && echo "kotlin/xml snippets: build ok"
+    (cd packages/android && ./gradlew --no-daemon -q :site-snippets:assembleDebug)
+    echo "kotlin/xml snippets: build ok"
     ;;
   *) echo "usage: $0 --web | --native" >&2; exit 2 ;;
 esac

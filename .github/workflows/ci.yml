@@ -227,6 +227,14 @@ jobs:
       - name: apps/site -- headless check (every page, no console errors, search)
         working-directory: apps/site
         run: npx playwright install chromium && npm run smoke
+      # What `site-deploy` publishes: the export this job just built and checked, not a rebuild.
+      - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: apps/site/out
+          include-hidden-files: true
+          retention-days: 7
       # The repo-wide TypeScript gate, last: its type-aware rules resolve imports
       # through each linted area's own node_modules and dist/. Until the second
       # Actions run (2026-09-21) it ran right after packages/web, before voice,
@@ -250,6 +258,34 @@ jobs:
           path: |
             out/materials/frames.json
             packages/web/dist/paint.js
+
+  # sinua.dev: every push to main (and a manual run on main) publishes the docs site to
+  # Cloudflare Pages, once `web` has built it and the headless check passed. The secrets
+  # live in the `sinua.dev` environment; without them the step says so and publishes
+  # nothing, the same rule release.yml follows. docs/publishing.md, "The site".
+  site-deploy:
+    name: Site (sinua.dev, Cloudflare Pages)
+    needs: web
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: sinua.dev
+      url: https://sinua.dev
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: out
+      - name: publish to Cloudflare Pages (project `sinua`, production branch main)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::notice::site not published: CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID not set"; exit 0
+          fi
+          test -f out/index.html && test -f out/_headers
+          npx --yes wrangler@4.143.0 pages deploy out --project-name sinua --branch main --commit-hash "$GITHUB_SHA" --commit-dirty=true
 
   ios:
     name: iOS (xcframework + XCTest on a simulator)

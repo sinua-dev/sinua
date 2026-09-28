@@ -10,7 +10,7 @@
     "start": "serve out -l 3100",
     "typecheck": "next typegen && tsc --noEmit",
     "smoke": "node scripts/smoke.mjs",
-    "specs": "node scripts/copy-specs.mjs"
+    "specs": "node scripts/copy-specs.mjs && node scripts/changelog.mjs"
   },
   "dependencies": {
     "fumadocs-core": "16.15.11",

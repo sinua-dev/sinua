@@ -41,14 +41,19 @@ final class SceneLessHostTests: XCTestCase {
         XCTAssertFalse(m.isActive)
     }
 
-    private func frames(paused: Bool) -> Int {
+    /// Frames drawn within `seconds`, or as soon as `enough` have been drawn.
+    private func frames(paused: Bool, enough: Int? = nil, within seconds: TimeInterval = 1.0) -> Int {
         let box = StatsBox()
         let view = SinuaView(pattern: "composing", paused: paused, onFrame: { box.stats.append($0) }).frame(
             width: 100, height: 100)
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 200))
         window.rootViewController = UIHostingController(rootView: view)
         window.makeKeyAndVisible()
-        RunLoop.main.run(until: Date().addingTimeInterval(1.0))
+        let deadline = Date().addingTimeInterval(seconds)
+        while Date() < deadline {
+            RunLoop.main.run(until: min(deadline, Date().addingTimeInterval(0.05)))
+            if let enough, box.stats.count >= enough { break }
+        }
         window.isHidden = true
         window.rootViewController = nil
         return box.stats.count
@@ -57,13 +62,15 @@ final class SceneLessHostTests: XCTestCase {
     func testAnimatesInASceneLessHost() {
         XCTAssertFalse(AppActivityMonitor.shared.usesScenes, "precondition: the test host has no scene manifest")
         XCTAssertTrue(AppActivityMonitor.shared.isActive, "precondition: the host app is active")
-        let running = frames(paused: false)
-        // The bug this guards drew exactly 1 frame; paused draws <= 2. A loaded CI
-        // runner managed 7 frames in this second (2026-09-21) against ~60 locally,
-        // so the bar is "clearly more than stuck", not a frame rate.
+        // The bug this guards drew exactly 1 frame, however long you wait; paused draws
+        // <= 2. A loaded CI runner managed 7, then 3, then 1 frame(s) in a fixed 1 s
+        // window (2026-09-21, 09-24 twice) against ~60 locally, so a fixed second can't
+        // tell "slow" from "stuck". Wait up to 5 s for 5 frames instead: a stuck loop
+        // still ends at 1, a slow runner gets there.
+        let running = frames(paused: false, enough: 5, within: 5.0)
         XCTAssertGreaterThanOrEqual(running, 5, "animates (was 1 frame before the fallback)")
         let stopped = frames(paused: true)
-        print("SCENELESS frames in 1 s: running \(running), paused \(stopped)")
+        print("SCENELESS frames: running \(running) (stops at 5, max 5 s), paused \(stopped) in 1 s")
         XCTAssertLessThanOrEqual(stopped, 2, "paused still stops the loop")
     }
 }

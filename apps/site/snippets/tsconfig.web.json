@@ -36,6 +36,7 @@
     "bindings/react.tsx",
     "bindings/rules-react.tsx",
     "voice/overview-web.ts",
+    "voice/calm-web.ts",
     "voice/openai-realtime-web.ts",
     "voice/gemini-live-web.ts",
     "voice/elevenlabs-web.ts",

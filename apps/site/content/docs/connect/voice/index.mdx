@@ -52,6 +52,36 @@ A voice source never needs your vendor API key. Keep the key on **your server**,
 
 The endpoint is yours, so you decide who gets a session and with which model, voice and instructions. `@sinua/voice/server` mints all four, the repository has ready-made endpoints for Next.js, Express, Cloudflare Workers and Supabase, and `npx @sinua/voice dev-proxy` serves them on your machine while you try things. See [Credentials](/docs/connect/voice/credentials).
 
+## How the states look, and changing it
+
+Every pattern follows the four states with the same built-in profile, on top of its own design:
+
+| State | Speed | What it adds |
+|---|---|---|
+| idle | 0.6× | a slow, soft pulse |
+| listening | 0.9× | particles that follow the user's voice, a light glow |
+| thinking | 1.05× | a few particles, a quicker pulse |
+| speaking | 1.15× | particles that follow the agent's voice, a glow |
+
+Your `overrides` go on top of the profile, in every state and on every platform. To keep a view calm, turn the particles off and soften the rest:
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="calm-web.ts"'>../../../../snippets/voice/calm-web.ts</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="calm.swift"'>../../../../snippets/voice/calm.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="calm.kt"'>../../../../snippets/voice/calm.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="calm-react-native.tsx"'>../../../../snippets/voice/calm-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+The keys are the materials' master strengths: `particleStrength`, `glowStrength`, `pulseStrength` (0 turns one off). With a `spec` instead of a `pattern`, the file decides: put the same values in its [states](/docs/connect/states-vs-patterns).
+
 ## Driving the visual yourself
 
 If your app already listens to the agent, skip the source: pass a `VoiceOverrides` you feed yourself as `voice`. Call `push({ level, bands })` for the audio, `setState(...)` for the agent's state and `interrupt()` for a barge-in. The view's easing and cues still apply.

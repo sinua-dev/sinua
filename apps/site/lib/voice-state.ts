@@ -52,9 +52,11 @@ function bands(level: number, seed: number): Overrides {
 
 /**
  * The overrides for one pattern in one state. `level` (0..1) stands in for the
- * mic or the agent's voice; `phase` only shifts the simulated bands.
+ * mic or the agent's voice; `phase` only shifts the simulated bands. `spectrum`, when
+ * given (the engine's simulated conversation has one), is used as the bands instead:
+ * a spectrum that changes shape over time reads as a voice, a scaled fixed one doesn't.
  */
-export function voiceStateVisual(pattern: string, state: VoiceState, level = 0, phase = 0): VoiceStateVisual {
+export function voiceStateVisual(pattern: string, state: VoiceState, level = 0, phase = 0, spectrum?: readonly number[]): VoiceStateVisual {
   // A pattern the engine has no profile for keeps its own defaults.
   const engine = voiceStateProfile(pattern, state) ?? { speed: 1, overrides: {}, audioInput: null };
   const overrides: Overrides = { ...engine.overrides, voiceStateCode: doc.voiceStateCode[state] ?? 0 };
@@ -62,7 +64,10 @@ export function voiceStateVisual(pattern: string, state: VoiceState, level = 0, 
   const audio = engine.audioInput === "micLevel" ? "mic" : engine.audioInput ? "agent" : null;
   if (audio) {
     overrides.audioLevel = level;
-    Object.assign(overrides, bands(level, phase));
+    if (spectrum?.length) {
+      overrides.audioBandCount = spectrum.length;
+      spectrum.forEach((b, i) => (overrides[`audioBand${i}`] = Math.max(0, Math.min(1, b))));
+    } else Object.assign(overrides, bands(level, phase));
   }
   return { overrides, speed: engine.speed, audio };
 }

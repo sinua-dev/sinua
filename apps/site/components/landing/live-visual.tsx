@@ -22,6 +22,7 @@ export function LiveVisual({
   size = 64,
   state,
   level = 0.5,
+  bands,
   overrides,
   maxFps,
   pointer,
@@ -33,6 +34,8 @@ export function LiveVisual({
   /** With a state, families' profile is applied; without one, the pattern's own defaults. */
   state?: VoiceState;
   level?: number;
+  /** A moving spectrum for the audio-driven states (the simulated conversation's); else one is made from `level`. */
+  bands?: readonly number[];
   /** Engine keys on top of the pattern's defaults, e.g. a ring's progress. */
   overrides?: Record<string, number>;
   maxFps?: number;
@@ -44,7 +47,7 @@ export function LiveVisual({
   const canvas = useRef<HTMLCanvasElement>(null);
   const handle = useRef<FxHandle | null>(null);
   const theme = useSiteTheme();
-  const visual = useMemo(() => (state ? voiceStateVisual(pattern, state, level) : null), [pattern, state, level]);
+  const visual = useMemo(() => (state ? voiceStateVisual(pattern, state, level, 0, bands) : null), [pattern, state, level, bands]);
   const opts = useMemo(
     () => ({
       pattern,

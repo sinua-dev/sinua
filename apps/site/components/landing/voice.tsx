@@ -25,6 +25,13 @@ const MODULES: { id: Platform; platform: string; names: string[] }[] = [
   { id: "android", platform: "Android", names: ["sinua-core", "sinua-livekit", "sinua-openai", "sinua-gemini", "sinua-elevenlabs"] },
 ];
 
+/**
+ * The voice-state profile adds particles to every pattern while listening, thinking and
+ * speaking. Three views side by side made that a swarm that pulled the eye off the shapes,
+ * so this section turns them off: the shapes carry the states on their own.
+ */
+const CALM = { particleStrength: 0 };
+
 const FOLLOWERS = [
   { pattern: "speaking", label: "Orb", hue: 265 },
   { pattern: "waveform", label: "Signal", hue: 172 },
@@ -86,8 +93,9 @@ export function Voice() {
                   pattern={f.pattern}
                   state={convo.state}
                   level={convo.level}
+                  bands={convo.bands}
                   maxFps={30}
-                  overrides={{ ...TINT, colorHue: f.hue }}
+                  overrides={{ ...TINT, colorHue: f.hue, ...CALM }}
                   className="lp-follower-visual"
                   label={`${f.label} ${f.pattern}, ${convo.state}`}
                 />

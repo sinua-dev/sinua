@@ -53,16 +53,20 @@ export interface ConversationFrame {
   progress: number;
   /** How many characters of the current line are on screen (it is "typed" as it is said). */
   shown: number;
+  /** The engine's 16 frequency bands, eased like the level: a spectrum that moves like speech. */
+  bands: number[];
 }
 
-const FIRST: ConversationFrame = { turn: 0, state: "idle", level: 0, progress: 0, shown: 0 };
+const QUIET: number[] = new Array<number>(16).fill(0);
+const FIRST: ConversationFrame = { turn: 0, state: "idle", level: 0, progress: 0, shown: 0, bands: QUIET };
 
 // ---- the one clock ----------------------------------------------------------
 
 interface Subscriber {
   hold: VoiceState | null;
-  /** The eased level this subscriber shows. */
+  /** The eased level and bands this subscriber shows. */
   level: number;
+  bands: number[];
   visible: boolean;
   set: (f: ConversationFrame) => void;
 }
@@ -97,7 +101,7 @@ function frameFor(hold: VoiceState | null, now: number): ConversationFrame {
     const t = STARTS[turn] + ((now / 1000) % SCRIPT[turn].seconds);
     const f = engineAt(t);
     const level = f ? f.level : 0;
-    return { turn, state: hold, level: reduced ? 0.5 * Number(level > 0) : level, progress: 1, shown: SCRIPT[turn]?.line?.length ?? 0 };
+    return { turn, state: hold, level: reduced ? 0.5 * Number(level > 0) : level, progress: 1, shown: SCRIPT[turn]?.line?.length ?? 0, bands: reduced || !f ? QUIET : f.bands };
   }
   const f = engineAt(scriptClock);
   if (!f) return FIRST;
@@ -108,6 +112,7 @@ function frameFor(hold: VoiceState | null, now: number): ConversationFrame {
     level: reduced ? 0.5 * Number(f.level > 0) : f.level,
     progress: f.progress,
     shown: reduced ? line.length : Math.min(line.length, f.shown),
+    bands: reduced ? QUIET : f.bands,
   };
 }
 
@@ -116,8 +121,8 @@ function frameFor(hold: VoiceState | null, now: number): ConversationFrame {
  * (measured on the calendar sample): the frame-to-frame change drops from 0.068 to
  * 0.016 while the level still peaks near 0.45, so the hero stays calm with its sound on.
  */
-function smooth(prev: number, next: number, dt: number) {
-  return prev + (next - prev) * Math.min(1, dt * 4);
+function smooth(prev: number, next: number, dt: number, rate = 4) {
+  return prev + (next - prev) * Math.min(1, dt * rate);
 }
 
 function tick(now: number) {
@@ -134,7 +139,9 @@ function tick(now: number) {
     for (const s of active) {
       const f = frameFor(s.hold, now);
       s.level = smooth(s.level, f.level, 0.033);
-      s.set({ ...f, level: f.level === 0 ? 0 : s.level });
+      // The bands ease faster than the level: they carry the voice's texture, which rate 4 flattened.
+      s.bands = f.bands.map((b, i) => smooth(s.bands[i] ?? 0, b, 0.033, 12));
+      s.set({ ...f, level: f.level === 0 ? 0 : s.level, bands: f.level === 0 ? QUIET : s.bands });
     }
   }
   raf = requestAnimationFrame(tick);
@@ -163,7 +170,7 @@ export function useConversation(where: RefObject<Element | null>, hold: VoiceSta
   }, [hold]);
 
   useEffect(() => {
-    const me: Subscriber = { hold, level: 0, visible: false, set: setFrame };
+    const me: Subscriber = { hold, level: 0, bands: QUIET, visible: false, set: setFrame };
     sub.current = me;
     subscribers.add(me);
     const el = where.current;

@@ -1,6 +1,6 @@
 /**
- * What costs money: nothing in the runtime. The Studio is a separate product
- * and not open yet, so this links only to its tour, never to the tool.
+ * What costs money: nothing in the runtime. The Studio is a separate, paid
+ * product; this links to its page with prices, which links to the tool.
  */
 import Link from "next/link";
 import { brand } from "@/lib/brand";

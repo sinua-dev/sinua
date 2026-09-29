@@ -18,7 +18,7 @@ export const brand = {
    * page and prices but never links to the tool itself (a decision from before
    * payments existed). Flip it on launch day (docs/studio-launch.md, *Launch runbook*).
    */
-  studioOpen: false,
+  studioOpen: true,
   /** The prices must match the live Polar products (sinua-studio apps/api wrangler.jsonc, production). */
   studio: {
     url: "https://studio.sinua.dev",

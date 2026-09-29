@@ -24,7 +24,8 @@ export type IconName =
   | "cloud"
   | "fade"
   | "loop"
-  | "gauge";
+  | "gauge"
+  | "sparkle";
 
 // Hand-drawn 24-unit strokes (Figma's UI3 drew its own set rather than
 // pulling a library, for the same reason: a dozen consistent glyphs beat
@@ -98,6 +99,8 @@ const GLYPHS: Record<IconName, ReactNode> = {
   // Added by the families session for the Interrupt (barge-in flash) button.
   cloud: <path d="M7 18.5a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4 4 0 0 1 .5 8H7z" />,
   bolt: <path d="M13 3L5 13.5h6L10 21l8-10.5h-6z" strokeLinejoin="round" />,
+  // A four-point sparkle -- the Studio's celebrate effect (the native Studios' sparkles / AutoAwesome).
+  sparkle: <path d="M12 3.5l2 6.5 6.5 2-6.5 2-2 6.5-2-6.5-6.5-2 6.5-2z" strokeLinejoin="round" />,
   // An arrow into a tray -- the export drawer's Download (the .fxspec.json).
   download: <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14" strokeLinejoin="round" />,
   // A ringing bell -- Beacon's Trigger (the native Studios' bell / NotificationsActive).

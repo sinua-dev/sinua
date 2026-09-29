@@ -123,3 +123,24 @@ test("a box-layout pattern's snippet gets its own box; square ones stay 160", as
   assert.match(compose, /Modifier\.size\(220\.dp, 44\.dp\)/);
   assert.match(tabs.find((t) => t.id === "react").code, /style=\{\{ width: 220, height: 44 \}\}/);
 });
+
+test("a played effect adds how the app plays it; without one the text is unchanged", async () => {
+  const { effectLines } = await import("../dist/index.js");
+  const input = { state: "breathing", size: 64, overrides: {}, specFile: "orb-breathing.fxspec.json" };
+  assert.deepEqual(buildSnippets({ ...input, effect: undefined }), plain);
+  const withFx = buildSnippets({ ...input, effect: "celebrate" });
+  for (const mode of ["code", "file"]) {
+    withFx[mode].forEach((t, i) => {
+      const lines = effectLines(t.id, "celebrate");
+      assert.ok(lines.length > 0, t.id);
+      assert.ok(t.code.includes(lines), `${mode}/${t.id}`);
+      assert.equal(t.code.replace(`\n\n${lines}`, ""), plain[mode][i].code, `${mode}/${t.id}: only the lines are added`);
+    });
+  }
+  const byId = Object.fromEntries(withFx.code.map((t) => [t.id, t.code]));
+  assert.match(byId.web, /fx\.trigger\("celebrate"\)/);
+  assert.match(byId.swiftui, /SinuaEffectTrigger\(\.celebrate\)/);
+  assert.match(byId.compose, /SinuaEffectTrigger\(SinuaEffect\.CELEBRATE\)/);
+  assert.match(byId.rn, /effect=\{\{ name: "celebrate", key \}\}/);
+  assert.match(byId.react, /trigger\("celebrate"\)/);
+});

@@ -29,6 +29,46 @@ export interface SnippetInput {
   speed?: number;
   /** The Spec menu's file name, e.g. `orb-working.fxspec.json`. */
   specFile: string;
+  /**
+   * A one-shot effect the user played in the Studio: each tab then ends with how the
+   * app plays it (docs/fx-view.md, *One-shot effects*). Without it the text is unchanged.
+   */
+  effect?: SnippetEffect;
+}
+
+/** The one-shot effects (docs/fx-view.md, *One-shot effects*). */
+export type SnippetEffect = "success" | "error" | "celebrate";
+
+/**
+ * How the app plays `effect` on platform `id`, as comment lines. It's an app event
+ * (a goal reached, a failed save), so the snippet says where it goes rather than firing
+ * it on load. The native Studios port these lines exactly.
+ */
+export function effectLines(id: string, effect: SnippetEffect): string {
+  const kotlin = effect.toUpperCase();
+  switch (id) {
+    case "react":
+      return (
+        `// One-shot effect, when your app's moment happens:\n` +
+        `// <SinuaView … onReady={(fx) => (fxRef.current = fx)} />, then fxRef.current?.trigger("${effect}");`
+      );
+    case "web":
+      return `// One-shot effect, when your app's moment happens:\n// fx.trigger("${effect}");`;
+    case "swiftui":
+      return (
+        `// One-shot effect: keep @State var effect: SinuaEffectTrigger?, pass effect: effect,\n` +
+        `// then set effect = SinuaEffectTrigger(.${effect}) when your app's moment happens.`
+      );
+    case "compose":
+      return (
+        `// One-shot effect: keep var effect by remember { mutableStateOf<SinuaEffectTrigger?>(null) },\n` +
+        `// pass effect = effect, then set effect = SinuaEffectTrigger(SinuaEffect.${kotlin}).`
+      );
+    case "rn":
+      return `// One-shot effect: pass effect={{ name: "${effect}", key }} and change key to play it again.`;
+    default:
+      return "";
+  }
 }
 
 /**
@@ -73,7 +113,7 @@ export function snippetBox(pattern: string): [number, number] {
  * (the canonical format) and loads it. The native Studios port this text
  * exactly (the native Studios' Snippets.swift and Snippets.kt).
  */
-export function buildSnippets({ state, size, overrides, speed = 1, specFile }: SnippetInput): Snippets {
+export function buildSnippets({ state, size, overrides, speed = 1, specFile, effect }: SnippetInput): Snippets {
   const base = specFile.replace(/\.fxspec\.json$/, "");
   const has = Object.keys(overrides).length > 0;
   const file = `// ${specFile}: the file from the Studio's Spec menu.`;
@@ -229,6 +269,10 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile }: S
     },
   ];
 
+  if (effect) {
+    for (const t of code) t.code = t.code.replace(`\n\n${orFile}`, `\n\n${effectLines(t.id, effect)}\n\n${orFile}`);
+    for (const t of fileTabs) t.code += `\n\n${effectLines(t.id, effect)}`;
+  }
   return { code, file: fileTabs };
 }
 

@@ -52,6 +52,7 @@
     "voice/avatar-react.tsx",
     "values/voice-message-react.tsx",
     "states/effects-web.ts",
+    "states/goal-react.tsx",
     "perf/accessibility-announce-web.ts",
     "perf/low-power-web.ts",
     "perf/max-fps-web.ts",

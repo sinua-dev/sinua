@@ -9,7 +9,7 @@ let topics: [(folder: String, target: String, exclude: [String])] = [
     ("first-visual", "FirstVisual", ["react.tsx", "react-native.tsx", "compose.kt"]),
     ("platforms", "Platforms", ["compose.kt", "android-view.kt", "android-res", "react-native.tsx"]),
     ("values", "Values", ["react.tsx", "compose.kt", "voice-message-react.tsx", "voice-message.kt"]),
-    ("states", "States", ["react.tsx", "compose.kt", "plain-react.tsx", "plain-compose.kt", "plain-react-native.tsx",
+    ("states", "States", ["goal-react.tsx", "react.tsx", "compose.kt", "plain-react.tsx", "plain-compose.kt", "plain-react-native.tsx",
                           "effects-web.ts", "effects.kt", "effects-react-native.tsx"]),
     ("bindings", "Bindings", ["react.tsx", "compose.kt", "rules-react.tsx", "rules.kt"]),
     ("voice", "Voice", ["overview-web.ts", "openai-realtime-web.ts", "gemini-live-web.ts", "elevenlabs-web.ts", "livekit-web.ts", "mic-and-tone-web.ts",

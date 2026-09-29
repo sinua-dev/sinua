@@ -9,6 +9,7 @@ import { Voice } from "@/components/landing/voice";
 import { Look } from "@/components/landing/look";
 import { Pricing } from "@/components/landing/sections";
 import { RealApp, type Recording } from "@/components/landing/real-app";
+import { Goal } from "@/components/landing/goal";
 import "./landing.css";
 
 /**
@@ -45,6 +46,12 @@ function realApp() {
   };
 }
 
+/** The goal demo's file and code: the snippets CI compiles, as they are. */
+function goal() {
+  const snippet = (path: string) => readFileSync(join(process.cwd(), "snippets", path), "utf8").trimEnd();
+  return { spec: snippet("spec/activity-rules.fxspec.json"), react: snippet("states/goal-react.tsx") };
+}
+
 export default function LandingPage() {
   const { patterns, frames } = counts();
   const devinfit = realApp();
@@ -57,6 +64,7 @@ export default function LandingPage() {
         <Voice />
         <Platforms frames={frames} />
         <RealApp {...devinfit} />
+        <Goal {...goal()} />
         <Look />
         <Pricing />
       </main>

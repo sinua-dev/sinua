@@ -5,7 +5,8 @@
  * data -- the colour follows the day's nutrition, and it thinks while the AI answers.
  *
  * The phones show screen recordings of the app itself, never a live Sinua visual
- * dressed up as one. Until a recording is in public/real-app/, its frame says so.
+ * dressed up as one. A phone appears only once its recording is in public/real-app/;
+ * with none, the section is the text and the code alone.
  * The file and the code beside them are the snippet files CI compiles.
  */
 import { useEffect, useState } from "react";
@@ -23,6 +24,7 @@ export interface Recording {
 const STATES = ["An empty day in the logo's colours", "The day's nutrition sets the colour", "Thinking while the AI answers"];
 
 export function RealApp({ recordings, spec, swift, kotlin }: { recordings: Recording[]; spec: string; swift: string; kotlin: string }) {
+  const recorded = recordings.filter((r) => r.video);
   return (
     <section className="lp-section" aria-labelledby="lp-real-app">
       <header className="lp-section-head">
@@ -35,24 +37,22 @@ export function RealApp({ recordings, spec, swift, kotlin }: { recordings: Recor
         </p>
       </header>
 
-      <div className="lp-real">
-        <div className="lp-real-phones">
-          {recordings.map((r) => (
-            <figure key={r.platform} className="lp-device lp-real-phone" data-device={r.platform === "ios" ? "phone-ios" : "phone-android"}>
-              <span className="lp-device-screen lp-real-screen">
-                {r.video ? (
-                  <Recording video={r.video} label={`DevinFit on ${r.label}, screen recording`} />
-                ) : (
-                  <span className="lp-real-pending">Screen recording coming</span>
-                )}
-              </span>
-              <figcaption className="lp-device-label">
-                <PlatformIcon platform={r.platform} />
-                {r.label}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
+      <div className={recorded.length ? "lp-real" : "lp-real lp-real-solo"}>
+        {recorded.length ? (
+          <div className="lp-real-phones">
+            {recorded.map((r) => (
+              <figure key={r.platform} className="lp-device lp-real-phone" data-device={r.platform === "ios" ? "phone-ios" : "phone-android"}>
+                <span className="lp-device-screen lp-real-screen">
+                  <Recording video={r.video!} label={`DevinFit on ${r.label}, screen recording`} />
+                </span>
+                <figcaption className="lp-device-label">
+                  <PlatformIcon platform={r.platform} />
+                  {r.label}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        ) : null}
 
         <div className="lp-real-side">
           <ul className="lp-real-states" aria-label="What Soul shows">

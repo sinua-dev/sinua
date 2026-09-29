@@ -92,7 +92,7 @@ export function Families() {
           {total} patterns in {objects.length} families
         </h2>
         <p className="lp-lead">
-          Orbs for an agent's inner life, signals for sound, rings for progress, beacons for attention and cores for text that is on its way. Point at one to
+          Orbs for an agent's inner life, signals for sound, rings for progress, beacons for attention, cores for text that is on its way and an edge that lights the whole screen. Point at one to
           set it moving; every frame below is drawn by the engine.
         </p>
       </header>

@@ -51,6 +51,11 @@ export function Hero({ patternCount }: { patternCount: number }) {
           <Link className="lp-link" href={brand.links.gallery}>
             See all {patternCount} patterns
           </Link>
+          {brand.studioOpen ? (
+            <Link className="lp-link" href={brand.links.studioPage}>
+              Try the Studio
+            </Link>
+          ) : null}
         </div>
       </div>
 

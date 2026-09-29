@@ -50,7 +50,7 @@ export const brand = {
     docs: "/docs/getting-started/",
     gallery: "/gallery/",
     repo: "https://github.com/sinua-dev/sinua",
-    /** The Studio's tour and its page with prices; neither links to the tool until `studioOpen`. */
+    /** The Studio's tour and its page with prices (the page links to the tool once `studioOpen`). */
     studioTour: "/docs/studio/",
     studioPage: "/studio/",
     /** DevinFit, our own app that ships Sinua (iOS; Android is in closed testing, so no Play link). */

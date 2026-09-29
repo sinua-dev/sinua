@@ -519,9 +519,11 @@
   margin: 0;
 }
 
+/* One column per turn of the sample, however many it has (calendar: five). */
 .lp-timeline {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 8px;
   margin: 0 0 12px;
   padding: 0;
@@ -781,6 +783,10 @@
   padding: 24px;
 }
 
+.lp-plan-actions {
+  margin-top: 4px;
+}
+
 .lp-plan p {
   margin: 0;
   max-width: 44ch;
@@ -985,6 +991,12 @@
   gap: 32px;
 }
 
+/* No recording yet: the text and the code, at reading width. */
+.lp-real-solo {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 720px;
+}
+
 .lp-real-phones {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -999,8 +1011,7 @@
   max-width: 240px;
 }
 
-.lp-real-video,
-.lp-real-pending {
+.lp-real-video {
   display: grid;
   place-items: center;
   width: 100%;
@@ -1008,14 +1019,6 @@
   border-radius: 14px;
   background: var(--bg-stage);
   object-fit: cover;
-}
-
-.lp-real-pending {
-  padding: 16px;
-  font-size: var(--fs-1);
-  text-align: center;
-  color: var(--text-2);
-  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
 .lp-real-side {
@@ -1048,6 +1051,23 @@
   .lp-real {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ---- your numbers pick the state (goal demo) ------------------------------ */
+
+.lp-goal-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0;
+  font-size: var(--fs-1);
+  color: var(--text-2);
+}
+
+.lp-goal-state code {
+  font-size: var(--fs-2);
+  color: var(--text);
 }
 
 /* ---- legal pages (app/legal) -------------------------------------------- */

@@ -29,9 +29,16 @@ export function Pricing() {
           <p>
             {brand.copy.studioPitch} From {brand.studio.yearlyPerMonth} a month, with a {brand.studio.trialDays}-day free trial.
           </p>
-          <Link className="lp-link" href={brand.links.studioPage}>
-            See the Studio and prices
-          </Link>
+          <div className="lp-actions lp-plan-actions">
+            {brand.studioOpen ? (
+              <a className="lp-button" href={`${brand.studio.url}/login`}>
+                Start {brand.studio.trialDays}-day trial
+              </a>
+            ) : null}
+            <Link className="lp-link" href={brand.links.studioPage}>
+              See the Studio and prices
+            </Link>
+          </div>
         </div>
       </div>
     </section>

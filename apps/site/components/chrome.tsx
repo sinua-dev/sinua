@@ -18,6 +18,7 @@ export function SiteHeader() {
       <nav className="lp-nav" aria-label="Site">
         <Link href={brand.links.docs}>Docs</Link>
         <Link href={brand.links.gallery}>Gallery</Link>
+        <Link href={brand.links.studioPage}>Studio</Link>
         <a href={brand.links.repo}>GitHub</a>
         <ThemeSwitch className="lp-theme" />
       </nav>
@@ -36,6 +37,7 @@ export function SiteFooter() {
         <nav className="lp-nav" aria-label="Footer">
           <Link href={brand.links.docs}>Docs</Link>
           <Link href={brand.links.gallery}>Gallery</Link>
+          <Link href={brand.links.studioPage}>Studio</Link>
           <Link href="/docs/resources/changelog/">Changelog</Link>
           <Link href="/docs/resources/license/">License</Link>
           <Link href="/legal/terms/">Terms</Link>

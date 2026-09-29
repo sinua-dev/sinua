@@ -26,6 +26,11 @@
     "voice/openai-realtime-react-native.tsx",
     "voice/elevenlabs-react-native.tsx",
     "voice/livekit-react-native.tsx",
-    "voice/mic-and-tone-react-native.tsx"
+    "voice/mic-and-tone-react-native.tsx",
+    "voice/credentials-provider-react-native.tsx",
+    "voice/simulated-react-native.tsx",
+    "voice/voice-button-react-native.tsx",
+    "voice/edge-react-native.tsx",
+    "states/effects-react-native.tsx"
   ]
 }

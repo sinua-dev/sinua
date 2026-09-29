@@ -9,6 +9,16 @@ A visual is a small Rust engine computing one frame, plus the platform drawing i
 
 `maxFps` limits how often a view draws, on an exact grid (30 on a 60 Hz or 120 Hz display is exactly 30). The animation still runs on real time, so a cap lowers smoothness, never speed. Ambient visuals look fine at 30. An FX Spec can carry its own cap in `performance.maxFps`, and the lower cap wins.
 
+## Many small views
+
+A chat list with an orb per row, or a grid of thumbnails, is many views at once. Views handle it:
+
+- on the web, every view on a page shares one animation-frame loop;
+- a view whose short side is under 48 px (pt, dp) draws at 30 fps by default; your `maxFps`, or the spec's `performance.maxFps`, wins;
+- on Android, a view scrolled out of a clipping parent (a `LazyColumn` row, say) stops drawing.
+
+Measured on the web, 50 orbs at 32 px went from 869 to 459 ms of work per second, with no dropped frames. For more than about 100 views, pass `paused` and show one still frame each; animate only the one that matters.
+
 ## Low-power mode
 
 When the device is in Low Power Mode (iOS) or Battery Saver (Android), views switch to low power automatically. On the web there is no reliable signal, so pass `lowPower: true` yourself when your app knows. In low power:

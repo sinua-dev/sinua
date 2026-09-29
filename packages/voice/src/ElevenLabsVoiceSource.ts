@@ -1,3 +1,4 @@
+import { resolveCredential, type CredentialOptions } from "./credential.js";
 import { PcmAudioGraph } from "./PcmAudioGraph.js";
 import { base64ToBytes, bytesToBase64, float32ToPcm16, parseAudioFormat, pcm16ToFloat32, ulawToFloat32 } from "./pcm.js";
 import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
@@ -65,11 +66,12 @@ import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
  * - `wss://…` -> a **signed URL** for a private agent, minted by *your
  *   backend* (`GET /v1/convai/conversation/get-signed-url?agent_id=…` with
  *   the `xi-api-key` header -> `{ signed_url }`, valid 15 minutes; an open
- *   socket outlives it). The production shape for private agents.
+ *   socket outlives it). The production shape for private agents:
+ *   `@sinua/voice/server`'s `signElevenLabsUrl`, or `npx @sinua/voice dev-proxy`
+ *   locally. Pass `credentialUrl` or a `credential` provider so every
+ *   `connect()` signs a new URL.
  */
-export interface ElevenLabsVoiceSourceOptions {
-  /** A public agent's `agent_id`, or a signed `wss://` URL for a private agent. */
-  credential: string;
+export interface ElevenLabsVoiceSourceOptions extends CredentialOptions {
   /** Optional `conversation_config_override` payload (agent prompt/voice overrides, if the agent allows them). */
   overrides?: Record<string, unknown>;
 }
@@ -97,7 +99,9 @@ interface ServerEvent {
 }
 
 export class ElevenLabsVoiceSource implements VoiceSource {
-  private readonly credential: string;
+  private readonly credentials: CredentialOptions;
+  /** The agent id or signed URL for the current socket. */
+  private credential = "";
   private readonly overrides: Record<string, unknown> | undefined;
 
   private readonly graph = new PcmAudioGraph();
@@ -123,10 +127,14 @@ export class ElevenLabsVoiceSource implements VoiceSource {
   private metricsCb: ((m: VoiceMetrics) => void) | null = null;
   private stateCb: ((s: AgentState) => void) | null = null;
   private interruptCb: (() => void) | null = null;
+  private connectionCb: ((connected: boolean) => void) | null = null;
+  private sessionUp = false;
+  private muted = false;
+  private micStream: MediaStream | null = null;
   private state: AgentState = "idle";
 
   constructor(opts: ElevenLabsVoiceSourceOptions) {
-    this.credential = opts.credential.trim();
+    this.credentials = { credential: opts.credential, credentialUrl: opts.credentialUrl };
     this.overrides = opts.overrides;
   }
 
@@ -142,14 +150,40 @@ export class ElevenLabsVoiceSource implements VoiceSource {
     this.interruptCb = cb;
   }
 
+  onConnectionChange(cb: (connected: boolean) => void): void {
+    this.connectionCb = cb;
+  }
+
+  /**
+   * Muted, silence goes out: the capture sends zeroed PCM (the server's turn
+   * detection keeps its timing) and the mic track is disabled. The session stays up.
+   */
+  setMuted(muted: boolean): void {
+    this.muted = muted;
+    for (const t of this.micStream?.getAudioTracks() ?? []) t.enabled = !muted;
+  }
+
+  private setSessionUp(up: boolean): void {
+    if (up === this.sessionUp) return;
+    this.sessionUp = up;
+    this.connectionCb?.(up);
+  }
+
   async connect(): Promise<void> {
-    if (!this.credential) throw new Error("ElevenLabsVoiceSource: an agent id or signed URL is required");
+    if (!this.credentials.credential && !this.credentials.credentialUrl) {
+      throw new Error("ElevenLabsVoiceSource: an agent id, a signed URL, or credentialUrl is required");
+    }
+    // Before the mic: a failed signing must not open a device. A signed URL
+    // is valid for 15 minutes, so every connect gets a fresh one.
+    this.credential = (await resolveCredential("ElevenLabsVoiceSource", this.credentials)).credential;
     this.wantConnected = true;
     this.setState("initializing");
     try {
       // Permission prompt first, then the socket: the agent may greet the
       // user immediately, and its formats are only known after metadata.
       const mic = await PcmAudioGraph.requestMic();
+      this.micStream = mic;
+      this.setMuted(this.muted);
       const meta = await this.openSocket();
       const input = parseAudioFormat(meta.user_input_audio_format);
       const output = parseAudioFormat(meta.agent_output_audio_format);
@@ -173,6 +207,7 @@ export class ElevenLabsVoiceSource implements VoiceSource {
       this.connected = true;
       if (this.state === "initializing") this.setState("listening");
       this.intervalId = setInterval(() => this.tick(), UPDATE_MS);
+      this.setSessionUp(true);
     } catch (err) {
       this.teardown();
       this.setState("idle");
@@ -183,7 +218,9 @@ export class ElevenLabsVoiceSource implements VoiceSource {
   disconnect(): void {
     this.wantConnected = false;
     this.teardown();
+    this.micStream = null;
     this.setState("idle");
+    this.setSessionUp(false);
   }
 
   private buildUrl(): string {
@@ -242,6 +279,7 @@ export class ElevenLabsVoiceSource implements VoiceSource {
 
   private onCaptureChunk(samples: Float32Array): void {
     if (!this.streaming || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    if (this.muted) samples = new Float32Array(samples.length);
     this.ws.send(JSON.stringify({ user_audio_chunk: bytesToBase64(float32ToPcm16(samples)) }));
   }
 

@@ -84,11 +84,8 @@ final class GeminiLiveVoiceSourceTests: XCTestCase {
         let device = FakeDevice()
         var asked = 0
         let source = GeminiLiveVoiceSource(
-            credential: "AIzaKEY",
-            allowInsecureApiKey: true,  // a raw key is the dev path; the gate is tested below
-            endpoint: .init(
-                url: URL(string: "ws://127.0.0.1:\(server.port)/")!,
-                headers: GeminiLiveSession.endpoint(credential: "AIzaKEY").headers),
+            credential: "auth_tokens/expired",
+            endpoint: .init(url: URL(string: "ws://127.0.0.1:\(server.port)/")!, headers: [:]),
             device: device,
             requestPermission: {
                 asked += 1
@@ -102,7 +99,7 @@ final class GeminiLiveVoiceSourceTests: XCTestCase {
         } catch let e as GeminiLiveError {
             if case .closedDuringSetup = e {} else { XCTFail("\(e)") }
         }
-        XCTAssertEqual(server.requestHeaders.first?["x-goog-api-key"], "AIzaKEY")
+        XCTAssertEqual(server.requestHeaders.first?["authorization"], "Token auth_tokens/expired")
         XCTAssertEqual(states.last, .idle)
         XCTAssertEqual(asked, 0, "a bad credential fails before any permission prompt")
         XCTAssertFalse(device.started, "...and the mic/audio never started")
@@ -118,7 +115,7 @@ final class GeminiLiveVoiceSourceTests: XCTestCase {
         }
         let device = FakeDevice()
         let source = GeminiLiveVoiceSource(
-            credential: "k", allowInsecureApiKey: true,
+            credential: "auth_tokens/k",
             endpoint: .init(url: URL(string: "ws://127.0.0.1:\(server.port)/")!, headers: [:]),
             device: device, requestPermission: { false })
         do {
@@ -149,12 +146,76 @@ final class GeminiLiveVoiceSourceTests: XCTestCase {
         do {
             try await source.connect()
             XCTFail("expected the raw key to be refused")
-        } catch let e as InsecureCredential.Refused {
-            XCTAssertTrue(e.message.contains("refusing a raw, long-lived API key"), e.message)
+        } catch let e as CredentialError {
+            XCTAssertTrue(e.isFatal)
+            XCTAssertTrue(e.localizedDescription.contains("refusing what looks like a raw, long-lived API key"))
         }
         XCTAssertEqual(asked, 0, "no permission prompt")
         XCTAssertTrue(server.received.isEmpty, "no socket traffic")
         XCTAssertTrue(states.isEmpty, "a refusal never enters initializing")
+        server.stop()
+    }
+
+    /// A token is single-use: every reconnect (a drop, or goAway) resumes the
+    /// session with a NEW token from the provider, the resumption handle intact.
+    func testEveryReconnectResumesWithAFreshTokenFromTheProvider() async throws {
+        let server = try FakeGeminiServer()
+        try await server.ready()
+        server.onMessage = { conn, text in
+            if text.contains("\"setup\"") { server.send(#"{"setupComplete":{}}"#, on: conn) }
+        }
+        final class Counter: @unchecked Sendable { var n = 0 }
+        let minted = Counter()
+        let source = GeminiLiveVoiceSource(
+            credential: .provider {
+                minted.n += 1
+                return SinuaCredential(credential: "auth_tokens/t\(minted.n)")
+            },
+            endpoint: .init(url: URL(string: "ws://127.0.0.1:\(server.port)/live")!, headers: [:]),
+            device: FakeDevice(), requestPermission: { true })
+        var states: [AgentState] = []
+        source.onStateChange { states.append($0) }
+        try await source.connect()
+        XCTAssertEqual(server.requestHeaders.first?["authorization"], "Token auth_tokens/t1")
+
+        let conn1 = try XCTUnwrap(server.connections.first)
+        server.send(#"{"sessionResumptionUpdate":{"newHandle":"h1","resumable":true}}"#, on: conn1)
+        server.send(#"{"goAway":{"timeLeft":"1s"}}"#, on: conn1)
+        try await until {
+            server.requestHeaders.count == 2 && server.received.filter { $0.contains("\"setup\"") }.count == 2
+        }
+        XCTAssertEqual(
+            server.requestHeaders[1]["authorization"], "Token auth_tokens/t2", "a fresh token, not the spent one")
+        XCTAssertTrue(try XCTUnwrap(server.received.last { $0.contains("\"setup\"") }).contains(#""handle":"h1""#))
+        try await until { states.last == .listening }
+        XCTAssertEqual(minted.n, 2)
+        source.disconnect()
+        server.stop()
+    }
+
+    /// A provider that starts returning a raw key stops the reconnect at once (fatal).
+    func testAProviderTurningToARawKeyStopsTheReconnect() async throws {
+        let server = try FakeGeminiServer()
+        try await server.ready()
+        server.onMessage = { conn, text in
+            if text.contains("\"setup\"") { server.send(#"{"setupComplete":{}}"#, on: conn) }
+        }
+        final class Counter: @unchecked Sendable { var n = 0 }
+        let minted = Counter()
+        let source = GeminiLiveVoiceSource(
+            credential: .provider {
+                minted.n += 1
+                return SinuaCredential(credential: minted.n == 1 ? "auth_tokens/ok" : "AIzaRAW")
+            },
+            endpoint: .init(url: URL(string: "ws://127.0.0.1:\(server.port)/live")!, headers: [:]),
+            device: FakeDevice(), requestPermission: { true })
+        var states: [AgentState] = []
+        source.onStateChange { states.append($0) }
+        try await source.connect()
+        server.send(#"{"goAway":{"timeLeft":"1s"}}"#, on: try XCTUnwrap(server.connections.first))
+        try await until { states.last == .idle }
+        XCTAssertEqual(minted.n, 2, "asked once more, then gave up without retrying")
+        XCTAssertEqual(server.requestHeaders.count, 1, "no socket for a refused credential")
         server.stop()
     }
 
@@ -164,6 +225,36 @@ final class GeminiLiveVoiceSourceTests: XCTestCase {
                 .connect()
             XCTFail("expected missingCredential")
         } catch let e as GeminiLiveError { XCTAssertEqual(e, .missingCredential) }
+    }
+
+    func testMutedSendsZeroedPcmAndReportsTheConnection() async throws {
+        let server = try FakeGeminiServer()
+        try await server.ready()
+        let token = GeminiLiveSession.endpoint(credential: "auth_tokens/t1")
+        let endpoint = GeminiLiveSession.Endpoint(
+            url: URL(string: "ws://127.0.0.1:\(server.port)/live")!, headers: token.headers)
+        let device = FakeDevice()
+        let source = GeminiLiveVoiceSource(
+            credential: "auth_tokens/t1", endpoint: endpoint, device: device, requestPermission: { true })
+        var conn: [Bool] = []
+        source.onConnectionChange { conn.append($0) }
+        XCTAssertTrue(source.supportsMute)
+        server.onMessage = { c, text in
+            if text.contains("\"setup\"") { server.send(#"{"setupComplete":{}}"#, on: c) }
+        }
+        try await source.connect()
+        XCTAssertEqual(conn, [true])
+        source.setMuted(true)
+        device.onCapture?([Float](repeating: 0.25, count: 512))
+        try await until { server.received.contains { $0.contains("realtimeInput") } }
+        let msg = try XCTUnwrap(server.received.last { $0.contains("realtimeInput") })
+        let obj = try JSONSerialization.jsonObject(with: Data(msg.utf8)) as! [String: Any]
+        let audio = (obj["realtimeInput"] as! [String: Any])["audio"] as! [String: Any]
+        let pcm = try XCTUnwrap(Data(base64Encoded: audio["data"] as! String))
+        XCTAssertEqual(pcm.count, 1024, "same length: 512 samples of PCM16")
+        XCTAssertTrue(pcm.allSatisfy { $0 == 0 }, "silence goes out")
+        source.disconnect()
+        XCTAssertEqual(conn, [true, false])
     }
 
     private func until(_ timeout: TimeInterval = 5, _ cond: () -> Bool) async throws {

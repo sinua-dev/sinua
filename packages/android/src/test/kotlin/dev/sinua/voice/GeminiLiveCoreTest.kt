@@ -170,10 +170,7 @@ class GeminiLiveCoreTest {
             token.url,
         )
         assertEquals(mapOf("Authorization" to "Token auth_tokens/abc"), token.headers)
-        val key = GeminiLiveSession.endpoint("AIzaKEY")
-        assertTrue(key.url.endsWith(".BidiGenerateContent"))
-        assertEquals(mapOf("x-goog-api-key" to "AIzaKEY"), key.headers)
-        assertFalse("no secret in the URL", key.url.contains("?"))
+        assertFalse("no secret in the URL", token.url.contains("?"))
     }
 
     @Test

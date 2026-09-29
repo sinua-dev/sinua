@@ -1,11 +1,17 @@
 package dev.sinua.reactnative
 
 import android.content.Context
+import dev.sinua.voice.CredentialException
+import dev.sinua.voice.CredentialSource
 import dev.sinua.voice.LocalMicVoiceSource
+import dev.sinua.voice.SimulatedVoiceSource
+import dev.sinua.voice.SinuaCredential
 import dev.sinua.voice.TestToneVoiceSource
+import dev.sinua.voice.SharedVoiceSource
 import dev.sinua.voice.VoiceSource
 import com.facebook.react.bridge.ReadableMap
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
 
 /**
  * The native voice sources a React Native app can create (src/voice.ts), kept by
@@ -30,28 +36,56 @@ object VoiceRegistry {
         fun create(context: Context, config: ReadableMap, credentials: CredentialProvider, errors: (String) -> Unit): VoiceSource
     }
 
-    /** OpenAI's `getCredential`: asked again for every (re)connect, since an `ek_` is single-use. */
+    /** The JS side's `credential` provider / `credentialUrl`: asked again for every (re)connect. */
     fun interface CredentialProvider {
-        suspend fun fetch(): String
+        suspend fun fetch(): SinuaCredential
+    }
+
+    /**
+     * The config's credential as the shared [CredentialSource]: a JS provider or
+     * `credentialUrl` (`hasCredentialProvider`) is a round trip per (re)connect;
+     * otherwise the fixed `credential` string.
+     */
+    fun credentialSource(config: ReadableMap, credentials: CredentialProvider, missing: String): CredentialSource {
+        if (config.hasKey("hasCredentialProvider") && config.getBoolean("hasCredentialProvider")) {
+            // Runs on CredentialSource's background thread; the answer comes back over the bridge.
+            return CredentialSource.provider { runBlocking { credentials.fetch() } }
+        }
+        val credential = config.getString("credential")?.takeIf { it.isNotBlank() } ?: throw VoiceError(missing)
+        return CredentialSource.fixed(credential)
     }
 
     class VoiceError(message: String) : Exception(message)
 
-    private val sources = mutableMapOf<String, VoiceSource>()
-    private val pending = mutableMapOf<String, CompletableDeferred<String>>()
+    /**
+     * Each source behind its fan-out: the JS events and every view bound by id listen side by
+     * side (a source holds one callback of each kind).
+     */
+    private val sources = mutableMapOf<String, SharedVoiceSource>()
+    private val pending = mutableMapOf<String, CompletableDeferred<SinuaCredential>>()
 
     /** Emitted state / error / interrupt / credentialRequest; the module forwards them to JS. */
     var onEvent: ((id: String, event: String, payload: Map<String, Any>) -> Unit)? = null
 
-    fun source(id: String): VoiceSource? = synchronized(sources) { sources[id] }
+    fun source(id: String): SharedVoiceSource? = synchronized(sources) { sources[id] }
 
     fun create(context: Context, config: ReadableMap) {
         val id = config.getString("id") ?: throw VoiceError("voice source needs an id")
         val vendor = config.getString("vendor") ?: throw VoiceError("voice source needs a vendor")
-        val source = make(context, vendor, id, config)
-        source.onStateChange { state -> onEvent?.invoke(id, "state", mapOf("state" to state.wire)) }
-        source.onInterrupt { onEvent?.invoke(id, "interrupt", emptyMap()) }
+        val source = SharedVoiceSource.of(make(context, vendor, id, config))
+        source.listenState { state -> onEvent?.invoke(id, "state", mapOf("state" to state.wire)) }
+        source.listenInterrupt { onEvent?.invoke(id, "interrupt", emptyMap()) }
+        source.listenConnection { up -> onEvent?.invoke(id, "connection", mapOf("connected" to up)) }
+        source.listenMute { muted -> onEvent?.invoke(id, "mute", mapOf("muted" to muted)) }
+        // The fan-out holds the source's one onError (the vendor factory's callback is replaced),
+        // so failures after connect() reach JS from here.
+        source.listenError { e -> onEvent?.invoke(id, "error", mapOf("message" to (e.message ?: e.toString()))) }
         synchronized(sources) { sources[id] = source }
+    }
+
+    /** Mutes the microphone (silence goes out, the session stays up); views bound by id show the cue. */
+    fun setMuted(id: String, muted: Boolean) {
+        source(id)?.setMuted(muted)
     }
 
     fun connect(id: String) {
@@ -66,20 +100,23 @@ object VoiceRegistry {
         synchronized(sources) { sources.remove(id) }?.disconnect()
     }
 
-    // MARK: getCredential round trip
+    // MARK: credential round trip (JS resolves `credential` providers and `credentialUrl`)
 
-    suspend fun requestCredential(id: String): String {
+    suspend fun requestCredential(id: String): SinuaCredential {
         val requestId = java.util.UUID.randomUUID().toString()
-        val waiter = CompletableDeferred<String>()
+        val waiter = CompletableDeferred<SinuaCredential>()
         synchronized(pending) { pending[requestId] = waiter }
         onEvent?.invoke(id, "credentialRequest", mapOf("requestId" to requestId))
         return waiter.await()
     }
 
-    fun provideCredential(requestId: String, credential: String?, error: String?) {
+    fun provideCredential(requestId: String, credential: String?, url: String?, error: String?, fatal: Boolean) {
         val waiter = synchronized(pending) { pending.remove(requestId) } ?: return
-        if (!credential.isNullOrEmpty()) waiter.complete(credential)
-        else waiter.completeExceptionally(VoiceError(error ?: "getCredential returned no credential"))
+        if (!credential.isNullOrEmpty()) {
+            waiter.complete(SinuaCredential(credential, url = url?.takeIf { it.isNotEmpty() }))
+        } else {
+            waiter.completeExceptionally(CredentialException(error ?: "the credential provider returned nothing", fatal))
+        }
     }
 
     // MARK: vendors
@@ -87,6 +124,16 @@ object VoiceRegistry {
     private fun make(context: Context, vendor: String, id: String, config: ReadableMap): VoiceSource = when (vendor) {
         "test" -> TestToneVoiceSource()
         "mic" -> LocalMicVoiceSource()
+        "simulated" -> {
+            val loop = if (config.hasKey("loop")) config.getBoolean("loop") else null
+            val script = config.getString("script")?.takeIf { it.isNotBlank() }
+            try {
+                if (script != null) SimulatedVoiceSource(script, loop = loop)
+                else SimulatedVoiceSource.sample(config.getString("sample") ?: "calendar", loop = loop)
+            } catch (e: IllegalArgumentException) {
+                throw VoiceError(e.message ?: "invalid simulated conversation")
+            }
+        }
         else -> factory(vendor).create(context, config, CredentialProvider { requestCredential(id) }) { message ->
             onEvent?.invoke(id, "error", mapOf("message" to message))
         }

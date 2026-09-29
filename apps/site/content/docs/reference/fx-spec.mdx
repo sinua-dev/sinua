@@ -9,7 +9,7 @@ An **FX Spec** is a small JSON file that describes a visual completely: the obje
 
 ## Structure
 
-- **`fxSpec`** (required): the version, `"1.8"`.
+- **`fxSpec`** (required): the version, `"1.9"`.
 - **`object`** (required) and **`pattern`** (required): what to draw. See the [catalog](/docs/catalog).
 - **`size`** (20 · 32 · 64) and **`speed`**: see [Speed & size](/docs/look/speed-and-size).
 - **`ink`** (1.8): how present the visual is, `0` to `1` (default `1`). It fades everything, halos included, and a state can patch it — an assistant rests below full ink when idle and comes to full ink when it listens.
@@ -18,6 +18,9 @@ An **FX Spec** is a small JSON file that describes a visual completely: the obje
 - **`params`**: the pattern's own props (the catalog's style props), e.g. `"ringCount": 3`.
 - **`bindings`**: map your app's inputs onto values. See [Bindings](/docs/connect/bindings).
 - **`states`**: a patch per lifecycle state. See [States vs patterns](/docs/connect/states-vs-patterns).
+- **`transitions`** (1.9): how a change between two states animates. See [Transitions](#transitions) below.
+- **`rules`** (1.9): pick a state from the app's inputs ("10,000 steps → `goalReached`"). See [Rules](/docs/connect/bindings#rules-the-file-picks-the-state).
+- **`accessibility`** (1.9): the view's spoken name and the words per state. See [Accessibility](/docs/performance/accessibility).
 - **`performance`**: `maxFps`, and what to shed under low power.
 - **`name`**, **`description`**, **`$schema`**: for people and editors.
 
@@ -25,7 +28,18 @@ Point `$schema` at `fx-spec-1.schema.json` for completion and validation in your
 
 ## Versioning
 
-`fxSpec` is `"1.8"`, written as `major.minor`. A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error, so write `"1.8"` and use whatever this page documents.
+`fxSpec` is `"1.9"`, written as `major.minor`. A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.9"` and use whatever this page documents. A `"1.8"` file without `transitions` stays valid and renders the same.
+
+## Transitions
+
+State changes animate, 0.6 s easeInOut unless the file says otherwise. `transitions` sets the duration and curve per pair of states:
+
+<include lang="json" meta='title="voice-orb-transitions.fxspec.json"'>../../../snippets/spec/voice-orb-transitions.fxspec.json</include>
+
+- **Keys:** `default`, `"from->to"`, `"from->*"` and `"*->to"`, with the names from `states`. The most specific entry wins, field by field: the exact pair, then `from->*`, then `*->to`, then `default`.
+- **Fields:** `duration` in seconds, `0` to `10` (`0` cuts), and `curve`: `linear`, `ease`, `easeIn`, `easeOut` or `easeInOut`.
+- **What moves:** when both states keep the pattern, the values interpolate and the shape flows; a change of pattern cross-fades (the orb lattice trio, glowing, calibrating and progressing, morphs point by point). The file sets how long and how; the engine picks the technique.
+- A view's `crossFade` option, when you set it, overrides every change's duration (`0` still cuts).
 
 ## Resolving a spec yourself
 

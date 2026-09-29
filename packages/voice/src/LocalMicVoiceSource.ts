@@ -21,7 +21,9 @@ export class LocalMicVoiceSource implements VoiceSource {
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private metricsCb: ((m: VoiceMetrics) => void) | null = null;
   private stateCb: ((s: AgentState) => void) | null = null;
+  private connectionCb: ((connected: boolean) => void) | null = null;
   private zeroStreak = 0;
+  private muted = false;
 
   onMetrics(cb: (m: VoiceMetrics) => void): void {
     this.metricsCb = cb;
@@ -31,12 +33,25 @@ export class LocalMicVoiceSource implements VoiceSource {
     this.stateCb = cb;
   }
 
+  onConnectionChange(cb: (connected: boolean) => void): void {
+    this.connectionCb = cb;
+  }
+
+  /** Muted, the track is disabled (the browser stops capturing) and the level reads 0. */
+  setMuted(muted: boolean): void {
+    this.muted = muted;
+    for (const t of this.stream?.getAudioTracks() ?? []) t.enabled = !muted;
+    this.zeroStreak = 0;
+  }
+
   async connect(): Promise<void> {
     this.stateCb?.("initializing");
     this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     this.ctx = new (globalThis.AudioContext || (globalThis as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
     this.attach();
+    this.setMuted(this.muted);
     this.stateCb?.("listening");
+    this.connectionCb?.(true);
 
     this.intervalId = setInterval(() => this.tick(), UPDATE_MS);
   }
@@ -51,8 +66,10 @@ export class LocalMicVoiceSource implements VoiceSource {
     this.stream = null;
     this.sourceNode = null;
     this.analyserNode = null;
+    const was = this.analysis != null;
     this.analysis = null;
     this.stateCb?.("idle");
+    if (was) this.connectionCb?.(false);
   }
 
   private attach(): void {
@@ -77,6 +94,12 @@ export class LocalMicVoiceSource implements VoiceSource {
 
   private tick(): void {
     if (!this.analysis || !this.analyserNode || !this.stream) return;
+    if (this.muted) {
+      // A disabled track reads silence by design: no watchdog, no analysis.
+      this.metricsCb?.({ level: 0, bands: this.analysis.read().bands.map(() => 0) });
+      this.stateCb?.("listening");
+      return;
+    }
 
     // Watchdog: a live track's AnalyserNode can silently start reading
     // flat/zero data with no error (a known real Chrome/Android issue for

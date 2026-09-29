@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { NativeSyntheticEvent, ViewProps } from "react-native";
 import NativeSinuaView, { type FrameEvent } from "./specs/SinuaViewNativeComponent";
-import { voiceProps, type VoiceSourceHandle } from "./voice";
+import { a11yNativeProps, voiceProps, type VoiceSourceHandle } from "./voice";
 
 /**
  * The drop-in sinua view for React Native (docs/fx-view.md): the native
@@ -35,6 +35,21 @@ export type SinuaViewProps = ViewProps & {
    * and audio; it never connects or disconnects it.
    */
   voice?: "none" | "test" | "mic" | VoiceSourceHandle;
+  /** The bound voice's pulse (`audioStrength`); unset = the view's default. The voice button's ring uses 0.75. */
+  audioStrength?: number;
+  /** Words per state for the accessible name and announcements (docs/fx-view.md, *Accessibility*). */
+  labels?: Record<string, string>;
+  /** Speak state changes (polite, rate-limited). Default: the spec's, else true. */
+  announce?: boolean;
+  /** A light haptic tap when the agent starts listening (default false). */
+  haptics?: boolean;
+  /** Derive the state from the spec's 1.9 `rules` and `inputs` (default true). */
+  rules?: boolean;
+  /**
+   * A one-shot effect (docs/fx-view.md, *One-shot effects*): `{ name: "success" | "error" |
+   * "celebrate", key }`. It plays each time `key` changes, e.g. a counter you bump.
+   */
+  effect?: { name: "success" | "error" | "celebrate"; key: number };
   theme?: "auto" | "light" | "dark";
   paused?: boolean;
   reducedMotion?: "auto" | "always" | "never";
@@ -62,11 +77,12 @@ export function nativeLabels(p: Pick<SinuaViewProps, "spec" | "pattern" | "state
   return { state: p.pattern ?? p.state, specState: p.specState };
 }
 
-export function SinuaView({ spec, pattern, state, specState, overrides, inputs, onFrame, accessibilityLabel, maxFps, voice, ...rest }: SinuaViewProps) {
+export function SinuaView({ spec, pattern, state, specState, overrides, inputs, onFrame, accessibilityLabel, maxFps, voice, labels: words, announce, effect, ...rest }: SinuaViewProps) {
   const labels = nativeLabels({ spec, pattern, state, specState });
   const specText = React.useMemo(() => (spec == null ? undefined : typeof spec === "string" ? spec : JSON.stringify(spec)), [spec]);
   const overridesJson = React.useMemo(() => (overrides ? JSON.stringify(overrides) : undefined), [overrides]);
   const inputsJson = React.useMemo(() => (inputs ? JSON.stringify(inputs) : undefined), [inputs]);
+  const a11y = React.useMemo(() => a11yNativeProps(words, announce), [words, announce]);
   const handler = React.useCallback((e: NativeSyntheticEvent<FrameEvent>) => onFrame?.(e.nativeEvent), [onFrame]);
   // A handle is bound by id through the native registry; the shorthands stay as they were.
   const bound = voiceProps(voice);
@@ -80,6 +96,10 @@ export function SinuaView({ spec, pattern, state, specState, overrides, inputs, 
       spec={specText}
       overridesJson={overridesJson}
       inputsJson={inputsJson}
+      labelsJson={a11y.labelsJson}
+      announce={a11y.announce}
+      effectName={effect?.name}
+      effectKey={effect?.key ?? 0}
       maxFps={maxFps ?? 0}
       label={accessibilityLabel}
       accessibilityLabel={accessibilityLabel}

@@ -165,6 +165,33 @@ final class ElevenLabsVoiceSourceTests: XCTestCase {
         } catch let e as ElevenLabsError { XCTAssertEqual(e, .missingCredential) }
     }
 
+    func testMutedSendsZeroedPcmAndReportsTheConnection() async throws {
+        let server = try FakeWSServer(subprotocol: "convai")
+        try await server.ready()
+        let device = FakeDevice()
+        let source = ElevenLabsVoiceSource(
+            credential: "agent_abc",
+            endpoint: URL(string: "ws://127.0.0.1:\(server.port)/v1/convai/conversation?agent_id=agent_abc")!,
+            device: device, requestPermission: { true })
+        var conn: [Bool] = []
+        source.onConnectionChange { conn.append($0) }
+        server.onMessage = { c, text in
+            if text.contains("conversation_initiation_client_data") { server.send(self.metadata, on: c) }
+        }
+        try await source.connect()
+        XCTAssertEqual(conn, [true])
+        source.setMuted(true)
+        device.onCapture?([Float](repeating: 0.25, count: 256))
+        try await until { server.received.contains { $0.contains("user_audio_chunk") } }
+        let msg = try XCTUnwrap(server.received.last { $0.contains("user_audio_chunk") })
+        let obj = try JSONSerialization.jsonObject(with: Data(msg.utf8)) as! [String: Any]
+        let pcm = try XCTUnwrap(Data(base64Encoded: obj["user_audio_chunk"] as! String))
+        XCTAssertEqual(pcm.count, 512)
+        XCTAssertTrue(pcm.allSatisfy { $0 == 0 })
+        source.disconnect()
+        XCTAssertEqual(conn, [true, false])
+    }
+
     private func until(_ timeout: TimeInterval = 5, _ cond: () -> Bool) async throws {
         let end = Date().addingTimeInterval(timeout)
         while !cond() {

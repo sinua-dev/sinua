@@ -7,7 +7,7 @@ import dev.sinua.voice.GeminiLiveSession
 import dev.sinua.voice.VoiceSource
 import com.facebook.react.bridge.ReadableMap
 
-/** `{ vendor: "gemini", credential, model?, instructions?, endpoint?, allowInsecureApiKey? }` (src/voice.ts). */
+/** `{ vendor: "gemini", credential | credentialUrl, model?, instructions? (deprecated), endpoint? }` (src/voice.ts). */
 class GeminiFactory : VoiceRegistry.VendorFactory {
     override fun create(
         context: Context,
@@ -15,14 +15,15 @@ class GeminiFactory : VoiceRegistry.VendorFactory {
         credentials: VoiceRegistry.CredentialProvider,
         errors: (String) -> Unit,
     ): VoiceSource {
-        val credential = config.getString("credential")?.takeIf { it.isNotBlank() }
-            ?: throw VoiceRegistry.VoiceError("gemini needs a credential (an ephemeral auth_tokens/… from your backend)")
         val source = GeminiLiveVoiceSource(
-            credential = credential,
+            VoiceRegistry.credentialSource(
+                config,
+                credentials,
+                "gemini needs a credential or credentialUrl (an ephemeral auth_tokens/… from your backend)",
+            ),
             model = config.getString("model")?.takeIf { it.isNotBlank() } ?: GeminiLiveSession.DEFAULT_MODEL,
             instructions = config.getString("instructions")?.takeIf { it.isNotBlank() },
-            allowInsecureApiKey = config.hasKey("allowInsecureApiKey") && config.getBoolean("allowInsecureApiKey"),
-            endpoint = config.getString("endpoint")?.takeIf { it.isNotBlank() }?.let { GeminiLiveSession.Endpoint(it, emptyMap()) },
+            endpointOverride = config.getString("endpoint")?.takeIf { it.isNotBlank() }?.let { GeminiLiveSession.Endpoint(it, emptyMap()) },
         )
         source.onError { errors(it.message ?: it.toString()) }
         return source

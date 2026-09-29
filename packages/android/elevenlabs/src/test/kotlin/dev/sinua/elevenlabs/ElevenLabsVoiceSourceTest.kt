@@ -231,6 +231,6 @@ class ElevenLabsVoiceSourceTest {
         val err = runCatching {
             main.sync { ElevenLabsVoiceSource(" ", device = FakeDevice(), main = main).connect() }
         }.exceptionOrNull()
-        assertTrue(err?.cause is IllegalStateException)
+        assertTrue("$err", err?.cause is dev.sinua.voice.CredentialException)
     }
 }

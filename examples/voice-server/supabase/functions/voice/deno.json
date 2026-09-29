@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@sinua/voice/server": "npm:@sinua/voice/server"
+  }
+}

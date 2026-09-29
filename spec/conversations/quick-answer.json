@@ -1,0 +1,12 @@
+{
+  "name": "Quick answer",
+  "loop": true,
+  "seed": 2,
+  "turns": [
+    { "state": "idle", "seconds": 1.8 },
+    { "state": "listening", "seconds": 2.0, "voice": "user", "line": "What's the weather like?" },
+    { "state": "thinking", "seconds": 0.9 },
+    { "state": "speaking", "seconds": 2.6, "voice": "agent", "line": "Sunny and 24 degrees." },
+    { "state": "idle", "seconds": 2.2 }
+  ]
+}

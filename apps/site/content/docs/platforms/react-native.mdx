@@ -8,3 +8,5 @@ description: The Sinua components for React Native (iOS and Android).
 <include lang="tsx" meta='title="react-native.tsx"'>../../../snippets/platforms/react-native.tsx</include>
 
 The typed components take the same props on iOS, Android and React Native: `pattern` (or `spec`), [values](/docs/connect/values), [style](/docs/look/color-and-theme), `state`, `voice`, `theme`, `paused`, `reducedMotion`, `maxFps`, `lowPower` and an accessibility label. The [catalog](/docs/catalog) lists every prop per pattern.
+
+`SinuaView` also takes `labels`, `announce` and `haptics` ([accessibility](/docs/performance/accessibility)), `effect` ([one-shot effects](/docs/connect/effects)) and `audioStrength`. A spec-driven view animates state changes with the file's [`transitions`](/docs/reference/fx-spec#transitions), like the native views, and the voice button is `<SinuaVoiceButton voice={handle} />` ([Voice button](/docs/connect/voice/voice-button)). `SinuaAvatar` and `SinuaVoiceMessage` aren't on React Native yet.

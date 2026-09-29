@@ -1,6 +1,9 @@
+import Foundation
 import SinuaGeminiLive
 
-// `token`: an ephemeral `auth_tokens/…` your backend mints with the Gemini API key.
-func geminiVoice(token: String) -> GeminiLiveVoiceSource {
-    GeminiLiveVoiceSource(credential: token, instructions: "Keep answers short.")
+// Your endpoint mints an ephemeral `auth_tokens/…` with the Gemini API key (see Credentials).
+// A reconnect resumes the session with a new token. The model, voice and instructions are
+// locked into the token on the server.
+func geminiVoice() -> GeminiLiveVoiceSource {
+    GeminiLiveVoiceSource(credentialUrl: URL(string: "https://api.example.com/voice/gemini")!)
 }

@@ -1,7 +1,10 @@
 ---
 title: ElevenLabs
-description: Follow an ElevenLabs Conversational AI agent.
+description: "Show an ElevenLabs Conversational AI agent's state and voice as a live visual in SwiftUI, Jetpack Compose and React."
+metaTitle: "ElevenLabs agent visualizer for SwiftUI, Compose and React | Sinua"
 ---
+
+<Callout title="Beta">The ElevenLabs source is beta: it is tested on simulated sessions, not yet against a live ElevenLabs session. If it misbehaves with your agent, an issue with the platform and version helps most.</Callout>
 
 The ElevenLabs source connects to a Conversational AI agent, plays its voice, and reports state and audio to the visual, including interruptions.
 
@@ -23,7 +26,7 @@ The ElevenLabs source connects to a Conversational AI agent, plays its voice, an
 ## Credentials
 
 - **A public agent** needs only its agent id. There's no secret anywhere.
-- **A private agent** needs a signed URL, minted by your server with your API key. It's valid for 15 minutes.
+- **A private agent** needs a signed URL, minted by your server with your API key (`signElevenLabsUrl` in `@sinua/voice/server`). It's valid for 15 minutes, and the source asks your endpoint for a new one on every connect. See [Credentials](/docs/connect/voice/credentials).
 
 ## Packages
 

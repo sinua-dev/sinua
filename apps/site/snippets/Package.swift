@@ -8,13 +8,22 @@ import PackageDescription
 let topics: [(folder: String, target: String, exclude: [String])] = [
     ("first-visual", "FirstVisual", ["react.tsx", "react-native.tsx", "compose.kt"]),
     ("platforms", "Platforms", ["compose.kt", "android-view.kt", "android-res", "react-native.tsx"]),
-    ("values", "Values", ["react.tsx", "compose.kt"]),
-    ("states", "States", ["react.tsx", "compose.kt", "plain-react.tsx", "plain-compose.kt", "plain-react-native.tsx"]),
-    ("bindings", "Bindings", ["react.tsx", "compose.kt"]),
+    ("values", "Values", ["react.tsx", "compose.kt", "voice-message-react.tsx", "voice-message.kt"]),
+    ("states", "States", ["react.tsx", "compose.kt", "plain-react.tsx", "plain-compose.kt", "plain-react-native.tsx",
+                          "effects-web.ts", "effects.kt", "effects-react-native.tsx"]),
+    ("bindings", "Bindings", ["react.tsx", "compose.kt", "rules-react.tsx", "rules.kt"]),
     ("voice", "Voice", ["overview-web.ts", "openai-realtime-web.ts", "gemini-live-web.ts", "elevenlabs-web.ts", "livekit-web.ts", "mic-and-tone-web.ts",
-                        "overview.kt", "openai-realtime.kt", "gemini-live.kt", "elevenlabs.kt", "livekit.kt", "mic-and-tone.kt"]),
+                        "overview.kt", "openai-realtime.kt", "gemini-live.kt", "elevenlabs.kt", "livekit.kt", "mic-and-tone.kt",
+                        "overview-react-native.tsx", "openai-realtime-react-native.tsx", "gemini-live-react-native.tsx",
+                        "elevenlabs-react-native.tsx", "livekit-react-native.tsx", "mic-and-tone-react-native.tsx",
+                        "credentials-provider-web.ts", "credentials-server.ts", "credentials-provider.kt", "credentials-provider-react-native.tsx",
+                        "simulated-web.ts", "simulated-script-web.ts", "simulated.kt", "simulated-react-native.tsx",
+                        "voice-button-web.ts", "voice-button-react.tsx", "voice-button.kt", "voice-button-react-native.tsx",
+                        "sharing-web.ts", "edge-react.tsx", "edge.kt", "edge-react-native.tsx", "avatar-react.tsx", "avatar.kt"]),
+    ("real-app", "RealApp", ["soul.kt", "soul.fxspec.json"]),
     ("perf", "Perf", ["low-power-web.ts", "max-fps-web.ts", "reduced-motion-web.ts", "accessibility-label-web.ts",
-                      "low-power.kt", "max-fps.kt", "reduced-motion.kt", "accessibility-label.kt"]),
+                      "low-power.kt", "max-fps.kt", "reduced-motion.kt", "accessibility-label.kt",
+                      "accessibility-announce-web.ts", "accessibility-announce.kt"]),
 ]
 
 let package = Package(

@@ -31,7 +31,8 @@
         "signal",
         "ring",
         "beacon",
-        "core"
+        "core",
+        "edge"
       ]
     },
     "pattern": {
@@ -130,6 +131,15 @@
     },
     "performance": {
       "$ref": "#/$defs/performance"
+    },
+    "transitions": {
+      "$ref": "#/$defs/transitions"
+    },
+    "rules": {
+      "$ref": "#/$defs/rules"
+    },
+    "accessibility": {
+      "$ref": "#/$defs/accessibility"
     }
   },
   "$defs": {
@@ -903,6 +913,121 @@
           "maximum": 4,
           "default": 0.05,
           "description": "Turns per second of engine time: hue drift and the view point's orbit."
+        }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "description": "One state change (1.9): its length in seconds and a CSS keyword curve.",
+      "additionalProperties": false,
+      "properties": {
+        "duration": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "curve": {
+          "$ref": "#/$defs/curve"
+        }
+      }
+    },
+    "transitions": {
+      "type": "object",
+      "description": "1.9: how state changes animate. Keys: `default`, `from->to`, `from->*`, `*->to` (state keys); the most specific wins. Without it: 0.6 s easeInOut.",
+      "propertyNames": {
+        "pattern": "^(default|[^>]+->[^>]+)$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/transition"
+      }
+    },
+    "rules": {
+      "type": "array",
+      "description": "1.9: derived states. Tried in order; the first rule whose condition holds picks the `states` entry that renders. None holds: the caller's own state. A rule whose input isn't passed doesn't hold.",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    },
+    "rule": {
+      "type": "object",
+      "required": [
+        "when",
+        "state"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "when": {
+          "$ref": "#/$defs/ruleWhen"
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The `states` key this rule renders."
+        },
+        "hysteresis": {
+          "type": "number",
+          "minimum": 0,
+          "description": "While already in this state, the condition is relaxed by this much, so the state doesn't flicker around its threshold."
+        }
+      }
+    },
+    "ruleWhen": {
+      "type": "object",
+      "required": [
+        "input"
+      ],
+      "additionalProperties": false,
+      "minProperties": 2,
+      "maxProperties": 2,
+      "properties": {
+        "input": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The app input to compare (a key of the view's `inputs`)."
+        },
+        "gt": {
+          "type": "number"
+        },
+        "gte": {
+          "type": "number"
+        },
+        "lt": {
+          "type": "number"
+        },
+        "lte": {
+          "type": "number"
+        },
+        "between": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number"
+          },
+          "description": "[low, high], both inclusive."
+        }
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "description": "FX Spec 1.9 (docs/fx-spec.md, *v1.9: accessibility*): the view's accessible name, per-state words (they replace the name while that state shows; the app's `labels` win), and whether state changes are spoken (default true; polite and rate-limited by the engine).",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The view's accessible name (over the file's `name`; the app's `label` wins)."
+        },
+        "states": {
+          "type": "object",
+          "description": "Words per state key (any key of `states`, or a voice state). A voice state without words reads \"<name>, listening\".",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "announce": {
+          "type": "boolean",
+          "description": "Speak state changes (default true). The app's `announce` option wins."
         }
       }
     }

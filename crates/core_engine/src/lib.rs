@@ -12,10 +12,14 @@
 //! validates the `orbs` family against; `signal` has no golden vector
 //! (nothing to port against), same tradeoff as `orbs`' own additive modes.
 
+pub mod a11y;
 mod beacon;
 mod catalog;
+mod conversation;
 mod core_fx;
 mod cost;
+mod edge;
+pub mod effects;
 mod fx_spec;
 mod liquid;
 mod orbs;
@@ -23,7 +27,9 @@ mod particles;
 mod primitives;
 pub mod reactive;
 mod ring;
+mod rules;
 mod signal;
+mod transition;
 mod voice_state;
 // Only the wasm bridge packs frames; native tests still cover the layout.
 #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
@@ -109,12 +115,14 @@ fn render(
         "waveform" => signal::modes::waveform::frame_waveform(size as f64, t, opts),
         "scroll" => signal::modes::scroll::frame_scroll(size as f64, t, opts),
         "matrix" => signal::modes::matrix::frame_matrix(size as f64, t, opts),
+        "playback" => signal::modes::playback::frame_playback(size as f64, t, opts),
         // The `ring` family -- the third sibling, see `ring/mod.rs`.
         "arc" => ring::modes::arc::frame_arc(size as f64, t, opts),
         "spinner" => ring::modes::spinner::frame_spinner(size as f64, t, opts),
         "nested" => ring::modes::nested::frame_nested(size as f64, t, opts),
         "segmented" => ring::modes::segmented::frame_segmented(size as f64, t, opts),
         "gauge" => ring::modes::gauge::frame_gauge(size as f64, t, opts),
+        "speaker" => ring::modes::speaker::frame_speaker(size as f64, t, opts),
         // The `beacon` family -- the fourth sibling, see `beacon/mod.rs`.
         "ping" => beacon::modes::ping::frame_ping(size as f64, t, opts),
         "pulse" => beacon::modes::pulse::frame_pulse(size as f64, t, opts),
@@ -124,8 +132,24 @@ fn render(
         // The `core` family (module `core_fx`, see its header for the name).
         "shimmer" => core_fx::modes::shimmer::frame_shimmer(size as f64, t, opts),
         "dots" => core_fx::modes::dots::frame_dots(size as f64, t, opts),
+        // The `edge` family (a box-layout screen-edge glow), see `edge/mod.rs`.
+        "rim" => edge::modes::rim::frame_rim(size as f64, t, opts),
         _ => return None,
     };
+    Some(post(frame, mode, size, wall, opts))
+}
+
+/// Everything after a mode's geometry: pointer, audio, pulse, particles,
+/// materials, ink and the one-shot cues, in their fixed order. Shared by
+/// [`render`] and the lattice morph ([`frame_transition_with_overrides`]),
+/// so a morph frame is finished exactly like any other.
+fn post(
+    frame: OrbFrame,
+    mode: &str,
+    size: u32,
+    wall: f64,
+    opts: &primitives::ModeOpts,
+) -> OrbFrame {
     let frame = primitives::apply_pointer(frame, opts);
     let frame = primitives::apply_audio_reactive(frame, opts);
     // A periodic pulse swells geometry, so it runs before the materials copy
@@ -168,10 +192,13 @@ fn render(
     // decay then fades everything drawn (flash included); the mute cue runs
     // last so its dimming has the final word even mid-flash.
     let frame = primitives::apply_interrupt(frame, opts);
+    // A one-shot feedback effect (success / error / celebrate) the view is
+    // playing: on top of the flash, before the decay and the mute cue.
+    let frame = effects::apply_effect(frame, size as f64, opts);
     let frame = primitives::apply_decay(frame, opts);
     let frame = primitives::apply_muted(frame, opts);
     // Last: `blurScale` (low power) scales / strips every blur sigma.
-    Some(primitives::apply_blur_scale(frame, opts))
+    primitives::apply_blur_scale(frame, opts)
 }
 
 /// Tries every family's own preset resolution in turn (today: `orbs`, then
@@ -207,6 +234,13 @@ fn resolve_any(state: &str, size: u32) -> Option<AnyResolved> {
         });
     }
     if let Some(r) = beacon::presets::resolve_preset(state, size) {
+        return Some(AnyResolved {
+            mode: r.mode,
+            speed: r.speed,
+            opts: r.opts,
+        });
+    }
+    if let Some(r) = edge::presets::resolve_preset(state, size) {
         return Some(AnyResolved {
             mode: r.mode,
             speed: r.speed,
@@ -313,6 +347,175 @@ pub fn frame_transition(
     )
 }
 
+/// A state's mode and its resolved preset opts (any family).
+pub(crate) fn resolve_state(
+    state: &str,
+    size: u32,
+) -> Option<(&'static str, primitives::ModeOpts)> {
+    let r = resolve_any(state, size)?;
+    Some((r.mode, r.opts))
+}
+
+pub use transition::{FxTransition, TransitionMix, TransitionSide};
+
+/// What to draw at `progress` (`0..1` of the transition's duration, linear)
+/// of a state change -- the one transition system every view uses
+/// (docs/fx-spec.md, *Transitions*). `technique` says how: `params` (same
+/// pattern: draw `overrides`, plus `overrides` + `structural_to` dissolved by
+/// `swap` when counts/choices differ), `morph` (lattice pair:
+/// [`frame_transition_with_overrides`] at `weight`) or `crossFade` (two
+/// frames at `weight`). `curve` is a CSS keyword. `None` if a state doesn't
+/// resolve.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn transition_mix(
+    from: TransitionSide,
+    to: TransitionSide,
+    size: u32,
+    progress: f64,
+    curve: String,
+) -> Option<TransitionMix> {
+    transition::mix(&from, &to, size, progress, &curve)
+}
+
+/// The lattice morph with each side's own overrides, finished like any frame
+/// (materials, ink, cues): geometry morphs point by point at `blend`, and the
+/// post-processing runs on the two sides' continuous keys interpolated
+/// (counts/choices from the nearer side). `None` unless both states are
+/// lattice-sharing orb patterns (glowing / calibrating / progressing).
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn frame_transition_with_overrides(
+    from: TransitionSide,
+    to: TransitionSide,
+    size: u32,
+    t: f64,
+    blend: f64,
+) -> Option<OrbFrame> {
+    let a = orbs::presets::resolve_preset(&from.state, size)?;
+    let b = orbs::presets::resolve_preset(&to.state, size)?;
+    let mut oa = a.opts.clone();
+    oa.extend(from.overrides.clone());
+    let mut ob = b.opts.clone();
+    ob.extend(to.overrides.clone());
+    let blend = blend.clamp(0.0, 1.0);
+    let geometry =
+        orbs::modes::transition::frame_transition(a.mode, b.mode, size as f64, t, blend, &oa, &ob)?;
+    let mut post_opts = if blend < 0.5 { oa.clone() } else { ob.clone() };
+    for (k, vb) in &ob {
+        if let Some(va) = oa.get(k) {
+            if catalog::key_info(b.mode, k).is_none_or(|(ty, _)| ty == "number") {
+                post_opts.insert(k.clone(), va + (vb - va) * blend);
+            }
+        }
+    }
+    let speed = a.speed + (b.speed - a.speed) * blend;
+    let wall = if speed > 0.0 { t / speed } else { t };
+    Some(post(geometry, b.mode, size, wall, &post_opts))
+}
+
+/// The duration and curve for the state change `from` → `to` in an FX Spec
+/// (1.9 `transitions`): the exact pair, then `from->*`, then `*->to`, then
+/// `default`; without the block, 0.6 s `easeInOut`. `None` for a side is
+/// the base design (`""`).
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn fx_spec_transition(json: String, from: Option<String>, to: Option<String>) -> FxTransition {
+    fx_spec::transition_for(
+        &json,
+        from.as_deref().unwrap_or(""),
+        to.as_deref().unwrap_or(""),
+    )
+}
+
+/// The `states` key an FX Spec's 1.9 `rules` pick for the app's `inputs`,
+/// given the state rendered last (`previous`, for hysteresis): the first rule
+/// that holds, else `None` -- keep the caller's own state. Pure; the caller
+/// keeps `previous`.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn fx_spec_derive_state(
+    json: String,
+    inputs: HashMap<String, f64>,
+    previous: Option<String>,
+) -> Option<String> {
+    rules::derive(&json, &inputs, previous.as_deref())
+}
+
+pub use a11y::{AnnounceStep, AnnouncerState, FxAccessibility};
+pub use effects::EffectInfo;
+
+/// A one-shot feedback effect by name (`success`, `error`, `celebrate`;
+/// docs/fx-view.md, *One-shot effects*): the code and duration a view feeds
+/// as `effectCode` / `effectAge` runtime keys, and the words it speaks. `None`
+/// for an unknown name.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn effect_info(name: String) -> Option<EffectInfo> {
+    effects::info(&name)
+}
+
+/// An FX Spec's 1.9 `accessibility` block (docs/fx-view.md, *Accessibility*):
+/// the view's name, per-state words and whether changes are spoken. Empty for
+/// bad JSON or no block; `resolve_fx_spec` reports problems.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn fx_spec_accessibility(json: String) -> FxAccessibility {
+    a11y::read(&json)
+}
+
+/// A view's accessible name in `state`: the app's words for it, else the
+/// file's `accessibility.states`, else the built-in words for a voice state
+/// ("<name>, listening"), else `name`. The same on every platform.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn a11y_accessible_name(
+    name: String,
+    state: Option<String>,
+    spec_words: HashMap<String, String>,
+    app_words: HashMap<String, String>,
+) -> String {
+    a11y::accessible_name(&name, state.as_deref(), &spec_words, &app_words)
+}
+
+/// The words for `state` (as `a11y_accessible_name`), or `None` when it has
+/// none -- then nothing is spoken. Feed these to `a11y_announce_step`.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn a11y_state_words(
+    name: String,
+    state: Option<String>,
+    spec_words: HashMap<String, String>,
+    app_words: HashMap<String, String>,
+) -> Option<String> {
+    a11y::state_words(&name, state.as_deref(), &spec_words, &app_words)
+}
+
+/// One step of the announcer: call on every change of the words showing and
+/// again at `recheck_at`. Speaks a state once it has held 1 s, at most once per
+/// 3 s, never the first one. Pure; keep the returned state.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn a11y_announce_step(prev: AnnouncerState, words: Option<String>, now: f64) -> AnnounceStep {
+    a11y::announce_step(prev, words, now)
+}
+
+pub use conversation::ConversationFrame;
+
+/// A simulated conversation at `t` seconds (docs/audio-pipeline.md,
+/// *Simulated conversations*): the agent state and a speech-like level and
+/// `band_count` bands, from a script of turns. A pure function of time, so
+/// every platform's `SimulatedVoiceSource` plays the same conversation. No
+/// audio anywhere.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn conversation_at(json: String, t: f64, band_count: u32) -> ConversationFrame {
+    conversation::at(&json, t, band_count)
+}
+
+/// The built-in sample conversations' names (`calendar`, `quick-answer`,
+/// `long-answer`, `barge-in`).
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn conversation_sample_names() -> Vec<String> {
+    conversation::sample_names()
+}
+
+/// A built-in sample conversation's script JSON.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn conversation_sample(name: String) -> Option<String> {
+    conversation::sample(&name)
+}
+
 /// The **voice-state profile** for `state` on `pattern` (docs/fx-spec.md,
 /// *v1.8*): the speed multiplier and engine overrides that make one shape
 /// read as `idle` / `listening` / `thinking` / `speaking`, plus which app
@@ -326,6 +529,25 @@ pub fn frame_transition(
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn voice_state_profile(pattern: String, state: String) -> Option<VoiceStateProfile> {
     voice_state::profile(&pattern, &state)
+}
+
+/// How a pattern lays out in a view's box: `"box"` -- engine space follows
+/// the box ratio, which the view passes as the `aspect` input (width
+/// `size * aspect`, height `size`) and fills the box with -- or `"square"`,
+/// a square centred in the box (every pattern without a catalog `layout`,
+/// and an unknown one).
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn pattern_layout(pattern: String) -> String {
+    catalog::layout_of(&pattern).to_string()
+}
+
+/// Signal `playing`: the playback position under a touch. `x` is the touch's
+/// distance from the box's left edge over the box's height, the box is `aspect`
+/// wide (width / height); the result is `0..1`, on the same row of bars the
+/// pattern draws. Views use it for drag-to-seek.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn playback_seek_progress(aspect: f64, x: f64) -> f64 {
+    signal::modes::playback::seek_progress(aspect, x)
 }
 
 /// The FX Spec minor this runtime speaks (`1.<minor>`): a file above it
@@ -529,6 +751,136 @@ mod wasm {
         }
     }
 
+    #[wasm_bindgen]
+    pub fn conversation_at_json(json: String, t: f64, band_count: u32) -> String {
+        serde_json::to_string(&crate::conversation_at(json, t, band_count))
+            .unwrap_or_else(|_| "null".to_string())
+    }
+
+    #[wasm_bindgen]
+    pub fn conversation_samples_json() -> String {
+        serde_json::to_string(&crate::conversation_sample_names())
+            .unwrap_or_else(|_| "[]".to_string())
+    }
+
+    #[wasm_bindgen]
+    pub fn conversation_sample_json(name: String) -> String {
+        crate::conversation_sample(name).unwrap_or_else(|| "null".to_string())
+    }
+
+    #[wasm_bindgen]
+    pub fn transition_mix_json(
+        from_json: String,
+        to_json: String,
+        size: u32,
+        progress: f64,
+        curve: String,
+    ) -> String {
+        let (Ok(from), Ok(to)) = (
+            serde_json::from_str::<crate::TransitionSide>(&from_json),
+            serde_json::from_str::<crate::TransitionSide>(&to_json),
+        ) else {
+            return "null".to_string();
+        };
+        match crate::transition_mix(from, to, size, progress, curve) {
+            Some(m) => serde_json::to_string(&m).unwrap_or_else(|_| "null".to_string()),
+            None => "null".to_string(),
+        }
+    }
+
+    #[wasm_bindgen]
+    pub fn frame_transition_with_overrides_json(
+        from_json: String,
+        to_json: String,
+        size: u32,
+        t: f64,
+        blend: f64,
+    ) -> String {
+        let (Ok(from), Ok(to)) = (
+            serde_json::from_str::<crate::TransitionSide>(&from_json),
+            serde_json::from_str::<crate::TransitionSide>(&to_json),
+        ) else {
+            return "null".to_string();
+        };
+        match crate::frame_transition_with_overrides(from, to, size, t, blend) {
+            Some(f) => serde_json::to_string(&f).unwrap_or_else(|_| "null".to_string()),
+            None => "null".to_string(),
+        }
+    }
+
+    #[wasm_bindgen]
+    pub fn fx_spec_transition_json(json: String, from: String, to: String) -> String {
+        let opt = |s: String| if s.is_empty() { None } else { Some(s) };
+        serde_json::to_string(&crate::fx_spec_transition(json, opt(from), opt(to)))
+            .unwrap_or_else(|_| "null".to_string())
+    }
+
+    /// `inputs_json`: `{ [name]: number }`; `previous`: `""` = none. Returns
+    /// the derived state key, or `""` when no rule holds.
+    /// `{ code, duration, words }` for a known effect name, else `null`.
+    #[wasm_bindgen]
+    pub fn effect_info_json(name: String) -> String {
+        serde_json::to_string(&crate::effect_info(name)).unwrap_or_else(|_| "null".to_string())
+    }
+
+    /// The spec's `accessibility` block as JSON (`{ name, states, announce }`).
+    #[wasm_bindgen]
+    pub fn fx_spec_accessibility_json(json: String) -> String {
+        serde_json::to_string(&crate::fx_spec_accessibility(json))
+            .unwrap_or_else(|_| "{}".to_string())
+    }
+
+    /// `state`: `""` = none; `spec_json` / `app_json`: `{ [state]: words }`.
+    #[wasm_bindgen]
+    pub fn a11y_accessible_name_json(
+        name: String,
+        state: String,
+        spec_json: String,
+        app_json: String,
+    ) -> String {
+        let spec: HashMap<String, String> = serde_json::from_str(&spec_json).unwrap_or_default();
+        let app: HashMap<String, String> = serde_json::from_str(&app_json).unwrap_or_default();
+        crate::a11y_accessible_name(name, (!state.is_empty()).then_some(state), spec, app)
+    }
+
+    /// As `a11y_accessible_name_json`; `""` = no words.
+    #[wasm_bindgen]
+    pub fn a11y_state_words_json(
+        name: String,
+        state: String,
+        spec_json: String,
+        app_json: String,
+    ) -> String {
+        let spec: HashMap<String, String> = serde_json::from_str(&spec_json).unwrap_or_default();
+        let app: HashMap<String, String> = serde_json::from_str(&app_json).unwrap_or_default();
+        crate::a11y_state_words(name, (!state.is_empty()).then_some(state), spec, app)
+            .unwrap_or_default()
+    }
+
+    /// `prev_json`: the last step's `state` (or `{}`); `words`: `""` = none.
+    /// Returns `{ state, announce: string|null, recheckAt: number|null }`.
+    #[wasm_bindgen]
+    pub fn a11y_announce_step_json(prev_json: String, words: String, now: f64) -> String {
+        let prev: crate::AnnouncerState = serde_json::from_str(&prev_json).unwrap_or_default();
+        let out = crate::a11y_announce_step(prev, (!words.is_empty()).then_some(words), now);
+        serde_json::to_string(&out).unwrap_or_else(|_| "null".to_string())
+    }
+
+    #[wasm_bindgen]
+    pub fn fx_spec_derive_state_json(
+        json: String,
+        inputs_json: String,
+        previous: String,
+    ) -> String {
+        let inputs: HashMap<String, f64> = serde_json::from_str(&inputs_json).unwrap_or_default();
+        let previous = if previous.is_empty() {
+            None
+        } else {
+            Some(previous)
+        };
+        crate::fx_spec_derive_state(json, inputs, previous).unwrap_or_default()
+    }
+
     /// `{ state?: string, inputs?: { [name]: number } }` -- FX Spec v1.1's
     /// call context; empty or unparseable = no state, no inputs.
     #[derive(serde::Deserialize, Default)]
@@ -636,6 +988,16 @@ mod wasm {
     }
 
     #[wasm_bindgen]
+    pub fn pattern_layout_json(pattern: String) -> String {
+        crate::pattern_layout(pattern)
+    }
+
+    #[wasm_bindgen]
+    pub fn playback_seek_progress_json(aspect: f64, x: f64) -> f64 {
+        crate::playback_seek_progress(aspect, x)
+    }
+
+    #[wasm_bindgen]
     pub fn check_overrides_json(state: String, size: u32, overrides_json: String) -> String {
         let overrides: HashMap<String, f64> =
             serde_json::from_str(&overrides_json).unwrap_or_default();
@@ -684,7 +1046,7 @@ mod wasm {
     }
 }
 
-/// Every pattern this engine has, from the five families' own `STATES`.
+/// Every pattern this engine has, from the six families' own `STATES`.
 ///
 /// One place to ask the question, because the answer used to be spelled out
 /// independently in `cost.rs`'s tests and `liquid.rs`'s, and asserted as a bare
@@ -699,6 +1061,7 @@ pub(crate) fn all_states() -> Vec<&'static str> {
         crate::ring::presets::STATES,
         crate::beacon::presets::STATES,
         crate::core_fx::presets::STATES,
+        crate::edge::presets::STATES,
     ]
     .concat()
 }

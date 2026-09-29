@@ -1,0 +1,15 @@
+{
+  "name": "Barge-in",
+  "loop": true,
+  "seed": 4,
+  "turns": [
+    { "state": "idle", "seconds": 1.5 },
+    { "state": "listening", "seconds": 2.2, "voice": "user", "line": "Tell me about the museum." },
+    { "state": "thinking", "seconds": 1.2 },
+    { "state": "speaking", "seconds": 3.0, "voice": "agent", "line": "The city museum opened in 1902 and holds over forty" },
+    { "state": "listening", "seconds": 2.0, "voice": "user", "bargeIn": true, "line": "Sorry, is it open today?" },
+    { "state": "thinking", "seconds": 0.8 },
+    { "state": "speaking", "seconds": 2.4, "voice": "agent", "line": "Yes, until 6 pm." },
+    { "state": "idle", "seconds": 1.5 }
+  ]
+}

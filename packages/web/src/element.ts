@@ -30,14 +30,22 @@ export interface SinuaViewElementProps {
   /** A `VoiceSource` or `VoiceOverrides` (property only; the view never connects it). */
   voice?: SinuaViewOptions["voice"];
   voiceLevelInput?: string | null;
-  /** State cross-fade, seconds (default 0.25). */
+  /** Every state change's duration, seconds (0 = a cut; unset = the spec's `transitions`, or 0.6 s). */
   crossFade?: number;
   theme?: "auto" | "light" | "dark";
   paused?: boolean;
   reducedMotion?: "auto" | "always" | "never";
   maxFps?: number | null;
   lowPower?: boolean;
+  /** Pointer and touch scatter (see `SinuaViewOptions.pointer`). */
+  pointer?: boolean;
   label?: string | null;
+  /** Words per state for the accessible name and announcements (property only). */
+  labels?: Record<string, string> | null;
+  /** Speak state changes (default: the spec's, else true). Attribute: `announce="false"`. */
+  announce?: boolean | null;
+  /** Derive the state from the spec's 1.9 `rules` (default true). Attribute: `rules="false"`. */
+  rules?: boolean | null;
 }
 
 export interface SinuaViewElementEventMap extends HTMLElementEventMap {
@@ -52,6 +60,8 @@ export interface SinuaViewElement extends HTMLElement, SinuaViewElementProps {
   readonly handle: FxHandle | null;
   /** The bound VoiceOverrides while connected (a meter, a lifecycle label), else null. */
   readonly voiceOverrides: VoiceOverrides | null;
+  /** Plays a one-shot effect: `success`, `error` or `celebrate`. */
+  trigger(name: string): void;
   addEventListener<K extends keyof SinuaViewElementEventMap>(type: K, listener: (this: SinuaViewElement, ev: SinuaViewElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
   removeEventListener<K extends keyof SinuaViewElementEventMap>(type: K, listener: (this: SinuaViewElement, ev: SinuaViewElementEventMap[K]) => void, options?: boolean | EventListenerOptions): void;
@@ -59,7 +69,7 @@ export interface SinuaViewElement extends HTMLElement, SinuaViewElementProps {
 }
 
 /** Attribute → property and how the text is read. Objects (`overrides`, `inputs`, `voice`) are properties only. */
-export const FX_VIEW_ATTRIBUTES: Readonly<Record<string, { prop: keyof SinuaViewElementProps; type: "string" | "number" | "boolean" }>> = {
+export const FX_VIEW_ATTRIBUTES: Readonly<Record<string, { prop: keyof SinuaViewElementProps; type: "string" | "number" | "boolean" | "toggle" }>> = {
   spec: { prop: "spec", type: "string" },
   pattern: { prop: "pattern", type: "string" },
   state: { prop: "state", type: "string" },
@@ -67,17 +77,22 @@ export const FX_VIEW_ATTRIBUTES: Readonly<Record<string, { prop: keyof SinuaView
   speed: { prop: "speed", type: "number" },
   "voice-level-input": { prop: "voiceLevelInput", type: "string" },
   "cross-fade": { prop: "crossFade", type: "number" },
+  // Default-on options: absent = unset, "false" = off (a presence boolean couldn't say off).
+  announce: { prop: "announce", type: "toggle" },
+  rules: { prop: "rules", type: "toggle" },
   theme: { prop: "theme", type: "string" },
   paused: { prop: "paused", type: "boolean" },
   "reduced-motion": { prop: "reducedMotion", type: "string" },
   "max-fps": { prop: "maxFps", type: "number" },
   "low-power": { prop: "lowPower", type: "boolean" },
+  pointer: { prop: "pointer", type: "boolean" },
   label: { prop: "label", type: "string" },
 };
 
 const PROPS: readonly (keyof SinuaViewElementProps)[] = [
   "spec", "pattern", "state", "size", "speed", "overrides", "inputs", "voice", "voiceLevelInput",
-  "crossFade", "theme", "paused", "reducedMotion", "maxFps", "lowPower", "label",
+  "crossFade", "theme", "paused", "reducedMotion", "maxFps", "lowPower", "pointer", "label",
+  "labels", "announce", "rules",
 ];
 
 /** An attribute's text → its property value (`null` = attribute removed). */
@@ -86,6 +101,7 @@ export function attributeValue(name: string, text: string | null): unknown {
   if (!a) return undefined;
   if (a.type === "boolean") return text !== null;
   if (text === null) return undefined;
+  if (a.type === "toggle") return text.trim().toLowerCase() !== "false";
   return a.type === "number" ? Number(text) : text;
 }
 
@@ -117,7 +133,11 @@ export function optionsFromProps(
     reducedMotion: p.reducedMotion,
     maxFps: p.maxFps ?? undefined,
     lowPower: p.lowPower ?? false,
+    pointer: p.pointer ?? false,
     label: p.label ?? undefined,
+    labels: p.labels ?? undefined,
+    announce: p.announce ?? undefined,
+    rules: p.rules ?? undefined,
     ...hooks,
   };
 }
@@ -159,6 +179,11 @@ function createClass(): CustomElementConstructor {
 
     get voiceOverrides(): VoiceOverrides | null {
       return this.fxHandle?.voice ?? null;
+    }
+
+    /** Plays a one-shot effect: `success`, `error` or `celebrate` (docs/fx-view.md). */
+    trigger(name: string): void {
+      this.fxHandle?.trigger(name);
     }
 
     connectedCallback() {

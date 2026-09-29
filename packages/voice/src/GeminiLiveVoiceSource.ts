@@ -1,5 +1,7 @@
+import { canRefreshCredential, resolveCredential, type CredentialOptions } from "./credential.js";
 import { insecureCredentialRefusal } from "./insecureCredential.js";
 import { PcmAudioGraph } from "./PcmAudioGraph.js";
+import { FatalConnectError, isFatalConnectError } from "./realtimeReconnect.js";
 import { base64ToBytes, bytesToBase64, float32ToPcm16, parsePcmRate, pcm16ToFloat32 } from "./pcm.js";
 import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
 
@@ -61,34 +63,27 @@ import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
  *
  * ## Credentials -- read this before wiring it anywhere real
  *
- * - `auth_tokens/…` -> an ephemeral token minted by *your backend*
- *   (`POST /v1beta/auth_tokens`), sent as `access_token` on the Constrained
- *   endpoint. The production shape: short-lived, single-use by default,
- *   can lock the model/config server-side.
- * - anything else -> a raw API key on `?key=`. **DEV-ONLY DEMO WIRING**,
- *   same rule as `OpenAIRealtimeVoiceSource`: memory only, never persisted, never
- *   logged. It is in the socket URL only because a browser `WebSocket` can
- *   set no auth header and that is the API's documented key path -- one
- *   more reason a product must use the token path instead.
+ * Only an ephemeral token (`auth_tokens/…`) is accepted, minted by *your
+ * backend* (`POST /v1beta/auth_tokens`; `@sinua/voice/server`'s
+ * `mintGeminiLiveCredential`, or `npx @sinua/voice dev-proxy` locally) and sent
+ * as `access_token` on the Constrained endpoint. It is single-use by default
+ * and locks the model, voice and instructions server-side. Pass
+ * `credentialUrl` or a `credential` provider: every reconnect (a drop, or
+ * `goAway`) resumes the session with a **new** token. A raw API key is refused.
  */
-export interface GeminiLiveVoiceSourceOptions {
-  /** `auth_tokens/…` ephemeral token (production shape) or, dev-only, a raw API key. */
-  credential: string;
-  /**
-   * Opt in to a raw, long-lived API key. Without it `connect()` refuses one
-   * before touching the mic or the socket -- see `insecureCredential.ts`.
-   * Local demos only (the Studio sets it); never in a shipped app.
-   */
-  allowInsecureApiKey?: boolean;
+export interface GeminiLiveVoiceSourceOptions extends CredentialOptions {
   /** Live model id; `gemini-3.8-live` is the current stable default per ai.google.dev/gemini-api/docs/models. */
   model?: string;
-  /** Optional system instruction for the session. */
+  /**
+   * @deprecated Set instructions when your backend mints the token
+   * (`mintGeminiLiveCredential({ instructions })`), which locks them. Still
+   * sent here, but a locked token wins.
+   */
   instructions?: string;
 }
 
-const WS_BASE = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.";
-const METHOD_KEY = "BidiGenerateContent";
-const METHOD_TOKEN = "BidiGenerateContentConstrained";
+const WS_URL =
+  "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
 const INPUT_RATE = 16000;
 const OUTPUT_RATE_FALLBACK = 24000;
 const UPDATE_MS = 1000 / 30; // ~30fps metering, same as every other VoiceSource
@@ -113,8 +108,9 @@ interface ServerMessage {
 }
 
 export class GeminiLiveVoiceSource implements VoiceSource {
-  private readonly credential: string;
-  private readonly allowInsecureApiKey: boolean | undefined;
+  private readonly credentials: CredentialOptions;
+  /** The token for the current socket; replaced on every refresh. */
+  private token = "";
   private readonly model: string;
   private readonly instructions: string | undefined;
 
@@ -132,11 +128,20 @@ export class GeminiLiveVoiceSource implements VoiceSource {
   private metricsCb: ((m: VoiceMetrics) => void) | null = null;
   private stateCb: ((s: AgentState) => void) | null = null;
   private interruptCb: (() => void) | null = null;
+  private connectionCb: ((connected: boolean) => void) | null = null;
+  private sessionUp = false;
+  private muted = false;
+  private micStream: MediaStream | null = null;
   private state: AgentState = "idle";
 
   constructor(opts: GeminiLiveVoiceSourceOptions) {
-    this.credential = opts.credential.trim();
-    this.allowInsecureApiKey = opts.allowInsecureApiKey;
+    this.credentials = { credential: opts.credential, credentialUrl: opts.credentialUrl };
+    if (opts.instructions !== undefined) {
+      console.warn(
+        "GeminiLiveVoiceSource: `instructions` is deprecated -- set them when your backend mints the token " +
+          "(mintGeminiLiveCredential from @sinua/voice/server), which locks them.",
+      );
+    }
     this.model = opts.model ?? "gemini-3.8-live";
     this.instructions = opts.instructions;
   }
@@ -153,24 +158,40 @@ export class GeminiLiveVoiceSource implements VoiceSource {
     this.interruptCb = cb;
   }
 
+  onConnectionChange(cb: (connected: boolean) => void): void {
+    this.connectionCb = cb;
+  }
+
+  /**
+   * Muted, silence goes out: the capture sends zeroed PCM (the server's turn
+   * detection keeps its timing) and the mic track is disabled. The session stays up.
+   */
+  setMuted(muted: boolean): void {
+    this.muted = muted;
+    for (const t of this.micStream?.getAudioTracks() ?? []) t.enabled = !muted;
+  }
+
+  private setSessionUp(up: boolean): void {
+    if (up === this.sessionUp) return;
+    this.sessionUp = up;
+    this.connectionCb?.(up);
+  }
+
   async connect(): Promise<void> {
-    if (!this.credential) throw new Error("GeminiLiveVoiceSource: a credential is required");
+    if (!this.credentials.credential && !this.credentials.credentialUrl) {
+      throw new Error("GeminiLiveVoiceSource: a credential or credentialUrl is required");
+    }
     // Before the mic and before the socket: a refused credential must not open
     // a device or a connection.
-    const refusal = insecureCredentialRefusal({
-      vendor: "GeminiLiveVoiceSource",
-      isEphemeral: this.isEphemeral,
-      allowInsecureApiKey: this.allowInsecureApiKey,
-      ephemeralShape: "auth_tokens/…",
-      mintHint: "POST https://generativelanguage.googleapis.com/v1beta/auth_tokens",
-    });
-    if (refusal) throw new Error(refusal);
+    await this.refreshToken();
     this.wantConnected = true;
     this.setState("initializing");
     try {
       // Gemini's rates are fixed and known up front, so the whole graph can
       // be up before the socket opens (ElevenLabs negotiates them instead).
       const mic = await PcmAudioGraph.requestMic();
+      this.micStream = mic;
+      this.setMuted(this.muted);
       await this.graph.start({
         mic,
         inputRate: INPUT_RATE,
@@ -181,6 +202,7 @@ export class GeminiLiveVoiceSource implements VoiceSource {
       this.connected = true;
       this.setState("listening");
       this.intervalId = setInterval(() => this.tick(), UPDATE_MS);
+      this.setSessionUp(true);
     } catch (err) {
       this.teardown();
       this.setState("idle");
@@ -191,18 +213,25 @@ export class GeminiLiveVoiceSource implements VoiceSource {
   disconnect(): void {
     this.wantConnected = false;
     this.teardown();
+    this.micStream = null;
     this.setState("idle");
+    this.setSessionUp(false);
   }
 
-  /** An `auth_tokens/…` name is the ephemeral shape; anything else is a raw key. */
-  private get isEphemeral(): boolean {
-    return this.credential.startsWith("auth_tokens/");
+  /** A token for the next socket; an `auth_tokens/…` name is the only accepted shape. */
+  private async refreshToken(): Promise<void> {
+    const { credential } = await resolveCredential("GeminiLiveVoiceSource", this.credentials);
+    const refusal = insecureCredentialRefusal({
+      vendor: "GeminiLiveVoiceSource",
+      isEphemeral: credential.startsWith("auth_tokens/"),
+      ephemeralShape: "auth_tokens/…",
+    });
+    if (refusal) throw new FatalConnectError(refusal);
+    this.token = credential;
   }
 
   private buildUrl(): string {
-    return this.isEphemeral
-      ? `${WS_BASE}${METHOD_TOKEN}?access_token=${encodeURIComponent(this.credential)}`
-      : `${WS_BASE}${METHOD_KEY}?key=${encodeURIComponent(this.credential)}`;
+    return `${WS_URL}?access_token=${encodeURIComponent(this.token)}`;
   }
 
   private buildSetup(): Record<string, unknown> {
@@ -268,6 +297,7 @@ export class GeminiLiveVoiceSource implements VoiceSource {
 
   private onCaptureChunk(samples: Float32Array): void {
     if (!this.streaming || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    if (this.muted) samples = new Float32Array(samples.length);
     this.ws.send(
       JSON.stringify({
         realtimeInput: {
@@ -360,6 +390,10 @@ export class GeminiLiveVoiceSource implements VoiceSource {
     }
     for (let attempt = 1; attempt <= RECONNECT_ATTEMPTS && this.wantConnected; attempt++) {
       try {
+        // A token is single-use by default: resume with a new one when the
+        // caller can mint it (a pasted token is tried as is).
+        if (canRefreshCredential(this.credentials)) await this.refreshToken();
+        if (!this.wantConnected) break;
         await this.openSocket();
         this.connected = true;
         this.reconnecting = false;
@@ -367,6 +401,7 @@ export class GeminiLiveVoiceSource implements VoiceSource {
         return;
       } catch (err) {
         console.warn(`Gemini Live reconnect ${attempt}/${RECONNECT_ATTEMPTS} after ${reason} failed:`, err);
+        if (isFatalConnectError(err)) break;
         await new Promise((r) => setTimeout(r, RECONNECT_DELAY_MS));
       }
     }

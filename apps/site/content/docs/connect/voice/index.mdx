@@ -43,14 +43,14 @@ Each vendor source is its own package on iOS and Android, and its own entry poin
 
 ## Credentials: never ship an API key
 
-A voice source never needs your vendor API key. Keep the key on **your server**, mint a short-lived credential per session there, and hand only that credential to the source:
+A voice source never needs your vendor API key. Keep the key on **your server**, where one endpoint mints a short-lived credential per session, and point the source at it:
 
-- **OpenAI:** an ephemeral client secret (`ek_…`), minted with `POST /v1/realtime/client_secrets`.
+- **OpenAI:** an ephemeral client secret (`ek_…`).
 - **Gemini:** an ephemeral auth token (`auth_tokens/…`).
 - **ElevenLabs:** a signed URL for a private agent, or just the agent id for a public one.
-- **LiveKit:** an access token from your backend, or a room you've already connected.
+- **LiveKit:** a room token from your backend, or a room you've already connected.
 
-Sinua doesn't ship a backend. The mint endpoint is yours, so you decide who gets a session and with which model, voice and instructions.
+The endpoint is yours, so you decide who gets a session and with which model, voice and instructions. `@sinua/voice/server` mints all four, the repository has ready-made endpoints for Next.js, Express, Cloudflare Workers and Supabase, and `npx @sinua/voice dev-proxy` serves them on your machine while you try things. See [Credentials](/docs/connect/voice/credentials).
 
 ## Driving the visual yourself
 

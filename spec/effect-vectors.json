@@ -1,0 +1,1035 @@
+{
+  "cases": [
+    {
+      "age": 0.05,
+      "effect": "success",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 203.349631,
+        "cx": 31.949967,
+        "dots": 260,
+        "hue": 79.573525,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "success",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 202.636051,
+        "cx": 31.909364,
+        "dots": 260,
+        "hue": 79.342006,
+        "lines": 0,
+        "polylines": 1
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "success",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 202.991606,
+        "cx": 31.985076,
+        "dots": 260,
+        "hue": 79.573525,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "success",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 202.636051,
+        "cx": 31.909364,
+        "dots": 260,
+        "hue": 79.342006,
+        "lines": 0,
+        "polylines": 1
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "success",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 202.566606,
+        "cx": 31.99622,
+        "dots": 260,
+        "hue": 79.573525,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "success",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 202.477718,
+        "cx": 31.909364,
+        "dots": 260,
+        "hue": 79.342006,
+        "lines": 0,
+        "polylines": 1
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "success",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 201.686051,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 79.108706,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "success",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 201.686051,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 79.108706,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "error",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 201.686051,
+        "cx": 37.390866,
+        "dots": 260,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "error",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 201.686051,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "error",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 201.686051,
+        "cx": 29.478076,
+        "dots": 260,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "error",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 201.686051,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "error",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 201.686051,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 79.108706,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "error",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 201.686051,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 79.108706,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "error",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 201.686051,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 79.108706,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "error",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 201.686051,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 79.108706,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "celebrate",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 234.698757,
+        "cx": 31.911544,
+        "dots": 284,
+        "hue": 87.364969,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "celebrate",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 214.614063,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 79.108706,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "celebrate",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 251.527684,
+        "cx": 31.897617,
+        "dots": 284,
+        "hue": 87.364969,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "celebrate",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 238.19299,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 79.108706,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "celebrate",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 231.316998,
+        "cx": 31.887518,
+        "dots": 284,
+        "hue": 87.364969,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "celebrate",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 224.263936,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 79.108706,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "celebrate",
+      "pattern": "glowing",
+      "reduced": false,
+      "summary": {
+        "alpha": 203.813309,
+        "cx": 31.881303,
+        "dots": 284,
+        "hue": 87.364969,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "celebrate",
+      "pattern": "glowing",
+      "reduced": true,
+      "summary": {
+        "alpha": 203.372493,
+        "cx": 31.912781,
+        "dots": 260,
+        "hue": 79.108706,
+        "lines": 0,
+        "polylines": 0
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "success",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 2.79358,
+        "cx": 32.088437,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 4
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "success",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 2.08,
+        "cx": 31.988516,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "success",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 2.435556,
+        "cx": 32.171392,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 4
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "success",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 2.08,
+        "cx": 31.988516,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "success",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 2.010556,
+        "cx": 32.197812,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 4
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "success",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.921667,
+        "cx": 31.988516,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "success",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.13,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "success",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.13,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "error",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.13,
+        "cx": 37.478086,
+        "dots": 0,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "error",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.13,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "error",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.13,
+        "cx": 29.565295,
+        "dots": 0,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "error",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.13,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "error",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.13,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "error",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.13,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "error",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.13,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "error",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.13,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "celebrate",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 21.277551,
+        "cx": 31.996361,
+        "dots": 24,
+        "hue": 176.807822,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "celebrate",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.192857,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "celebrate",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 14.560835,
+        "cx": 31.95538,
+        "dots": 24,
+        "hue": 176.807822,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "celebrate",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.226141,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "celebrate",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 8.257466,
+        "cx": 31.925661,
+        "dots": 24,
+        "hue": 176.807822,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "celebrate",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.204405,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "celebrate",
+      "pattern": "completing",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.580392,
+        "cx": 31.907373,
+        "dots": 24,
+        "hue": 176.807822,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "celebrate",
+      "pattern": "completing",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.139576,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 2
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "success",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 2.84238,
+        "cx": 32.022883,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 5
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "success",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 2.1288,
+        "cx": 31.997941,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 4
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "success",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 2.484356,
+        "cx": 32.044499,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 5
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "success",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 2.1288,
+        "cx": 31.997941,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 4
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "success",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 2.059356,
+        "cx": 32.051358,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 5
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "success",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.970467,
+        "cx": 31.997941,
+        "dots": 0,
+        "hue": 140.0,
+        "lines": 0,
+        "polylines": 4
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "success",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.1788,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "success",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.1788,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "error",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.1788,
+        "cx": 37.478086,
+        "dots": 0,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "error",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.1788,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "error",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.1788,
+        "cx": 29.565295,
+        "dots": 0,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "error",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.1788,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 8.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "error",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.1788,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "error",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.1788,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "error",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.1788,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "error",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.1788,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "celebrate",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 21.347694,
+        "cx": 31.999249,
+        "dots": 24,
+        "hue": 176.807822,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.05,
+      "effect": "celebrate",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.263,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "celebrate",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 14.815665,
+        "cx": 31.990796,
+        "dots": 24,
+        "hue": 176.807822,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.3,
+      "effect": "celebrate",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.480971,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "celebrate",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 8.391687,
+        "cx": 31.984666,
+        "dots": 24,
+        "hue": 176.807822,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 0.6,
+      "effect": "celebrate",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.338626,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "celebrate",
+      "pattern": "waveform",
+      "reduced": false,
+      "summary": {
+        "alpha": 1.629605,
+        "cx": 31.980894,
+        "dots": 24,
+        "hue": 176.807822,
+        "lines": 0,
+        "polylines": 3
+      }
+    },
+    {
+      "age": 1.2,
+      "effect": "celebrate",
+      "pattern": "waveform",
+      "reduced": true,
+      "summary": {
+        "alpha": 1.188789,
+        "cx": 32.0,
+        "dots": 0,
+        "hue": 0.0,
+        "lines": 0,
+        "polylines": 3
+      }
+    }
+  ],
+  "effects": [
+    {
+      "code": 1,
+      "duration": 0.9,
+      "name": "success",
+      "words": "Done"
+    },
+    {
+      "code": 2,
+      "duration": 0.5,
+      "name": "error",
+      "words": "Something went wrong"
+    },
+    {
+      "code": 3,
+      "duration": 1.4,
+      "name": "celebrate",
+      "words": "Well done"
+    }
+  ],
+  "note": "One-shot effects (docs/fx-view.md): frame_with_overrides(pattern, 64, t = 1, { effectCode, effectAge, effectReduced }) summarised as { dots, lines, polylines, alpha (sum), hue (mean over saturated items), cx (mean x over dots, line ends and polyline points) }, rounded to 1e-6. Checked by crates/core_engine/tests/effect_vectors.rs and each platform's tests.",
+  "size": 64,
+  "t": 1.0
+}

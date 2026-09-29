@@ -22,7 +22,7 @@ function externals(entry, seen = new Set(), out = new Set()) {
 }
 
 test("every subpath is exported with types", () => {
-  for (const sub of [".", "./livekit", "./openai", "./gemini", "./elevenlabs", "./mic", "./tone"]) {
+  for (const sub of [".", "./livekit", "./openai", "./gemini", "./elevenlabs", "./mic", "./tone", "./server"]) {
     const e = pkg.exports[sub];
     assert.ok(e?.types && e?.default, sub);
     readFileSync(join(DIST, "..", e.default));
@@ -31,9 +31,25 @@ test("every subpath is exported with types", () => {
 });
 
 test("only /livekit reaches livekit-client, and nothing imports @sinua/core at runtime", () => {
-  for (const entry of ["index.js", "mic.js", "tone.js", "openai.js", "gemini.js", "elevenlabs.js"]) {
+  for (const entry of ["index.js", "mic.js", "tone.js", "openai.js", "gemini.js", "elevenlabs.js", "server.js"]) {
     assert.deepEqual([...externals(entry)], [], `${entry} imports no package at runtime`);
   }
   assert.deepEqual([...externals("livekit.js")], ["livekit-client"]);
   assert.equal(pkg.peerDependenciesMeta["livekit-client"].optional, true);
+});
+
+test("the server helper is its own entry: no browser subpath reaches it, and the bin ships", () => {
+  const reach = (entry, seen = new Set()) => {
+    if (seen.has(entry)) return seen;
+    seen.add(entry);
+    const src = readFileSync(join(DIST, entry), "utf8");
+    for (const m of src.matchAll(/from\s*["'](\.[^"']+)["']/g)) reach(join(dirname(entry), m[1]), seen);
+    return seen;
+  };
+  for (const entry of ["index.js", "openai.js", "gemini.js", "elevenlabs.js", "livekit.js", "mic.js", "tone.js"]) {
+    assert.ok(!reach(entry).has("server.js"), `${entry} must not pull in server.js`);
+  }
+  assert.equal(pkg.bin["sinua-voice"], "./bin/sinua-voice.mjs");
+  assert.ok(pkg.files.includes("bin"));
+  assert.match(readFileSync(join(DIST, "..", pkg.bin["sinua-voice"]), "utf8"), /^#!\/usr\/bin\/env node/);
 });

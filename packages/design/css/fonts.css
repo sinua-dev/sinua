@@ -1,0 +1,4 @@
+/* Self-hosted type: no font CDN, so the Studio works offline and the site makes no
+   third-party request. */
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";

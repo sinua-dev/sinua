@@ -59,6 +59,15 @@ export interface Snippets {
 }
 
 /**
+ * The view's box in a snippet: square, except a box-layout pattern's own box -- a
+ * phone screen for the edge glow, a chat bubble for the voice message (catalog
+ * `layout: "box"`). The native Studios' Snippets.swift / .kt use the same numbers.
+ */
+export function snippetBox(pattern: string): [number, number] {
+  return pattern === "framing" ? [180, 390] : pattern === "playing" ? [220, 44] : [160, 160];
+}
+
+/**
  * The export panel's two modes (docs/fx-view.md): **Code** is the design as
  * SinuaView props on each platform; **File** adds the Spec menu's .fxspec.json
  * (the canonical format) and loads it. The native Studios port this text
@@ -69,6 +78,8 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile }: S
   const has = Object.keys(overrides).length > 0;
   const file = `// ${specFile}: the file from the Studio's Spec menu.`;
   const orFile = `// Or use the file: Spec menu → ${specFile} (File tab).`;
+  const [boxW, boxH] = snippetBox(state);
+  const composeSize = boxW === boxH ? `${boxW}.dp` : `${boxW}.dp, ${boxH}.dp`;
 
   // Props per syntax (size/speed only when not the default).
   const jsProps = [`pattern="${state}"`, size !== 64 ? `size={${size}}` : "", has ? `overrides={${jsObject(overrides)}}` : "", speed !== 1 ? `speed={${snipNum(speed)}}` : ""]
@@ -107,7 +118,7 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile }: S
       code:
         `import { SinuaView } from "@sinua/web/react";\n\n` +
         `export function Visual() {\n` +
-        `  return <SinuaView ${jsProps} style={{ width: 160, height: 160 }} />;\n` +
+        `  return <SinuaView ${jsProps} style={{ width: ${boxW}, height: ${boxH} }} />;\n` +
         `}\n\n${orFile}`,
     },
     {
@@ -126,7 +137,7 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile }: S
         `import Sinua\n\n` +
         `struct Visual: View {\n` +
         `    var body: some View {\n` +
-        `        SinuaView(${swiftArgs}).frame(width: 160, height: 160)\n` +
+        `        SinuaView(${swiftArgs}).frame(width: ${boxW}, height: ${boxH})\n` +
         `    }\n` +
         `}\n\n${orFile}`,
     },
@@ -137,7 +148,7 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile }: S
         composeImports +
         `\n@Composable\n` +
         `fun Visual() {\n` +
-        `    SinuaView(${kotlinArgs}, modifier = Modifier.size(160.dp))\n` +
+        `    SinuaView(${kotlinArgs}, modifier = Modifier.size(${composeSize}))\n` +
         `}\n\n${orFile}`,
     },
     {
@@ -146,7 +157,7 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile }: S
       code:
         `import { SinuaView } from "@sinua/react-native";\n\n` +
         `export function Visual() {\n` +
-        `  return <SinuaView ${jsProps} style={{ width: 160, height: 160 }} />;\n` +
+        `  return <SinuaView ${jsProps} style={{ width: ${boxW}, height: ${boxH} }} />;\n` +
         `}\n\n${orFile}`,
     },
   ];
@@ -160,7 +171,7 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile }: S
         `${file}\n` +
         `import spec from "./${specFile}";\n\n` +
         `export function Visual() {\n` +
-        `  return <SinuaView spec={spec} style={{ width: 160, height: 160 }} />;\n` +
+        `  return <SinuaView spec={spec} style={{ width: ${boxW}, height: ${boxH} }} />;\n` +
         `}`,
     },
     {
@@ -184,7 +195,7 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile }: S
         `let spec = try! String(contentsOf: Bundle.main.url(forResource: "${base}", withExtension: "fxspec.json")!, encoding: .utf8)\n\n` +
         `struct Visual: View {\n` +
         `    var body: some View {\n` +
-        `        SinuaView(spec: spec).frame(width: 160, height: 160)\n` +
+        `        SinuaView(spec: spec).frame(width: ${boxW}, height: ${boxH})\n` +
         `    }\n` +
         `}`,
     },
@@ -202,7 +213,7 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile }: S
         `fun Visual() {\n` +
         `    val context = LocalContext.current\n` +
         `    val spec = remember { context.assets.open("${specFile}").bufferedReader().use { it.readText() } }\n` +
-        `    SinuaView(spec = spec, modifier = Modifier.size(160.dp))\n` +
+        `    SinuaView(spec = spec, modifier = Modifier.size(${composeSize}))\n` +
         `}`,
     },
     {
@@ -213,7 +224,7 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile }: S
         `${file}\n` +
         `import spec from "./${specFile}";\n\n` +
         `export function Visual() {\n` +
-        `  return <SinuaView spec={spec} style={{ width: 160, height: 160 }} />;\n` +
+        `  return <SinuaView spec={spec} style={{ width: ${boxW}, height: ${boxH} }} />;\n` +
         `}`,
     },
   ];
@@ -330,6 +341,7 @@ function jsxProps(design: TypedDesign, size: OrbSize, speed: number): string {
  */
 export function buildTypedSnippets({ design, size, speed = 1 }: { design: TypedDesign; size: OrbSize; speed?: number }): SnippetTab[] {
   const props = jsxProps(design, size, speed);
+  const [boxW, boxH] = snippetBox(design.pattern);
   return [
     {
       id: "react",
@@ -337,7 +349,7 @@ export function buildTypedSnippets({ design, size, speed = 1 }: { design: TypedD
       code:
         `import { ${design.component} } from "@sinua/web/components";\n\n` +
         `export function Visual() {\n` +
-        `  return <${design.component} ${props} style={{ width: 160, height: 160 }} />;\n` +
+        `  return <${design.component} ${props} style={{ width: ${boxW}, height: ${boxH} }} />;\n` +
         `}`,
     },
     {
@@ -346,7 +358,7 @@ export function buildTypedSnippets({ design, size, speed = 1 }: { design: TypedD
       code:
         `import { ${design.component} } from "@sinua/react-native";\n\n` +
         `export function Visual() {\n` +
-        `  return <${design.component} ${props} style={{ width: 160, height: 160 }} />;\n` +
+        `  return <${design.component} ${props} style={{ width: ${boxW}, height: ${boxH} }} />;\n` +
         `}`,
     },
   ];

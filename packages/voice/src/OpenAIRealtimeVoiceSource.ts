@@ -1,4 +1,5 @@
 import { AudioAnalysis } from "./analysis.js";
+import { canRefreshCredential, resolveCredential, type CredentialOptions, type CredentialProvider } from "./credential.js";
 import { insecureCredentialRefusal } from "./insecureCredential.js";
 import {
   DEFAULT_RECONNECT_ATTEMPTS,
@@ -36,17 +37,13 @@ import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
  *
  * ## Credentials -- read this before wiring it anywhere real
  *
- * `credential` is either:
- * - an ephemeral key (`ek_...`) minted by *your backend* via
- *   `client_secrets` -- the production shape. The browser never sees a
- *   long-lived key; the `ek_` expires (600s default) and is scoped to one
- *   Realtime session. This is the only path a shipped product should use.
- * - anything else, treated as a raw API key: the adapter then mints the
- *   `ek_` itself, from the browser. **DEV-ONLY DEMO WIRING.** It exists so
- *   the local Studio can be pointed at a real model without a backend
- *   (this project has none). The
- *   key lives in this instance's memory only: never persisted, never
- *   logged, never put in a URL. Do not copy this path into an app.
+ * Only an ephemeral key (`ek_...`) is accepted, minted by *your backend*
+ * via `client_secrets` (`@sinua/voice/server`'s `mintOpenAIRealtimeCredential`,
+ * or `npx @sinua/voice dev-proxy` locally). The browser never sees a
+ * long-lived key; the `ek_` expires (600s default) and is scoped to one
+ * Realtime session, whose model, voice and instructions the backend set when
+ * it minted it. Pass `credentialUrl` or a `credential` provider so every
+ * connect and reconnect gets a fresh one; a raw API key is refused.
  *
  * ## State mapping (LiveKit `AgentState` vocabulary, see ./types.ts)
  *
@@ -76,50 +73,37 @@ import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
  * so visuals go quiet instead of freezing. The mic, `AudioContext` and
  * audio element are kept. Up to `reconnect.maxAttempts` (3) tries, 100 ms
  * then exponential backoff (LiveKit's policy). Each try gets a *fresh*
- * credential: `getCredential()` when given (production: your backend mints
- * a new `ek_`), else a raw dev key re-mints. A pasted `ek_` alone can't be
- * reused (single session, expiring), so without `getCredential` a drop
- * still ends in `idle`. Fatal failures (HTTP 400/401/403, or a fatal
+ * credential from `credentialUrl` or the `credential` provider (your backend
+ * mints a new `ek_`). A pasted `ek_` alone can't be reused (single session,
+ * expiring), so without a provider a drop still ends in `idle`. Fatal failures (HTTP 400/401/403, or a fatal
  * `error.code` such as `invalid_api_key`/`insufficient_quota` seen before
  * the drop) give up at once. On success the finalized transcript is
  * replayed as `conversation.item.create` text items so the model keeps its
  * context (assistant turns always; user turns only if the session has input
  * transcription on). Give-up ends in `idle`.
  */
-export interface OpenAIRealtimeVoiceSourceOptions {
-  /**
-   * An `ek_...` ephemeral key (production shape) or, dev-only, a raw API
-   * key. May be empty when `getCredential` is given.
-   */
-  credential?: string;
-  /**
-   * Opt in to a raw, long-lived API key (which this adapter would mint an
-   * `ek_` from, in the browser). Without it `connect()` refuses one before
-   * touching the mic or opening a session -- see `insecureCredential.ts`.
-   * Local demos only (the Studio sets it); never in a shipped app. It applies
-   * to whatever `getCredential` returns too.
-   */
-  allowInsecureApiKey?: boolean;
-  /**
-   * Production shape: returns a fresh credential (normally an `ek_` minted
-   * by your backend) and is called for **every** connect and reconnect, so
-   * an expired key is never reused. Takes precedence over `credential`.
-   */
-  getCredential?: () => Promise<string>;
+export interface OpenAIRealtimeVoiceSourceOptions extends CredentialOptions {
+  /** @deprecated Pass the same function as `credential`. */
+  getCredential?: CredentialProvider;
   /** Reconnect policy after a drop; `false` restores the old drop-to-`idle` behaviour. */
   reconnect?: ReconnectPolicy | false;
   /** Replay the finalized transcript into a replacement session. Default true. */
   replayTranscript?: boolean;
   /** Realtime model id. `gpt-realtime` is the alias OpenAI's own WebRTC guide uses. */
   model?: string;
-  /** Output voice; `marin` is the current default in OpenAI's samples. */
+  /**
+   * @deprecated Ignored: the voice is fixed when your backend mints the `ek_`
+   * (`mintOpenAIRealtimeCredential({ voice })`).
+   */
   voice?: string;
-  /** Optional system instructions for the session. */
+  /**
+   * @deprecated Ignored: instructions are fixed when your backend mints the
+   * `ek_` (`mintOpenAIRealtimeCredential({ instructions })`).
+   */
   instructions?: string;
 }
 
 const CALLS_URL = "https://api.openai.com/v1/realtime/calls";
-const CLIENT_SECRETS_URL = "https://api.openai.com/v1/realtime/client_secrets";
 const DATA_CHANNEL_LABEL = "oai-events";
 const UPDATE_MS = 1000 / 30; // ~30fps, decoupled from the render loop -- same as LocalMicVoiceSource
 const WATCHDOG_ZERO_FRAMES = 30; // ~1s of exact-zero RMS *while the model should be audible*
@@ -127,22 +111,12 @@ const SPEAKING_LEVEL = 0.05; // energy floor for the no-output_audio_buffer-even
 const SPEAKING_TAIL_FRAMES = 9; // ~300ms below the floor after response.done before leaving `speaking`
 const DATA_CHANNEL_OPEN_TIMEOUT_MS = 15_000;
 
-/** Shown when in-browser minting fails, so the user knows the supported alternative. */
-const MINT_HINT = [
-  "Mint an ephemeral key server-side and paste that (ek_...) instead:",
-  'curl -X POST https://api.openai.com/v1/realtime/client_secrets -H "Authorization: Bearer $OPENAI_API_KEY" -H "Content-Type: application/json" -d \'{"session":{"type":"realtime","model":"gpt-realtime"}}\'',
-].join("\n");
-
 export class OpenAIRealtimeVoiceSource implements VoiceSource {
-  private readonly credential: string;
-  private readonly allowInsecureApiKey: boolean | undefined;
-  private readonly getCredential: (() => Promise<string>) | undefined;
+  private readonly credentials: CredentialOptions;
   private readonly reconnectPolicy: ReconnectPolicy | null;
   private readonly replayTranscript: boolean;
   private readonly transcript = new TranscriptLog();
   private readonly model: string;
-  private readonly voice: string;
-  private readonly instructions: string | undefined;
 
   private ctx: AudioContext | null = null;
   private pc: RTCPeerConnection | null = null;
@@ -160,6 +134,10 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
   private metricsCb: ((m: VoiceMetrics) => void) | null = null;
   private stateCb: ((s: AgentState) => void) | null = null;
   private interruptCb: (() => void) | null = null;
+  private connectionCb: ((connected: boolean) => void) | null = null;
+  /** What `onConnectionChange` last said: true from a successful connect through reconnects, until disconnect or giving up. */
+  private sessionUp = false;
+  private muted = false;
 
   private state: AgentState = "idle";
   private connected = false;
@@ -177,14 +155,19 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
   private sawOutputBufferEvents = false;
 
   constructor(opts: OpenAIRealtimeVoiceSourceOptions) {
-    this.credential = (opts.credential ?? "").trim();
-    this.allowInsecureApiKey = opts.allowInsecureApiKey;
-    this.getCredential = opts.getCredential;
+    this.credentials = {
+      credential: opts.getCredential ?? opts.credential,
+      credentialUrl: opts.credentialUrl,
+    };
+    if (opts.voice !== undefined || opts.instructions !== undefined) {
+      console.warn(
+        "OpenAIRealtimeVoiceSource: `voice` and `instructions` are ignored -- the session's config is fixed when your " +
+          "backend mints the ek_ (mintOpenAIRealtimeCredential from @sinua/voice/server).",
+      );
+    }
     this.reconnectPolicy = opts.reconnect === false ? null : opts.reconnect ?? {};
     this.replayTranscript = opts.replayTranscript ?? true;
     this.model = opts.model ?? "gpt-realtime";
-    this.voice = opts.voice ?? "marin";
-    this.instructions = opts.instructions;
   }
 
   onMetrics(cb: (m: VoiceMetrics) => void): void {
@@ -199,8 +182,29 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     this.interruptCb = cb;
   }
 
+  onConnectionChange(cb: (connected: boolean) => void): void {
+    this.connectionCb = cb;
+  }
+
+  /**
+   * Muted, the mic track is disabled: WebRTC sends silence and the call stays up.
+   * The mic is kept across reconnects, so the mute holds through them.
+   */
+  setMuted(muted: boolean): void {
+    this.muted = muted;
+    for (const t of this.mic?.getAudioTracks() ?? []) t.enabled = !muted;
+  }
+
+  private setSessionUp(up: boolean): void {
+    if (up === this.sessionUp) return;
+    this.sessionUp = up;
+    this.connectionCb?.(up);
+  }
+
   async connect(): Promise<void> {
-    if (!this.credential && !this.getCredential) throw new Error("OpenAIRealtimeVoiceSource: a credential is required");
+    if (!this.credentials.credential && !this.credentials.credentialUrl) {
+      throw new Error("OpenAIRealtimeVoiceSource: a credential or credentialUrl is required");
+    }
     this.wantConnected = true;
     this.fatalCode = null;
     this.transcript.clear();
@@ -212,6 +216,7 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
       this.connected = true;
       this.setState("listening");
       this.intervalId = setInterval(() => this.tick(), UPDATE_MS);
+      this.setSessionUp(true);
     } catch (err) {
       this.wantConnected = false;
       this.teardown();
@@ -220,27 +225,25 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     }
   }
 
-  /** A fresh key for this (re)connect: the caller's callback, a pasted `ek_`, or a dev-only mint. */
+  /** A fresh `ek_` for this (re)connect, from `credentialUrl`, the provider or a pasted value. */
   private async resolveKey(): Promise<string> {
-    const credential = this.getCredential ? (await this.getCredential()).trim() : this.credential;
-    if (!credential) throw new FatalConnectError("OpenAIRealtimeVoiceSource: getCredential() returned an empty credential");
-    // Runs on every (re)connect, and on whatever `getCredential` returns, so a
+    const { credential } = await resolveCredential("OpenAIRealtimeVoiceSource", this.credentials);
+    // Runs on every (re)connect, and on whatever the provider returns, so a
     // backend that starts handing out raw keys is caught too. Fatal by
     // construction: a refused credential is never worth retrying.
     const refusal = insecureCredentialRefusal({
       vendor: "OpenAIRealtimeVoiceSource",
       isEphemeral: credential.startsWith("ek_"),
-      allowInsecureApiKey: this.allowInsecureApiKey,
       ephemeralShape: "ek_…",
-      mintHint: "POST https://api.openai.com/v1/realtime/client_secrets",
     });
     if (refusal) throw new FatalConnectError(refusal);
-    return credential.startsWith("ek_") ? credential : this.mintClientSecret(credential);
+    return credential;
   }
 
   /** Mic, AudioContext -- kept across reconnects. */
   private async acquireLocal(): Promise<void> {
     this.mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.setMuted(this.muted);
     this.ctx = new (globalThis.AudioContext ||
       (globalThis as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
     // The user just clicked "connect", so resuming under an autoplay
@@ -328,11 +331,11 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     this.setState("initializing");
 
     const policy = this.reconnectPolicy;
-    const hasFreshCredential = !!this.getCredential || !this.credential.startsWith("ek_");
+    const hasFreshCredential = canRefreshCredential(this.credentials);
     if (!policy || !hasFreshCredential || isFatalRealtimeError(this.fatalCode)) {
       console.warn(
         `OpenAI Realtime ${reason}; not reconnecting (${
-          !policy ? "reconnect disabled" : !hasFreshCredential ? "a pasted ek_ can't be reused -- pass getCredential" : `fatal error ${this.fatalCode}`
+          !policy ? "reconnect disabled" : !hasFreshCredential ? "a pasted ek_ can't be reused -- pass credentialUrl or a credential provider" : `fatal error ${this.fatalCode}`
         })`
       );
       this.giveUp();
@@ -373,6 +376,7 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     this.wantConnected = false;
     this.teardown();
     this.setState("idle");
+    this.setSessionUp(false);
   }
 
   disconnect(): void {
@@ -380,54 +384,7 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     this.reconnecting = false;
     this.teardown();
     this.setState("idle");
-  }
-
-  /**
-   * DEV-ONLY: mints the ephemeral key from the browser with a raw API key.
-   * The session config goes here (not via a later `session.update`) so a
-   * backend-minted `ek_` -- whose config that backend owns -- takes the
-   * exact same connect path with nothing overridden. `server_vad` is
-   * requested explicitly because the reference documents
-   * `speech_started/stopped` as emitted "in `server_vad` mode".
-   */
-  private async mintClientSecret(apiKey: string): Promise<string> {
-    const session: Record<string, unknown> = {
-      type: "realtime",
-      model: this.model,
-      audio: {
-        input: { turn_detection: { type: "server_vad" } },
-        output: { voice: this.voice },
-      },
-    };
-    if (this.instructions) session.instructions = this.instructions;
-
-    let res: Response;
-    try {
-      res = await fetch(CLIENT_SECRETS_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          expires_after: { anchor: "created_at", seconds: 600 },
-          session,
-        }),
-      });
-    } catch (err) {
-      throw new Error(
-        `Could not reach ${CLIENT_SECRETS_URL} from the browser (${describe(err)}).\n${MINT_HINT}`
-      );
-    }
-    if (!res.ok) {
-      const message = `OpenAI client_secrets returned ${res.status}: ${await safeText(res)}\n${MINT_HINT}`;
-      throw isRetryableHttpStatus(res.status) ? new Error(message) : new FatalConnectError(message);
-    }
-    const data = (await res.json()) as { value?: unknown };
-    if (typeof data.value !== "string" || !data.value) {
-      throw new Error("OpenAI client_secrets response had no `value` field");
-    }
-    return data.value;
+    this.setSessionUp(false);
   }
 
   private attachRemote(stream: MediaStream | undefined): void {
@@ -616,8 +573,4 @@ async function safeText(res: Response): Promise<string> {
   } catch {
     return "<no body>";
   }
-}
-
-function describe(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
 }

@@ -8,7 +8,6 @@ import org.json.JSONObject
 
 object OpenAIRealtimeSignaling {
     const val CALLS_URL = "https://api.openai.com/v1/realtime/calls"
-    const val CLIENT_SECRETS_URL = "https://api.openai.com/v1/realtime/client_secrets"
     const val DEFAULT_MODEL = "gpt-realtime"
     const val DEFAULT_VOICE = "marin"
 
@@ -29,45 +28,6 @@ object OpenAIRealtimeSignaling {
         check(status, body)
         if (!body.startsWith("v=")) throw SignalingException.Malformed("the calls response isn't an SDP answer")
         return body
-    }
-
-    /**
-     * **DEV ONLY** -- minting an `ek_` on the device with a raw API key, the Web
-     * Studio's demo path. A product mints on its backend and hands the app the `ek_`.
-     */
-    fun clientSecretRequest(
-        apiKey: String,
-        model: String = DEFAULT_MODEL,
-        voice: String = DEFAULT_VOICE,
-        instructions: String? = null,
-        url: String = CLIENT_SECRETS_URL,
-    ): Request {
-        val session = JSONObject()
-            .put("type", "realtime")
-            .put("model", model)
-            // server_vad explicitly: speech_started/stopped are documented as emitted in that mode.
-            .put(
-                "audio",
-                JSONObject()
-                    .put("input", JSONObject().put("turn_detection", JSONObject().put("type", "server_vad")))
-                    .put("output", JSONObject().put("voice", voice)),
-            )
-        instructions?.let { session.put("instructions", it) }
-        val body = JSONObject()
-            .put("expires_after", JSONObject().put("anchor", "created_at").put("seconds", 600))
-            .put("session", session)
-        return Request(url, mapOf("Authorization" to "Bearer $apiKey"), "application/json", body.toString())
-    }
-
-    fun clientSecret(status: Int, body: String): String {
-        check(status, body)
-        val value = try {
-            JSONObject(body).optString("value")
-        } catch (_: Exception) {
-            ""
-        }
-        if (value.isEmpty()) throw SignalingException.Malformed("the client_secrets response had no `value`")
-        return value
     }
 
     private fun check(status: Int, body: String) {

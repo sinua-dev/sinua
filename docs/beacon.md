@@ -148,9 +148,9 @@ sparse) and 3.5 (the idle scope turns into a grey disc).
 |---|---|---|
 | `period` | 3.2 | seconds per turn (CodeFronts) |
 | `ringCount` | 4 | range rings, 1..8 |
-| `dotSize` | 0.018 | radius of each scope dot |
+| `dotSize` | 0.018 | radius of each scope dot, as a maximum: capped at ring gap / 4.5, so dense `ringCount`s keep distinct rings (the default 4 rings never hit the cap) |
 | `trailLength` | 90 | degrees the trail extends behind the beam |
-| `blipCount` | 3 | number of blips, 0..12; positions come from `hash_d`, so they're deterministic |
+| `blipCount` | 0 | how many targets the app found (e.g. nearby devices), 0..12: one blip each. Positions come from `hash_d` per index, so raising the count adds a blip and moves none |
 | `seed` | 0 | changes the blip layout |
 | `hue` / `saturation` | 200 / 0 | grey by default; use `hue: 120` for CRT green |
 
@@ -169,6 +169,8 @@ sparse) and 3.5 (the idle scope turns into a grey disc).
 - dots sit exactly on `ringCount` radii, with the outer rings denser
 - the blip curve is 0.95 → 0.45 → 0.12, monotone
 - `blipCount` and `seed` behave deterministically
+- rings stay distinct at every `ringCount`: along-ring spacing never exceeds the ring gap, and dots never touch across rings
+- no blips by default; going from 2 to 3 keeps the first two in place
 - grey by default, and `hue` reaches every element
 
 ## Broadcast (`broadcasting`): design notes

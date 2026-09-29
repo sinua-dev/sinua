@@ -15,11 +15,15 @@ RCT_EXTERN_METHOD(connect
 
 RCT_EXTERN_METHOD(disconnect : (NSString *)id)
 
+RCT_EXTERN_METHOD(setMuted : (NSString *)id muted : (BOOL)muted)
+
 RCT_EXTERN_METHOD(release : (NSString *)id)
 
 RCT_EXTERN_METHOD(provideCredential
                   : (NSString *)requestId credential
-                  : (NSString *)credential error
-                  : (NSString *)error)
+                  : (NSString *)credential url
+                  : (NSString *)url error
+                  : (NSString *)error fatal
+                  : (BOOL)fatal)
 
 @end

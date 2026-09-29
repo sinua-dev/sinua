@@ -65,6 +65,7 @@ static NSString *_Nullable str(const std::string &s) {
             inputsJson:str(p.inputsJson)
        voiceLevelInput:str(p.voiceLevelInput)
              crossFade:p.crossFade
+         audioStrength:p.audioStrength
                  voice:[NSString stringWithUTF8String:toString(p.voice).c_str()]
          voiceSourceId:str(p.voiceSourceId)
                  theme:[NSString stringWithUTF8String:toString(p.theme).c_str()]
@@ -73,7 +74,13 @@ static NSString *_Nullable str(const std::string &s) {
                 maxFps:p.maxFps
               lowPower:[NSString stringWithUTF8String:toString(p.lowPower).c_str()]
                  label:str(p.label)
-          reportFrames:p.reportFrames];
+          reportFrames:p.reportFrames
+            labelsJson:str(p.labelsJson)
+              announce:[NSString stringWithUTF8String:toString(p.announce).c_str()]
+               haptics:p.haptics
+                 rules:p.rules
+            effectName:str(p.effectName)
+             effectKey:p.effectKey];
   [super updateProps:props oldProps:oldProps];
 }
 

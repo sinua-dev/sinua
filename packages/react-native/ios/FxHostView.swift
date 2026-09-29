@@ -19,7 +19,8 @@ final class FxHostModel: ObservableObject {
     @Published var specState: String?
     @Published var inputs: [String: Double] = [:]
     @Published var voiceLevelInput: String?
-    @Published var crossFade = 0.25
+    /// nil = the spec's `transitions` (default 0.6 s).
+    @Published var crossFade: Double?
     @Published var theme: FxTheme = .auto
     @Published var paused = false
     @Published var reducedMotion: FxReducedMotion = .auto
@@ -27,6 +28,14 @@ final class FxHostModel: ObservableObject {
     @Published var lowPower: FxLowPower = .auto
     @Published var label: String?
     @Published var voice: VoiceSource?
+    /// Set when `audioStrength` asks for a pulse other than the view's default: this view's
+    /// own tracker on the source's fan-out, used instead of `voice`.
+    @Published var voiceOverrides: VoiceOverrides?
+    @Published var labels: [String: String] = [:]
+    @Published var announce: Bool?
+    @Published var haptics = false
+    @Published var rules = true
+    @Published var effect: SinuaEffectTrigger?
     /// The app's real activity. SinuaView runs only while `scenePhase == .active`,
     /// and a UIHostingController inside a scene-less UIKit app (React Native's
     /// AppDelegate + window) never gets an active `scenePhase` from SwiftUI --
@@ -45,14 +54,19 @@ struct FxHostContent: View {
     @ViewBuilder private var content: some View {
         let frame: ((FxFrameStats) -> Void)? = model.onFrame
         if let spec = model.spec, !spec.isEmpty {
-            SinuaView(spec: spec, voice: model.voice, state: model.specState, inputs: model.inputs,
+            SinuaView(spec: spec, voice: model.voice, voiceOverrides: model.voiceOverrides, state: model.specState,
+                   inputs: model.inputs,
                    voiceLevelInput: model.voiceLevelInput, crossFade: model.crossFade, theme: model.theme,
                    paused: model.paused, reducedMotion: model.reducedMotion, accessibilityLabel: model.label,
-                   maxFps: model.maxFps, lowPower: model.lowPower, onFrame: frame)
+                   maxFps: model.maxFps, lowPower: model.lowPower, onFrame: frame,
+                   labels: model.labels, announce: model.announce, haptics: model.haptics, rules: model.rules,
+                   effect: model.effect)
         } else {
-            SinuaView(pattern: model.state, size: model.size, overrides: model.overrides, speed: model.speed, voice: model.voice,
+            SinuaView(pattern: model.state, size: model.size, overrides: model.overrides, speed: model.speed,
+                   state: model.specState, voice: model.voice, voiceOverrides: model.voiceOverrides,
                    theme: model.theme, paused: model.paused, reducedMotion: model.reducedMotion,
-                   accessibilityLabel: model.label, maxFps: model.maxFps, lowPower: model.lowPower, onFrame: frame)
+                   accessibilityLabel: model.label, maxFps: model.maxFps, lowPower: model.lowPower, onFrame: frame,
+                   labels: model.labels, announce: model.announce, haptics: model.haptics, effect: model.effect)
         }
     }
 }
@@ -64,6 +78,7 @@ public final class FxHostView: UIView {
     private var voiceMode = "none"
     /// A source the app created and owns: bound, never connected or disconnected here.
     private var boundSourceId: String?
+    private var lastEffectKey = 0
     private var lastFrameEvent: CFTimeInterval = 0
 
     /// dtMs, computeMs, paintMs -- at most 4 per second, only while `reportFrames`.
@@ -110,8 +125,9 @@ public final class FxHostView: UIView {
     /// Every Fabric prop at once (one SwiftUI update per React commit).
     @objc public func apply(spec: String?, state: String?, size: Int, overridesJson: String?, speed: Double,
                             specState: String?, inputsJson: String?, voiceLevelInput: String?, crossFade: Double,
-                            voice: String, voiceSourceId: String?, theme: String, paused: Bool, reducedMotion: String, maxFps: Double,
-                            lowPower: String, label: String?, reportFrames: Bool) {
+                            audioStrength: Double, voice: String, voiceSourceId: String?, theme: String, paused: Bool, reducedMotion: String, maxFps: Double,
+                            lowPower: String, label: String?, reportFrames: Bool, labelsJson: String?, announce: String,
+                            haptics: Bool, rules: Bool, effectName: String?, effectKey: Int) {
         let m = model
         m.spec = (spec?.isEmpty ?? true) ? nil : spec
         m.state = (state?.isEmpty ?? true) ? "working" : state!
@@ -121,13 +137,25 @@ public final class FxHostView: UIView {
         m.specState = (specState?.isEmpty ?? true) ? nil : specState
         m.inputs = Self.map(inputsJson)
         m.voiceLevelInput = (voiceLevelInput?.isEmpty ?? true) ? nil : voiceLevelInput
-        m.crossFade = crossFade
+        m.crossFade = crossFade >= 0 ? crossFade : nil
         m.theme = theme == "light" ? .light : theme == "dark" ? .dark : .auto
         m.paused = paused
         m.reducedMotion = reducedMotion == "always" ? .always : reducedMotion == "never" ? .never : .auto
         m.maxFps = maxFps > 0 ? maxFps : nil
         m.lowPower = lowPower == "on" ? .on : lowPower == "off" ? .off : .auto
         m.label = (label?.isEmpty ?? true) ? nil : label
+        let words = (labelsJson?.data(using: .utf8)).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+        m.labels = words?.compactMapValues { $0 as? String } ?? [:]
+        m.announce = announce == "on" ? true : announce == "off" ? false : nil
+        m.haptics = haptics
+        m.rules = rules
+        // A new key plays the effect once (a fresh trigger value).
+        if effectKey != lastEffectKey {
+            lastEffectKey = effectKey
+            if effectKey != 0, let name = effectName, let kind = SinuaEffectTrigger.Kind(rawValue: name) {
+                m.effect = SinuaEffectTrigger(kind)
+            }
+        }
         m.onFrame = reportFrames ? { [weak self] s in self?.frame(s) } : nil
         // A source created in JS (src/voice.ts) is bound by id and owned by the app;
         // the `voice` shorthands stay owned by this view.
@@ -138,6 +166,27 @@ public final class FxHostView: UIView {
             model.voice = boundId.flatMap { VoiceRegistry.shared.source(id: $0) }
         }
         if boundId == nil, voice != voiceMode { setVoice(voice) }
+        retrack(audioStrength: audioStrength)
+    }
+
+    private var tracked: SharedVoiceSource.Tracked?
+    private var trackedFor: (ObjectIdentifier, Double)?
+
+    /// `audioStrength` >= 0 (the voice button's ring): this view's own tracker with that pulse.
+    private func retrack(audioStrength: Double) {
+        guard audioStrength >= 0, let v = model.voice else {
+            tracked = nil
+            trackedFor = nil
+            if model.voiceOverrides != nil { model.voiceOverrides = nil }
+            return
+        }
+        if let t = trackedFor, t.0 == ObjectIdentifier(v), t.1 == audioStrength { return }
+        var options = VoiceOverridesOptions()
+        options.audioStrength = audioStrength
+        let t = SharedVoiceSource.of(v).track(options: options)
+        tracked = t
+        trackedFor = (ObjectIdentifier(v), audioStrength)
+        model.voiceOverrides = t.overrides
     }
 
     private func frame(_ s: FxFrameStats) {

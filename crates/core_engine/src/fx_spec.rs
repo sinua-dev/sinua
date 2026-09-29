@@ -27,7 +27,7 @@ use std::collections::{BTreeMap, HashMap};
 use serde_json::{Map, Value};
 
 pub const RUNTIME_MAJOR: u64 = 1;
-pub const RUNTIME_MINOR: u64 = 8;
+pub const RUNTIME_MINOR: u64 = 9;
 /// The oldest minor this runtime reads. 1.0–1.7 were never published, so their
 /// acceptance was dropped before the first release instead of becoming a
 /// compatibility promise (release decision 0.1).
@@ -504,6 +504,16 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
             "saturation",
         ],
         "scroll" => &["barWidth", "fadeWidth", "hue", "minHeight", "saturation"],
+        "playback" => &[
+            "barCount",
+            "barWidth",
+            "hue",
+            "minHeight",
+            "playhead",
+            "progress",
+            "saturation",
+            "unplayedOpacity",
+        ],
         "waveform" => &[
             "amplitude",
             "hue",
@@ -519,6 +529,18 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
             "saturation",
             "strokeWidth",
             "trackOpacity",
+        ],
+        "speaker" => &[
+            "avatarGap",
+            "flow",
+            "hue",
+            "idleOpacity",
+            "innerRadius",
+            "reach",
+            "rippleCount",
+            "saturation",
+            "shimmer",
+            "thickness",
         ],
         "gauge" => &[
             "fill",
@@ -615,6 +637,17 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
             "saturation",
             "spacing",
         ],
+        "rim" => &[
+            "cornerRadius",
+            "flowSpeed",
+            "hue",
+            "hueSpread",
+            "idleOpacity",
+            "reach",
+            "saturation",
+            "shimmer",
+            "thickness",
+        ],
         "shimmer" => &[
             "highlightFill",
             "highlightLength",
@@ -639,6 +672,7 @@ pub(crate) fn indexed_param(mode: &str, key: &str) -> bool {
     match mode {
         "nested" => idx("progress", 4),
         "segmented" => idx("segment", 24),
+        "playback" => idx("envelope", 64),
         _ => false,
     }
 }
@@ -667,6 +701,8 @@ pub(crate) fn runtime_key(key: &str) -> Option<&'static str> {
         Some("the mute cue is live app state (apply_muted)")
     } else if key.starts_with("decay") && key != "decay" {
         Some("the one-shot fade is a live event (apply_decay)")
+    } else if key == "aspect" {
+        Some("the box ratio of a wide pattern is set by the view")
     } else if indexed("peak") {
         Some("matrix peaks are caller-owned live data")
     } else {
@@ -708,6 +744,8 @@ fn family_of(state: &str) -> Option<&'static str> {
         Some("beacon")
     } else if crate::core_fx::presets::resolve_preset(state, 64).is_some() {
         Some("core")
+    } else if crate::edge::presets::resolve_preset(state, 64).is_some() {
+        Some("edge")
     } else {
         None
     }
@@ -745,8 +783,9 @@ fn binding_new_name(target: &str) -> Option<String> {
 }
 
 /// Array params (1.7): `"progress": [..]` on tracking, `"segment": [..]` on
-/// stepping -> the indexed engine keys (`progress0..3`, `segment0..23`).
-const ARRAY_PARAMS: [(&str, usize); 2] = [("progress", 4), ("segment", 24)];
+/// stepping, `"envelope": [..]` on playing (1.9) -> the indexed engine keys
+/// (`progress0..3`, `segment0..23`, `envelope0..63`).
+const ARRAY_PARAMS: [(&str, usize); 3] = [("progress", 4), ("segment", 24), ("envelope", 64)];
 
 /// Reads one block (the base or a `states` entry) into the engine names the
 /// resolver works in: catalog-path binding targets (`glow.strength`,
@@ -815,7 +854,7 @@ fn migrate(mut doc: Value, diag: &mut Diag) -> Value {
 
 // ------------------------------------------------------------ resolving --
 
-const TOP_KEYS: [&str; 16] = [
+const TOP_KEYS: [&str; 19] = [
     "$schema",
     "fxSpec",
     "name",
@@ -832,6 +871,9 @@ const TOP_KEYS: [&str; 16] = [
     "bindings",
     "states",
     "performance",
+    "transitions",
+    "rules",
+    "accessibility",
 ];
 /// The design keys of a block: the base (top level) and each `states` entry.
 const ENTRY_KEYS: [&str; 8] = [
@@ -891,7 +933,28 @@ fn section_key_names(section: &str) -> Vec<&'static str> {
 
 /// Keys added after the 1.8 floor, with the minor that added them. A file that
 /// declares an older minor gets an error for each and the key is dropped.
-const SINCE: &[(&str, u64)] = &[];
+const SINCE: &[(&str, u64)] = &[
+    ("transitions", 9),
+    ("transitions.duration", 9),
+    ("transitions.curve", 9),
+    ("rules", 9),
+    ("rules.when", 9),
+    ("rules.state", 9),
+    ("rules.hysteresis", 9),
+    ("rules.when.input", 9),
+    ("rules.when.gt", 9),
+    ("rules.when.gte", 9),
+    ("rules.when.lt", 9),
+    ("rules.when.lte", 9),
+    ("rules.when.between", 9),
+    ("accessibility", 9),
+    ("accessibility.name", 9),
+    ("accessibility.states", 9),
+    ("accessibility.announce", 9),
+];
+
+/// A `transitions` entry's keys (1.9).
+const TRANSITION_KEYS: [&str; 2] = ["duration", "curve"];
 
 /// Every key path a file can use, in the form `SINCE` and the gate use:
 /// `ink`, `color.mode`, `materials.glow`, `materials.glow.mode`,
@@ -930,6 +993,18 @@ pub(crate) fn accepted_key_paths() -> Vec<String> {
         SHEDDABLE
             .iter()
             .map(|m| format!("performance.lowPower.disable:{m}")),
+    );
+    out.extend(TRANSITION_KEYS.iter().map(|k| format!("transitions.{k}")));
+    out.extend(crate::rules::RULE_KEYS.iter().map(|k| format!("rules.{k}")));
+    out.extend(
+        crate::rules::WHEN_KEYS
+            .iter()
+            .map(|k| format!("rules.when.{k}")),
+    );
+    out.extend(
+        crate::a11y::KEYS
+            .iter()
+            .map(|k| format!("accessibility.{k}")),
     );
     out.sort();
     out.dedup();
@@ -1823,9 +1898,9 @@ pub fn resolve_full(
     match object {
         None => diag.error(
             "/object",
-            "missing `object` (orb, signal, ring, beacon or core)",
+            "missing `object` (orb, signal, ring, beacon, core or edge)",
         ),
-        Some(o) if !["orb", "signal", "ring", "beacon", "core"].contains(&o) => {
+        Some(o) if !["orb", "signal", "ring", "beacon", "core", "edge"].contains(&o) => {
             diag.error("/object", format!("unknown object `{o}`"))
         }
         _ => {}
@@ -2003,6 +2078,38 @@ pub fn resolve_full(
         res.disabled_materials = perf.disable;
     }
 
+    // Transitions (1.9): validated here; views read them per state change
+    // through `transition_for`.
+    if let Some(t) = root.get("transitions") {
+        check_transitions(t, &res.state_keys, strict, &mut diag);
+    }
+    // Rules (1.9): validated here; views ask `rules::derive` which state the
+    // app's inputs pick.
+    if let Some(r) = root.get("rules") {
+        for p in crate::rules::check(r, &res.state_keys) {
+            match p {
+                crate::rules::Problem::Error(path, msg) => diag.error(&path, msg),
+                crate::rules::Problem::Warning(path, msg) => diag.warn(&path, msg),
+                crate::rules::Problem::Unknown(path, key, known) => {
+                    diag.unknown(strict, &path, &key, known)
+                }
+            }
+        }
+    }
+    // Accessibility (1.9): validated here; views read the words through
+    // `a11y::read` and speak state changes through `a11y::announce_step`.
+    if let Some(a) = root.get("accessibility") {
+        for p in crate::a11y::check(a, &res.state_keys) {
+            match p {
+                crate::a11y::Problem::Error(path, msg) => diag.error(&path, msg),
+                crate::a11y::Problem::Warning(path, msg) => diag.warn(&path, msg),
+                crate::a11y::Problem::Unknown(path, key, known) => {
+                    diag.unknown(strict, &path, &key, known)
+                }
+            }
+        }
+    }
+
     res.ok = !diag.0.iter().any(|d| d.severity == "error");
     res.state = block.state;
     res.size = size;
@@ -2011,6 +2118,95 @@ pub fn resolve_full(
     res.diagnostics = diag.0;
     res.state_key = key;
     res
+}
+
+/// Validates a 1.9 `transitions` block: `default`, `"a->b"`, `"a->*"`,
+/// `"*->b"` keys (a state name that isn't in `states` is a warning -- it can
+/// never match), each `{ duration: seconds >= 0, curve: CSS keyword }`.
+fn check_transitions(t: &Value, state_keys: &[String], strict: bool, diag: &mut Diag) {
+    let Some(obj) = t.as_object() else {
+        return diag.error("/transitions", "expected an object");
+    };
+    for (key, entry) in obj {
+        let at = ptr("/transitions", key);
+        if key != "default" {
+            match key.split_once("->") {
+                Some((a, b)) => {
+                    for side in [a, b] {
+                        if side != "*" && !state_keys.iter().any(|s| s == side) {
+                            diag.warn(&at, format!("`{side}` is not a key of `states`, so this entry never applies"));
+                        }
+                    }
+                }
+                None => {
+                    diag.error(&at, "expected `default`, `from->to`, `from->*` or `*->to`");
+                    continue;
+                }
+            }
+        }
+        let Some(e) = entry.as_object() else {
+            diag.error(&at, "expected { duration?, curve? }");
+            continue;
+        };
+        for k in e.keys() {
+            if !TRANSITION_KEYS.contains(&k.as_str()) {
+                diag.unknown(strict, &ptr(&at, k), k, &TRANSITION_KEYS);
+            }
+        }
+        if let Some(d) = e.get("duration") {
+            number(d, &ptr(&at, "duration"), 0.0, 10.0, diag);
+        }
+        if let Some(c) = e.get("curve") {
+            if !c
+                .as_str()
+                .is_some_and(|c| crate::reactive::CURVES.contains(&c))
+            {
+                diag.error(
+                    &ptr(&at, "curve"),
+                    format!("expected one of {}", crate::reactive::CURVES.join(", ")),
+                );
+            }
+        }
+    }
+}
+
+/// The transition for `from` → `to` (state keys; `""` = the base design):
+/// the exact pair, then `from->*`, then `*->to`, then `default`, each field
+/// falling back separately to the next match and finally to 0.6 s
+/// `easeInOut`. An invalid value is skipped (the resolver reports it).
+pub fn transition_for(json: &str, from: &str, to: &str) -> crate::FxTransition {
+    let mut out = crate::FxTransition::default();
+    let Ok(doc) = serde_json::from_str::<Value>(json) else {
+        return out;
+    };
+    let Some(t) = doc.get("transitions").and_then(Value::as_object) else {
+        return out;
+    };
+    let order = [
+        format!("{from}->{to}"),
+        format!("{from}->*"),
+        format!("*->{to}"),
+        "default".to_string(),
+    ];
+    let find = |field: &str| {
+        order
+            .iter()
+            .filter_map(|k| t.get(k).and_then(|e| e.get(field)))
+            .find(|v| match field {
+                "duration" => v.as_f64().is_some_and(|d| (0.0..=10.0).contains(&d)),
+                _ => v
+                    .as_str()
+                    .is_some_and(|c| crate::reactive::CURVES.contains(&c)),
+            })
+            .cloned()
+    };
+    if let Some(d) = find("duration").and_then(|v| v.as_f64()) {
+        out.duration = d;
+    }
+    if let Some(c) = find("curve").and_then(|v| v.as_str().map(str::to_string)) {
+        out.curve = c;
+    }
+    out
 }
 
 #[cfg(test)]
@@ -2097,7 +2293,7 @@ mod tests {
         assert!(errors(&missing).iter().any(|d| d.path == "/pattern"));
         // A newer 1.x file: unknown keys are warnings, the rest renders.
         let newer = resolve(
-            r##"{ "fxSpec": "1.9", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
+            r##"{ "fxSpec": "1.10", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
         );
         assert!(newer.ok, "{:?}", newer.diagnostics);
         assert_eq!(warnings(&newer).len(), 2);
@@ -2256,11 +2452,13 @@ mod tests {
             ("waveform", include_str!("signal/modes/waveform.rs")),
             ("scroll", include_str!("signal/modes/scroll.rs")),
             ("matrix", include_str!("signal/modes/matrix.rs")),
+            ("playback", include_str!("signal/modes/playback.rs")),
             ("arc", include_str!("ring/modes/arc.rs")),
             ("gauge", include_str!("ring/modes/gauge.rs")),
             ("nested", include_str!("ring/modes/nested.rs")),
             ("segmented", include_str!("ring/modes/segmented.rs")),
             ("spinner", include_str!("ring/modes/spinner.rs")),
+            ("speaker", include_str!("ring/modes/speaker.rs")),
             ("ping", include_str!("beacon/modes/ping.rs")),
             ("pulse", include_str!("beacon/modes/pulse.rs")),
             ("halo", include_str!("beacon/modes/halo.rs")),
@@ -2268,6 +2466,7 @@ mod tests {
             ("broadcast", include_str!("beacon/modes/broadcast.rs")),
             ("shimmer", include_str!("core_fx/modes/shimmer.rs")),
             ("dots", include_str!("core_fx/modes/dots.rs")),
+            ("rim", include_str!("edge/modes/rim.rs")),
         ];
         for (mode, src) in sources {
             let code = src.split("#[cfg(test)]").next().unwrap();

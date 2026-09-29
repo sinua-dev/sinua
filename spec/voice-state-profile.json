@@ -318,6 +318,141 @@
           }
         }
       }
+    },
+    "talking": {
+      "$comment": "Avatar ring (speaker): the ring must never cross the avatar, so the generic radial swell (audioStrength) and particles are off; the mode reads audioLevel itself (thickness grows outward). States speak through flow (ripples out while speaking, in while listening) and shimmer (thinking, connecting).",
+      "states": {
+        "initializing": {
+          "overrides": {
+            "shimmer": 0.6,
+            "flow": 0,
+            "particleStrength": 0,
+            "idleOpacity": 0.25
+          }
+        },
+        "idle": {
+          "overrides": {
+            "shimmer": 0,
+            "flow": 0,
+            "particleStrength": 0
+          }
+        },
+        "listening": {
+          "overrides": {
+            "flow": -1,
+            "shimmer": 0,
+            "audioStrength": 0,
+            "particleStrength": 0,
+            "idleOpacity": 0.5,
+            "reach": 0.02,
+            "glowStrength": 0.15
+          }
+        },
+        "thinking": {
+          "overrides": {
+            "shimmer": 1,
+            "flow": 0,
+            "particleStrength": 0
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "flow": 1,
+            "shimmer": 0,
+            "audioStrength": 0,
+            "particleStrength": 0,
+            "reach": 0.045,
+            "glowStrength": 0.2
+          }
+        }
+      }
+    },
+    "playing": {
+      "$comment": "Voice-message waveform (playback): a recording, not the live conversation. The generic radial swell and particles would distort the bars, so they're off in every state; the app drives it with `progress` and `envelope`.",
+      "states": {
+        "initializing": {
+          "overrides": {
+            "audioStrength": 0,
+            "particleStrength": 0
+          }
+        },
+        "idle": {
+          "overrides": {
+            "audioStrength": 0,
+            "particleStrength": 0
+          }
+        },
+        "listening": {
+          "overrides": {
+            "audioStrength": 0,
+            "particleStrength": 0
+          }
+        },
+        "thinking": {
+          "overrides": {
+            "audioStrength": 0,
+            "particleStrength": 0
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "audioStrength": 0,
+            "particleStrength": 0
+          }
+        }
+      }
+    },
+    "framing": {
+      "$comment": "Screen-edge glow (rim): the generic radial swell would pull the frame off the screen edge, so audioStrength and particles are off; the mode reads audioLevel itself (the rim grows inward). Hidden at rest, faint while listening, bright and wide while speaking, a circling segment while thinking.",
+      "states": {
+        "initializing": {
+          "overrides": {
+            "audioStrength": 0,
+            "particleStrength": 0,
+            "idleOpacity": 0.2,
+            "shimmer": 0.6,
+            "glowStrength": 0.3
+          }
+        },
+        "idle": {
+          "overrides": {
+            "audioStrength": 0,
+            "particleStrength": 0,
+            "idleOpacity": 0,
+            "shimmer": 0
+          }
+        },
+        "listening": {
+          "overrides": {
+            "audioStrength": 0,
+            "particleStrength": 0,
+            "idleOpacity": 0.35,
+            "reach": 0.015,
+            "shimmer": 0,
+            "glowStrength": 0.4
+          }
+        },
+        "thinking": {
+          "overrides": {
+            "audioStrength": 0,
+            "particleStrength": 0,
+            "idleOpacity": 0.3,
+            "shimmer": 1,
+            "flowSpeed": 0.3,
+            "glowStrength": 0.4
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "audioStrength": 0,
+            "particleStrength": 0,
+            "idleOpacity": 0.45,
+            "reach": 0.035,
+            "shimmer": 0,
+            "glowStrength": 0.6
+          }
+        }
+      }
     }
   },
   "exceptions": {

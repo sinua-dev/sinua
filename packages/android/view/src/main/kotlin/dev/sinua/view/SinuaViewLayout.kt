@@ -48,7 +48,7 @@ class SinuaViewLayout @JvmOverloads constructor(context: Context, attrs: Attribu
     var state: String? by mutableStateOf(null)
     var inputs: Map<String, Double> by mutableStateOf(emptyMap())
     var voiceLevelInput: String? by mutableStateOf(null)
-    var crossFade: Double by mutableStateOf(0.25)
+    var crossFade: Double? by mutableStateOf(null)
     var voice: VoiceSource? by mutableStateOf(null)
     var voiceOverrides: VoiceOverrides? by mutableStateOf(null)
     var theme: FxTheme by mutableStateOf(FxTheme.AUTO)

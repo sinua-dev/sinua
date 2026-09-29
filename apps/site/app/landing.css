@@ -1,293 +1,1228 @@
-/*
- * The landing page's own skin: a conversation running down a spine, with the
- * live visual as the only loud element. The docs keep the Fumadocs theme --
- * nothing here leaks out of `.lp`.
- */
+/* The landing page and the gallery: the Studio's language (@sinua/design tokens and
+   controls, imported in global.css), laid out as a page. Every value is a token; the
+   only color that isn't the chrome's comes from the engine's own visuals. Nothing in
+   the chrome animates -- the visuals are the motion (the Studio's rule). */
+
 .lp {
-  --paper: #f6f6f4;
-  --ink: #15171c;
-  --slate: #545966;
-  --violet: #6552e4;
-  --mint: #17a98a;
-  --hairline: #dddcd6;
-
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--lp-text), Georgia, serif;
   min-height: 100vh;
-}
-:root.dark .lp {
-  --paper: #101216;
-  --ink: #eceef2;
-  --slate: #9aa1b1;
-  --hairline: #272a32;
+  background: var(--bg-app);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11" 1;
+  -webkit-font-smoothing: antialiased;
 }
 
-.lp a {
-  color: inherit;
+.lp-main,
+.lp-top,
+.lp-footer {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 24px;
 }
+
+/* ---- chrome ------------------------------------------------------------ */
 
 .lp-top {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1.25rem clamp(1rem, 5vw, 4rem);
-  border-bottom: 1px solid var(--hairline);
+  height: 60px;
 }
+
 .lp-wordmark {
-  font-family: var(--lp-display), system-ui, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-4);
   font-weight: 600;
   letter-spacing: -0.02em;
-  font-size: 1.05rem;
+  color: var(--text);
+  text-decoration: none;
 }
+
+.lp-mark {
+  width: 18px;
+  height: 18px;
+}
+
 .lp-nav {
   display: flex;
-  gap: 1.25rem;
-  font-family: var(--lp-display), system-ui, sans-serif;
-  font-size: 0.95rem;
+  align-items: center;
+  gap: 20px;
+  font-size: var(--fs-2);
+  font-weight: 500;
 }
+
+.lp-nav a {
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color var(--dur-2) var(--ease);
+}
+
 .lp-nav a:hover {
-  color: var(--violet);
+  color: var(--text);
 }
 
-.lp-main {
-  padding: clamp(2rem, 6vw, 4.5rem) clamp(1rem, 5vw, 4rem) 5rem;
+.lp-footer {
+  margin-top: 48px;
+  padding-block: 32px 48px;
+  border-top: 1px solid var(--hairline);
 }
 
-/*
- * The spine: the conversation runs down it, and each section's marker sits on
- * it. Decorative on small screens, where there is no room beside the text.
- */
-.lp-section {
-  position: relative;
-  max-width: 68rem;
-  margin: 0 auto;
-}
-@media (min-width: 960px) {
-  .lp-section {
-    padding-left: 3rem;
-  }
-  .lp-section::before {
-    content: "";
-    position: absolute;
-    left: 0.4rem;
-    top: 0.75rem;
-    bottom: 0;
-    border-left: 1px solid var(--hairline);
-  }
-  .lp-section::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0.55rem;
-    width: 0.85rem;
-    height: 0.85rem;
-    border-radius: 50%;
-    background: var(--mint);
-  }
+.lp-footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-/* The spine: one hairline down the page, with the section marker sitting on it. */
-.lp-hero {
-  display: grid;
-  gap: clamp(2rem, 5vw, 3.5rem);
-  grid-template-columns: minmax(0, 1fr);
+.lp-foot-note {
+  max-width: 70ch;
+  margin: 20px 0 0;
+  font-size: var(--fs-1);
+  line-height: 1.6;
+  color: var(--text-2);
 }
-@media (min-width: 960px) {
-  .lp-hero {
-    grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
-    align-items: center;
-  }
+
+.lp-foot-legal {
+  margin-top: 8px;
+  font-size: var(--fs-0);
 }
+
+.lp-foot-note a {
+  color: var(--text);
+}
+
+/* ---- type -------------------------------------------------------------- */
 
 .lp-h1 {
-  font-family: var(--lp-display), system-ui, sans-serif;
+  margin: 0;
+  font-size: clamp(44px, 6.6vw, 88px);
+  font-weight: 640;
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.lp-h2 {
+  margin: 0;
+  font-size: clamp(28px, 3.4vw, 42px);
+  font-weight: 620;
+  line-height: 1.08;
+  letter-spacing: -0.032em;
+  text-wrap: balance;
+}
+
+.lp-h3 {
+  margin: 0;
+  font-size: 18px;
   font-weight: 600;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
-  font-size: clamp(2.5rem, 7vw, 3.75rem);
-  margin: 0 0 1.25rem;
-  max-width: 14ch;
+  letter-spacing: -0.015em;
 }
+
+.lp-h4 {
+  margin: 0 0 12px;
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--text);
+}
+
 .lp-lead {
-  font-size: 1.125rem;
-  line-height: 1.65;
-  color: var(--slate);
-  max-width: 58ch;
-  margin: 0 0 1.75rem;
+  max-width: 60ch;
+  margin: 16px 0 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-2);
+  text-wrap: pretty;
 }
+
+.lp-muted {
+  font-weight: 400;
+  color: var(--text-2);
+}
+
+.lp-small,
+.lp-footnote {
+  font-size: var(--fs-1);
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.lp-footnote {
+  margin: 10px 0 16px;
+}
+
+/* ---- actions ----------------------------------------------------------- */
 
 .lp-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem 1.5rem;
-  font-family: var(--lp-display), system-ui, sans-serif;
-  font-size: 0.95rem;
+  gap: 12px 20px;
+  margin-top: 32px;
 }
+
 .lp-install {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.875rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--hairline);
-  background: transparent;
+  display: inline-block;
+  padding: 9px 12px;
+  border-radius: var(--r-2);
+  background: var(--bg-control);
+  font: 13px / 1.2 var(--font-mono);
+  color: var(--text);
+  user-select: all;
 }
-.lp-link {
-  border-bottom: 1px solid var(--violet);
-  padding-bottom: 2px;
+
+.lp-button {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--r-2);
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  font-size: var(--fs-2);
+  font-weight: 600;
   text-decoration: none;
 }
+
+.lp-link {
+  color: var(--text);
+  font-size: var(--fs-2);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--border-hover);
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--dur-2) var(--ease);
+}
+
+.lp-link-small {
+  font-size: inherit;
+}
+
 .lp-link:hover {
-  color: var(--violet);
+  text-decoration-color: var(--text);
+}
+
+.lp-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 7px;
+  border-radius: var(--r-pill);
+  box-shadow: inset 0 0 0 1px var(--border);
+  font-size: var(--fs-0);
+  font-style: normal;
+  font-weight: 500;
+  color: var(--text-2);
+  vertical-align: middle;
+}
+
+/* ---- the stage (the Studio's panel) ------------------------------------ */
+
+.lp-stage {
+  position: relative;
+  margin: 0;
+  border-radius: var(--r-4);
+  background: var(--bg-stage);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+
+.lp-stage canvas {
+  display: block;
+}
+
+.lp-stage-top {
+  position: absolute;
+  inset: 14px 14px auto;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.lp-stage-note {
+  font-size: var(--fs-1);
+  color: var(--text-2);
+}
+
+.lp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  background: var(--bg-control);
+  font-size: var(--fs-1);
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.lp-chip i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+
+.lp-chip[data-live="true"] i {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.lp-stage-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--hairline);
+}
+
+.lp-toolbar {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+/* A toggle in a stage's top-right corner. */
+.lp-corner {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+}
+
+.lp-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lp-swatch {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  cursor: pointer;
+}
+
+.lp-swatch[aria-checked="true"] {
+  box-shadow:
+    0 0 0 2px var(--bg-stage),
+    0 0 0 4px var(--text);
+}
+
+.lp-caption {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  min-height: 24px;
+  margin: 0 0 18px;
+  padding-inline: 24px;
+  font-size: 15px;
+  line-height: 24px;
+  text-align: center;
+}
+
+.lp-caption b {
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.lp-caption-quiet {
+  justify-content: flex-start;
+  margin: 12px 0 0;
+  padding: 0;
+  font-size: var(--fs-3);
+}
+
+/* ---- hero --------------------------------------------------------------- */
+
+.lp-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  align-items: center;
+  gap: 48px;
+  padding-block: 56px 88px;
 }
 
 .lp-hero-visual {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.25rem;
-}
-.lp-orb {
-  width: min(30rem, 86vw);
-  aspect-ratio: 1;
-}
-.lp-states {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.25rem 0.5rem;
-  font-family: var(--lp-display), system-ui, sans-serif;
-  font-size: 0.875rem;
-}
-.lp-state {
-  background: none;
-  border: 0;
-  border-bottom: 1px solid transparent;
-  color: var(--slate);
-  cursor: pointer;
-  padding: 0.25rem 0.35rem;
-}
-.lp-state[data-on="true"] {
-  color: var(--ink);
-  border-bottom-color: var(--mint);
-}
-.lp :is(button, a):focus-visible {
-  outline: 2px solid var(--violet);
-  outline-offset: 3px;
+  width: min(100%, 540px);
+  aspect-ratio: 1 / 1;
+  margin: 28px auto 0;
 }
 
-/* Sections below the hero: the same spine, quiet type, one live visual each. */
-.lp-block {
-  margin-top: clamp(4rem, 9vw, 7rem);
-}
-.lp-h2 {
-  font-family: var(--lp-display), system-ui, sans-serif;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  font-size: clamp(1.75rem, 3.5vw, 2.25rem);
-  margin: 0 0 0.75rem;
-}
-.lp-h3 {
-  font-family: var(--lp-display), system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 1.125rem;
-  margin: 0 0 0.35rem;
-}
-.lp-case-line {
-  color: var(--slate);
-  line-height: 1.6;
-  margin: 0;
-  max-width: 56ch;
-}
+/* ---- sections ----------------------------------------------------------- */
 
-.lp-cases {
-  list-style: none;
-  margin: 2rem 0 0;
-  padding: 0;
-  display: grid;
-  gap: 2.25rem;
-}
-.lp-case {
-  display: grid;
-  grid-template-columns: 7rem minmax(0, 1fr);
-  gap: 1.5rem;
-  align-items: center;
-  padding-top: 1.75rem;
+.lp-section {
+  padding-block: 88px;
   border-top: 1px solid var(--hairline);
 }
-.lp-case-visual {
-  width: 7rem;
-  aspect-ratio: 1;
+
+.lp-section-head {
+  margin-bottom: 32px;
 }
 
-.lp-tabs {
+/* ---- families ----------------------------------------------------------- */
+
+.lp-family-seg {
+  max-width: 100%;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.lp-count {
+  margin-left: 4px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.seg-btn[aria-pressed="true"] .lp-count {
+  color: var(--text-2);
+}
+
+.lp-bench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  align-items: start;
+  gap: 16px;
+}
+
+.lp-tiles {
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--r-4);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.lp-tiles .tile {
+  font-size: var(--fs-1);
+}
+
+.lp-tile-canvas,
+.gl-tile-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* A tile swaps its still canvas for a live one when the pointer enters. If a press
+     landed on the canvas being swapped out, the browser would drop the click (its
+     mousedown target left the DOM); with the canvases out of hit testing, the press
+     and the release both land on the tile's button. */
+  pointer-events: none;
+}
+
+.lp-detail-visual {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.lp-detail-text {
+  display: grid;
+  gap: 10px;
+  padding: 4px 20px 22px;
+}
+
+.lp-detail-text p {
+  margin: 0;
+  font-size: var(--fs-3);
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+/* ---- voice -------------------------------------------------------------- */
+
+.lp-voice {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.lp-voice-flow {
+  padding: 20px;
+}
+
+.lp-sources {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-sources li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--r-2);
+  background: var(--bg-control);
+  font-size: var(--fs-2);
+}
+
+.lp-sources span {
+  font-size: var(--fs-1);
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lp-flow-arrow {
+  width: 1px;
+  height: 28px;
+  margin: 8px auto;
+  background: var(--border-hover);
+  position: relative;
+}
+
+.lp-flow-arrow::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  bottom: -1px;
+  border: 4.5px solid transparent;
+  border-top-color: var(--border-hover);
+  border-bottom: 0;
+}
+
+.lp-flow-box {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: var(--r-2);
+  box-shadow: inset 0 0 0 1px var(--accent-border);
+  background: var(--accent-soft);
+  font-size: var(--fs-1);
+  color: var(--text-2);
+}
+
+.lp-flow-box code {
+  font-size: var(--fs-2);
+  color: var(--accent-ink);
+}
+
+.lp-voice-flow .lp-small {
+  margin: 0;
+}
+
+.lp-timeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-timeline li {
+  position: relative;
+  padding-top: 12px;
+  font-size: var(--fs-1);
+  font-weight: 500;
+  color: var(--text-2);
+  text-transform: capitalize;
+}
+
+.lp-timeline li::before,
+.lp-timeline li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.lp-timeline li::before {
+  right: 0;
+  background: var(--bg-control-active);
+}
+
+.lp-timeline li[data-on="true"] {
+  color: var(--text);
+}
+
+.lp-timeline li[data-on="true"]::after {
+  width: calc(var(--p, 0) * 100%);
+  background: var(--accent);
+}
+
+.lp-followers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lp-follower-visual {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.lp-follower figcaption {
+  padding: 0 14px 12px;
+  font-size: var(--fs-2);
+  font-weight: 500;
+}
+
+.lp-modules {
+  display: grid;
+  gap: 8px;
+  margin: 20px 0 0;
+}
+
+.lp-modules div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+}
+
+.lp-modules dt {
+  font-size: var(--fs-1);
+  color: var(--text-2);
+}
+
+.lp-modules dd {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin: 1.75rem 0 1rem;
-  font-family: var(--lp-display), system-ui, sans-serif;
-  font-size: 0.95rem;
-}
-.lp-tab {
-  background: none;
-  border: 0;
-  border-bottom: 1px solid transparent;
-  color: var(--slate);
-  cursor: pointer;
-  padding: 0.25rem 0;
-}
-.lp-tab[data-on="true"] {
-  color: var(--ink);
-  border-bottom-color: var(--violet);
-}
-.lp-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.8125rem;
-  line-height: 1.7;
+  gap: 4px;
   margin: 0;
-  padding: 1.25rem;
-  border: 1px solid var(--hairline);
-  overflow-x: auto;
-  white-space: pre;
 }
+
+.lp-modules code {
+  padding: 2px 6px;
+  border-radius: var(--r-1);
+  background: var(--bg-control);
+  font-size: var(--fs-1);
+}
+
+/* ---- platforms ---------------------------------------------------------- */
+
+.lp-devices {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  align-items: end;
+  gap: 20px;
+}
+
+.lp-device {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font-size: var(--fs-2);
+  font-weight: 500;
+}
+
+.lp-device-screen {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: 10px;
+  background: var(--bg-control-active);
+  box-shadow: var(--shadow-panel);
+  transition: box-shadow var(--dur-2) var(--ease);
+}
+
+.lp-device-screen::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+}
+
+.lp-device-visual {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--r-2);
+  background: var(--bg-stage);
+}
+
+.lp-device[data-device="browser"] .lp-device-screen {
+  padding: 30px 10px 10px;
+  border-radius: var(--r-3);
+}
+
+.lp-device[data-device="browser"] .lp-device-screen::before {
+  top: 12px;
+  left: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-3);
+  box-shadow:
+    14px 0 0 var(--text-3),
+    28px 0 0 var(--text-3);
+}
+
+.lp-device[data-device="browser"] .lp-device-visual {
+  aspect-ratio: 16 / 11;
+}
+
+.lp-device[data-device^="phone"] .lp-device-screen {
+  max-width: 200px;
+  padding: 40px 10px 64px;
+  border-radius: 34px;
+}
+
+.lp-device[data-device^="phone"] .lp-device-visual {
+  border-radius: 14px;
+}
+
+.lp-device[data-device="phone-ios"] .lp-device-screen::before,
+.lp-device[data-device="phone-rn"] .lp-device-screen::before {
+  top: 14px;
+  width: 54px;
+  height: 14px;
+  border-radius: var(--r-pill);
+  background: var(--text);
+  opacity: 0.85;
+}
+
+.lp-device[data-device="phone-android"] .lp-device-screen {
+  border-radius: 24px;
+}
+
+.lp-device[data-device="phone-android"] .lp-device-screen::before {
+  top: 16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text);
+  opacity: 0.85;
+}
+
+.lp-device[aria-pressed="true"] {
+  color: var(--text);
+}
+
+.lp-device-label,
+.lp-modules dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.lp-device[aria-pressed="true"] .lp-device-screen {
+  box-shadow:
+    0 0 0 2px var(--bg-app),
+    0 0 0 4px var(--accent);
+}
+
+/* ---- look (the workbench) ---------------------------------------------- */
+
+.lp-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--inspector-w);
+  gap: 16px;
+}
+
+.lp-look-stage {
+  display: grid;
+  place-items: center;
+  min-height: 420px;
+}
+
+.lp-look-visual {
+  width: min(100%, 440px);
+  aspect-ratio: 1 / 1;
+}
+
+.lp-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 16px;
+  border-radius: var(--r-4);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.lp-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lp-workbench-code {
+  grid-column: 1 / -1;
+}
+
+/* ---- plans -------------------------------------------------------------- */
 
 .lp-plans {
   display: grid;
-  gap: 2rem;
-  margin-top: 2rem;
-}
-@media (min-width: 720px) {
-  .lp-plans {
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-  }
-}
-.lp-plan {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding-top: 1.5rem;
-  border-top: 2px solid var(--hairline);
-}
-.lp-plan-paid {
-  border-top-color: var(--violet);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 
-.lp-footer {
+.lp-plan {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 12px;
+  padding: 24px;
+}
+
+.lp-plan p {
+  margin: 0;
+  max-width: 44ch;
+  font-size: var(--fs-3);
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+/* ---- gallery (the Studio's workbench, read-only) ------------------------ */
+
+.gl {
+  display: grid;
+  /* minmax(0, …): otherwise the code viewer's longest line sets the page width. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding-block: 32px 24px;
+}
+
+.gl-head {
+  margin-bottom: 8px;
+}
+
+.gl-bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 1rem 1.5rem;
-  margin-top: clamp(4rem, 9vw, 7rem);
-  padding: 1.5rem clamp(1rem, 5vw, 4rem);
-  border-top: 1px solid var(--hairline);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
-.lp-foot-note {
-  color: var(--slate);
-  font-size: 0.9375rem;
+
+.gl-seg {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.gl-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gl-bench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--inspector-w);
+  align-items: start;
+  gap: 16px;
+}
+
+.gl-tiles.tiles {
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--r-4);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.gl-tiles .tile {
+  font-size: var(--fs-1);
+}
+
+.gl-inspector {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px;
+  border-radius: var(--r-4);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.gl-preview-wrap {
+  position: relative;
+  margin: -16px -16px 0;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--bg-stage);
+  border-radius: var(--r-4) var(--r-4) 0 0;
+}
+
+.gl-preview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.gl-about {
+  display: grid;
+  gap: 8px;
+}
+
+.gl-about p {
   margin: 0;
-  margin-left: auto;
+  font-size: var(--fs-3);
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.gl-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gl-caveat {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-2);
+  background: var(--bg-control);
+  font-size: var(--fs-1);
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.gl-code-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 12px;
+}
+
+
+/* ---- narrow screens ------------------------------------------------------ */
+
+@media (max-width: 960px) {
+  .lp-hero,
+  .lp-bench,
+  .lp-voice,
+  .lp-workbench,
+  .gl-bench {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lp-hero {
+    padding-block: 24px 64px;
+  }
+
+  .lp-devices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lp-tiles.tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .gl-inspector {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .lp-main,
+  .lp-top,
+  .lp-footer {
+    padding-inline: 16px;
+  }
+
+  .lp-nav {
+    gap: 14px;
+  }
+
+  .lp-section {
+    padding-block: 64px;
+  }
+
+  .lp-tiles.tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lp-followers {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .lp-follower figcaption .lp-muted {
+    display: none;
+  }
+
+  .lp-plans {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lp-stage-bar {
+    justify-content: center;
+  }
+
+  .lp-stage-bar .seg {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
+
+/* ---- in a real app (DevinFit) ------------------------------------------- */
+
+.lp-real {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: start;
+  gap: 32px;
+}
+
+.lp-real-phones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.lp-real-phone {
+  margin: 0;
+}
+
+.lp-real-screen {
+  max-width: 240px;
+}
+
+.lp-real-video,
+.lp-real-pending {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 9 / 19.5;
+  border-radius: 14px;
+  background: var(--bg-stage);
+  object-fit: cover;
+}
+
+.lp-real-pending {
+  padding: 16px;
+  font-size: var(--fs-1);
+  text-align: center;
+  color: var(--text-2);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.lp-real-side {
+  display: grid;
+  gap: 16px;
+}
+
+.lp-real-states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-real-states li {
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
+  background: var(--bg-control);
+  font-size: var(--fs-1);
+  color: var(--text-2);
+}
+
+.lp-real-links {
+  margin-top: 0;
+}
+
+@media (max-width: 960px) {
+  .lp-real {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---- legal pages (app/legal) -------------------------------------------- */
+
+.lp-legal-body {
+  max-width: 68ch;
+  margin: 48px auto 96px;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.65;
+}
+.lp-legal-body h1 {
+  font-size: 32px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+}
+.lp-legal-updated {
+  color: var(--text-2);
+  margin: 0 0 40px;
+}
+.lp-legal-body h2 {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 40px 0 12px;
+}
+.lp-legal-body p,
+.lp-legal-body ul {
+  margin: 0 0 14px;
+}
+.lp-legal-body ul {
+  padding-left: 20px;
+}
+.lp-legal-body li {
+  margin: 0 0 6px;
+}
+.lp-legal-body a {
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.lp-legal-body strong {
+  font-weight: 600;
+}
+@media (max-width: 640px) {
+  .lp-legal-body {
+    margin-top: 28px;
+  }
+  .lp-legal-body h1 {
+    font-size: 26px;
+  }
+}
+/* Headings carry Fumadocs' self-link anchor: they read as headings, not links. */
+.lp-legal-body h2 a,
+.lp-legal-body h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* The footer's links wrap on a narrow screen instead of widening the page. */
+.lp-footer .lp-nav {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+/* ---- the Studio's page (app/studio) --------------------------------------- */
+
+.lp-studio-hero {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  padding-block: 56px 16px;
+}
+.lp-studio-shot {
+  width: 100%;
+  height: auto;
+  margin-top: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-3, 12px);
+}
+.lp-price {
+  margin: 0;
+  font-size: var(--fs-3);
+  color: var(--text-2);
+}
+.lp-price strong {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.lp-button-off {
+  opacity: 0.5;
+  cursor: default;
+}
+.lp-studio-note {
+  margin: 16px 0 0;
+  color: var(--text-2);
+  font-size: var(--fs-2);
+}
+.lp-studio-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px 32px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+.lp-studio-features p {
+  margin: 6px 0 0;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.lp-studio-faq {
+  display: grid;
+  gap: 20px;
+  max-width: 72ch;
+  margin: 0;
+}
+.lp-studio-faq dt {
+  font-weight: 600;
+}
+.lp-studio-faq dd {
+  margin: 4px 0 0;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+.lp-studio-faq a {
+  color: var(--accent-ink);
+}
+@media (max-width: 900px) {
+  .lp-studio-features {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---- box-layout patterns (lib/layout.ts) ----------------------------------------
+   Edge `framing` fills a phone screen, signal `playing` a chat bubble: a square frame
+   would show one as a square ring and the other as a thin strip. The canvas takes the
+   frame's shape; mount (or the still) hands the engine that ratio as `aspect`. */
+
+.lp-tile-canvas[data-shape="portrait"],
+.gl-tile-canvas[data-shape="portrait"] {
+  width: auto;
+  height: 86%;
+  aspect-ratio: 9 / 19.5;
+  margin: 7% auto;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+}
+.lp-tile-canvas[data-shape="wide"],
+.gl-tile-canvas[data-shape="wide"] {
+  width: 88%;
+  height: auto;
+  aspect-ratio: 5 / 1;
+  margin: 40% auto 0;
+  border-radius: 999px;
+  background: var(--bg-control);
+}
+.gl-preview[data-shape="portrait"],
+.lp-detail-visual[data-shape="portrait"] {
+  width: auto;
+  height: 360px;
+  max-width: 100%;
+  aspect-ratio: 9 / 19.5;
+  margin: 24px auto;
+  border: 1px solid var(--hairline);
+  border-radius: 28px;
+}
+.gl-preview[data-shape="wide"],
+.lp-detail-visual[data-shape="wide"] {
+  width: 84%;
+  aspect-ratio: 5 / 1;
+  margin: 96px auto;
+  border-radius: 999px;
+  background: var(--bg-control);
 }

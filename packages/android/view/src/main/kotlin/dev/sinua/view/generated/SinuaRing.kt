@@ -23,6 +23,7 @@ enum class SinuaRingPattern(val id: String) {
     TRACKING("tracking"),
     STEPPING("stepping"),
     MEASURING("measuring"),
+    TALKING("talking"),
 }
 
 /** Ring parameters; null keeps the pattern's value. [toOverrides] is what [SinuaRing] hands to SinuaView. */
@@ -37,9 +38,9 @@ data class SinuaRingProps(
     val ink: Double? = null,
     /** How far the ink moves from grey toward the hue (0 = the grey ink). Range 0...1 (fraction). */
     val saturation: Double? = null,
-    /** Stroke width as a fraction of the frame. Range 0.01...0.4 (fraction). */
+    /** Stroke width as a fraction of the frame. Range 0.01...0.4 (fraction). Patterns: completing, loading, tracking, stepping, measuring. */
     val strokeWidth: Double? = null,
-    /** Opacity of the faint track behind the indicator (0 = none). Range 0...1 (fraction). */
+    /** Opacity of the faint track behind the indicator (0 = none). Range 0...1 (fraction). Patterns: completing, loading, tracking, stepping, measuring. */
     val trackOpacity: Double? = null,
     /** How much of the ring is filled, 0 to 1. Range completing 0...1, tracking 0...3, stepping 0...1, measuring 0...1. Up to 4 values. Patterns: completing, tracking, stepping, measuring. */
     val progress: SinuaNumbers? = null,
@@ -61,6 +62,22 @@ data class SinuaRingProps(
     val marker: Boolean? = null,
     /** Total arc of the gauge in degrees; the opening is centred at the bottom. Range 90...330 (deg). Patterns: measuring. */
     val sweep: Double? = null,
+    /** Space between the avatar's edge and the ring, as a fraction of the frame. Range 0...0.05 (fraction). Patterns: talking. */
+    val avatarGap: Double? = null,
+    /** The ring's opacity when nobody is speaking (0 = hidden until there's a voice). Range 0...1 (fraction). Patterns: talking. */
+    val idleOpacity: Double? = null,
+    /** Radius of the avatar the ring surrounds, as a fraction of the frame; nothing is drawn inside it. Range 0.1...0.44 (fraction). Patterns: talking. */
+    val innerRadius: Double? = null,
+    /** The ring's resting stroke width, as a fraction of the frame. Range 0.004...0.1 (fraction). Patterns: talking. */
+    val thickness: Double? = null,
+    /** Ripples outside the ring: +1 travel outward (giving out, speaking), -1 come inward (taking in, listening), 0 none. The voice states set it. Range -1...1. Patterns: talking. */
+    val flow: Double? = null,
+    /** How many ripples travel at once when flow is on. Range 0...4. Patterns: talking. */
+    val rippleCount: Int? = null,
+    /** A brighter arc that circles the ring (thinking, connecting); 0 = off. Range 0...1 (fraction). Patterns: talking. */
+    val shimmer: Double? = null,
+    /** How much thicker the ring grows at full voice, outward only, as a fraction of the frame. Range 0...0.12 (fraction). Patterns: talking. */
+    val reach: Double? = null,
     val glow: SinuaGlow? = null,
     val noise: SinuaNoise? = null,
     val pulse: SinuaPulse? = null,
@@ -92,6 +109,14 @@ data class SinuaRingProps(
         fill?.let { o["fill"] = if (it) 1.0 else 0.0 }
         marker?.let { o["marker"] = if (it) 1.0 else 0.0 }
         sweep?.let { o["sweep"] = it }
+        avatarGap?.let { o["avatarGap"] = it }
+        idleOpacity?.let { o["idleOpacity"] = it }
+        innerRadius?.let { o["innerRadius"] = it }
+        thickness?.let { o["thickness"] = it }
+        flow?.let { o["flow"] = it }
+        rippleCount?.let { o["rippleCount"] = it.toDouble() }
+        shimmer?.let { o["shimmer"] = it }
+        reach?.let { o["reach"] = it }
         glow?.writeTo(o)
         noise?.writeTo(o)
         pulse?.writeTo(o)
@@ -129,6 +154,14 @@ fun SinuaRing(
     fill: Boolean? = null,
     marker: Boolean? = null,
     sweep: Double? = null,
+    avatarGap: Double? = null,
+    idleOpacity: Double? = null,
+    innerRadius: Double? = null,
+    thickness: Double? = null,
+    flow: Double? = null,
+    rippleCount: Int? = null,
+    shimmer: Double? = null,
+    reach: Double? = null,
     glow: SinuaGlow? = null,
     noise: SinuaNoise? = null,
     pulse: SinuaPulse? = null,
@@ -155,7 +188,7 @@ fun SinuaRing(
     lowPower: FxLowPower = FxLowPower.AUTO,
     onFrame: ((FxFrameStats) -> Unit)? = null,
 ) {
-    val overrides = SinuaRingProps(pattern = pattern, size = size, gap = gap, hue = hue, ink = ink, saturation = saturation, strokeWidth = strokeWidth, trackOpacity = trackOpacity, progress = progress, hueStep = hueStep, ringCount = ringCount, spacing = spacing, maxLaps = maxLaps, segmentCount = segmentCount, segment = segment, fill = fill, marker = marker, sweep = sweep, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
+    val overrides = SinuaRingProps(pattern = pattern, size = size, gap = gap, hue = hue, ink = ink, saturation = saturation, strokeWidth = strokeWidth, trackOpacity = trackOpacity, progress = progress, hueStep = hueStep, ringCount = ringCount, spacing = spacing, maxLaps = maxLaps, segmentCount = segmentCount, segment = segment, fill = fill, marker = marker, sweep = sweep, avatarGap = avatarGap, idleOpacity = idleOpacity, innerRadius = innerRadius, thickness = thickness, flow = flow, rippleCount = rippleCount, shimmer = shimmer, reach = reach, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,

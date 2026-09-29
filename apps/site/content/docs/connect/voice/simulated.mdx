@@ -1,0 +1,53 @@
+---
+title: Simulated conversation
+description: "A believable voice conversation with no microphone, audio or network: for demos, previews, onboarding and tests."
+---
+
+`SimulatedVoiceSource` plays a scripted conversation: the agent's states change on a timeline, the level and bands move like speech, and a barge-in shows its cue. It is an ordinary voice source, so every view takes it unchanged, and it opens no microphone, plays no audio, asks for no permission and makes no network call.
+
+Use it for a demo on your landing page, a preview in your design tool, an onboarding screen, or a test.
+
+<VoiceDemo sample="calendar" samples />
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="simulated-web.ts"'>../../../../snippets/voice/simulated-web.ts</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="simulated.swift"'>../../../../snippets/voice/simulated.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="simulated.kt"'>../../../../snippets/voice/simulated.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="simulated-react-native.tsx"'>../../../../snippets/voice/simulated-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+## The samples
+
+Four ship with the engine, each 10–15 seconds and looping:
+
+| Sample | What happens |
+|---|---|
+| `calendar` | The user asks to move a meeting; the agent thinks, then confirms. |
+| `quick-answer` | A short question and a short answer. |
+| `long-answer` | A longer answer, for a speaking state that has to hold. |
+| `barge-in` | The user talks over the agent, and the view shows the barge-in cue. |
+
+## Your own script
+
+A script is the same JSON on every platform: a list of turns, each with a state and how long it lasts.
+
+<include lang="ts" meta='title="simulated-script-web.ts"'>../../../../snippets/voice/simulated-script-web.ts</include>
+
+- `voice` picks how the turn sounds: `user` for a microphone-like level, `agent` for a steadier, speech-synthesis-like one. A turn without `voice` is silent.
+- `bargeIn: true` fires the interruption as the turn begins.
+- `line` is optional caption text. `onFrame` reports how much of it has been said (`shown`), so captions can type along.
+- A malformed script throws with the path of the first error (for example `/turns/2/seconds`); a turn has to last 0.1 to 60 seconds.
+
+## Controls
+
+`play()`, `pause()`, `seek(t)`, `loop`, `time`, `duration` and `turns` let you build a timeline of your own. Seeking into a barge-in turn never fires the cue. On the web and Android, `autoTick: false` stops the internal timer so you can call `advance(dt)` from your own loop, which is how you'd drive it in a test.
+
+The conversation is computed by the engine, the same on every platform frame for frame, so a simulation on iOS and one on the web look alike.

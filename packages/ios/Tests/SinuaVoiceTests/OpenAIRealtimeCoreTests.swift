@@ -189,24 +189,4 @@ final class OpenAIRealtimeCoreTests: XCTestCase {
         }
         XCTAssertThrowsError(try OpenAIRealtimeSignaling.answer(status: 200, body: Data("{}".utf8)))
     }
-
-    func testDevClientSecretRequestAndParse() async throws {
-        Stub.seen = []
-        Stub.seenBodies = []
-        Stub.status = 200
-        Stub.body = Data(#"{"value":"ek_abc","expires_at":1}"#.utf8)
-        let req = OpenAIRealtimeSignaling.clientSecretRequest(apiKey: "sk-dev", instructions: "Be brief.")
-        let (status, body) = try await OpenAIRealtimeSignaling.send(req, session: stubbedSession())
-        XCTAssertEqual(try OpenAIRealtimeSignaling.clientSecret(status: status, body: body), "ek_abc")
-        XCTAssertEqual(Stub.seen.first?.value(forHTTPHeaderField: "Authorization"), "Bearer sk-dev")
-        let json = try JSONSerialization.jsonObject(with: Stub.seenBodies[0]) as! [String: Any]
-        let session = json["session"] as! [String: Any]
-        XCTAssertEqual(session["model"] as? String, "gpt-realtime")
-        XCTAssertEqual(session["instructions"] as? String, "Be brief.")
-        XCTAssertEqual(
-            ((session["audio"] as! [String: Any])["input"] as! [String: Any])["turn_detection"] as? [String: String],
-            ["type": "server_vad"])
-        XCTAssertEqual((json["expires_after"] as! [String: Any])["seconds"] as? Int, 600)
-        XCTAssertThrowsError(try OpenAIRealtimeSignaling.clientSecret(status: 200, body: Data("{}".utf8)))
-    }
 }

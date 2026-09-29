@@ -3,6 +3,7 @@ package dev.sinua.elevenlabs
 import android.util.Log
 import dev.sinua.voice.AgentState
 import dev.sinua.voice.AndroidPcmAudioDevice
+import dev.sinua.voice.CredentialSource
 import dev.sinua.voice.ElevenLabsSession
 import dev.sinua.voice.LiveSocket
 import dev.sinua.voice.LiveSocketFactory
@@ -41,17 +42,28 @@ import org.json.JSONObject
  * Not verified against the live service yet (docs/audio-pipeline.md).
  */
 class ElevenLabsVoiceSource(
-    credential: String,
+    /** [CredentialSource.url] / a provider for a signed URL per connect, or `.fixed` for a public agent id. */
+    private val credentials: CredentialSource,
     private val overrides: JSONObject? = null,
     /** Override the URL (a relay, or tests); the credential is ignored then. */
-    endpoint: String? = null,
+    private val endpoint: String? = null,
     device: PcmAudioDevice = AndroidPcmAudioDevice(),
     private val socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
     private val main: MainDispatcher = LooperMainDispatcher(),
     private val clock: () -> Double = { System.nanoTime() / 1e9 },
 ) : VoiceSource {
-    private val url: String? =
-        endpoint ?: credential.trim().takeIf { it.isNotEmpty() }?.let { ElevenLabsSession.endpoint(it) }
+    /** A public agent id, or one signed `wss://` URL. */
+    @JvmOverloads
+    constructor(
+        credential: String,
+        overrides: JSONObject? = null,
+        endpoint: String? = null,
+        device: PcmAudioDevice = AndroidPcmAudioDevice(),
+        socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
+        main: MainDispatcher = LooperMainDispatcher(),
+        clock: () -> Double = { System.nanoTime() / 1e9 },
+    ) : this(CredentialSource.fixed(credential), overrides, endpoint, device, socketFactory, main, clock)
+
     private val session = ElevenLabsSession()
     private val graph = PcmAudioGraph(device)
 
@@ -83,6 +95,28 @@ class ElevenLabsVoiceSource(
         }
     }
 
+    override val supportsMute: Boolean get() = true
+    override val reportsConnection: Boolean get() = true
+    private var connectionCb: ((Boolean) -> Unit)? = null
+    private var sessionUp = false
+
+    override fun onConnectionChange(cb: (Boolean) -> Unit) {
+        connectionCb = cb
+    }
+
+    private fun setSessionUp(up: Boolean) {
+        if (up == sessionUp) return
+        sessionUp = up
+        connectionCb?.invoke(up)
+    }
+
+    @Volatile private var muted = false
+
+    /** Muted, the mic chunks go out zeroed (the server's turn detection keeps its timing); the session stays up. */
+    override fun setMuted(muted: Boolean) {
+        this.muted = muted
+    }
+
     override fun onMetrics(cb: (VoiceMetrics) -> Unit) {
         metricsCb = cb
     }
@@ -96,14 +130,30 @@ class ElevenLabsVoiceSource(
     }
 
     /** Failures after `connect()` returned (the state is already back to idle). */
-    fun onError(cb: (Throwable) -> Unit) {
+    override fun onError(cb: (Throwable) -> Unit) {
         errorCb = cb
     }
 
     /** Call on the main thread. */
     override fun connect() {
-        val url = checkNotNull(url) { "ElevenLabsVoiceSource: an agent id or signed URL is required" }
         if (wantConnected) return
+        if (endpoint != null) return open(endpoint)
+        // Before the socket: a failed signing must not open anything. A signed URL
+        // is valid for 15 minutes, so every connect gets a fresh one. A fixed value
+        // answers synchronously, so its error is thrown from here.
+        var syncError: Throwable? = null
+        var sync = true
+        credentials.resolve("ElevenLabsVoiceSource", main) { r ->
+            r.fold(
+                { if (!wantConnected) open(ElevenLabsSession.endpoint(it.credential)) },
+                { if (sync) syncError = it else errorCb?.invoke(it) },
+            )
+        }
+        sync = false
+        syncError?.let { throw it }
+    }
+
+    private fun open(url: String) {
         wantConnected = true
         session.connecting(clock())
         metadataPending = true
@@ -150,7 +200,9 @@ class ElevenLabsVoiceSource(
             return
         }
         try {
-            graph.start(input.rate, output.rate) { samples -> micSocket?.send(ElevenLabsSession.micMessage(samples)) }
+            graph.start(input.rate, output.rate) { samples ->
+                micSocket?.send(ElevenLabsSession.micMessage(if (muted) FloatArray(samples.size) else samples))
+            }
         } catch (e: Throwable) {
             fail(e)
             return
@@ -161,6 +213,7 @@ class ElevenLabsVoiceSource(
             ticking = true
             main.post(ticker)
         }
+        setSessionUp(true)
     }
 
     private fun onSocketClosed(err: Throwable?) {
@@ -180,6 +233,7 @@ class ElevenLabsVoiceSource(
     }
 
     private fun teardown() {
+        setSessionUp(false)
         wantConnected = false
         metadataPending = false
         ticking = false

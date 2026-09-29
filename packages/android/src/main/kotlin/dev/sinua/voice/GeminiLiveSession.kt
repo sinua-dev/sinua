@@ -139,20 +139,18 @@ class GeminiLiveSession(val model: String = DEFAULT_MODEL, val instructions: Str
         const val DEFAULT_MODEL = "gemini-3.8-live"
 
         /**
-         * `auth_tokens/…` (ephemeral, minted by the app's backend) -> the Constrained
-         * method with `Authorization: Token …`; anything else is a raw API key (dev
-         * only) in `x-goog-api-key`. Headers, as Google's python-genai `live.py`
-         * connects, so no secret is in the URL.
+         * An `auth_tokens/…` ephemeral token (minted by the app's backend) -> the
+         * Constrained method with `Authorization: Token …` -- a header, as Google's
+         * python-genai `live.py` connects, so no secret is in the URL. There is no
+         * raw-key path: `GeminiLiveVoiceSource` refuses anything else.
          */
         fun endpoint(credential: String): Endpoint {
-            val c = credential.trim()
             val base = "wss://generativelanguage.googleapis.com/ws/" +
                 "google.ai.generativelanguage.v1beta.GenerativeService."
-            return if (c.startsWith("auth_tokens/")) {
-                Endpoint(base + "BidiGenerateContentConstrained", mapOf("Authorization" to "Token $c"))
-            } else {
-                Endpoint(base + "BidiGenerateContent", mapOf("x-goog-api-key" to c))
-            }
+            return Endpoint(
+                base + "BidiGenerateContentConstrained",
+                mapOf("Authorization" to "Token ${credential.trim()}"),
+            )
         }
 
         fun micMessage(samples: FloatArray, n: Int = samples.size): String = JSONObject().put(

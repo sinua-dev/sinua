@@ -3,7 +3,7 @@ import React
 
 /// The React Native bridge for native voice sources (src/voice.ts). It only
 /// forwards to `VoiceRegistry`: create / connect / disconnect / release, plus the
-/// `getCredential` round trip, and streams the registry's events to JS as one
+/// credential round trip, and streams the registry's events to JS as one
 /// `sinua-voice` event carrying the source's id.
 ///
 /// Credentials arrive in `create` (or per request) and go straight into the
@@ -64,15 +64,22 @@ class SinuaVoice: RCTEventEmitter {
         Task { @MainActor in VoiceRegistry.shared.disconnect(id: id) }
     }
 
+    @objc(setMuted:muted:)
+    func setMuted(_ id: String, muted: Bool) {
+        Task { @MainActor in VoiceRegistry.shared.setMuted(id: id, muted: muted) }
+    }
+
     @objc(release:)
     func release(_ id: String) {
         Task { @MainActor in VoiceRegistry.shared.release(id: id) }
     }
 
-    @objc(provideCredential:credential:error:)
-    func provideCredential(_ requestId: String, credential: NSString?, error: NSString?) {
+    @objc(provideCredential:credential:url:error:fatal:)
+    func provideCredential(_ requestId: String, credential: NSString?, url: NSString?, error: NSString?, fatal: Bool) {
         Task { @MainActor in
-            VoiceRegistry.shared.provideCredential(requestId: requestId, credential: credential as String?, error: error as String?)
+            VoiceRegistry.shared.provideCredential(
+                requestId: requestId, credential: credential as String?, url: url as String?, error: error as String?,
+                fatal: fatal)
         }
     }
 }

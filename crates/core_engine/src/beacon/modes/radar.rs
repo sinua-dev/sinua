@@ -1,8 +1,11 @@
 //! Beacon / Radar: a rotating sweep over a dot-field scope (`scanning`) --
 //! "searching", "nearby devices", "discovering". A beam turns clockwise
-//! from 12 o'clock; the scope lights up just behind it and fades; a few
-//! targets ("blips") flare as the beam passes and glow on, dimming, until
-//! it comes round again.
+//! from 12 o'clock; the scope lights up just behind it and fades. Targets
+//! ("blips") are app data, not decoration: `blipCount` is how many things
+//! were found (0 by default -- an empty scope is "still looking"); each
+//! flares as the beam passes and glows on, dimming, until it comes round
+//! again. Positions are seeded per index, so raising the count adds a blip
+//! and moves none.
 //!
 //! Prior art (fetched): CodeFronts'
 //! "Weather Radar Sweep" CSS -- beam `conic-gradient(acc 65% 0deg, acc 22%
@@ -40,7 +43,11 @@ const PEAK_ALPHA: f64 = 0.95;
 /// Center-to-center dot spacing along a range ring, in dot radii (2.25
 /// diameters). Picked on a contact sheet against 6 and 3.5: sparser dots
 /// sample the trail too coarsely to read as a sweep; denser ones turn the
-/// idle scope into a grey disc.
+/// idle scope into a grey disc. The scope's dot radius is also capped at
+/// `ring gap / SPACING`, so the spacing along a ring never exceeds the gap
+/// between rings: past that, neighbouring rings interleave at uneven
+/// angles and the scope reads as a jumbled grid (user report, 8 rings).
+/// `dotSize` is therefore a maximum; the default 4 rings never reach it.
 const SPACING: f64 = 4.5;
 
 /// CodeFronts' conic stops, scaled to a trail of `len` degrees: intensity
@@ -93,12 +100,14 @@ pub fn frame_radar(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     } else {
         get(o, "trailLength", 90.0).clamp(5.0, 300.0)
     };
-    let blips = get(o, "blipCount", 3.0).round().clamp(0.0, 12.0) as usize;
+    let blips = get(o, "blipCount", 0.0).round().clamp(0.0, 12.0) as usize;
     let seed = get(o, "seed", 0.0);
     let hue = get(o, "hue", 200.0);
     let saturation = get(o, "saturation", 0.0).clamp(0.0, 1.0);
     let (cx, cy) = (size * 0.5, size * 0.5);
     let r_max = size * OUTER - dot_r;
+    // The scope dots' radius: `dot_r`, capped by the ring gap (see `SPACING`).
+    let field_r = dot_r.min(r_max / rings as f64 / SPACING);
     let white = 0.15;
     let theta = 360.0 * (t / period).rem_euclid(1.0);
 
@@ -107,7 +116,7 @@ pub fn frame_radar(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     // so outer rings carry more dots. Ring 1 is the innermost.
     for k in 1..=rings {
         let rr = r_max * k as f64 / rings as f64;
-        let n = ((2.0 * PI * rr) / (dot_r * SPACING)).round().max(6.0) as usize;
+        let n = ((2.0 * PI * rr) / (field_r * SPACING)).round().max(6.0) as usize;
         for j in 0..n {
             let phi = 360.0 * j as f64 / n as f64;
             let tr = if wedge {
@@ -120,7 +129,7 @@ pub fn frame_radar(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
                 x: p.x,
                 y: p.y,
                 z: 0.0,
-                r: dot_r * (1.0 + 0.4 * tr),
+                r: field_r * (1.0 + 0.4 * tr),
                 white,
                 a: IDLE_ALPHA + (PEAK_ALPHA - IDLE_ALPHA) * tr / 0.65,
                 saturation,
@@ -312,6 +321,42 @@ mod tests {
     }
 
     #[test]
+    fn rings_stay_distinct_as_they_get_denser() {
+        for dot in [0.018, 0.04] {
+            for rings in 1..=8 {
+                let f = frame_radar(
+                    SIZE,
+                    0.0,
+                    &opts(&[("ringCount", rings as f64), ("dotSize", dot)]),
+                );
+                let field: Vec<&Dot> = f.dots.iter().filter(|d| d.z == 0.0).collect();
+                let rad = |d: &Dot| ((d.x - 32.0).powi(2) + (d.y - 32.0).powi(2)).sqrt();
+                let mut radii: Vec<f64> = field.iter().map(|d| rad(d)).collect();
+                radii.sort_by(|a, b| a.partial_cmp(b).unwrap());
+                radii.dedup_by(|a, b| (*a - *b).abs() < 1e-6);
+                let gap = radii[0]; // ring 1 sits one gap out
+                                    // Idle dots (off the trail) show the base radius.
+                let r = field.iter().map(|d| d.r).fold(f64::INFINITY, f64::min);
+                assert!(
+                    gap >= 2.0 * r + 1e-9,
+                    "dots touch across rings: {rings} rings, dotSize {dot}"
+                );
+                for &rr in &radii {
+                    let on: Vec<&&Dot> = field
+                        .iter()
+                        .filter(|d| (rad(d) - rr).abs() < 1e-6)
+                        .collect();
+                    let step = 2.0 * PI * rr / on.len() as f64;
+                    assert!(
+                        step <= gap * 1.15 || on.len() == 6,
+                        "along-ring spacing {step:.2} > ring gap {gap:.2}: {rings} rings, dotSize {dot}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
     fn blips_flare_then_persist_and_fade() {
         assert_eq!(blip_alpha(0.0), 0.95);
         assert_eq!(blip_alpha(0.05), 0.95);
@@ -340,6 +385,25 @@ mod tests {
         assert_eq!(a.len(), 3);
         assert_eq!(a, blips(&opts(&[("blipCount", 3.0), ("seed", 1.0)])));
         assert_ne!(a, blips(&opts(&[("blipCount", 3.0), ("seed", 2.0)])));
+    }
+
+    #[test]
+    fn no_blips_by_default_and_a_new_one_moves_none() {
+        assert!(frame_radar(SIZE, 0.0, &opts(&[]))
+            .dots
+            .iter()
+            .all(|d| d.z != 1.0));
+        let at = |n: f64| -> Vec<(f64, f64)> {
+            frame_radar(SIZE, 0.0, &opts(&[("blipCount", n)]))
+                .dots
+                .iter()
+                .filter(|d| d.z == 1.0)
+                .map(|d| (d.x, d.y))
+                .collect()
+        };
+        let (two, three) = (at(2.0), at(3.0));
+        assert_eq!(two.len(), 2);
+        assert_eq!(three[..2], two[..]);
     }
 
     #[test]

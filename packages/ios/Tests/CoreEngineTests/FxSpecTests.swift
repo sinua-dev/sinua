@@ -94,7 +94,7 @@ final class FxSpecTests: XCTestCase {
         let objects = try XCTUnwrap(cat["objects"] as? [[String: Any]])
         XCTAssertEqual(
             objects.compactMap { $0["component"] as? String },
-            ["SinuaOrb", "SinuaSignal", "SinuaRing", "SinuaCore", "SinuaBeacon"])
+            ["SinuaOrb", "SinuaSignal", "SinuaRing", "SinuaCore", "SinuaBeacon", "SinuaEdge"])
         let defs = try XCTUnwrap(cat["definitions"] as? [String: [String: Any]])
         XCTAssertEqual(defs["glowStrength@shared"]?["path"] as? String, "glow.strength")
         let w = CoreEngine.checkOverrides(state: "breathing", size: 64, overrides: ["lanse": 6])

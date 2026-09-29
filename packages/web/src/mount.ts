@@ -1,15 +1,27 @@
 import {
   FxSpecPlayer,
+  SharedVoiceSource,
+  a11yStateWords,
+  accessibleName,
+  announceStep,
+  effectInfo,
+  fxSpecAccessibility,
+  fxSpecDeriveState,
+  StateTransition,
   VoiceOverrides,
   frameWithOverridesPacked,
   resolveFxSpec,
   resolvedOpts,
   voiceStateProfile,
+  patternLayout,
+  type AnnouncerState,
+  type FxAccessibility,
   type FxDiagnostic,
   type FxSpec,
   type OrbFrame,
   type OrbSize,
   type PackedFrame,
+  type TransitionSide,
   type OrbState,
   type VoiceOverridesOptions,
   type VoiceSource,
@@ -40,7 +52,7 @@ export interface SinuaViewOptions {
    * Default: the voice's `AgentState` when a voice is attached ("listening",
    * "speaking", ... -- docs/fx-spec.md's convention), else the top-level
    * design. A key the spec doesn't have renders the top-level design. State
-   * changes cross-fade (250 ms, `FxSpecPlayer`).
+   * changes animate (`FxSpecPlayer`: the spec's `transitions`, default 0.6 s).
    *
    * Deprecated fallback: without a `spec`, `state` is read as `pattern` (its pre-1.7 meaning).
    */
@@ -53,12 +65,24 @@ export interface SinuaViewOptions {
   speed?: number;
   /**
    * Makes the visual react to a conversation. A `VoiceSource` is bound for
-   * you -- note a source holds one metrics/state callback, so the view
-   * takes them (read `handle.voice` for a meter or a label). If your app
-   * already listens to the source, pass a `VoiceOverrides` you feed
-   * yourself instead. The view never connects or disconnects the source.
+   * you through `SharedVoiceSource.of(source)`, so several views and a voice
+   * button can share one source, and the views show its mute. A source
+   * holds one callback of each kind: to listen yourself, subscribe on
+   * `SharedVoiceSource.of(source)`, not on the source (or pass a
+   * `VoiceOverrides` you feed yourself). The view never connects or
+   * disconnects the source.
    */
   voice?: VoiceSource | VoiceOverrides | null;
+  /**
+   * Words per state for the accessible name and announcements (docs/fx-view.md,
+   * *Accessibility*): `{ listening: "Coach is listening" }`. Win over the spec's
+   * `accessibility.states` and the built-in words; this is how apps translate.
+   */
+  labels?: Record<string, string>;
+  /** Speak state changes (polite, rate-limited). Default: the spec's `accessibility.announce`, else true. */
+  announce?: boolean;
+  /** Derive the state from the spec's 1.9 `rules` and `inputs` (default true). Off while a voice is bound. */
+  rules?: boolean;
   /** Options for the bound `VoiceOverrides`; defaults follow the Studio per family (orb: raw bands; signal: scrolling history). */
   voiceOptions?: VoiceOverridesOptions;
   /** @deprecated Renamed to `state`. */
@@ -71,7 +95,11 @@ export interface SinuaViewOptions {
    * binding drives the look. Optional; the engine voice keys are applied either way.
    */
   voiceLevelInput?: string;
-  /** Spec state cross-fade length, seconds. Default 0.25; 0 = cut. */
+  /**
+   * Every state change's duration, in seconds (`0` = a cut). Unset: the spec's
+   * 1.9 `transitions`, or 0.6 s. A change keeping the pattern interpolates its
+   * parameters; a pattern change morphs (the orb lattice trio) or cross-fades.
+   */
   crossFade?: number;
   /** `auto` follows `prefers-color-scheme`. Colors with `colorMode: "fixed"` look the same in both. Default `auto`. */
   theme?: "auto" | "light" | "dark";
@@ -97,6 +125,13 @@ export interface SinuaViewOptions {
   lowPower?: boolean;
   /** Per drawn frame: time since the previous drawn frame, engine time and paint time (ms). */
   onFrame?: (stats: FxFrameStats) => void;
+  /**
+   * Pointer and touch scatter: the dots near the pointer are pushed away from it
+   * (the engine's `pointerX/Y/Radius/Strength`), easing in and out over about a
+   * tenth of a second. Off by default. Not applied under reduced motion or while
+   * paused. It doesn't change `touch-action`, so a page still scrolls on touch.
+   */
+  pointer?: boolean;
 }
 
 export interface FxFrameStats {
@@ -116,12 +151,20 @@ export interface FxHandle {
   readonly voice: VoiceOverrides | null;
   /** Seconds the clock has run (pauses excluded). */
   readonly elapsed: number;
+  /**
+   * Plays a one-shot effect on top of the view: `success`, `error` or `celebrate`
+   * (docs/fx-view.md, *One-shot effects*). A new one replaces a running one; unknown
+   * names do nothing. The words are spoken unless `announce` is false.
+   */
+  trigger(name: string): void;
 }
 
 /** spec/orbs-spec.json `paint`: devicePixelRatioCap and the reduced-motion pose. */
 export const DPR_CAP = 2;
 export const REDUCED_MOTION_T = 0.6;
 const MAX_DT_S = 0.1;
+/** Pointer strength eases toward its target at this rate per second (about 1/10 s), as in the Studio. */
+const POINTER_EASE_RATE = 10;
 const REDUCED_MOTION_VOICE_INTERVAL_MS = 1000 / 30;
 
 interface Resolved {
@@ -154,6 +197,17 @@ export function patternOf(o: SinuaViewOptions): string | undefined {
 export function lifecycleStateOf(o: SinuaViewOptions): string | undefined {
   const named = o.spec != null || o.pattern != null ? o.state : undefined;
   return named ?? o.specState;
+}
+
+/**
+ * How a view with these options lays out: `"box"` for a box-layout pattern (edge
+ * `framing`, signal `playing`: it fills whatever box it gets), else `"square"`.
+ * Wrappers use it for their default size (React: no square `aspectRatio` for a box
+ * pattern). Invalid input is `"square"`.
+ */
+export function viewLayout(o: SinuaViewOptions): "box" | "square" {
+  const r = resolveInput(o);
+  return r.ok ? patternLayout(r.value.state) : "square";
 }
 
 function resolveInput(o: SinuaViewOptions): { ok: true; value: Resolved } | { ok: false; diagnostics: FxDiagnostic[] } {
@@ -208,6 +262,54 @@ function isVoiceOverrides(v: unknown): v is VoiceOverrides {
 }
 
 /**
+ * One `requestAnimationFrame` per window for every mounted view (roadmap 10):
+ * N views used to schedule N callbacks each display frame. A view's request
+ * joins its window's queue, and the one rAF runs the queue in order; each view
+ * still decides for itself whether to draw (its pacer) and asks again for the
+ * next frame, so the behaviour is exactly the per-view one's.
+ */
+const frameQueues = new WeakMap<object, { cbs: Set<(now: number) => void>; id: number | null }>();
+
+function requestFrame(win: Window, cb: (now: number) => void): void {
+  let q = frameQueues.get(win);
+  if (!q) frameQueues.set(win, (q = { cbs: new Set(), id: null }));
+  q.cbs.add(cb);
+  if (q.id != null) return;
+  const queue = q;
+  queue.id = win.requestAnimationFrame((now) => {
+    queue.id = null;
+    const run = [...queue.cbs];
+    queue.cbs.clear();
+    for (const f of run) {
+      try {
+        f(now);
+      } catch (e) {
+        // One view's error mustn't stop the others' frame; report it as the
+        // browser would have for its own rAF callback.
+        queueMicrotask(() => {
+          throw e;
+        });
+      }
+    }
+  });
+}
+
+function cancelFrame(win: Window, cb: (now: number) => void): void {
+  const q = frameQueues.get(win);
+  if (!q) return;
+  q.cbs.delete(cb);
+  if (q.cbs.size === 0 && q.id != null) {
+    win.cancelAnimationFrame?.(q.id);
+    q.id = null;
+  }
+}
+
+/** Below this short side (CSS px) a view defaults to 30 fps (roadmap 10). */
+export const SMALL_VIEW_PX = 48;
+/** The default cap for a small view, when neither the app nor the spec sets one. */
+export const SMALL_VIEW_MAX_FPS = 30;
+
+/**
  * Render an FX Spec (or a plain state) into `canvas`, animated, until
  * `destroy()`. Handles the clock (`t = elapsed * presetSpeed * speed`, pinned at
  * each speed change so the pose doesn't jump), the
@@ -231,6 +333,33 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
   let resolved: Resolved | null = null;
   let voice: VoiceOverrides | null = null;
   let boundSource: VoiceSource | null = null;
+  // A raw source is bound through its `SharedVoiceSource`: this view gets its own
+  // tracker (its family's easing), and other views / a voice button keep theirs.
+  let releaseVoice: (() => void) | null = null;
+  let offVoiceState: (() => void) | null = null;
+  // Accessibility (docs/fx-view.md): the spec's block, the state the name last followed,
+  // the announcer's memory, its recheck timer and the live region it speaks through.
+  let a11yInfo: FxAccessibility = { name: null, states: {}, announce: null };
+  let a11yState: string | null | undefined = undefined;
+  let announcer: AnnouncerState | null = null;
+  let announceTimer: ReturnType<typeof setTimeout> | null = null;
+  let liveRegion: HTMLElement | null = null;
+  // Rules (FX Spec 1.9): the state the spec's rules picked last (for hysteresis).
+  let derived: string | null = null;
+  // One-shot effect (docs/fx-view.md): the running one, on the performance clock.
+  let effect: { code: number; duration: number; start: number } | null = null;
+  let warnedEffect = false;
+
+  /** The effect's runtime keys while it runs (then it's cleared). */
+  function withEffect<T extends Record<string, number>>(keys: T): T | (T & Record<string, number>) {
+    if (!effect) return keys;
+    const age = performance.now() / 1000 - effect.start;
+    if (age >= effect.duration) {
+      effect = null;
+      return keys;
+    }
+    return { ...keys, effectCode: effect.code, effectAge: Math.max(0, age), effectReduced: isReduced() ? 1 : 0 };
+  }
   let player: FxSpecPlayer | null = null;
   let perf: FxPerformance = { maxFps: null, overrides: {} };
   let pacer = createFramePacer(null);
@@ -254,7 +383,9 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
    * spec *with* the state and multiplies by that state's speed, so the view has to use the
    * same number: taking the file's base speed made a state with its own speed jump once.
    */
-  const specSpeeds = new Map<string, number>();
+  // State transitions on the plain path (the spec path's live in FxSpecPlayer).
+  const transition = new StateTransition();
+  let lastLifecycle: string | undefined;
   /**
    * The built-in voice-state behaviour for plain input (`pattern` + `state`, no spec):
    * `voiceStateProfile` gives the overrides, a speed multiplier and which app input
@@ -274,16 +405,54 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
     return profile;
   }
 
+  /**
+   * The plain path's design for a lifecycle state, as a transition side: the
+   * voice-state profile under the app's overrides, at the effective speed.
+   * Live keys (audio, pointer, `audioLevel`) are not part of it.
+   */
+  function plainSide(state: string | undefined): TransitionSide | null {
+    if (!resolved) return null;
+    const profile = profileFor(resolved.state, state);
+    return {
+      state: resolved.state,
+      speed: resolved.presetSpeed * resolved.speed * (profile?.speed ?? 1),
+      overrides: profile ? { ...profile.overrides, ...resolved.overrides } : { ...resolved.overrides },
+    };
+  }
+
   /** The lifecycle state now: the app's, else the bound voice source's. */
   function lifecycleNow(): string | undefined {
-    return lifecycleStateOf(opts) ?? (voice ? voice.state : undefined);
+    const own = lifecycleStateOf(opts);
+    // A conversation drives the state while a voice is bound (the app's `state` still wins);
+    // otherwise a state the spec's rules derive from `inputs` wins over the app's own.
+    if (voice) return own ?? voice.state;
+    return derived ?? own;
+  }
+
+  function specText(): string | null {
+    if (opts.spec == null) return null;
+    const spec = asSpec(opts.spec);
+    return typeof spec === "string" ? spec : JSON.stringify(spec);
+  }
+
+  /** Re-derive the rules' state from `inputs` (FX Spec 1.9), keeping the last one for hysteresis. */
+  function applyRules(): void {
+    const text = specText();
+    derived = text != null && resolved && opts.rules !== false && !voice ? fxSpecDeriveState(text, opts.inputs ?? {}, derived) : null;
   }
   let lastTick: number | null = null;
   let lastReducedDraw = -Infinity;
-  let raf: number | null = null;
+  let scheduled = false;
+  // A box-layout pattern (`patternLayout`: edge `framing`, signal `playing`) fills
+  // the whole box: the engine gets the box ratio as `aspect`, no centred square.
+  let boxLayout = false;
   let destroyed = false;
   let manualPause = false;
   let onScreen = true;
+  // Pointer scatter (`opts.pointer`): the position follows the pointer at once, in
+  // engine space; the strength eases in and out so entering and leaving don't pop.
+  const pointer = { x: 0, y: 0, active: false, strength: 0 };
+  let pointerBound = false;
   let cssW = canvas.clientWidth || canvas.width;
   let cssH = canvas.clientHeight || canvas.height;
 
@@ -295,6 +464,14 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
   const isDark = () => (opts.theme === "dark" ? true : opts.theme === "light" ? false : !!darkMq?.matches);
   const isReduced = () => (opts.reducedMotion === "always" ? true : opts.reducedMotion === "never" ? false : !!motionMq?.matches);
   const isRunning = () => !destroyed && !manualPause && !opts.paused && onScreen && !doc?.hidden;
+  /** The box ratio a box-layout pattern draws at (the engine's `aspect` range). */
+  const boxAspect = () => Math.min(8, Math.max(0.125, canvas.width / Math.max(1, canvas.height)));
+  /** A view whose short side is under SMALL_VIEW_PX (CSS px); 0 = not laid out yet. */
+  const isSmall = () => {
+    const short = Math.min(cssW, cssH);
+    return short > 0 && short < SMALL_VIEW_PX;
+  };
+  let wasSmall = false;
 
   function applyInput(): void {
     const r = resolveInput(opts);
@@ -304,41 +481,76 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
     } else {
       resolved = r.value;
     }
-    specSpeeds.clear();
+    boxLayout = resolved ? patternLayout(resolved.state) === "box" : false;
+    transition.cancel();
+    lastLifecycle = lifecycleNow();
     player =
       resolved && opts.spec != null ? new FxSpecPlayer(asSpec(opts.spec), { crossFade: opts.crossFade, lowPower: !!opts.lowPower }) : null;
     applyPerformance();
     applyVoice();
+    const text = specText();
+    a11yInfo = text != null && resolved ? fxSpecAccessibility(text) : { name: null, states: {}, announce: null };
+    applyRules();
     applyA11y();
+    refreshA11y();
   }
 
   function applyPerformance(): void {
     const lowPower = !!opts.lowPower;
     player?.setLowPower(lowPower);
-    specSpeeds.clear(); // low power can change a state's resolved speed
     // FX Spec 1.2: the resolver reports the cap for this power state (`maxFps`,
     // the lowPower one when set) and sheds the spec's `lowPower.disable` itself.
     const specMaxFps = opts.spec != null && resolved ? resolveFxSpec(asSpec(opts.spec), { lowPower }).maxFps : null;
-    perf = performanceFor({ lowPower, optionMaxFps: opts.maxFps, specMaxFps, specHandlesLowPower: resolved?.specHandlesLowPower });
+    // A small view (a list of avatars, a badge) defaults to 30 fps, unless the app
+    // (`maxFps`, including 0 for display rate) or the spec (`performance.maxFps`) says.
+    wasSmall = isSmall();
+    const smallCap = opts.maxFps == null && !specMaxFps && wasSmall ? SMALL_VIEW_MAX_FPS : null;
+    perf = performanceFor({
+      lowPower,
+      optionMaxFps: opts.maxFps ?? smallCap,
+      specMaxFps,
+      specHandlesLowPower: resolved?.specHandlesLowPower,
+    });
     pacer = createFramePacer(perf.maxFps);
+  }
+
+  function unbindVoice(): void {
+    releaseVoice?.();
+    releaseVoice = null;
+    offVoiceState?.();
+    offVoiceState = null;
+    boundSource = null;
   }
 
   function applyVoice(): void {
     const v = opts.voice ?? null;
     if (v == null) {
+      unbindVoice();
       voice = null;
-      boundSource = null;
     } else if (isVoiceOverrides(v)) {
+      unbindVoice();
       voice = v;
-      boundSource = null;
     } else if (v !== boundSource) {
+      unbindVoice();
       boundSource = v;
-      voice = VoiceOverrides.bind(v, opts.voiceOptions ?? defaultVoiceOptions(resolved?.family ?? null, resolved?.overrides ?? {}));
+      const tracked = SharedVoiceSource.of(v).track(
+        opts.voiceOptions ?? defaultVoiceOptions(resolved?.family ?? null, resolved?.overrides ?? {}),
+      );
+      voice = tracked.overrides;
+      releaseVoice = () => tracked.release();
+      // The name and announcements follow the conversation even while the view is paused.
+      offVoiceState = SharedVoiceSource.of(v).onStateChange(() => queueMicrotask(refreshA11y));
     }
   }
 
+  /** The view's plain name: `label`, else the spec's `accessibility.name`, its `name`, the pattern. */
+  function a11yBase(): string {
+    return opts.label ?? a11yInfo.name ?? resolved?.name ?? resolved?.state ?? "";
+  }
+
   function applyA11y(): void {
-    const label = opts.label ?? resolved?.name ?? resolved?.state ?? "";
+    const base = a11yBase();
+    const label = base === "" ? "" : accessibleName(base, a11yState ?? null, a11yInfo.states, opts.labels ?? {});
     if (label === "") {
       canvas.removeAttribute("role");
       canvas.removeAttribute("aria-label");
@@ -350,6 +562,44 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
     }
   }
 
+  /** The state the view shows changed (or may have): rename it, and let the announcer decide. */
+  function refreshA11y(): void {
+    if (destroyed) return;
+    const st = lifecycleNow() ?? null;
+    if (st === a11yState) return;
+    a11yState = st;
+    applyA11y();
+    const base = a11yBase();
+    const speak = base !== "" && (opts.announce ?? a11yInfo.announce ?? true);
+    stepAnnouncer(speak ? a11yStateWords(base, st, a11yInfo.states, opts.labels ?? {}) : null);
+  }
+
+  function stepAnnouncer(words: string | null): void {
+    if (announceTimer != null) clearTimeout(announceTimer);
+    announceTimer = null;
+    const now = performance.now() / 1000;
+    const out = announceStep(announcer, words, now);
+    announcer = out.state;
+    if (out.announce != null) speakText(out.announce);
+    if (out.recheckAt != null) {
+      announceTimer = setTimeout(() => stepAnnouncer(announcer?.current ?? null), Math.max(0, (out.recheckAt - now) * 1000));
+    }
+  }
+
+  /** Polite, visually hidden: a sibling of the canvas (inside the shadow root for `<sinua-view>`). */
+  function speakText(text: string): void {
+    const parent = canvas.parentNode;
+    if (!parent || !doc) return;
+    if (!liveRegion) {
+      liveRegion = doc.createElement("span");
+      liveRegion.setAttribute("aria-live", "polite");
+      liveRegion.setAttribute("aria-atomic", "true");
+      liveRegion.style.cssText = "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap";
+      parent.insertBefore(liveRegion, canvas.nextSibling);
+    }
+    liveRegion.textContent = text;
+  }
+
   function resizeBacking(): void {
     const dpr = Math.min(win?.devicePixelRatio || 1, DPR_CAP);
     const w = Math.max(1, Math.round(cssW * dpr));
@@ -359,26 +609,17 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
   }
 
   /** The engine speed of one lifecycle state of the spec (the product the player will use). */
-  function specSpeed(state: string | undefined): number {
-    const key = state ?? "";
-    const cached = specSpeeds.get(key);
-    if (cached !== undefined) return cached;
-    const r = resolveFxSpec(asSpec(opts.spec!), { state, lowPower: !!opts.lowPower });
-    const speed = r.ok ? (resolvedOpts(r.state as OrbState, r.size as OrbSize)?.speed ?? 1) * r.speed : 1;
-    specSpeeds.set(key, speed);
-    return speed;
-  }
-
   /**
    * The engine speed right now: the preset's tuned speed times the app's multiplier
    * (0 holds the pose). With a spec it is the *current lifecycle state's* speed, which
    * is what `FxSpecPlayer` renders with.
    */
   function speedNow(state?: string): number {
-    if (player && opts.spec != null) return specSpeed(state);
+    // With a spec, the player's effective speed (mixed while a transition runs).
+    if (player && opts.spec != null) return player.speed();
     if (!resolved) return 1;
-    const profile = profileFor(resolved.state, state);
-    return resolved.presetSpeed * resolved.speed * (profile?.speed ?? 1);
+    const side = plainSide(state);
+    return side ? transition.speed(side, resolved.size as OrbSize) : 1;
   }
 
   /** The engine time to draw at, continuous across speed changes. */
@@ -398,31 +639,49 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
     // The factors stay in the engine's own order (preset, then the app's multiplier, then
     // the voice state's), so without a profile this is bit-for-bit the old
     // `elapsed * presetSpeed * speed`.
-    const preset = resolved ? resolved.presetSpeed : 1;
-    const own = resolved ? resolved.speed : 1;
-    const profile = profileFor(resolved ? resolved.state : "", stateForSpeed)?.speed ?? 1;
-    return phaseBase + (elapsed - elapsedBase) * preset * own * profile;
+    if (!transition.active) {
+      const preset = resolved ? resolved.presetSpeed : 1;
+      const own = resolved ? resolved.speed : 1;
+      const profile = profileFor(resolved ? resolved.state : "", stateForSpeed)?.speed ?? 1;
+      return phaseBase + (elapsed - elapsedBase) * preset * own * profile;
+    }
+    return phaseBase + (elapsed - elapsedBase) * speed;
+  }
+
+  /** The engine's pointer keys for this frame, easing the strength by `rawDt`; none when there's nothing to push. */
+  function pointerKeys(rawDt: number, size: number, reduced: boolean): Record<string, number> {
+    if (!opts.pointer) return {};
+    const target = pointer.active ? 1 : 0;
+    pointer.strength += (target - pointer.strength) * Math.min(1, POINTER_EASE_RATE * Math.min(rawDt, MAX_DT_S));
+    if (reduced || pointer.strength < 0.001) return {};
+    return { pointerX: pointer.x, pointerY: pointer.y, pointerRadius: size * 0.35, pointerStrength: pointer.strength * size * 0.12 };
   }
 
   function draw(rawDt: number): void {
+    // A VoiceOverrides the app feeds itself has no state event: notice changes here.
+    if (voice && !offVoiceState) refreshA11y();
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!resolved) return;
-    const voiceMap = voice ? voice.overrides(rawDt) : {};
-    // Low-power overrides (pre-1.2 / block-less default) sit between the spec's and the voice's.
-    const extra = Object.keys(perf.overrides).length ? { ...perf.overrides, ...voiceMap } : voiceMap;
     const reduced = isReduced();
+    const voiceMap = voice ? voice.overrides(rawDt) : {};
+    const pointerMap = pointerKeys(rawDt, resolved.size, reduced);
+    const live = Object.keys(pointerMap).length ? { ...voiceMap, ...pointerMap } : voiceMap;
+    // Low-power overrides (pre-1.2 / block-less default) sit between the spec's and the live keys.
+    const withPerf = Object.keys(perf.overrides).length ? { ...perf.overrides, ...live } : live;
+    const extra = withEffect(boxLayout ? { ...withPerf, aspect: boxAspect() } : withPerf);
     const t0 = opts.onFrame ? performance.now() : 0;
     let frame: OrbFrame | null = null;
     let packed: PackedFrame | null = null;
     let previous: OrbFrame | null = null;
     let blend = 1;
     if (player) {
-      // FX Spec: FxSpecPlayer owns the v1.1 state/inputs/cross-fade and the 1.2
+      // FX Spec: FxSpecPlayer owns the v1.1 state/inputs/transitions and the 1.2
       // low-power resolution; runtime keys go in as extra overrides (spread last).
-      const lifecycle = lifecycleStateOf(opts) ?? (voice ? voice.state : undefined);
+      const lifecycle = lifecycleNow();
       player.setState(lifecycle);
+      if (reduced) player.skipTransition();
       for (const [name, v] of Object.entries(opts.inputs ?? {})) player.setInput(name, v);
       if (opts.voiceLevelInput && voice) player.setInput(opts.voiceLevelInput, voice.metrics.level);
       // The player multiplies by the state's speed, so it takes an *elapsed*:
@@ -441,23 +700,37 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
       // With a lifecycle state (given, or the bound voice's), the built-in voice-state
       // profile goes *under* the app's own overrides, and the voice's live keys stay last.
       const lifecycle = lifecycleNow();
+      if (lifecycle !== lastLifecycle) {
+        // A state change animates (0.6 s easeInOut, or `crossFade` seconds); reduced motion cuts.
+        transition.start(reduced ? 0 : (opts.crossFade ?? 0.6), "easeInOut");
+        lastLifecycle = lifecycle;
+      }
+      transition.advance(Math.min(rawDt, MAX_DT_S));
+      if (reduced) transition.cancel();
       const profile = profileFor(resolved.state, lifecycle);
+      const side = plainSide(lifecycle)!;
       const t = reduced ? REDUCED_MOTION_T : phaseNow(lifecycle);
-      const merged: Record<string, number> = profile
-        ? { ...profile.overrides, ...resolved.overrides, ...extra }
-        : { ...resolved.overrides, ...extra };
       // `audioInput` names which app input drives `audioLevel` here (never an engine key).
       const level = profile?.audioInput ? opts.inputs?.[profile.audioInput] : undefined;
-      if (level != null) merged.audioLevel = level;
-      packed = frameWithOverridesPacked(resolved.state as OrbState, resolved.size as OrbSize, t, merged);
+      const live = level != null ? { ...extra, audioLevel: level } : extra;
+      if (transition.active) {
+        const out = transition.frames(side, resolved.size as OrbSize, t, live);
+        frame = out.frame;
+        previous = out.previous;
+        blend = out.blend;
+      } else {
+        transition.settle(side);
+        packed = frameWithOverridesPacked(resolved.state as OrbState, resolved.size as OrbSize, t, { ...side.overrides, ...live });
+      }
     }
     if (!frame && !packed) return;
     const t1 = opts.onFrame ? performance.now() : 0;
-    // Square engine space, centered in whatever box the canvas has.
-    const side = Math.min(canvas.width, canvas.height);
+    // Square engine space, centered in whatever box the canvas has -- or, for a
+    // box-layout pattern, `size * aspect` by `size` over the whole box.
+    const side = boxLayout ? canvas.height : Math.min(canvas.width, canvas.height);
     const scale = side / resolved.size;
     ctx.save();
-    ctx.translate((canvas.width - side) / 2, (canvas.height - side) / 2);
+    if (!boxLayout) ctx.translate((canvas.width - side) / 2, (canvas.height - side) / 2);
     if (packed) drawPacked(ctx, packed, isDark(), scale);
     else if (previous && frame) drawCrossDissolve(ctx, previous, frame, blend, isDark(), scale);
     else if (frame) drawFrame(ctx, frame, isDark(), scale);
@@ -469,7 +742,7 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
   }
 
   function tick(now: number): void {
-    raf = null;
+    scheduled = false;
     if (!isRunning()) return;
     // Frame cap: a skipped display frame does nothing (lastTick stays, so the
     // next drawn frame's dt covers the whole gap and the clock keeps wall time).
@@ -482,11 +755,12 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
     if (isReduced()) {
       // Static pose; still redraw (throttled) while a voice is attached --
       // the voice cue is information, not decoration.
-      if (voice && now - lastReducedDraw >= REDUCED_MOTION_VOICE_INTERVAL_MS) {
+      // So does a one-shot effect (its reduced variant: a tint, no motion).
+      if ((voice || effect) && now - lastReducedDraw >= REDUCED_MOTION_VOICE_INTERVAL_MS) {
         lastReducedDraw = now;
         draw(rawDt);
       }
-      if (voice) schedule();
+      if (voice || effect) schedule();
       return;
     }
     // Stall clamp, widened so a low cap (e.g. 8 fps) isn't mistaken for a stall.
@@ -496,19 +770,26 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
   }
 
   function schedule(): void {
-    if (raf == null && isRunning() && win?.requestAnimationFrame) raf = win.requestAnimationFrame(tick);
+    if (!scheduled && isRunning() && win?.requestAnimationFrame) {
+      scheduled = true;
+      requestFrame(win, tick);
+    }
   }
 
   function refresh(): void {
     // Re-evaluate running state after any change: draw a still frame now
     // (so a paused or reduced-motion view isn't blank), then (re)start the loop.
     if (destroyed) return;
-    if (!isRunning() && raf != null) {
-      win?.cancelAnimationFrame?.(raf);
-      raf = null;
+    if (!isRunning() && scheduled) {
+      if (win) cancelFrame(win, tick);
+      scheduled = false;
     }
     if (!isRunning()) lastTick = null;
-    draw(0);
+    // Only a view someone can see is drawn: an app that feeds a level into a view
+    // scrolled away or in a background tab would otherwise paint every update.
+    // Becoming visible again comes back through here (the IntersectionObserver,
+    // visibilitychange), which draws the latest state then.
+    if (onScreen && !doc?.hidden) draw(0);
     schedule();
   }
 
@@ -521,6 +802,7 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
           cssW = box.width;
           cssH = box.height;
           resizeBacking();
+          if (isSmall() !== wasSmall) applyPerformance();
           draw(0);
         });
   ro?.observe(canvas);
@@ -538,14 +820,56 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
   darkMq?.addEventListener?.("change", onMq);
   motionMq?.addEventListener?.("change", onMq);
 
+  // Engine space is the square `draw` centres in the canvas box, 0..size on each side
+  // (for a box-layout pattern: the whole box, `size` tall).
+  const onPointerMove = (e: PointerEvent) => {
+    if (!resolved) return;
+    const r = canvas.getBoundingClientRect();
+    const side = boxLayout ? r.height : Math.min(r.width, r.height);
+    if (!side) return;
+    const ox = boxLayout ? 0 : (r.width - side) / 2;
+    const oy = boxLayout ? 0 : (r.height - side) / 2;
+    pointer.x = ((e.clientX - r.left - ox) / side) * resolved.size;
+    pointer.y = ((e.clientY - r.top - oy) / side) * resolved.size;
+    pointer.active = true;
+  };
+  const onPointerLeave = () => {
+    pointer.active = false;
+  };
+  // A mouse button going up doesn't end a hover; a finger lifting does.
+  const onPointerUp = (e: PointerEvent) => {
+    if (e.pointerType !== "mouse") pointer.active = false;
+  };
+  function applyPointer(): void {
+    const want = !!opts.pointer && !destroyed;
+    if (want === pointerBound) return;
+    if (want) {
+      canvas.addEventListener("pointermove", onPointerMove);
+      canvas.addEventListener("pointerdown", onPointerMove);
+      canvas.addEventListener("pointerup", onPointerUp);
+      canvas.addEventListener("pointerleave", onPointerLeave);
+      canvas.addEventListener("pointercancel", onPointerLeave);
+    } else {
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerdown", onPointerMove);
+      canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointerleave", onPointerLeave);
+      canvas.removeEventListener("pointercancel", onPointerLeave);
+      pointer.active = false;
+      pointer.strength = 0;
+    }
+    pointerBound = want;
+  }
+
   applyInput();
+  applyPointer();
   resizeBacking();
   refresh();
 
   return {
     update(next) {
       // The lifecycle state / inputs / voiceLevelInput are read every frame --
-      // changing them must not rebuild the player (that would drop a cross-fade).
+      // changing them must not rebuild the player (that would drop a transition).
       const before = patternOf(opts);
       opts = { ...opts, ...next };
       warnPlainState(opts);
@@ -554,12 +878,30 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
       if (inputChanged) applyInput();
       else {
         if ("voice" in next || "voiceOptions" in next) {
-          if ("voiceOptions" in next) boundSource = null;
+          if ("voiceOptions" in next) unbindVoice();
           applyVoice();
         }
-        if ("label" in next) applyA11y();
+        if ("inputs" in next || "rules" in next || "voice" in next) applyRules();
+        if ("label" in next || "labels" in next) applyA11y();
         if ("maxFps" in next || "lowPower" in next) applyPerformance();
       }
+      if ("pointer" in next) applyPointer();
+      if ("labels" in next || "announce" in next) a11yState = undefined; // re-word the current state
+      refreshA11y();
+      refresh();
+    },
+    trigger(name: string) {
+      if (destroyed) return;
+      const info = effectInfo(name);
+      if (!info) {
+        if (!warnedEffect) console.warn(`SinuaView: no effect named "${name}" (success, error, celebrate)`);
+        warnedEffect = true;
+        return;
+      }
+      effect = { code: info.code, duration: info.duration, start: performance.now() / 1000 };
+      // An effect is an event: spoken now, outside the state rate limit.
+      const base = a11yBase();
+      if (base !== "" && (opts.announce ?? a11yInfo.announce ?? true)) speakText(opts.labels?.[`effect:${name}`] ?? info.words);
       refresh();
     },
     pause() {
@@ -572,8 +914,14 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
     },
     destroy() {
       destroyed = true;
-      if (raf != null) win?.cancelAnimationFrame?.(raf);
-      raf = null;
+      unbindVoice();
+      if (announceTimer != null) clearTimeout(announceTimer);
+      announceTimer = null;
+      liveRegion?.remove();
+      liveRegion = null;
+      applyPointer(); // destroyed: unbinds
+      if (scheduled && win) cancelFrame(win, tick);
+      scheduled = false;
       ro?.disconnect();
       io?.disconnect();
       doc?.removeEventListener("visibilitychange", onVisibility);

@@ -50,6 +50,21 @@ export interface VoiceSource {
    * `interruptAge` for `primitives::apply_interrupt`.
    */
   onInterrupt?(cb: () => void): void;
+  /**
+   * Optional: mute or unmute the microphone. Silence goes out and the session
+   * stays up; the agent's audio (and a vendor source's metrics) keep flowing.
+   * A plain mic, the test tone and a simulated conversation report level 0
+   * for the user while muted. Call it through `SharedVoiceSource` so views
+   * show the muted cue (docs/audio-pipeline.md, *Mute*).
+   */
+  setMuted?(muted: boolean): void;
+  /**
+   * Optional: `true` once the session is up, `false` when it ends -- your
+   * `disconnect()`, a remote hang-up, a drop the source gave up on. The agent
+   * state can't say this: an agent may be `idle` while connected. A voice
+   * button uses it to go back to "ready"; without it, `idle` counts as ended.
+   */
+  onConnectionChange?(cb: (connected: boolean) => void): void;
 }
 
 /**

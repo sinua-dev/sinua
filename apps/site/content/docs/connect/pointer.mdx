@@ -1,0 +1,29 @@
+---
+title: Pointer and touch
+description: Let the dots near the pointer move out of its way, on any pattern.
+---
+
+With `pointer` on, a view follows the pointer (a mouse, a pen or a finger) and pushes the dots, lines and strokes near it outward, easing in when the pointer arrives and out when it leaves. It works on every pattern, because the engine applies it after the pattern has drawn its frame.
+
+<Tabs groupId="web" items={["React", "JavaScript", "HTML"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="pointer-react.tsx"'>../../../snippets/web/pointer-react.tsx</include>
+</Tab>
+<Tab value="JavaScript">
+<include lang="ts" meta='title="pointer.ts"'>../../../snippets/web/pointer.ts</include>
+</Tab>
+<Tab value="HTML">
+<include lang="html" meta='title="pointer-element.html"'>../../../snippets/web/pointer-element.html</include>
+</Tab>
+</Tabs>
+
+## How it behaves
+
+- **Off by default.** A visual that sits behind text or under a button shouldn't react to every cursor that crosses it.
+- **Reduced motion wins.** With `prefers-reduced-motion` (or `reducedMotion: "always"`), the view draws its still pose and the pointer changes nothing. It's also ignored while the view is paused.
+- **Touch doesn't block scrolling.** The view leaves `touch-action` alone, so a finger on the visual still scrolls the page; pressing and holding shows the scatter until the browser takes the gesture over.
+- **Radius and strength follow the size:** a radius of 35% of the visual and a push of 12%, the same values the Studio uses.
+
+## iOS and Android
+
+The native views don't have a `pointer` option yet. The effect is the same four engine keys on every platform, so until they do, pass them as overrides from your own gesture handler, in engine units (0 to the visual's size, 64 by default): `pointerX`, `pointerY`, `pointerRadius` and `pointerStrength` (0 turns it off).

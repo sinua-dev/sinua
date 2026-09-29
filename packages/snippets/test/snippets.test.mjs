@@ -112,3 +112,14 @@ test("the typed snippet prints the component with its props", () => {
   );
   assert.match(rn.code, /from "@sinua\/react-native"/);
 });
+
+test("a box-layout pattern's snippet gets its own box; square ones stay 160", async () => {
+  const { snippetBox } = await import("../dist/index.js");
+  assert.deepEqual(snippetBox("framing"), [180, 390]);
+  assert.deepEqual(snippetBox("playing"), [220, 44]);
+  assert.deepEqual(snippetBox("working"), [160, 160]);
+  const tabs = buildSnippets({ state: "playing", size: 64, overrides: {}, specFile: "signal-playing.fxspec.json" }).code;
+  const compose = tabs.find((t) => t.id === "compose").code;
+  assert.match(compose, /Modifier\.size\(220\.dp, 44\.dp\)/);
+  assert.match(tabs.find((t) => t.id === "react").code, /style=\{\{ width: 220, height: 44 \}\}/);
+});

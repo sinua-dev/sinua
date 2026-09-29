@@ -1,4 +1,11 @@
 {
   "title": "Connect your app",
-  "pages": ["states-vs-patterns", "values", "bindings", "..."]
+  "pages": [
+    "states-vs-patterns",
+    "values",
+    "bindings",
+    "pointer",
+    "effects",
+    "..."
+  ]
 }

@@ -44,7 +44,7 @@ they are SinuaVoice and its vendor products. See
 | `voice` | A `VoiceSource` or a `VoiceOverrides`. A source holds one metrics/state callback, so the view binds it; read the view's `voice` (Web handle) for a meter. If your app already listens to the source, pass a `VoiceOverrides` you feed yourself. The view never connects or disconnects the source. The bound defaults are the Studio's per family, derived from `spec.object`: orb gets raw bands (`bandEaseRate` ∞); signal gets `audioStrength` 0 and a scrolling history of 40 @ 12 Hz (or the spec's `historyCount`). Override with `voiceOptions` (Web). |
 | `state`, `inputs` | With a spec: `state` is the app lifecycle key and picks the spec's `states` entry, and `inputs` drive `bindings`. **With a voice, `state` defaults to the voice's `AgentState`** (`listening`, `speaking`, …, which is the `states` convention in `fx-spec.md`), so a v1.1 spec follows the conversation. A key the spec lacks renders the top-level design. |
 | `voiceLevelInput` | Also feeds the voice level into this spec input, e.g. `"agentVolume"`, so the spec's own binding drives the look. |
-| `crossFade` | The state-change cross-fade, in seconds: 0.25 s cubic ease-out, the Studio's and `FxSpecPlayer`'s. 0 cuts. One name on every platform (Web React and Android called it `crossFadeSeconds` before 2026-09-21). |
+| `crossFade` | Overrides every state change's duration, in seconds (`0` = a cut). Unset (the default): the spec's 1.9 `transitions`, or 0.6 s easeInOut. A change keeping the pattern interpolates its parameters; a pattern change morphs (the orb lattice trio) or cross-fades (docs/fx-spec.md, *Caller loop*). One name on every platform (Web React and Android called it `crossFadeSeconds` before 2026-09-21). |
 | `theme` | `auto` (system), `light` or `dark`. Ink mirrors on dark unless the frame's `colorMode` is `fixed`. The background is transparent, so the host's paper shows through. |
 | `paused` | Freezes the clock; resuming continues from the same pose. |
 | `reducedMotion` | `auto` follows the system setting: `prefers-reduced-motion` on Web, `accessibilityReduceMotion` on iOS, and "Remove animations" on Android (`ANIMATOR_DURATION_SCALE` 0). It renders a static frame at t = 0.6. While a voice is attached, the view still redraws at up to 30 Hz, because the voice cue is information, not decoration. |
@@ -540,6 +540,169 @@ it becomes `audioLevel`; with a bound source its own level is used.
 The state's speed rides the phase-continuous clock, so switching states changes the
 rate without jumping the pose.
 
+## Voice button
+
+A mic button bound to a voice source. It derives five states from the source and
+drives the session:
+
+| State | When | Look |
+|---|---|---|
+| `ready` | not connected | the mic icon |
+| `connecting` | a connect is under way | a spinning `loading` ring |
+| `listening` | connected, not muted | a closed `completing` ring on the button's edge that swells with the level |
+| `muted` | connected, muted | the mic struck through, grey; the ring barely moves |
+| `error` | the connect failed | a warning icon; the accessible name carries the reason |
+
+The agent's own states (thinking, speaking) stay on the main visual.
+
+```ts
+// Web
+import { defineSinuaVoiceButtonElement } from "@sinua/web/voice-button";
+defineSinuaVoiceButtonElement();
+view.voice = source;          // <sinua-view> (or mount / <SinuaView voice>)
+button.source = source;       // <sinua-voice-button mode="toggle | push-to-talk">
+// React: <SinuaVoiceButton source={source} mode="pushToTalk" />   (@sinua/web/react)
+```
+```swift
+SinuaView(pattern: "glowing", voice: source)
+SinuaVoiceButton(source: source, mode: .pushToTalk)
+```
+```kotlin
+SinuaView(pattern = "glowing", voice = source)
+SinuaVoiceButton(source, mode = VoiceButtonMode.PUSH_TO_TALK)
+```
+```tsx
+// React Native
+<SinuaView pattern="glowing" voice={voice} />
+<SinuaVoiceButton voice={voice} />
+```
+
+**Modes.**
+- `toggle` (the default): a press connects, then mutes and unmutes.
+- `pushToTalk`: pressing connects (the first time) and unmutes; releasing mutes. The session stays up between presses, so there's no reconnect latency.
+- In both modes a long press (0.6 s), the small ✕ or Escape (Web) ends the session.
+- A source that can't mute: a press while listening ends the session instead, and push-to-talk behaves as toggle.
+
+**One source, both controls.** A source holds one callback of each kind, so the view
+and the button share it through `SharedVoiceSource` (docs/audio-pipeline.md, *Sharing a
+source*):
+- Every view binds a raw source that way.
+- The button's mute reaches the view as the muted cue.
+- To listen to the source yourself, subscribe on `SharedVoiceSource.of(source)`, not on the source.
+
+**Accessibility.**
+- Web: the button is a real button. Its accessible name follows the state ("Start voice", "Connecting", "Microphone on", "Microphone muted", "Voice unavailable: <reason>"); the hint says what a press does; muted is `aria-pressed="true"` / selected; connecting is busy.
+- iOS: VoiceOver gets `.isButton`, a hint and an "End voice session" action.
+- Android: TalkBack gets `Role.Button`, a click label and the same custom action.
+- React Native: `accessibilityActions`.
+- A screen reader can't hold, so in push-to-talk its activation toggles (and the first one connects live).
+- Every name is overridable through `labels`.
+
+**The logic is one table.** `spec/voice-button-cases.json` lists events (press,
+release, end, connectOk, connectFail, dropped, muted) and the states and effects after
+each. `@sinua/core` (`voiceButtonStep`, `VoiceButtonController`), Swift and Kotlin
+(`SinuaVoiceTypes` / `dev.sinua.voice`) and React Native are all tested against it.
+
+A session counts as up and as ended from the source's `onConnectionChange`, when it
+reports one: an agent can be `idle` while connected. On Android and React Native a
+vendor's `connect()` returns while the socket is still opening, so a failure arrives
+through `onError`.
+
+## Accessibility: the name follows the state, and changes are spoken
+
+A view is an image to assistive technology (Web `role="img"` on the canvas; SwiftUI
+`.isImage`; Compose `contentDescription`).
+
+**Its name follows the state it shows.** "Coach" while idle, "Coach, listening" while the
+agent listens. The words come from, in order:
+1. the view's `labels` option (per state; this is how apps translate);
+2. the FX Spec's 1.9 `accessibility.states` (docs/fx-spec.md);
+3. the built-in words for the voice states;
+4. otherwise, the plain name.
+
+The name itself is the `label` option, else `accessibility.name`, else the spec's `name`,
+else the pattern.
+
+**State changes are spoken** (default on; `announce: false` turns it off; the spec's
+`accessibility.announce` is the default when the app doesn't say):
+- Web: a visually hidden `aria-live="polite"` region beside the canvas (inside the shadow
+  root for `<sinua-view>`), removed with the view.
+- iOS: a queued `UIAccessibility` announcement, only while VoiceOver runs.
+- Android: `announceForAccessibility`, only while an accessibility service is on.
+- React Native: through the native views.
+
+Politely, and rate-limited by the engine's rule (the same on every platform):
+- a state is spoken after it has held 1 s, at most once every 3 s;
+- only when its words differ from the last spoken;
+- never for the view's first state or for `idle`.
+
+A conversation that flips listening ↔ speaking every second says nothing until it
+settles. The views run the rule on every state change and on a timer, so a paused or
+reduced-motion view still speaks.
+
+**Haptics** (native only, opt-in: `haptics: true`): a light tap when the agent starts
+listening, the "your turn" moment. Never under reduced motion.
+
+**Which state (`rules`).** With an FX Spec 1.9 `rules` block, the view derives a state
+from the app's `inputs` (with hysteresis; docs/fx-spec.md). The effective state:
+- **With a voice bound**, the conversation drives it, as before: the app's `state` if
+  given, else the voice's. Rules stay off.
+- **Without a voice**, the state the rules derive wins over the app's own `state`, and the
+  app's `state` applies while no rule holds.
+
+`rules: false` turns the derivation off. The name, the announcements, the transitions and
+the voice-state behaviour all follow the effective state.
+
+| Option | Web (`mount`, `<sinua-view>`, React) | iOS `SinuaView` | Android `SinuaView` | React Native |
+|---|---|---|---|---|
+| per-state words | `labels` | `labels:` | `labels =` | `labels` |
+| speak changes | `announce` (true) | `announce:` | `announce =` | `announce` |
+| haptic on listening | — | `haptics:` (false) | `haptics =` (false) | `haptics` |
+| derive from `rules` | `rules` (true) | `rules:` | `rules =` | `rules` |
+
+## One-shot effects
+
+`trigger("success" | "error" | "celebrate")` plays one short effect on top of whatever the
+view shows; then the view is exactly as before. The state, the voice and any transition
+carry on underneath.
+
+| Effect | Look | Length | Spoken |
+|---|---|---|---|
+| `success` | a green tint pulse, one ring expanding from the shape, a tick drawn in the middle | 0.9 s | "Done" |
+| `error` | a short horizontal shake (three decaying swings) with a red tint | 0.5 s | "Something went wrong" |
+| `celebrate` | a seeded burst of particles out of the shape, and a small brightness lift | 1.4 s | "Well done" |
+
+- A new trigger replaces a running effect.
+- Under reduced motion there's no shake, no burst and no moving ring: the tint pulse
+  plays, and success's tick appears and fades in place.
+- The effect is spoken at once (it's an event, so the state rate limit doesn't apply)
+  unless `announce` is false. `labels["effect:success"]` etc. replace the words.
+- Unknown names do nothing.
+
+```ts
+const fx = mount(canvas, { pattern: "tracking" });
+fx.trigger("celebrate");                 // Web; <sinua-view>: el.trigger("celebrate")
+```
+```swift
+@State var effect: SinuaEffectTrigger?
+SinuaView(pattern: "tracking", effect: effect)
+effect = SinuaEffectTrigger(.celebrate)  // each new value plays once
+```
+```kotlin
+var effect by remember { mutableStateOf<SinuaEffectTrigger?>(null) }
+SinuaView(pattern = "tracking", effect = effect)
+effect = SinuaEffectTrigger(SinuaEffect.CELEBRATE)
+```
+```tsx
+<SinuaView pattern="tracking" effect={{ name: "celebrate", key: goalCount }} />  // plays when key changes
+```
+
+The engine draws the effect: it's a post-process like the barge-in flash, driven by the
+runtime keys `effectCode` / `effectAge` / `effectReduced`, which the view feeds while
+the effect runs. So it works on every pattern of every family and looks identical on
+every platform (`spec/effect-vectors.json`). The durations and words come from
+`effect_info(name)`.
+
 ## Typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaCore`, `SinuaBeacon`)
 
 One component per engine object, generated from the parameter catalog
@@ -702,8 +865,8 @@ voice.onError(console.error);
 await voice.connect();   // from a button press
 ```
 
-- **Vendors:** `{ vendor: "livekit", url, token }`, `{ vendor: "openai", getCredential }` (or `credential`), `{ vendor: "gemini", credential }`, `{ vendor: "elevenlabs", credential }`, `{ vendor: "mic" }`, `{ vendor: "test" }`. The `voice="test" | "mic"` strings still work for the quick case.
-- **Credentials** are passed once and live only in the native source: never in props, storage or logs. For OpenAI, `getCredential` is called again on every reconnect, because an `ek_` is single-use.
+- **Vendors:** `{ vendor: "openai" | "gemini" | "elevenlabs", credentialUrl }` (or `credential`: a provider or one fixed value), `{ vendor: "livekit", credentialUrl }` (or `url, token`), `{ vendor: "mic" }`, `{ vendor: "test" }`. The `voice="test" | "mic"` strings still work for the quick case.
+- **Credentials** follow the shared contract (docs/audio-pipeline.md, *Credentials for a real integration*): `credentialUrl` answers `{ credential, expiresAt?, url? }`. The URL or a provider is resolved in JS and handed to the native source on every connect and reconnect, never in props, storage or logs. A raw API key is refused. `getCredential` still works as a deprecated alias.
 - **Errors:** iOS rejects `connect()`; Android's `connect()` returns as soon as the socket is opening, so a later failure arrives through `onError`. Handle both.
 - **Vendor SDKs are opt-in**, so an app only downloads what it uses:
   - **iOS:** Gemini Live and ElevenLabs are in the default pod (Foundation only). For the others, add to the Podfile

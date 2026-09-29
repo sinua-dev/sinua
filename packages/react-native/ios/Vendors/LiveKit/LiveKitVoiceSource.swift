@@ -31,8 +31,8 @@ final class LiveKitVoiceSource: NSObject, VoiceSource, RoomDelegate, @unchecked 
 
     private let room: Room
     private let ownsRoom: Bool
-    private let url: String?
-    private let token: String?
+    /// Own Room: where the join credential comes from (`{ credential: <jwt>, url }`).
+    private let credentials: CredentialSource?
     private let publishMicrophone: Bool
 
     // Main-thread state.
@@ -41,26 +41,58 @@ final class LiveKitVoiceSource: NSObject, VoiceSource, RoomDelegate, @unchecked 
     private lazy var renderer = Renderer(sink: tracker.sink)
     private var timer: DispatchSourceTimer?
     private var agentWaiter: CheckedContinuation<Void, Error>?
+    private var connectionCb: ((Bool) -> Void)?
+    private var sessionUp = false
+    private var muted = false
 
     public init(room: Room) {
         self.room = room
         ownsRoom = false
-        url = nil
-        token = nil
+        credentials = nil
         publishMicrophone = false
     }
 
-    public init(url: String, token: String, publishMicrophone: Bool = true) {
+    /// Own Room, credential from your backend in the shared shape `{ credential: <room jwt>, url }`
+    /// (`mintLiveKitCredential` in `@sinua/voice/server`, or `npx @sinua/voice dev-proxy`).
+    public init(credential: CredentialSource, publishMicrophone: Bool = true) {
         room = Room()
         ownsRoom = true
-        self.url = url
-        self.token = token
+        credentials = credential
         self.publishMicrophone = publishMicrophone
+    }
+
+    /// Own Room, credential from your endpoint (`{ credential, url, expiresAt? }`).
+    public convenience init(credentialUrl: URL, publishMicrophone: Bool = true) {
+        self.init(credential: .url(credentialUrl), publishMicrophone: publishMicrophone)
+    }
+
+    public convenience init(url: String, token: String, publishMicrophone: Bool = true) {
+        self.init(
+            credential: .provider { SinuaCredential(credential: token, url: url) }, publishMicrophone: publishMicrophone
+        )
     }
 
     public func onMetrics(_ cb: @escaping (VoiceMetrics) -> Void) { tracker.onMetrics = cb }
     public func onStateChange(_ cb: @escaping (AgentState) -> Void) { tracker.onState = cb }
     public func onInterrupt(_ cb: @escaping () -> Void) { tracker.onInterrupt = cb }
+    public func onConnectionChange(_ cb: @escaping (Bool) -> Void) { connectionCb = cb }
+    public var reportsConnection: Bool { true }
+    public var supportsMute: Bool { true }
+
+    /// Muted, the local microphone is muted (`setMicrophone(enabled: false)`): the agent
+    /// hears nothing and the room stays joined. On an attached Room this mutes the app's mic too.
+    public func setMuted(_ muted: Bool) {
+        self.muted = muted
+        guard sessionUp else { return }
+        let room = room
+        Task { try? await room.localParticipant.setMicrophone(enabled: !muted) }
+    }
+
+    private func setSessionUp(_ up: Bool) {
+        guard up != sessionUp else { return }
+        sessionUp = up
+        connectionCb?(up)
+    }
 
     public func connect() async throws {
         await MainActor.run {
@@ -68,9 +100,10 @@ final class LiveKitVoiceSource: NSObject, VoiceSource, RoomDelegate, @unchecked 
             room.add(delegate: self)
         }
         do {
-            if ownsRoom, let url, let token {
-                try await room.connect(url: url, token: token)
-                if publishMicrophone { try await room.localParticipant.setMicrophone(enabled: true) }
+            if ownsRoom, let credentials {
+                let join = try await credentials.resolve(vendor: "LiveKitVoiceSource", needsURL: true)
+                try await room.connect(url: join.url ?? "", token: join.credential)
+                if publishMicrophone { try await room.localParticipant.setMicrophone(enabled: !muted) }
             }
             let found = await MainActor.run { () -> Bool in
                 for p in room.remoteParticipants.values { seen(p) }
@@ -79,6 +112,10 @@ final class LiveKitVoiceSource: NSObject, VoiceSource, RoomDelegate, @unchecked 
             }
             // Own Room: an agent must show up (the Web rule). Attached Room: the app may dispatch it later.
             if ownsRoom, !found { try await waitForAgent() }
+            await MainActor.run {
+                setSessionUp(true)
+                if muted, !ownsRoom { setMuted(true) }
+            }
         } catch {
             await MainActor.run { teardown() }
             throw error
@@ -218,6 +255,7 @@ final class LiveKitVoiceSource: NSObject, VoiceSource, RoomDelegate, @unchecked 
         agentWaiter = nil
         tracker.stop()
         if ownsRoom { Task { await room.disconnect() } }
+        setSessionUp(false)
     }
 
     private func onMain(_ f: @escaping () -> Void) {

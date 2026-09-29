@@ -12,6 +12,8 @@ import dev.sinua.view.FxFrameStats
 import dev.sinua.view.FxLowPower
 import dev.sinua.view.FxReducedMotion
 import dev.sinua.view.FxTheme
+import dev.sinua.view.SinuaEffect
+import dev.sinua.view.SinuaEffectTrigger
 import dev.sinua.view.SinuaView
 import dev.sinua.voice.LocalMicVoiceSource
 import dev.sinua.voice.TestToneVoiceSource
@@ -35,7 +37,31 @@ class FxHostView(context: Context) : FrameLayout(context) {
     var specState by mutableStateOf<String?>(null)
     var inputs by mutableStateOf(emptyMap<String, Double>())
     var voiceLevelInput by mutableStateOf<String?>(null)
-    var crossFade by mutableStateOf(0.25)
+    /** null = the spec's `transitions` (default 0.6 s). */
+    var crossFade by mutableStateOf<Double?>(null)
+
+    /** The bound voice's pulse (`audioStrength`); null = the view's default. The voice button's ring sets it. */
+    var audioStrength by mutableStateOf<Double?>(null)
+    var labels by mutableStateOf(emptyMap<String, String>())
+    var announce by mutableStateOf<Boolean?>(null)
+    var haptics by mutableStateOf(false)
+    var rules by mutableStateOf(true)
+    var effect by mutableStateOf<SinuaEffectTrigger?>(null)
+    private var effectName: String? = null
+    private var effectKey = 0
+
+    fun setEffectName(name: String?) {
+        effectName = name
+    }
+
+    /** A new key plays the effect once (a fresh trigger value). */
+    fun setEffect(name: String?, key: Int) {
+        if (name != null) effectName = name
+        if (key == effectKey) return
+        effectKey = key
+        val kind = SinuaEffect.entries.firstOrNull { it.wire == effectName }
+        if (key != 0 && kind != null) effect = SinuaEffectTrigger(kind)
+    }
     var theme by mutableStateOf(FxTheme.AUTO)
     var paused by mutableStateOf(false)
     var reducedMotion by mutableStateOf(FxReducedMotion.AUTO)
@@ -66,18 +92,33 @@ class FxHostView(context: Context) : FrameLayout(context) {
     @androidx.compose.runtime.Composable
     private fun HostContent() {
         val frame: ((FxFrameStats) -> Unit)? = if (reportFrames) ({ s -> frame(s) }) else null
+        val v = voice
+        val strength = audioStrength
+        // With a pulse of its own, this view keeps its own tracker on the source's fan-out.
+        val tracked = androidx.compose.runtime.remember(v, strength) {
+            if (v != null && strength != null) {
+                dev.sinua.voice.SharedVoiceSource.of(v).track(dev.sinua.voice.VoiceOverridesOptions(audioStrength = strength))
+            } else {
+                null
+            }
+        }
+        androidx.compose.runtime.DisposableEffect(tracked) { onDispose { tracked?.release() } }
         val s = spec
         if (!s.isNullOrEmpty()) {
             SinuaView(
-                spec = s, voice = voice, state = specState, inputs = inputs, voiceLevelInput = voiceLevelInput,
+                spec = s, voice = voice, voiceOverrides = tracked?.overrides, state = specState, inputs = inputs,
+                voiceLevelInput = voiceLevelInput,
                 crossFade = crossFade, theme = theme, paused = paused, reducedMotion = reducedMotion,
                 contentDescription = label, maxFps = maxFps, lowPower = lowPower, onFrame = frame,
+                labels = labels, announce = announce, haptics = haptics, rules = rules, effect = effect,
             )
         } else {
             SinuaView(
-                pattern = state, size = size.toUInt(), overrides = overrides, speed = speed, voice = voice,
+                pattern = state, size = size.toUInt(), overrides = overrides, speed = speed, state = specState,
+                voice = voice, voiceOverrides = tracked?.overrides,
                 theme = theme, paused = paused, reducedMotion = reducedMotion, contentDescription = label,
                 maxFps = maxFps, lowPower = lowPower, onFrame = frame,
+                labels = labels, announce = announce, haptics = haptics, effect = effect,
             )
         }
     }
@@ -127,6 +168,17 @@ class FxHostView(context: Context) : FrameLayout(context) {
     }
 
     companion object {
+        /** A JSON object of state -> words. */
+        fun words(json: String?): Map<String, String> {
+            if (json.isNullOrEmpty()) return emptyMap()
+            return try {
+                val o = JSONObject(json)
+                o.keys().asSequence().mapNotNull { k -> (o.opt(k) as? String)?.let { k to it } }.toMap()
+            } catch (_: Exception) {
+                emptyMap()
+            }
+        }
+
         fun map(json: String?): Map<String, Double> {
             if (json.isNullOrEmpty()) return emptyMap()
             return try {

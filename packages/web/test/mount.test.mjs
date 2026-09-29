@@ -5,8 +5,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { frameFromFxSpec, frameWithOverrides, resolveFxSpec, resolvedOpts, voiceOverrides, voiceStateProfile, VoiceOverrides } from "@sinua/core";
-import { mount, DPR_CAP } from "../dist/index.js";
+import { frameFromFxSpec, frameWithOverrides, resolveFxSpec, resolvedOpts, transitionMix, voiceOverrides, voiceStateProfile, VoiceOverrides } from "@sinua/core";
+import { mount, viewLayout, DPR_CAP } from "../dist/index.js";
 import { env, canvas } from "./dom.mjs";
 
 const specText = readFileSync(new URL("../../../spec/examples/voice-assistant.fxspec.json", import.meta.url), "utf8");
@@ -75,6 +75,99 @@ test("pauses when the tab is hidden, on pause() and on paused: true", () => {
   fx.update({ paused: true });
   h.step(10);
   assert.equal(fx.elapsed, e, "paused option freezes");
+  fx.destroy();
+});
+
+test("an update to a view nobody can see draws nothing; it draws once it is visible again", () => {
+  // Hidden tab: an app feeding a level 60 times a second into a view in a
+  // background tab must not paint 60 frames a second.
+  const h = env({ hidden: true });
+  const c = canvas();
+  const fx = mount(c.el, { pattern: "speaking" });
+  const before = c.clears;
+  for (let i = 0; i < 20; i++) fx.update({ overrides: { audioLevel: i / 20 } });
+  h.step(5);
+  assert.equal(c.clears - before, 0, "hidden tab: 20 updates, no frame drawn");
+  globalThis.document.hidden = false;
+  fx.resume(); // what the visibilitychange listener does
+  assert.ok(c.clears > before, "visible again: the latest state is drawn");
+  fx.destroy();
+
+  // Scrolled off screen: the same, through the IntersectionObserver.
+  let report = null;
+  globalThis.IntersectionObserver = class {
+    constructor(cb) { report = (visible) => cb([{ isIntersecting: visible }]); }
+    observe() {}
+    disconnect() {}
+  };
+  try {
+    env();
+    const d = canvas();
+    const fy = mount(d.el, { pattern: "speaking" });
+    report(false);
+    const off = d.clears;
+    for (let i = 0; i < 20; i++) fy.update({ overrides: { audioLevel: i / 20 } });
+    assert.equal(d.clears - off, 0, "off screen: 20 updates, no frame drawn");
+    report(true);
+    assert.equal(d.clears - off, 1, "back on screen: one frame, right away");
+    fy.destroy();
+  } finally {
+    delete globalThis.IntersectionObserver;
+  }
+});
+
+test("a paused view that is visible still draws its still frame on update", () => {
+  env();
+  const c = canvas();
+  const fx = mount(c.el, { pattern: "speaking", paused: true });
+  const before = c.clears;
+  fx.update({ overrides: { audioLevel: 0.5 } });
+  assert.equal(c.clears - before, 1, "paused but visible: not blank, one still frame");
+  fx.destroy();
+});
+
+// Dots compared to 1e-9: the pointer's eased strength is summed frame by frame, and
+// that sum's last bits depend on the clock's float dt.
+const close = (a, b) => a.length === b.length && a.every((p, i) => p.every((v, k) => Math.abs(v - b[i][k]) < 1e-9));
+
+test("pointer: the dots near the pointer are pushed, with the Studio's radius and strength", () => {
+  const { step } = env();
+  const c = canvas(100);
+  const fx = mount(c.el, { pattern: "working", pointer: true });
+  // (60, 40) in a 100px box is (38.4, 25.6) in a 64-unit engine square.
+  c.fire("pointermove", { clientX: 60, clientY: 40 });
+  step(200); // long enough for the eased strength to settle at 1
+  const t = fx.elapsed * resolvedOpts("working", 64).speed;
+  const keys = { pointerX: 38.4, pointerY: 25.6, pointerRadius: 64 * 0.35, pointerStrength: 64 * 0.12 };
+  assert.ok(close(arcs(c.calls), dotsOf(frameWithOverrides("working", 64, t, keys))), "the drawn frame is the engine's frame with the pointer keys");
+  assert.ok(!close(arcs(c.calls), dotsOf(frameWithOverrides("working", 64, t, {}))), "and it differs from the frame without them");
+
+  c.fire("pointerleave");
+  step(200); // the strength eases back to 0
+  const t2 = fx.elapsed * resolvedOpts("working", 64).speed;
+  assert.deepEqual(arcs(c.calls), dotsOf(frameWithOverrides("working", 64, t2, {})), "after the pointer leaves: the plain frame again");
+
+  assert.ok(c.listening > 0);
+  fx.destroy();
+  assert.equal(c.listening, 0, "destroy removes the pointer listeners");
+});
+
+test("pointer: off by default, under reduced motion, and after update({ pointer: false })", () => {
+  env();
+  const off = canvas(100);
+  const a = mount(off.el, { pattern: "working" });
+  assert.equal(off.listening, 0, "no pointer option: no listeners at all");
+  a.destroy();
+
+  const { step } = env({ reduce: true });
+  const c = canvas(100);
+  const fx = mount(c.el, { pattern: "working", pointer: true });
+  c.fire("pointermove", { clientX: 60, clientY: 40 });
+  step(200);
+  fx.update({ overrides: {} }); // draws the reduced-motion pose now
+  assert.deepEqual(arcs(c.calls), dotsOf(frameWithOverrides("working", 64, 0.6, {})), "reduced motion: no scatter");
+  fx.update({ pointer: false });
+  assert.equal(c.listening, 0, "update({ pointer: false }) unbinds");
   fx.destroy();
 });
 
@@ -401,13 +494,13 @@ test("audioInput names which app input drives audioLevel", () => {
   fx.destroy();
 });
 
-test("the profile's speed rides the phase-continuous clock across a state change", () => {
+test("crossFade: 0 cuts: the profile's speed rides the phase-continuous clock across a state change", () => {
   const { step } = env();
   const c = canvas();
   const idle = voiceStateProfile("working", "idle");
   const speaking = voiceStateProfile("working", "speaking");
   const preset = resolvedOpts("working", 64).speed;
-  const fx = mount(c.el, { pattern: "working", state: "idle" });
+  const fx = mount(c.el, { pattern: "working", state: "idle", crossFade: 0 });
   step(59);
   oneFrame(c, step);
   const phaseBefore = fx.elapsed * preset * idle.speed;
@@ -417,6 +510,38 @@ test("the profile's speed rides the phase-continuous clock across a state change
     frameWithOverrides("working", 64, phaseBefore + (1 / 60) * preset * speaking.speed, speaking.overrides),
   );
   assert.ok(frameDistance(after, continued) < 1e-9, "continues from the idle phase at the speaking speed");
+  fx.destroy();
+});
+
+test("a plain view's state change flows: parameters and speed interpolate over 0.6 s, then land exactly", () => {
+  const { step } = env();
+  const c = canvas();
+  const idle = voiceStateProfile("working", "idle");
+  const speaking = voiceStateProfile("working", "speaking");
+  const preset = resolvedOpts("working", 64).speed;
+  const fx = mount(c.el, { pattern: "working", state: "idle" });
+  step(59);
+  oneFrame(c, step);
+  let phase = fx.elapsed * preset * idle.speed;
+  fx.update({ state: "speaking" });
+  const from = { state: "working", speed: preset * idle.speed, overrides: idle.overrides };
+  const to = { state: "working", speed: preset * speaking.speed, overrides: speaking.overrides };
+  // One frame in: the mix at 1/60 of 0.6 s, the phase advanced at the mixed speed.
+  const first = oneFrame(c, step);
+  const mix = transitionMix(from, to, 64, 1 / 60 / 0.6, "easeInOut");
+  assert.equal(mix.technique, "params");
+  phase += (1 / 60) * mix.speed;
+  const expected = Object.keys(mix.structuralTo).length && mix.swap > 0
+    ? null
+    : dotsOf(frameWithOverrides("working", 64, phase, mix.overrides));
+  if (expected) assert.ok(frameDistance(first, expected) < 1e-9, "the first frame is the mix, not speaking");
+  assert.ok(frameDistance(first, dotsOf(frameWithOverrides("working", 64, phase, speaking.overrides))) > 1e-6, "not a jump");
+  // Frame by frame the phase advances at the mixed speed; after 0.6 s it is speaking exactly.
+  step(40);
+  for (let k = 2; k <= 41; k++) phase += (1 / 60) * (transitionMix(from, to, 64, Math.min(1, k / 60 / 0.6), "easeInOut").speed);
+  const last = oneFrame(c, step);
+  phase += (1 / 60) * to.speed;
+  assert.ok(frameDistance(last, dotsOf(frameWithOverrides("working", 64, phase, speaking.overrides))) < 1e-6, "lands on speaking");
   fx.destroy();
 });
 
@@ -439,4 +564,285 @@ test("a 1.7 spec with a state renders exactly as before: no profile is applied",
     "the resolver's own result, with no voice-state profile mixed in",
   );
   fx.destroy();
+});
+
+test("two views on one raw source both follow it, each with its own tracker, and show its mute", async () => {
+  const { SharedVoiceSource } = await import("@sinua/core");
+  const { step } = env();
+  const a = canvas();
+  const b = canvas();
+  // One callback of each kind, like every real source: a second direct bind would steal it.
+  const src = { cbs: {}, onMetrics(cb) { this.cbs.m = cb; }, onStateChange(cb) { this.cbs.s = cb; }, async connect() {}, disconnect() {}, setMuted() {} };
+  const orb = mount(a.el, { pattern: "working", voice: src });
+  const signal = mount(b.el, { pattern: "waveform", voice: src });
+  assert.notEqual(orb.voice, signal.voice, "each view keeps its family's tracker");
+  src.cbs.s("listening");
+  src.cbs.m({ level: 0.6, bands: Array(16).fill(0.3) });
+  assert.equal(orb.voice.state, "listening");
+  assert.equal(signal.voice.state, "listening");
+  assert.equal(orb.voice.metrics.level, 0.6);
+  assert.equal(signal.voice.metrics.level, 0.6);
+  SharedVoiceSource.of(src).setMuted(true);
+  assert.equal(orb.voice.overrides(0.016).muted, 1);
+  assert.equal(signal.voice.overrides(0.016).muted, 1);
+  step(2);
+  orb.destroy();
+  src.cbs.m({ level: 0.2, bands: Array(16).fill(0.1) });
+  assert.equal(orb.voice.metrics.level, 0.6, "a destroyed view is unsubscribed");
+  assert.equal(signal.voice.metrics.level, 0.2);
+  signal.destroy();
+});
+
+// --- Accessibility (docs/fx-view.md, *Accessibility*) and the 1.9 rules glue ---
+
+/** A canvas with a parent (for the live region), a fake document, and a clock the announcer reads. */
+function a11yEnv(t) {
+  const e = env();
+  const c = canvas();
+  const kids = [];
+  c.el.parentNode = { insertBefore: (node) => kids.push(node) };
+  globalThis.document.createElement = () => {
+    const attrs = {};
+    return { style: {}, textContent: "", setAttribute: (k, v) => (attrs[k] = v), attrs, remove() { kids.splice(kids.indexOf(this), 1); } };
+  };
+  let now = 0;
+  const realNow = performance.now.bind(performance);
+  performance.now = () => now * 1000;
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const advance = (s) => {
+    now += s;
+    t.mock.timers.tick(s * 1000);
+  };
+  t.after(() => (performance.now = realNow));
+  const said = () => kids.map((k) => k.textContent);
+  return { ...e, c, kids, advance, said };
+}
+
+/** One callback of each kind, like every real source. */
+const stateSource = () => ({ cbs: {}, onMetrics(cb) { this.cbs.m = cb; }, onStateChange(cb) { this.cbs.s = cb; }, async connect() {}, disconnect() {} });
+
+test("the accessible name follows the voice's state, and a held change is spoken once", async (t) => {
+  const { c, advance, said, kids } = a11yEnv(t);
+  const src = stateSource();
+  const fx = mount(c.el, { pattern: "glowing", voice: src });
+  assert.equal(c.attrs["aria-label"], "glowing");
+  src.cbs.s("listening");
+  await Promise.resolve();
+  assert.equal(c.attrs["aria-label"], "glowing, listening");
+  assert.equal(kids.length, 0, "nothing spoken before the 1 s hold");
+  advance(1.1);
+  assert.deepEqual(said(), ["glowing, listening"]);
+  assert.equal(kids[0].attrs["aria-live"], "polite");
+  // A flip back and forth under a second says nothing more.
+  src.cbs.s("speaking");
+  await Promise.resolve();
+  advance(0.4);
+  src.cbs.s("listening");
+  await Promise.resolve();
+  advance(5);
+  assert.deepEqual(said(), ["glowing, listening"]);
+  fx.destroy();
+  assert.equal(kids.length, 0, "the live region leaves with the view");
+});
+
+test("labels win over the spec's words; announce: false keeps quiet but still renames", async (t) => {
+  const { c, advance, said } = a11yEnv(t);
+  const spec = JSON.stringify({
+    fxSpec: "1.9", object: "orb", pattern: "glowing", name: "Coach",
+    states: { listening: {}, speaking: {} },
+    accessibility: { states: { listening: "Coach is listening", speaking: "Coach is speaking" } },
+  });
+  const src = stateSource();
+  const fx = mount(c.el, { spec, voice: src, labels: { speaking: "Koç konuşuyor" } });
+  assert.equal(c.attrs["aria-label"], "Coach");
+  src.cbs.s("listening");
+  await Promise.resolve();
+  assert.equal(c.attrs["aria-label"], "Coach is listening");
+  src.cbs.s("speaking");
+  await Promise.resolve();
+  assert.equal(c.attrs["aria-label"], "Koç konuşuyor");
+  advance(1.1);
+  assert.deepEqual(said(), ["Koç konuşuyor"]);
+  fx.update({ announce: false });
+  src.cbs.s("listening");
+  await Promise.resolve();
+  advance(5);
+  assert.equal(c.attrs["aria-label"], "Coach is listening");
+  assert.deepEqual(said(), ["Koç konuşuyor"], "quiet after announce: false");
+  fx.destroy();
+});
+
+test("rules derive the state from inputs with hysteresis; a voice or rules: false turns them off", async (t) => {
+  const { c } = a11yEnv(t);
+  const spec = JSON.stringify({
+    fxSpec: "1.9", object: "orb", pattern: "glowing", name: "Heart",
+    states: { intense: {} },
+    rules: [{ when: { input: "hr", gt: 150 }, state: "intense", hysteresis: 5 }],
+    accessibility: { states: { intense: "Heart rate high" } },
+  });
+  const fx = mount(c.el, { spec, inputs: { hr: 140 } });
+  const label = () => c.attrs["aria-label"];
+  assert.equal(label(), "Heart");
+  fx.update({ inputs: { hr: 151 } });
+  assert.equal(label(), "Heart rate high", "enter above 150");
+  fx.update({ inputs: { hr: 148 } });
+  assert.equal(label(), "Heart rate high", "held by the hysteresis");
+  fx.update({ inputs: { hr: 145 } });
+  assert.equal(label(), "Heart", "left at 145");
+  fx.update({ inputs: { hr: 160 }, rules: false });
+  assert.equal(label(), "Heart", "rules: false");
+  fx.update({ rules: true });
+  assert.equal(label(), "Heart rate high");
+  const src = stateSource();
+  fx.update({ voice: src });
+  src.cbs.s("listening");
+  await Promise.resolve();
+  assert.equal(label(), "Heart, listening", "a bound voice drives the state instead");
+  fx.destroy();
+});
+
+// Roadmap 9/10 (sinua-b1): box layout, one rAF for many views, the small-view cap.
+
+/** The x/y extent of every path point drawn (engine units: `scale` isn't applied here). */
+const pathExtent = (calls) => {
+  const pts = calls.filter((c) => c[0] === "moveTo" || c[0] === "lineTo");
+  return { maxX: Math.max(...pts.map((c) => c[1])), maxY: Math.max(...pts.map((c) => c[2])), n: pts.length };
+};
+
+test("a box-layout pattern fills a wide box: the box ratio goes in as aspect, nothing is centred", () => {
+  const { step } = env();
+  const c = canvas();
+  c.el.clientWidth = 400;
+  c.el.clientHeight = 100;
+  // Grey ink (saturation 0): the stub has no getTransform for per-vertex colour; the
+  // geometry is what's under test.
+  const fx = mount(c.el, { pattern: "framing", overrides: { idleOpacity: 0.5, saturation: 0 }, reducedMotion: "never" });
+  step(2);
+  const { maxX, maxY, n } = pathExtent(c.calls);
+  assert.ok(n > 0, "the rim was stroked");
+  // aspect 4: engine space is 256 x 64; the rim's right side sits near x = 256.
+  assert.ok(maxX > 240 && maxX <= 256, `right edge at ${maxX}`);
+  assert.ok(maxY > 56 && maxY <= 64, `bottom edge at ${maxY}`);
+  assert.ok(!c.calls.some((k) => k[0] === "translate"), "no centring translate");
+  assert.deepEqual(c.calls.find((k) => k[0] === "scale"), ["scale", 100 / 64], "scaled by the box height");
+  fx.destroy();
+});
+
+test("a square pattern in the same wide box is still a centred square", () => {
+  const { step } = env();
+  const c = canvas();
+  c.el.clientWidth = 400;
+  c.el.clientHeight = 100;
+  const fx = mount(c.el, { pattern: "completing", overrides: { progress: 0.5 } });
+  step(2);
+  assert.deepEqual(c.calls.find((k) => k[0] === "translate"), ["translate", 150, 0]);
+  assert.ok(pathExtent(c.calls).maxX <= 64);
+  fx.destroy();
+});
+
+test("many views share one requestAnimationFrame per display frame", () => {
+  const { rafs, step } = env();
+  const views = Array.from({ length: 12 }, () => mount(canvas().el, { pattern: "working" }));
+  let draws = 0;
+  views.forEach((v) => v.update({ onFrame: () => draws++ }));
+  step(1);
+  assert.equal(rafs.filter(Boolean).length, 1, "one rAF queued for twelve views");
+  draws = 0;
+  step(10);
+  assert.equal(draws, 120, "and every view still draws every frame");
+  views[0].destroy();
+  step(1);
+  assert.equal(rafs.filter(Boolean).length, 1);
+  views.slice(1).forEach((v) => v.destroy());
+  assert.equal(rafs.filter(Boolean).length, 0, "the last view out cancels the frame");
+});
+
+test("a small view defaults to 30 fps; maxFps or the spec's performance block wins", () => {
+  const { step } = env();
+  const count = (opts, css = 32) => {
+    const c = canvas(css);
+    let draws = 0;
+    const fx = mount(c.el, { pattern: "listening", ...opts, onFrame: () => draws++ });
+    draws = 0;
+    step(60);
+    fx.destroy();
+    return draws;
+  };
+  const small = count({});
+  assert.ok(small >= 29 && small <= 31, `32 px: ${small}`);
+  assert.ok(count({}, 64) >= 59, "64 px: display rate");
+  assert.ok(count({ maxFps: 0 }) >= 59, "maxFps 0: the app asked for display rate");
+  assert.ok(count({ maxFps: 60 }) >= 59, "maxFps 60 wins over the small default");
+  const spec = JSON.stringify({ fxSpec: "1.8", object: "orb", pattern: "listening", performance: { maxFps: 60 } });
+  assert.ok(count({ spec, pattern: undefined }) >= 59, "the spec's maxFps wins too");
+});
+
+test("a view that shrinks below the small size picks up the 30 fps default", () => {
+  const { step } = env();
+  const c = canvas(100);
+  const listeners = [];
+  const RO = globalThis.ResizeObserver;
+  globalThis.ResizeObserver = class { constructor(cb) { listeners.push(cb); } observe() {} disconnect() {} };
+  try {
+    let draws = 0;
+    const fx = mount(c.el, { pattern: "listening", onFrame: () => draws++ });
+    draws = 0;
+    step(60);
+    assert.ok(draws >= 59, `100 px: ${draws}`);
+    listeners[0]([{ contentRect: { width: 32, height: 32 } }]);
+    draws = 0;
+    step(60);
+    assert.ok(draws >= 29 && draws <= 32, `32 px after resize: ${draws}`);
+    fx.destroy();
+  } finally {
+    globalThis.ResizeObserver = RO;
+  }
+});
+
+// --- One-shot effects (docs/fx-view.md, *One-shot effects*) ---
+
+test("trigger plays an effect for its duration, speaks its words, then the view is as before", async (t) => {
+  const { c, step, advance, said } = a11yEnv(t);
+  const fx = mount(c.el, { pattern: "completing", label: "Goal", labels: { "effect:celebrate": "Hedef tamam" } });
+  const strokes = () => c.calls.filter((x) => x[0] === "lineTo").length;
+  step(1);
+  const before = strokes();
+  fx.trigger("success");
+  assert.deepEqual(said(), ["Done"], "spoken at once, outside the state rate limit");
+  step(1);
+  assert.ok(strokes() > before, "the ring and the tick are drawn");
+  advance(1.0); // past 0.9 s
+  step(1);
+  assert.equal(strokes(), before, "gone after its duration");
+  fx.trigger("celebrate");
+  assert.deepEqual(said(), ["Hedef tamam"], "labels['effect:<name>'] win");
+  fx.update({ announce: false });
+  fx.trigger("error");
+  assert.deepEqual(said(), ["Hedef tamam"], "announce: false keeps quiet");
+  fx.trigger("confetti"); // unknown: nothing
+  fx.destroy();
+});
+
+test("under reduced motion an effect still draws (its reduced variant) and then stops", async (t) => {
+  const { c, step, advance } = a11yEnv(t);
+  globalThis.window.matchMedia = (q) => ({ matches: q.includes("reduce"), addEventListener() {}, removeEventListener() {} });
+  const fx = mount(c.el, { pattern: "completing", reducedMotion: "always" });
+  const strokes = () => c.calls.filter((x) => x[0] === "lineTo").length;
+  const before = strokes();
+  fx.trigger("success");
+  step(3, 40);
+  assert.ok(strokes() > before, "the tick shows in place");
+  advance(1.0);
+  step(3, 40);
+  assert.equal(strokes(), before);
+  fx.destroy();
+});
+
+test("viewLayout: box for the box-layout patterns (plain or spec), square otherwise", () => {
+  assert.equal(viewLayout({ pattern: "framing" }), "box");
+  assert.equal(viewLayout({ pattern: "playing" }), "box");
+  assert.equal(viewLayout({ pattern: "completing" }), "square");
+  assert.equal(viewLayout({ spec: { fxSpec: "1.9", object: "edge", pattern: "framing" } }), "box");
+  assert.equal(viewLayout({ spec: specText }), "square");
+  assert.equal(viewLayout({ pattern: "no-such-pattern" }), "square", "invalid input is square");
 });

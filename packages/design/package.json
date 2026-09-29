@@ -1,0 +1,57 @@
+{
+  "name": "@sinua/design",
+  "version": "0.1.0-beta.6",
+  "license": "Apache-2.0",
+  "author": "The Sinua Authors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinua-dev/sinua.git",
+    "directory": "packages/design"
+  },
+  "homepage": "https://github.com/sinua-dev/sinua/tree/main/packages/design#readme",
+  "bugs": {
+    "url": "https://github.com/sinua-dev/sinua/issues"
+  },
+  "private": true,
+  "description": "The look the Studio and the docs site share: design tokens (light and dark), the Radix color scales and self-hosted fonts they point at, and the presentational controls (segmented control, pill tabs, value slider, disclosure, code viewer). No engine dependency.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./tokens.css": "./css/tokens.css",
+    "./colors.css": "./css/colors.css",
+    "./fonts.css": "./css/fonts.css",
+    "./components.css": "./css/components.css"
+  },
+  "files": [
+    "dist",
+    "css",
+    "NOTICE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@radix-ui/colors": "^3.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}

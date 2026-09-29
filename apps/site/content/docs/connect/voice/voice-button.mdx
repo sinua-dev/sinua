@@ -1,0 +1,59 @@
+---
+title: Voice button
+description: "A microphone button bound to a voice source: connect, mute, push-to-talk and end the session, with the view following along."
+---
+
+The voice button is the control that goes with a visual: it connects the voice source, mutes and unmutes it, and ends the session, and it shows where the session stands. The agent's own states (thinking, speaking) stay on the visual.
+
+<VoiceDemo sample="quick-answer" button />
+
+This demo runs on a [simulated conversation](/docs/connect/voice/simulated): press the button to start it. No microphone is used.
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="voice-button-web.ts"'>../../../../snippets/voice/voice-button-web.ts</include>
+<include lang="tsx" meta='title="voice-button-react.tsx"'>../../../../snippets/voice/voice-button-react.tsx</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="voice-button.swift"'>../../../../snippets/voice/voice-button.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="voice-button.kt"'>../../../../snippets/voice/voice-button.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="voice-button-react-native.tsx"'>../../../../snippets/voice/voice-button-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+## States
+
+| State | When | Looks like |
+|---|---|---|
+| `ready` | not connected | a microphone |
+| `connecting` | a connection is starting | a spinning ring |
+| `listening` | connected, not muted | a ring on the edge that swells with the level |
+| `muted` | connected, muted | the microphone struck through, grey |
+| `error` | the connection failed | a warning; the accessible name says why |
+
+## Modes
+
+- **`toggle`** (the default): a press connects, then mutes and unmutes.
+- **Push-to-talk** (`mode="push-to-talk"` on the web element, `"pushToTalk"` in code): pressing connects the first time and unmutes; releasing mutes. The session stays up between presses, so there's no reconnect delay.
+- In both modes, a long press (0.6 s), the small ✕, or Escape on the web ends the session.
+- A source that can't mute ends the session on a press while listening, and push-to-talk behaves like toggle.
+
+## Mute
+
+Muting sends silence and keeps the session up: no reconnect and no lost context. Every built-in source supports it, and a view bound to the source shows a muted cue. `onConnectionChange` says when a session starts and ends, which the agent's state can't: an agent can be idle while connected.
+
+## Sharing a source
+
+A voice source holds one callback of each kind, so a second listener would silently replace the first. Views and the button share a source through `SharedVoiceSource` automatically. To listen yourself, subscribe through it too, never on the raw source:
+
+<include lang="ts" meta='title="sharing-web.ts"'>../../../../snippets/voice/sharing-web.ts</include>
+
+On iOS and Android the same fan-out has `listenState`, `listenConnection`, `listenMute` and friends, each returning a cancel.
+
+## Accessibility
+
+On the web it's a real button: its name follows the state ("Start voice", "Microphone on", "Microphone muted"…), its hint says what a press does, and muted is `aria-pressed`. VoiceOver and TalkBack get a button role and an "End voice session" action. A screen reader can't hold a press, so in push-to-talk its activation toggles. Every word can be replaced with `labels`.

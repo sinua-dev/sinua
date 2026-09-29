@@ -1,0 +1,12 @@
+{
+  "name": "Calendar",
+  "loop": true,
+  "seed": 1,
+  "turns": [
+    { "state": "idle", "seconds": 2.0 },
+    { "state": "listening", "seconds": 3.2, "voice": "user", "line": "Can you move my 3 pm call to tomorrow?" },
+    { "state": "thinking", "seconds": 1.6, "line": "Checking your calendar" },
+    { "state": "speaking", "seconds": 4.2, "voice": "agent", "line": "Done. It's tomorrow at 3 pm, and I've let Maya know." },
+    { "state": "idle", "seconds": 1.5 }
+  ]
+}

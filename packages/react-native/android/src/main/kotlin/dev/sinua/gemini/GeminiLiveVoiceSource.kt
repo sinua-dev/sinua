@@ -3,6 +3,8 @@ package dev.sinua.gemini
 import android.util.Log
 import dev.sinua.voice.AgentState
 import dev.sinua.voice.AndroidPcmAudioDevice
+import dev.sinua.voice.CredentialException
+import dev.sinua.voice.CredentialSource
 import dev.sinua.voice.GeminiLiveSession
 import dev.sinua.voice.InsecureCredential
 import dev.sinua.voice.LiveSocket
@@ -35,30 +37,50 @@ import dev.sinua.websocket.OkHttpLiveSocketFactory
  * the audio, e.g. no RECORD_AUDIO) goes to `onError`, with the state already
  * back at `idle`.
  *
- * Credentials: an `auth_tokens/…` ephemeral token minted by your backend
- * (production shape), or -- dev only -- a raw API key. Both travel as request
- * headers, never in the URL; held in memory only, never logged.
+ * Credentials: the shared contract ([CredentialSource], docs/audio-pipeline.md).
+ * Only an `auth_tokens/…` ephemeral token is accepted, minted by your backend
+ * (`mintGeminiLiveCredential` in `@sinua/voice/server`, or `npx @sinua/voice
+ * dev-proxy`), which locks the model, voice and instructions. It travels as
+ * `Authorization: Token …`, never in the URL. With [CredentialSource.url] or a
+ * provider, every reconnect resumes the session with a **new** token (single-use
+ * by default). A raw API key is refused.
  *
  * Not verified against the live API yet (docs/audio-pipeline.md).
  */
 class GeminiLiveVoiceSource(
-    credential: String,
+    /** Where tokens come from: [CredentialSource.url], `.provider { … }`, or `.fixed(…)` for one session. */
+    private val credentials: CredentialSource,
     model: String = GeminiLiveSession.DEFAULT_MODEL,
+    /** Deprecated: set instructions when your backend mints the token, which locks them. */
     instructions: String? = null,
-    /**
-     * Opt in to a raw, long-lived API key. Without it `connect()` refuses one
-     * before the socket or the mic ([InsecureCredential]). Local demos only.
-     */
-    private val allowInsecureApiKey: Boolean = false,
-    /** Override the Google endpoint (a relay your backend runs, or tests). */
-    endpoint: GeminiLiveSession.Endpoint? = null,
+    /** Override the Google URL (a relay your backend runs, or tests); the token's header is still added. */
+    private val endpointOverride: GeminiLiveSession.Endpoint? = null,
     device: PcmAudioDevice = AndroidPcmAudioDevice(),
     private val socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
     private val main: MainDispatcher = LooperMainDispatcher(),
 ) : VoiceSource {
-    private val hasCredential = credential.isNotBlank()
-    private val credentialIsEphemeral = InsecureCredential.isGeminiEphemeral(credential)
-    private val endpoint = endpoint ?: GeminiLiveSession.endpoint(credential)
+    /** One fixed token (a pasted `auth_tokens/…`, single session). */
+    @JvmOverloads
+    constructor(
+        credential: String,
+        model: String = GeminiLiveSession.DEFAULT_MODEL,
+        instructions: String? = null,
+        endpoint: GeminiLiveSession.Endpoint? = null,
+        device: PcmAudioDevice = AndroidPcmAudioDevice(),
+        socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
+        main: MainDispatcher = LooperMainDispatcher(),
+    ) : this(CredentialSource.fixed(credential), model, instructions, endpoint, device, socketFactory, main)
+
+    init {
+        if (instructions != null) {
+            log(
+                "GeminiLiveVoiceSource: `instructions` is deprecated -- set them when your backend mints the token " +
+                    "(mintGeminiLiveCredential from @sinua/voice/server), which locks them.",
+            )
+        }
+    }
+
+    private var endpoint: GeminiLiveSession.Endpoint? = null
     private val session = GeminiLiveSession(model, instructions)
     private val graph = PcmAudioGraph(device)
 
@@ -86,6 +108,28 @@ class GeminiLiveVoiceSource(
         }
     }
 
+    override val supportsMute: Boolean get() = true
+    override val reportsConnection: Boolean get() = true
+    private var connectionCb: ((Boolean) -> Unit)? = null
+    private var sessionUp = false
+
+    override fun onConnectionChange(cb: (Boolean) -> Unit) {
+        connectionCb = cb
+    }
+
+    private fun setSessionUp(up: Boolean) {
+        if (up == sessionUp) return
+        sessionUp = up
+        connectionCb?.invoke(up)
+    }
+
+    @Volatile private var muted = false
+
+    /** Muted, the mic chunks go out zeroed (the server's turn detection keeps its timing); the session stays up. */
+    override fun setMuted(muted: Boolean) {
+        this.muted = muted
+    }
+
     override fun onMetrics(cb: (VoiceMetrics) -> Unit) {
         metricsCb = cb
     }
@@ -99,40 +143,61 @@ class GeminiLiveVoiceSource(
     }
 
     /** Setup / reconnect failures after `connect()` returned (the state is already back to idle). */
-    fun onError(cb: (Throwable) -> Unit) {
+    override fun onError(cb: (Throwable) -> Unit) {
         errorCb = cb
     }
 
     /** Call on the main thread. */
     override fun connect() {
-        check(hasCredential) { "GeminiLiveVoiceSource: a credential is required" }
-        // Before the socket, before the mic: a refused credential must not open
-        // a device or a connection.
-        InsecureCredential.check(
-            vendor = "GeminiLiveVoiceSource",
-            isEphemeral = credentialIsEphemeral,
-            allowInsecureApiKey = allowInsecureApiKey,
-            ephemeralShape = InsecureCredential.GEMINI_SHAPE,
-            mintHint = InsecureCredential.GEMINI_MINT_HINT,
-        )
         if (wantConnected) return
-        wantConnected = true
-        session.reset()
-        session.connecting()
-        // Authenticate first; the audio (and the mic) only after setupComplete.
-        openSocket(
-            onReady = { startAudio() },
-            onFail = { err ->
-                teardown()
-                errorCb?.invoke(err)
-            },
-        )
+        // Before the socket, before the mic: a missing or refused credential must
+        // not open a device or a connection. A fixed value answers synchronously,
+        // so its refusal is thrown from here; a provider/URL answers on main.
+        var syncError: Throwable? = null
+        var sync = true
+        refreshEndpoint { err ->
+            if (err != null) {
+                if (sync) syncError = err else errorCb?.invoke(err)
+                return@refreshEndpoint
+            }
+            wantConnected = true
+            session.reset()
+            session.connecting()
+            // Authenticate first; the audio (and the mic) only after setupComplete.
+            openSocket(
+                onReady = { startAudio() },
+                onFail = { e ->
+                    teardown()
+                    errorCb?.invoke(e)
+                },
+            )
+        }
+        sync = false
+        syncError?.let { throw it }
+    }
+
+    /** A token for the next socket; an `auth_tokens/…` name is the only accepted shape. */
+    private fun refreshEndpoint(done: (Throwable?) -> Unit) {
+        credentials.resolve("GeminiLiveVoiceSource", main) { r ->
+            val err = r.exceptionOrNull() ?: runCatching {
+                val token = r.getOrThrow().credential
+                InsecureCredential.check(
+                    "GeminiLiveVoiceSource",
+                    InsecureCredential.isGeminiEphemeral(token),
+                    InsecureCredential.GEMINI_SHAPE,
+                )
+                val auth = GeminiLiveSession.endpoint(token)
+                endpoint =
+                    endpointOverride?.let { GeminiLiveSession.Endpoint(it.url, it.headers + auth.headers) } ?: auth
+            }.exceptionOrNull()
+            done(err)
+        }
     }
 
     private fun startAudio() {
         try {
             graph.start(GeminiLiveSession.INPUT_RATE, GeminiLiveSession.OUTPUT_RATE) { samples ->
-                micSocket?.send(GeminiLiveSession.micMessage(samples))
+                micSocket?.send(GeminiLiveSession.micMessage(if (muted) FloatArray(samples.size) else samples))
             }
         } catch (e: Throwable) {
             teardown()
@@ -144,6 +209,7 @@ class GeminiLiveVoiceSource(
         pendingAudio.clear()
         micSocket = socket
         startTicker()
+        setSessionUp(true)
     }
 
     override fun disconnect() {
@@ -163,9 +229,10 @@ class GeminiLiveVoiceSource(
             }
         }
         setupPending = SetupWait(onReady, onFail, timeout)
+        val e = endpoint ?: return onFail(IllegalStateException("GeminiLiveVoiceSource: no credential"))
         opened = socketFactory.open(
-            endpoint.url,
-            endpoint.headers,
+            e.url,
+            e.headers,
             emptyList(),
             onText = { text -> main.post { if (socket === opened) onText(text) } },
             onClose = { err -> main.post { if (socket === opened) onSocketClosed(err) } },
@@ -244,20 +311,25 @@ class GeminiLiveVoiceSource(
             reconnecting = false
             return
         }
-        openSocket(
-            onReady = { reconnecting = false },
-            onFail = { err ->
-                log("Gemini Live reconnect $n/$RECONNECT_ATTEMPTS after $reason failed: ${err.message}")
-                if (n < RECONNECT_ATTEMPTS) {
-                    main.postDelayed({ attempt(n + 1, reason) }, RECONNECT_DELAY_MS)
-                } else {
-                    reconnecting = false
-                    log("Gemini Live: gave up reconnecting")
-                    teardown()
-                    errorCb?.invoke(err)
-                }
-            },
-        )
+        val fail: (Throwable) -> Unit = { err ->
+            log("Gemini Live reconnect $n/$RECONNECT_ATTEMPTS after $reason failed: ${err.message}")
+            if (n < RECONNECT_ATTEMPTS && !(err is CredentialException && err.fatal)) {
+                main.postDelayed({ attempt(n + 1, reason) }, RECONNECT_DELAY_MS)
+            } else {
+                reconnecting = false
+                log("Gemini Live: gave up reconnecting")
+                teardown()
+                errorCb?.invoke(err)
+            }
+        }
+        val open = { openSocket(onReady = { reconnecting = false }, onFail = fail) }
+        // A token is single-use by default: resume with a new one when the caller
+        // can mint it (a pasted token is tried as is).
+        if (!credentials.canRefresh) return open()
+        refreshEndpoint { err ->
+            if (!wantConnected) return@refreshEndpoint
+            if (err != null) fail(err) else open()
+        }
     }
 
     // --- tick / teardown ---
@@ -269,6 +341,7 @@ class GeminiLiveVoiceSource(
     }
 
     private fun teardown() {
+        setSessionUp(false)
         wantConnected = false
         reconnecting = false
         ticking = false

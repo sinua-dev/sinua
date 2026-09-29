@@ -1,0 +1,12 @@
+{
+  "name": "Long answer",
+  "loop": true,
+  "seed": 3,
+  "turns": [
+    { "state": "idle", "seconds": 1.5 },
+    { "state": "listening", "seconds": 2.6, "voice": "user", "line": "How do I get better sleep?" },
+    { "state": "thinking", "seconds": 2.2, "line": "Thinking" },
+    { "state": "speaking", "seconds": 7.5, "voice": "agent", "line": "Keep the same bedtime every day, dim the lights an hour before, skip caffeine after lunch, and keep your room cool and dark." },
+    { "state": "idle", "seconds": 1.5 }
+  ]
+}

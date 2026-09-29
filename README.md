@@ -50,7 +50,7 @@ installed.
 | | |
 |---|---|
 | `crates/core_engine` | the engine: geometry, patterns, materials, the FX Spec resolver |
-| `packages/` | what consumers install: `@sinua/{core,web,voice,snippets,react-native}` on npm, the SwiftPM package `Sinua`, `dev.sinua:sinua-*` on Maven, the `SinuaCore` pod |
+| `packages/` | what consumers install: `@sinua/{core,web,voice}` on npm, the SwiftPM package `Sinua`, `dev.sinua:sinua-*` on Maven; `@sinua/react-native` (with the `SinuaCore` pod) builds from source for now. Two are unpublished and shared by the docs site and the Studio: `snippets` (the exported code) and `design` (tokens, fonts, controls) |
 | `spec/` | the shared data every platform is tested against: golden vectors, FX Spec identity locks, the parameter catalog |
 | `apps/site` | the documentation site |
 | `apps/examples` | `<sinua-view>` in plain HTML, Vue, Svelte, Solid and Angular |

@@ -3,6 +3,8 @@
 | Component | Prop | Patterns | Type | Range | Description |
 |---|---|---|---|---|---|
 | `SinuaOrb` | `progress` | `progressing` | number | 0–1 fraction | How far the eclipse has advanced, 0 to 1. |
+| `SinuaSignal` | `progress` | `playing` | number | 0–1 fraction | Playback position, 0 to 1: bars before it are played (full ink), the rest dimmed. |
+| `SinuaSignal` | `envelope` | `playing` | number[] (1–64) | 0–1 fraction | The recorded clip's loudness, oldest first, 0 to 1 per value (up to 64; resample longer clips). Without it a fixed sample message is drawn. |
 | `SinuaRing` | `progress` | `completing` | number | 0–1 fraction | How much of the ring is filled, 0 to 1. |
 | `SinuaRing` | `progress` | `tracking` | number[] (1–4, length = `ringCount`) | 0–3 | Per-ring value; past 1 draws extra laps (up to maxLaps). _Also accepted: `progress0`, `progress1`, `progress2`, `progress3`._ |
 | `SinuaRing` | `progress` | `stepping` | number | 0–1 fraction | How many segments are filled, as a fraction 0 to 1. |

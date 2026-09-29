@@ -1,4 +1,15 @@
 {
   "title": "Voice",
-  "pages": ["index", "livekit", "openai-realtime", "gemini-live", "elevenlabs", "mic-and-tone", "..."]
+  "pages": [
+    "index",
+    "livekit",
+    "openai-realtime",
+    "gemini-live",
+    "elevenlabs",
+    "credentials",
+    "mic-and-tone",
+    "simulated",
+    "voice-button",
+    "..."
+  ]
 }

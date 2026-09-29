@@ -364,19 +364,20 @@ export type SinuaSignalPattern =
   | "signaling"
   | "waveform"
   | "scrolling"
-  | "metering";
+  | "metering"
+  | "playing";
 
 /** Signal parameters; unset ones keep the pattern's values. */
 export interface SinuaSignalParams {
-  /** Number of level bars. Range 1...64. Patterns: signaling. */
+  /** Number of level bars. Range signaling 1...64, playing 0...128. Patterns: signaling, playing. */
   barCount?: number;
-  /** Bar width as a fraction of each slot. Range 0.05...1 (fraction). Patterns: signaling, scrolling. */
+  /** Bar width as a fraction of each slot. Range 0.05...1 (fraction). Patterns: signaling, scrolling, playing. */
   barWidth?: number;
   /** Ink hue in degrees; applies once saturation is above 0. Range 0...360 (deg). */
   hue?: number;
   /** How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction). */
   ink?: number;
-  /** Height of a silent bar, as a fraction of full height. Range 0...1 (fraction). Patterns: signaling, scrolling. */
+  /** Height of a silent bar, as a fraction of full height. Range 0...1 (fraction). Patterns: signaling, scrolling, playing. */
   minHeight?: number;
   /** How far the ink moves from grey toward the hue (0 = the grey ink). Range 0...1 (fraction). */
   saturation?: number;
@@ -400,6 +401,14 @@ export interface SinuaSignalParams {
   minLevel?: number;
   /** Columns grow out from the middle row instead of rising from the bottom. Patterns: metering. */
   mirror?: boolean;
+  /** Draw a thin line at the playback position. Patterns: playing. */
+  playhead?: boolean;
+  /** Opacity of the bars not played yet, relative to the played ones. Range 0...1 (fraction). Patterns: playing. */
+  unplayedOpacity?: number;
+  /** Playback position, 0 to 1: bars before it are played (full ink), the rest dimmed. Range 0...1 (fraction). Patterns: playing. */
+  progress?: number;
+  /** The recorded clip's loudness, oldest first, 0 to 1 per value (up to 64; resample longer clips). Without it a fixed sample message is drawn. Range 0...1 (fraction). Up to 64 values. Patterns: playing. */
+  envelope?: number[];
   glow?: SinuaGlow;
   noise?: SinuaNoise;
   pulse?: SinuaPulse;
@@ -410,7 +419,7 @@ export interface SinuaSignalParams {
   holographic?: SinuaHolographic;
 }
 
-const SIGNAL_TABLE: Table = {"barCount":{"key":"barCount"},"barWidth":{"key":"barWidth"},"hue":{"key":"hue"},"ink":{"key":"ink"},"minHeight":{"key":"minHeight"},"saturation":{"key":"saturation"},"layerCount":{"key":"layerCount"},"lineWidth":{"key":"lineWidth"},"pointCount":{"key":"pointCount"},"amplitude":{"key":"amplitude"},"fadeWidth":{"key":"fadeWidth"},"columnCount":{"key":"columnCount"},"ledCount":{"key":"ledCount"},"ledSize":{"key":"ledSize"},"minLevel":{"key":"minLevel"},"mirror":{"key":"mirror"}};
+const SIGNAL_TABLE: Table = {"barCount":{"key":"barCount"},"barWidth":{"key":"barWidth"},"hue":{"key":"hue"},"ink":{"key":"ink"},"minHeight":{"key":"minHeight"},"saturation":{"key":"saturation"},"layerCount":{"key":"layerCount"},"lineWidth":{"key":"lineWidth"},"pointCount":{"key":"pointCount"},"amplitude":{"key":"amplitude"},"fadeWidth":{"key":"fadeWidth"},"columnCount":{"key":"columnCount"},"ledCount":{"key":"ledCount"},"ledSize":{"key":"ledSize"},"minLevel":{"key":"minLevel"},"mirror":{"key":"mirror"},"playhead":{"key":"playhead"},"unplayedOpacity":{"key":"unplayedOpacity"},"progress":{"key":"progress"},"envelope":{"key":"envelope","keys":["envelope0","envelope1","envelope2","envelope3","envelope4","envelope5","envelope6","envelope7","envelope8","envelope9","envelope10","envelope11","envelope12","envelope13","envelope14","envelope15","envelope16","envelope17","envelope18","envelope19","envelope20","envelope21","envelope22","envelope23","envelope24","envelope25","envelope26","envelope27","envelope28","envelope29","envelope30","envelope31","envelope32","envelope33","envelope34","envelope35","envelope36","envelope37","envelope38","envelope39","envelope40","envelope41","envelope42","envelope43","envelope44","envelope45","envelope46","envelope47","envelope48","envelope49","envelope50","envelope51","envelope52","envelope53","envelope54","envelope55","envelope56","envelope57","envelope58","envelope59","envelope60","envelope61","envelope62","envelope63"]}};
 
 /** The engine overrides a SinuaSignal hands to SinuaView. */
 export function sinuaSignalOverrides(pattern: SinuaSignalPattern, params: SinuaSignalParams): Record<string, number> {
@@ -422,7 +431,8 @@ export type SinuaRingPattern =
   | "loading"
   | "tracking"
   | "stepping"
-  | "measuring";
+  | "measuring"
+  | "talking";
 
 /** Ring parameters; unset ones keep the pattern's values. */
 export interface SinuaRingParams {
@@ -434,9 +444,9 @@ export interface SinuaRingParams {
   ink?: number;
   /** How far the ink moves from grey toward the hue (0 = the grey ink). Range 0...1 (fraction). */
   saturation?: number;
-  /** Stroke width as a fraction of the frame. Range 0.01...0.4 (fraction). */
+  /** Stroke width as a fraction of the frame. Range 0.01...0.4 (fraction). Patterns: completing, loading, tracking, stepping, measuring. */
   strokeWidth?: number;
-  /** Opacity of the faint track behind the indicator (0 = none). Range 0...1 (fraction). */
+  /** Opacity of the faint track behind the indicator (0 = none). Range 0...1 (fraction). Patterns: completing, loading, tracking, stepping, measuring. */
   trackOpacity?: number;
   /** How much of the ring is filled, 0 to 1. Range completing 0...1, tracking 0...3, stepping 0...1, measuring 0...1. Up to 4 values. Patterns: completing, tracking, stepping, measuring. */
   progress?: number | number[];
@@ -458,6 +468,22 @@ export interface SinuaRingParams {
   marker?: boolean;
   /** Total arc of the gauge in degrees; the opening is centred at the bottom. Range 90...330 (deg). Patterns: measuring. */
   sweep?: number;
+  /** Space between the avatar's edge and the ring, as a fraction of the frame. Range 0...0.05 (fraction). Patterns: talking. */
+  avatarGap?: number;
+  /** The ring's opacity when nobody is speaking (0 = hidden until there's a voice). Range 0...1 (fraction). Patterns: talking. */
+  idleOpacity?: number;
+  /** Radius of the avatar the ring surrounds, as a fraction of the frame; nothing is drawn inside it. Range 0.1...0.44 (fraction). Patterns: talking. */
+  innerRadius?: number;
+  /** The ring's resting stroke width, as a fraction of the frame. Range 0.004...0.1 (fraction). Patterns: talking. */
+  thickness?: number;
+  /** Ripples outside the ring: +1 travel outward (giving out, speaking), -1 come inward (taking in, listening), 0 none. The voice states set it. Range -1...1. Patterns: talking. */
+  flow?: number;
+  /** How many ripples travel at once when flow is on. Range 0...4. Patterns: talking. */
+  rippleCount?: number;
+  /** A brighter arc that circles the ring (thinking, connecting); 0 = off. Range 0...1 (fraction). Patterns: talking. */
+  shimmer?: number;
+  /** How much thicker the ring grows at full voice, outward only, as a fraction of the frame. Range 0...0.12 (fraction). Patterns: talking. */
+  reach?: number;
   glow?: SinuaGlow;
   noise?: SinuaNoise;
   pulse?: SinuaPulse;
@@ -468,7 +494,7 @@ export interface SinuaRingParams {
   holographic?: SinuaHolographic;
 }
 
-const RING_TABLE: Table = {"gap":{"key":"gap"},"hue":{"key":"hue"},"ink":{"key":"ink"},"saturation":{"key":"saturation"},"strokeWidth":{"key":"strokeWidth"},"trackOpacity":{"key":"trackOpacity"},"progress":{"key":"progress","keys":["progress0","progress1","progress2","progress3"],"listPatterns":["tracking"]},"hueStep":{"key":"hueStep"},"ringCount":{"key":"ringCount"},"spacing":{"key":"spacing"},"maxLaps":{"key":"maxLaps"},"segmentCount":{"key":"segmentCount"},"segment":{"key":"segment","keys":["segment0","segment1","segment2","segment3","segment4","segment5","segment6","segment7","segment8","segment9","segment10","segment11","segment12","segment13","segment14","segment15","segment16","segment17","segment18","segment19","segment20","segment21","segment22","segment23"]},"fill":{"key":"fill"},"marker":{"key":"marker"},"sweep":{"key":"sweep"}};
+const RING_TABLE: Table = {"gap":{"key":"gap"},"hue":{"key":"hue"},"ink":{"key":"ink"},"saturation":{"key":"saturation"},"strokeWidth":{"key":"strokeWidth"},"trackOpacity":{"key":"trackOpacity"},"progress":{"key":"progress","keys":["progress0","progress1","progress2","progress3"],"listPatterns":["tracking"]},"hueStep":{"key":"hueStep"},"ringCount":{"key":"ringCount"},"spacing":{"key":"spacing"},"maxLaps":{"key":"maxLaps"},"segmentCount":{"key":"segmentCount"},"segment":{"key":"segment","keys":["segment0","segment1","segment2","segment3","segment4","segment5","segment6","segment7","segment8","segment9","segment10","segment11","segment12","segment13","segment14","segment15","segment16","segment17","segment18","segment19","segment20","segment21","segment22","segment23"]},"fill":{"key":"fill"},"marker":{"key":"marker"},"sweep":{"key":"sweep"},"avatarGap":{"key":"avatarGap"},"idleOpacity":{"key":"idleOpacity"},"innerRadius":{"key":"innerRadius"},"thickness":{"key":"thickness"},"flow":{"key":"flow"},"rippleCount":{"key":"rippleCount"},"shimmer":{"key":"shimmer"},"reach":{"key":"reach"}};
 
 /** The engine overrides a SinuaRing hands to SinuaView. */
 export function sinuaRingOverrides(pattern: SinuaRingPattern, params: SinuaRingParams): Record<string, number> {
@@ -565,7 +591,7 @@ export interface SinuaBeaconParams {
   accuracy?: number;
   /** Opacity of the accuracy halo. Range 0...1 (fraction). Patterns: locating. */
   haloOpacity?: number;
-  /** Contacts that light up as the sweep passes. Range 0...12. Patterns: scanning. */
+  /** How many targets were found (e.g. nearby devices): one blip each, lit as the sweep passes. 0 = still looking. Range 0...12. Patterns: scanning. */
   blipCount?: number;
   /** Seed for where the blips sit. Range 0...1000000. Patterns: scanning. */
   seed?: number;
@@ -604,4 +630,46 @@ const BEACON_TABLE: Table = {"dotSize":{"key":"dotSize"},"hue":{"key":"hue"},"in
 /** The engine overrides a SinuaBeacon hands to SinuaView. */
 export function sinuaBeaconOverrides(pattern: SinuaBeaconPattern, params: SinuaBeaconParams): Record<string, number> {
   return toOverrides(BEACON_TABLE, pattern, params as Record<string, unknown>);
+}
+
+export type SinuaEdgePattern =
+  | "framing";
+
+/** Edge parameters; unset ones keep the pattern's values. */
+export interface SinuaEdgeParams {
+  /** Corner radius as a fraction of the box's shorter side; match your screen's or container's corners (0.12 is about a phone screen). Range 0...0.5 (fraction). */
+  cornerRadius?: number;
+  /** Base hue in degrees. Range 0...360 (deg). */
+  hue?: number;
+  /** How far the hue varies round the frame, in degrees (0 = one colour). Range 0...360 (deg). */
+  hueSpread?: number;
+  /** The rim's opacity with no voice (0 = hidden until there's a voice). Range 0...1 (fraction). */
+  idleOpacity?: number;
+  /** How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction). */
+  ink?: number;
+  /** How colourful the rim is (0 = the grey ink). Colourful by default: a grey rim reads as a border, not a glow. Range 0...1 (fraction). */
+  saturation?: number;
+  /** The rim's resting width, as a fraction of the box's shorter side. Range 0.002...0.2 (fraction). */
+  thickness?: number;
+  /** How fast the colours travel round the frame, in turns per second (negative = the other way). Range -2...2. */
+  flowSpeed?: number;
+  /** A bright segment that circles the frame (thinking); 0 = off. Range 0...1 (fraction). */
+  shimmer?: number;
+  /** How much wider the rim grows at full voice, inward only, as a fraction of the shorter side. Range 0...0.2 (fraction). */
+  reach?: number;
+  glow?: SinuaGlow;
+  noise?: SinuaNoise;
+  pulse?: SinuaPulse;
+  gradient?: SinuaGradient;
+  color?: SinuaColor;
+  liquid?: SinuaLiquid;
+  particles?: SinuaParticles;
+  holographic?: SinuaHolographic;
+}
+
+const EDGE_TABLE: Table = {"cornerRadius":{"key":"cornerRadius"},"hue":{"key":"hue"},"hueSpread":{"key":"hueSpread"},"idleOpacity":{"key":"idleOpacity"},"ink":{"key":"ink"},"saturation":{"key":"saturation"},"thickness":{"key":"thickness"},"flowSpeed":{"key":"flowSpeed"},"shimmer":{"key":"shimmer"},"reach":{"key":"reach"}};
+
+/** The engine overrides a SinuaEdge hands to SinuaView. */
+export function sinuaEdgeOverrides(pattern: SinuaEdgePattern, params: SinuaEdgeParams): Record<string, number> {
+  return toOverrides(EDGE_TABLE, pattern, params as Record<string, unknown>);
 }

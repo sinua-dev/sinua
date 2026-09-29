@@ -148,10 +148,7 @@ final class GeminiLiveCoreTests: XCTestCase {
             "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained"
         )
         XCTAssertEqual(token.headers, ["Authorization": "Token auth_tokens/abc"])
-        let key = GeminiLiveSession.endpoint(credential: "AIzaKEY")
-        XCTAssertTrue(key.url.absoluteString.hasSuffix(".BidiGenerateContent"))
-        XCTAssertEqual(key.headers, ["x-goog-api-key": "AIzaKEY"])
-        XCTAssertNil(key.url.query, "no secret in the URL")
+        XCTAssertNil(token.url.query, "no secret in the URL")
     }
 
     func testSetupAndMicMessagesMatchWebShape() {

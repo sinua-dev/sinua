@@ -30,75 +30,93 @@
    "patterns": [
     {
      "id": "working",
-     "label": "Working"
+     "label": "Working",
+     "description": "Busy on a task: particles circle on tilted orbits while the agent works."
     },
     {
      "id": "searching",
-     "label": "Searching"
+     "label": "Searching",
+     "description": "Looking something up: a scan line sweeps across a globe of dots."
     },
     {
      "id": "solving",
-     "label": "Solving"
+     "label": "Solving",
+     "description": "Reasoning through a problem: bands twist like a puzzle cube, then settle."
     },
     {
      "id": "listening",
-     "label": "Listening"
+     "label": "Listening",
+     "description": "The agent is listening: a wave rolls through rings while the user talks."
     },
     {
      "id": "connecting",
-     "label": "Connecting"
+     "label": "Connecting",
+     "description": "Joining a session or linking ideas: a constellation wires itself together."
     },
     {
      "id": "weaving",
-     "label": "Weaving"
+     "label": "Weaving",
+     "description": "Combining sources: three strands braid around the sphere."
     },
     {
      "id": "composing",
-     "label": "Composing"
+     "label": "Composing",
+     "description": "Writing a reply: a ribbon of dots flows around the sphere."
     },
     {
      "id": "breathing",
-     "label": "Breathing"
+     "label": "Breathing",
+     "description": "Idle and ready: a calm ring that slowly breathes."
     },
     {
      "id": "shaping",
-     "label": "Shaping"
+     "label": "Shaping",
+     "description": "Reshaping or formatting: an outline morphs from circle to triangle to square."
     },
     {
      "id": "glowing",
-     "label": "Glowing"
+     "label": "Glowing",
+     "description": "An ambient presence: a colored nebula drifting on a sphere."
     },
     {
      "id": "drifting",
-     "label": "Drifting"
+     "label": "Drifting",
+     "description": "A looser constellation: its nodes wander on a smooth noise field."
     },
     {
      "id": "speaking",
-     "label": "Speaking"
+     "label": "Speaking",
+     "description": "The agent is speaking: circular EQ bars pulse while it talks."
     },
     {
      "id": "confirming",
-     "label": "Confirming"
+     "label": "Confirming",
+     "description": "Done or received: a ping ring expands and fades."
     },
     {
      "id": "initializing",
-     "label": "Initializing"
+     "label": "Initializing",
+     "description": "Starting a session: a starfield streams outward from the center."
     },
     {
      "id": "calibrating",
-     "label": "Calibrating"
+     "label": "Calibrating",
+     "description": "Tuning in: a standing-wave pattern snaps into new resonances."
     },
     {
      "id": "progressing",
-     "label": "Progressing"
+     "label": "Progressing",
+     "description": "Progress on a sphere: a day and night line sweeps left to right as the app sets progress (0 to 1)."
     },
     {
      "id": "concluding",
-     "label": "Concluding"
+     "label": "Concluding",
+     "description": "Wrapping up: loose dots snap into a crystal, hold, then let go."
     },
     {
      "id": "muted",
-     "label": "Muted"
+     "label": "Muted",
+     "description": "Mic muted or connection lost: a still, dimmed sphere."
     }
    ]
   },
@@ -109,19 +127,29 @@
    "patterns": [
     {
      "id": "signaling",
-     "label": "Bars"
+     "label": "Bars",
+     "description": "Live audio as a row of rounded bars, like an equalizer."
     },
     {
      "id": "waveform",
-     "label": "Waveform"
+     "label": "Waveform",
+     "description": "Live audio as a continuous oscilloscope wave."
     },
     {
      "id": "scrolling",
-     "label": "Scrolling"
+     "label": "Scrolling",
+     "description": "A recording's history: level pills scroll left, like a voice message."
     },
     {
      "id": "metering",
-     "label": "Meter"
+     "label": "Meter",
+     "description": "Levels on an LED dot grid, like a vintage spectrum analyzer."
+    },
+    {
+     "id": "playing",
+     "label": "Playing",
+     "description": "A recorded voice message: its waveform, with the played part in full ink and the rest dimmed.",
+     "layout": "box"
     }
    ]
   },
@@ -132,23 +160,33 @@
    "patterns": [
     {
      "id": "completing",
-     "label": "Completing"
+     "label": "Completing",
+     "description": "Determinate progress: an arc fills clockwise from 0 to 1."
     },
     {
      "id": "loading",
-     "label": "Loading"
+     "label": "Loading",
+     "description": "Indeterminate loading: an arc that grows, shrinks and keeps spinning."
     },
     {
      "id": "tracking",
-     "label": "Tracking"
+     "label": "Tracking",
+     "description": "Several values at once as concentric rings, such as daily goals."
     },
     {
      "id": "stepping",
-     "label": "Stepping"
+     "label": "Stepping",
+     "description": "Steps filling in order, like 3 of 5 done."
     },
     {
      "id": "measuring",
-     "label": "Measuring"
+     "label": "Measuring",
+     "description": "A value on an open dial, like a gauge or a volume meter."
+    },
+    {
+     "id": "talking",
+     "label": "Talking",
+     "description": "Who is speaking: a ring around an avatar that thickens with the voice and never covers the face."
     }
    ]
   },
@@ -159,11 +197,13 @@
    "patterns": [
     {
      "id": "generating",
-     "label": "Generating"
+     "label": "Generating",
+     "description": "Content loading inline: a skeleton shimmer glides across a pill."
     },
     {
      "id": "typing",
-     "label": "Typing"
+     "label": "Typing",
+     "description": "Someone is typing: three dots bounce in sequence."
     }
    ]
   },
@@ -174,23 +214,41 @@
    "patterns": [
     {
      "id": "notifying",
-     "label": "Notifying"
+     "label": "Notifying",
+     "description": "Something new arrived: a badge with ripples that expand and fade."
     },
     {
      "id": "reconnecting",
-     "label": "Reconnecting"
+     "label": "Reconnecting",
+     "description": "Connection quality or reconnecting: a pulsing dot in a four-part ring."
     },
     {
      "id": "locating",
-     "label": "Locating"
+     "label": "Locating",
+     "description": "A location and its accuracy: a dot in a halo that pulses outward."
     },
     {
      "id": "scanning",
-     "label": "Scanning"
+     "label": "Scanning",
+     "description": "Scanning nearby: a radar beam sweeps over a dot-field scope."
     },
     {
      "id": "broadcasting",
-     "label": "Broadcasting"
+     "label": "Broadcasting",
+     "description": "Live or on air: a dot with radio arcs that light in sequence."
+    }
+   ]
+  },
+  {
+   "id": "edge",
+   "label": "Edge",
+   "component": "SinuaEdge",
+   "patterns": [
+    {
+     "id": "framing",
+     "label": "Framing",
+     "description": "The whole screen is listening: a glow round the inside edge of the app that swells with the voice.",
+     "layout": "box"
     }
    ]
   }
@@ -360,14 +418,14 @@
    "scope": "radar",
    "path": "blipCount",
    "label": "Blips",
-   "description": "Contacts that light up as the sweep passes.",
+   "description": "How many targets were found (e.g. nearby devices): one blip each, lit as the sweep passes. 0 = still looking.",
    "category": "appearance",
    "group": "style",
    "type": "integer",
    "min": 0,
    "max": 12,
    "unit": null,
-   "fallback": 3,
+   "fallback": 0,
    "uiMin": 0,
    "uiMax": 12,
    "step": 1,
@@ -731,7 +789,7 @@
    "scope": "radar",
    "path": "dotSize",
    "label": "Scope dot",
-   "description": "Scope dot radius as a fraction of the frame.",
+   "description": "Scope dot radius as a fraction of the frame; a maximum, since dots shrink as range rings get denser.",
    "category": "appearance",
    "group": "style",
    "type": "number",
@@ -5271,6 +5329,514 @@
    "unit": null,
    "fallback": 0.6,
    "tier": "advanced"
+  },
+  "flow@speaker": {
+   "key": "flow",
+   "scope": "speaker",
+   "path": "flow",
+   "label": "Flow",
+   "description": "Ripples outside the ring: +1 travel outward (giving out, speaking), -1 come inward (taking in, listening), 0 none. The voice states set it.",
+   "category": "motion",
+   "group": "style",
+   "type": "number",
+   "min": -1,
+   "max": 1,
+   "unit": null,
+   "fallback": 0,
+   "uiMin": -1,
+   "uiMax": 1,
+   "step": 0.1,
+   "tier": "basic"
+  },
+  "hue@speaker": {
+   "key": "hue",
+   "scope": "speaker",
+   "path": "hue",
+   "label": "Hue",
+   "description": "Ink hue in degrees; applies once saturation is above 0.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 360,
+   "unit": "deg",
+   "fallback": 200,
+   "uiMin": 0,
+   "uiMax": 360,
+   "step": 5,
+   "tier": "basic"
+  },
+  "idleOpacity@speaker": {
+   "key": "idleOpacity",
+   "scope": "speaker",
+   "path": "idleOpacity",
+   "label": "Resting opacity",
+   "description": "The ring's opacity when nobody is speaking (0 = hidden until there's a voice).",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0.35,
+   "uiMin": 0,
+   "uiMax": 1,
+   "step": 0.05,
+   "tier": "basic"
+  },
+  "innerRadius@speaker": {
+   "key": "innerRadius",
+   "scope": "speaker",
+   "path": "innerRadius",
+   "label": "Avatar radius",
+   "description": "Radius of the avatar the ring surrounds, as a fraction of the frame; nothing is drawn inside it.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0.1,
+   "max": 0.44,
+   "unit": "fraction",
+   "fallback": 0.34,
+   "uiMin": 0.2,
+   "uiMax": 0.42,
+   "step": 0.01,
+   "tier": "basic"
+  },
+  "reach@speaker": {
+   "key": "reach",
+   "scope": "speaker",
+   "path": "reach",
+   "label": "Reach",
+   "description": "How much thicker the ring grows at full voice, outward only, as a fraction of the frame.",
+   "category": "energy",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 0.12,
+   "unit": "fraction",
+   "fallback": 0.04,
+   "uiMin": 0,
+   "uiMax": 0.12,
+   "step": 0.005,
+   "tier": "basic"
+  },
+  "rippleCount@speaker": {
+   "key": "rippleCount",
+   "scope": "speaker",
+   "path": "rippleCount",
+   "label": "Ripples",
+   "description": "How many ripples travel at once when flow is on.",
+   "category": "motion",
+   "group": "style",
+   "type": "integer",
+   "min": 0,
+   "max": 4,
+   "unit": null,
+   "fallback": 2,
+   "uiMin": 0,
+   "uiMax": 4,
+   "step": 1,
+   "tier": "basic"
+  },
+  "saturation@speaker": {
+   "key": "saturation",
+   "scope": "speaker",
+   "path": "saturation",
+   "label": "Saturation",
+   "description": "How far the ink moves from grey toward the hue (0 = the grey ink).",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0,
+   "uiMin": 0,
+   "uiMax": 1,
+   "step": 0.05,
+   "tier": "basic"
+  },
+  "shimmer@speaker": {
+   "key": "shimmer",
+   "scope": "speaker",
+   "path": "shimmer",
+   "label": "Shimmer",
+   "description": "A brighter arc that circles the ring (thinking, connecting); 0 = off.",
+   "category": "motion",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0,
+   "uiMin": 0,
+   "uiMax": 1,
+   "step": 0.05,
+   "tier": "basic"
+  },
+  "thickness@speaker": {
+   "key": "thickness",
+   "scope": "speaker",
+   "path": "thickness",
+   "label": "Thickness",
+   "description": "The ring's resting stroke width, as a fraction of the frame.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0.004,
+   "max": 0.1,
+   "unit": "fraction",
+   "fallback": 0.022,
+   "uiMin": 0.008,
+   "uiMax": 0.06,
+   "step": 0.002,
+   "tier": "basic"
+  },
+  "avatarGap@speaker": {
+   "key": "avatarGap",
+   "scope": "speaker",
+   "path": "avatarGap",
+   "label": "Avatar gap",
+   "description": "Space between the avatar's edge and the ring, as a fraction of the frame.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 0.05,
+   "unit": "fraction",
+   "fallback": 0.012,
+   "uiMin": 0,
+   "uiMax": 0.04,
+   "step": 0.002,
+   "tier": "basic"
+  },
+  "envelope@playback": {
+   "key": "envelope",
+   "scope": "playback",
+   "path": "envelope",
+   "label": "Envelope",
+   "description": "The recorded clip's loudness, oldest first, 0 to 1 per value (up to 64; resample longer clips). Without it a fixed sample message is drawn.",
+   "category": "input",
+   "group": "value",
+   "type": "number[]",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": null,
+   "tier": "advanced",
+   "items": {
+    "minItems": 1,
+    "maxItems": 64,
+    "engineKeys": "envelope0..envelope63"
+   },
+   "minItems": 1,
+   "maxItems": 64
+  },
+  "progress@playback": {
+   "key": "progress",
+   "scope": "playback",
+   "path": "progress",
+   "label": "Progress",
+   "description": "Playback position, 0 to 1: bars before it are played (full ink), the rest dimmed.",
+   "category": "input",
+   "group": "value",
+   "type": "number",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0,
+   "uiMin": 0,
+   "uiMax": 1,
+   "step": 0.01,
+   "tier": "basic"
+  },
+  "barCount@playback": {
+   "key": "barCount",
+   "scope": "playback",
+   "path": "barCount",
+   "label": "Bars",
+   "description": "How many bars to draw: 0 = one per envelope value; otherwise the envelope is resampled (keeping peaks).",
+   "category": "appearance",
+   "group": "style",
+   "type": "integer",
+   "min": 0,
+   "max": 128,
+   "unit": null,
+   "fallback": 0,
+   "uiMin": 0,
+   "uiMax": 96,
+   "step": 1,
+   "tier": "basic"
+  },
+  "barWidth@playback": {
+   "key": "barWidth",
+   "scope": "playback",
+   "path": "barWidth",
+   "label": "Bar width",
+   "description": "Bar width as a fraction of each slot.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0.05,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0.6,
+   "uiMin": 0.2,
+   "uiMax": 0.9,
+   "step": 0.02,
+   "tier": "basic"
+  },
+  "minHeight@playback": {
+   "key": "minHeight",
+   "scope": "playback",
+   "path": "minHeight",
+   "label": "Min height",
+   "description": "Height of a silent bar, as a fraction of full height.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0.08,
+   "uiMin": 0,
+   "uiMax": 0.4,
+   "step": 0.02,
+   "tier": "basic"
+  },
+  "unplayedOpacity@playback": {
+   "key": "unplayedOpacity",
+   "scope": "playback",
+   "path": "unplayedOpacity",
+   "label": "Unplayed",
+   "description": "Opacity of the bars not played yet, relative to the played ones.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0.35,
+   "uiMin": 0,
+   "uiMax": 1,
+   "step": 0.05,
+   "tier": "basic"
+  },
+  "playhead@playback": {
+   "key": "playhead",
+   "scope": "playback",
+   "path": "playhead",
+   "label": "Playhead",
+   "description": "Draw a thin line at the playback position.",
+   "category": "appearance",
+   "group": "style",
+   "type": "boolean",
+   "min": 0,
+   "max": 1,
+   "unit": null,
+   "fallback": 0,
+   "uiMin": 0,
+   "uiMax": 1,
+   "step": 1,
+   "tier": "basic"
+  },
+  "hue@playback": {
+   "key": "hue",
+   "scope": "playback",
+   "path": "hue",
+   "label": "Hue",
+   "description": "Ink hue in degrees; applies once saturation is above 0.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 360,
+   "unit": "deg",
+   "fallback": 200,
+   "uiMin": 0,
+   "uiMax": 360,
+   "step": 5,
+   "tier": "basic"
+  },
+  "saturation@playback": {
+   "key": "saturation",
+   "scope": "playback",
+   "path": "saturation",
+   "label": "Saturation",
+   "description": "How far the ink moves from grey toward the hue (0 = the grey ink).",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0,
+   "uiMin": 0,
+   "uiMax": 1,
+   "step": 0.05,
+   "tier": "basic"
+  },
+  "cornerRadius@rim": {
+   "key": "cornerRadius",
+   "scope": "rim",
+   "path": "cornerRadius",
+   "label": "Corner radius",
+   "description": "Corner radius as a fraction of the box's shorter side; match your screen's or container's corners (0.12 is about a phone screen).",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 0.5,
+   "unit": "fraction",
+   "fallback": 0.12,
+   "uiMin": 0,
+   "uiMax": 0.3,
+   "step": 0.01,
+   "tier": "basic"
+  },
+  "thickness@rim": {
+   "key": "thickness",
+   "scope": "rim",
+   "path": "thickness",
+   "label": "Thickness",
+   "description": "The rim's resting width, as a fraction of the box's shorter side.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0.002,
+   "max": 0.2,
+   "unit": "fraction",
+   "fallback": 0.015,
+   "uiMin": 0.005,
+   "uiMax": 0.1,
+   "step": 0.005,
+   "tier": "basic"
+  },
+  "reach@rim": {
+   "key": "reach",
+   "scope": "rim",
+   "path": "reach",
+   "label": "Reach",
+   "description": "How much wider the rim grows at full voice, inward only, as a fraction of the shorter side.",
+   "category": "energy",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 0.2,
+   "unit": "fraction",
+   "fallback": 0.035,
+   "uiMin": 0,
+   "uiMax": 0.15,
+   "step": 0.005,
+   "tier": "basic"
+  },
+  "idleOpacity@rim": {
+   "key": "idleOpacity",
+   "scope": "rim",
+   "path": "idleOpacity",
+   "label": "Resting opacity",
+   "description": "The rim's opacity with no voice (0 = hidden until there's a voice).",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0.35,
+   "uiMin": 0,
+   "uiMax": 1,
+   "step": 0.05,
+   "tier": "basic"
+  },
+  "hueSpread@rim": {
+   "key": "hueSpread",
+   "scope": "rim",
+   "path": "hueSpread",
+   "label": "Hue spread",
+   "description": "How far the hue varies round the frame, in degrees (0 = one colour).",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 360,
+   "unit": "deg",
+   "fallback": 80,
+   "uiMin": 0,
+   "uiMax": 180,
+   "step": 5,
+   "tier": "basic"
+  },
+  "flowSpeed@rim": {
+   "key": "flowSpeed",
+   "scope": "rim",
+   "path": "flowSpeed",
+   "label": "Flow",
+   "description": "How fast the colours travel round the frame, in turns per second (negative = the other way).",
+   "category": "motion",
+   "group": "style",
+   "type": "number",
+   "min": -2,
+   "max": 2,
+   "unit": null,
+   "fallback": 0.12,
+   "uiMin": -0.5,
+   "uiMax": 0.5,
+   "step": 0.01,
+   "tier": "basic"
+  },
+  "shimmer@rim": {
+   "key": "shimmer",
+   "scope": "rim",
+   "path": "shimmer",
+   "label": "Shimmer",
+   "description": "A bright segment that circles the frame (thinking); 0 = off.",
+   "category": "motion",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0,
+   "uiMin": 0,
+   "uiMax": 1,
+   "step": 0.05,
+   "tier": "basic"
+  },
+  "hue@rim": {
+   "key": "hue",
+   "scope": "rim",
+   "path": "hue",
+   "label": "Hue",
+   "description": "Base hue in degrees.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 360,
+   "unit": "deg",
+   "fallback": 265,
+   "uiMin": 0,
+   "uiMax": 360,
+   "step": 5,
+   "tier": "basic"
+  },
+  "saturation@rim": {
+   "key": "saturation",
+   "scope": "rim",
+   "path": "saturation",
+   "label": "Saturation",
+   "description": "How colourful the rim is (0 = the grey ink). Colourful by default: a grey rim reads as a border, not a glow.",
+   "category": "appearance",
+   "group": "style",
+   "type": "number",
+   "min": 0,
+   "max": 1,
+   "unit": "fraction",
+   "fallback": 0.7,
+   "uiMin": 0,
+   "uiMax": 1,
+   "step": 0.05,
+   "tier": "basic"
   }
  },
  "materials": [
@@ -5491,7 +6057,7 @@
    "key": "pointer",
    "path": "pointer",
    "label": "Pointer",
-   "description": "Pointer / touch scatter (pointerX, pointerY, pointerRadius, pointerStrength), fed by the view.",
+   "description": "Pointer / touch scatter (pointerX, pointerY, pointerRadius, pointerStrength). The web view feeds it with `pointer: true`; on iOS and Android, pass the keys as overrides for now.",
    "type": "object",
    "runtime": true
   },
@@ -5513,6 +6079,16 @@
    "type": "number",
    "min": 0,
    "max": 1000000000.0,
+   "runtime": true
+  },
+  {
+   "key": "aspect",
+   "path": "aspect",
+   "label": "Aspect",
+   "description": "Width / height of the view's box, for a box-layout pattern (the pattern's `layout: \"box\"`); the view sets it. 1 = square.",
+   "type": "number",
+   "min": 0.125,
+   "max": 8,
    "runtime": true
   }
  ],

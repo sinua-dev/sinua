@@ -48,7 +48,8 @@ class SinuaViewManager : SimpleViewManager<FxHostView>(), SinuaViewManagerInterf
     override fun setSpecState(view: FxHostView, value: String?) { view.specState = value?.ifEmpty { null } }
     override fun setInputsJson(view: FxHostView, value: String?) { view.inputs = FxHostView.map(value) }
     override fun setVoiceLevelInput(view: FxHostView, value: String?) { view.voiceLevelInput = value?.ifEmpty { null } }
-    override fun setCrossFade(view: FxHostView, value: Double) { view.crossFade = value }
+    override fun setCrossFade(view: FxHostView, value: Double) { view.crossFade = value.takeIf { it >= 0 } }
+    override fun setAudioStrength(view: FxHostView, value: Double) { view.audioStrength = value.takeIf { it >= 0 } }
     override fun setVoice(view: FxHostView, value: String?) { view.setVoiceMode(value ?: "none") }
     override fun setVoiceSourceId(view: FxHostView, value: String?) { view.bindVoiceSource(value?.ifEmpty { null }) }
     override fun setTheme(view: FxHostView, value: String?) {
@@ -64,6 +65,17 @@ class SinuaViewManager : SimpleViewManager<FxHostView>(), SinuaViewManagerInterf
     }
     override fun setLabel(view: FxHostView, value: String?) { view.label = value?.ifEmpty { null } }
     override fun setReportFrames(view: FxHostView, value: Boolean) { view.reportFrames = value }
+    override fun setLabelsJson(view: FxHostView, value: String?) {
+        view.labels = FxHostView.words(value)
+    }
+    override fun setAnnounce(view: FxHostView, value: String?) {
+        view.announce = when (value) { "on" -> true; "off" -> false; else -> null }
+    }
+    override fun setHaptics(view: FxHostView, value: Boolean) { view.haptics = value }
+    override fun setRules(view: FxHostView, value: Boolean) { view.rules = value }
+    // The name is stored; a changed key plays it (setters run in the spec's order, name first).
+    override fun setEffectName(view: FxHostView, value: String?) { view.setEffectName(value?.ifEmpty { null }) }
+    override fun setEffectKey(view: FxHostView, value: Int) { view.setEffect(null, value) }
 
     private class FrameEvent(surfaceId: Int, viewId: Int, private val payload: WritableMap) : Event<FrameEvent>(surfaceId, viewId) {
         override fun getEventName() = NAME

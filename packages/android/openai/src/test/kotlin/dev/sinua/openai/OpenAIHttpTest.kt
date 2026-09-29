@@ -61,16 +61,4 @@ class OpenAIHttpTest {
             }.exceptionOrNull() is OpenAIRealtimeSignaling.SignalingException.Retryable,
         )
     }
-
-    @Test
-    fun devClientSecretPost() = runBlocking {
-        server.enqueue(MockResponse().setResponseCode(200).setBody("""{"value":"ek_abc","expires_at":1}"""))
-        val url = server.url("/v1/realtime/client_secrets").toString()
-        val (status, body) = OpenAIHttp().send(OpenAIRealtimeSignaling.clientSecretRequest("sk-dev", url = url))
-        assertEquals("ek_abc", OpenAIRealtimeSignaling.clientSecret(status, body))
-        val req = server.takeRequest()
-        assertEquals("Bearer sk-dev", req.getHeader("Authorization"))
-        assertTrue(req.getHeader("Content-Type")!!.startsWith("application/json"))
-        assertTrue(req.body.readUtf8().contains("\"server_vad\""))
-    }
 }

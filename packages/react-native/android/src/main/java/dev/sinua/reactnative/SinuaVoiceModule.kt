@@ -34,7 +34,12 @@ class SinuaVoiceModule(private val reactContext: ReactApplicationContext) :
             val body = Arguments.createMap()
             body.putString("id", id)
             body.putString("event", event)
-            for ((k, v) in payload) if (v is String) body.putString(k, v)
+            for ((k, v) in payload) {
+                when (v) {
+                    is String -> body.putString(k, v)
+                    is Boolean -> body.putBoolean(k, v)
+                }
+            }
             reactContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                 .emit("sinua-voice", body)
@@ -76,12 +81,17 @@ class SinuaVoiceModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun setMuted(id: String, muted: Boolean) {
+        scope.launch { withContext(Dispatchers.Main) { VoiceRegistry.setMuted(id, muted) } }
+    }
+
+    @ReactMethod
     fun release(id: String) {
         scope.launch { VoiceRegistry.release(id) }
     }
 
     @ReactMethod
-    fun provideCredential(requestId: String, credential: String?, error: String?) {
-        VoiceRegistry.provideCredential(requestId, credential, error)
+    fun provideCredential(requestId: String, credential: String?, url: String?, error: String?, fatal: Boolean) {
+        VoiceRegistry.provideCredential(requestId, credential, url, error, fatal)
     }
 }

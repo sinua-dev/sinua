@@ -41,9 +41,10 @@ fn source() -> &'static Value {
 
 /// Indexed engine keys a pattern accepts as one array definition:
 /// (mode, array key, engine key prefix, max length).
-const ARRAYS: [(&str, &str, &str, usize); 2] = [
+const ARRAYS: [(&str, &str, &str, usize); 3] = [
     ("nested", "progress", "progress", 4),
     ("segmented", "segment", "segment", 24),
+    ("playback", "envelope", "envelope", 64),
 ];
 
 fn internal_keys() -> Vec<&'static str> {
@@ -73,12 +74,53 @@ pub(crate) fn knows_key(key: &str) -> bool {
         || internal_keys().contains(&key)
 }
 
+/// A pattern's layout: `"box"` when its catalog entry says so (it follows
+/// the view's box ratio through `aspect`), else `"square"`.
+pub(crate) fn layout_of(pattern: &str) -> &'static str {
+    let is_box = source()["objects"].as_array().is_some_and(|objects| {
+        objects
+            .iter()
+            .filter_map(|o| o["patterns"].as_array())
+            .flatten()
+            .any(|p| p["id"].as_str() == Some(pattern) && p["layout"].as_str() == Some("box"))
+    });
+    if is_box {
+        "box"
+    } else {
+        "square"
+    }
+}
+
 /// The definition id for `key` on `mode`: `key@mode`, else `key@shared`.
 fn def_id(mode: &str, key: &str) -> Option<String> {
     let defs = source()["definitions"].as_object()?;
     [format!("{key}@{mode}"), format!("{key}@shared")]
         .into_iter()
         .find(|id| defs.contains_key(id))
+}
+
+/// What the catalog says about `key` on `mode`: its `type` (`number`,
+/// `integer`, `choice`, `boolean`, …) and its `fallback`, for the transition
+/// mix (`transition.rs`). Material keys are looked up too (`key@shared`).
+pub(crate) fn key_info(mode: &str, key: &str) -> Option<(String, Option<f64>)> {
+    // Runtime inputs (`audioStrength`, `muted`, …) are plain numbers.
+    if let Some(r) = source()["runtimeInputs"]
+        .as_array()
+        .and_then(|a| a.iter().find(|d| d["key"].as_str() == Some(key)))
+    {
+        return Some((r["type"].as_str().unwrap_or("number").to_string(), None));
+    }
+    let defs = source()["definitions"].as_object()?;
+    let id = def_id(mode, key).or_else(|| {
+        defs.iter()
+            .find(|(_, d)| d["key"].as_str() == Some(key) && d.get("material").is_some())
+            .map(|(id, _)| id.clone())
+    })?;
+    let d = &defs[&id];
+    Some((
+        d["type"].as_str().unwrap_or("number").to_string(),
+        d["fallback"].as_f64(),
+    ))
 }
 
 fn is_material(def: &Value) -> bool {
@@ -199,15 +241,24 @@ pub fn catalog() -> Value {
                 .map(|(k, v)| (k.to_string(), num(*v)))
                 .collect();
             material_defaults.insert("liquid".into(), Value::Object(liquid));
-            patterns.push(json!({
+            let mut pattern = json!({
                 "id": id,
                 "label": p["label"],
+                "description": p["description"],
                 "mode": mode,
                 "speed": num(first.speed),
                 "sizes": resolved.iter().map(|(z, _)| *z).collect::<Vec<_>>(),
                 "params": params,
                 "materialDefaults": material_defaults,
-            }));
+            });
+            // `layout: "box"`: the pattern lays out in `size * aspect` by
+            // `size` (the `aspect` runtime input), so a view gives it its
+            // box's ratio and fills the box instead of centring a square.
+            // Absent = square (`layout_of`).
+            if let Some(layout) = p.get("layout") {
+                pattern["layout"] = layout.clone();
+            }
+            patterns.push(pattern);
         }
         objects.push(json!({
             "id": obj["id"],
@@ -235,7 +286,12 @@ pub fn catalog() -> Value {
                         };
                         format!("{base}/{field}")
                     }
-                    None => format!("/params/{}", o["key"].as_str().unwrap_or("")),
+                    // 1.8 reads `ink` at the top level of the file (and of each
+                    // `states` entry), not under `params`.
+                    None => match o["key"].as_str().unwrap_or("") {
+                        "ink" => "/ink".to_string(),
+                        key => format!("/params/{key}"),
+                    },
                 };
                 o.insert("specPath".into(), json!(spec_path));
                 o.entry("aliases").or_insert_with(|| json!([]));
@@ -399,6 +455,16 @@ pub fn check_overrides(
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn layout_is_box_only_where_the_catalog_says_so() {
+        assert_eq!(layout_of("playing"), "box");
+        assert_eq!(layout_of("framing"), "box");
+        assert_eq!(layout_of("breathing"), "square");
+        assert_eq!(layout_of("talking"), "square");
+        assert_eq!(layout_of("no-such-pattern"), "square");
+    }
+
     use super::*;
 
     fn o(pairs: &[(&str, f64)]) -> HashMap<String, f64> {
@@ -551,6 +617,76 @@ mod tests {
             }
         }
         assert_eq!(defs["particles@orbits"]["path"], "orbitParticles");
+    }
+
+    #[test]
+    fn every_spec_path_is_where_the_resolver_reads_the_key() {
+        // `specPath` says where a value goes in an FX Spec file. Write every
+        // pattern's every parameter there and the resolver must know the key: a
+        // path that only looks right (`/params/ink` when 1.8 reads a top-level
+        // `ink`) sends a tool that trusts it into an "unknown key" error.
+        let cat = catalog();
+        let defs = cat["definitions"].as_object().unwrap();
+        let mut checked = 0;
+        for obj in cat["objects"].as_array().unwrap() {
+            for p in obj["patterns"].as_array().unwrap() {
+                for r in p["params"].as_array().unwrap() {
+                    let id = r["ref"].as_str().unwrap();
+                    let d = &defs[id];
+                    let path = d["specPath"].as_str().unwrap();
+                    let value = match d["choices"].as_array() {
+                        Some(c) if !c.is_empty() => c[0]["spec"].clone(),
+                        _ if d["type"] == "boolean" => json!(true),
+                        // A list parameter (`progress`, `segment`) is an array in the file.
+                        _ if d["type"] == "number[]" => json!([0.5]),
+                        _ => json!((d["min"].as_f64().unwrap() + d["max"].as_f64().unwrap()) / 2.0),
+                    };
+                    let mut file =
+                        json!({ "fxSpec": "1.8", "object": obj["id"], "pattern": p["id"] });
+                    let parts: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+                    let mut node = &mut file;
+                    for part in &parts[..parts.len() - 1] {
+                        node = node
+                            .as_object_mut()
+                            .unwrap()
+                            .entry(part.to_string())
+                            .or_insert(json!({}));
+                    }
+                    node[parts[parts.len() - 1]] = value;
+                    let r = crate::fx_spec::resolve(&file.to_string());
+                    let unknown: Vec<_> = r
+                        .diagnostics
+                        .iter()
+                        .filter(|d| d.message.contains("unknown key"))
+                        .collect();
+                    assert!(
+                        unknown.is_empty(),
+                        "{id} at {path} in {}: {:?}",
+                        p["id"],
+                        unknown.iter().map(|d| &d.message).collect::<Vec<_>>()
+                    );
+                    checked += 1;
+                }
+            }
+        }
+        // 300 on 2026-09-28 (every pattern's own parameter list); fewer means the loop lost patterns.
+        assert!(
+            checked >= 300,
+            "checked only {checked} parameter placements"
+        );
+    }
+
+    #[test]
+    fn every_pattern_says_what_it_is_for() {
+        for obj in source()["objects"].as_array().unwrap() {
+            for p in obj["patterns"].as_array().unwrap() {
+                assert!(
+                    p["description"].as_str().is_some_and(|s| s.len() > 8),
+                    "{}: description",
+                    p["id"]
+                );
+            }
+        }
     }
 
     #[test]

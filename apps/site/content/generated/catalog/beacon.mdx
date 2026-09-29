@@ -87,8 +87,8 @@ The beacon component is `SinuaBeacon`. Pick a look with `pattern`; each pattern 
 
 | Prop | Category | Type | Range | Default | Description |
 |---|---|---|---|---|---|
-| `blipCount` | Appearance | integer | 0–12 | 3 | Contacts that light up as the sweep passes. |
-| `dotSize` | Appearance | number | 0.004–0.08 (UI 0.008–0.05) fraction | 0.018 | Scope dot radius as a fraction of the frame. |
+| `blipCount` | Appearance | integer | 0–12 | 0 | How many targets were found (e.g. nearby devices): one blip each, lit as the sweep passes. 0 = still looking. |
+| `dotSize` | Appearance | number | 0.004–0.08 (UI 0.008–0.05) fraction | 0.018 | Scope dot radius as a fraction of the frame; a maximum, since dots shrink as range rings get denser. |
 | `hue` | Appearance | number | 0–360 deg | 200 | Ink hue in degrees; applies once saturation is above 0. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
 | `ringCount` | Appearance | integer | 1–8 | 4 | Concentric range rings on the scope. |

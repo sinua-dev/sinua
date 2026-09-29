@@ -1,33 +1,62 @@
 package dev.sinua.view
 
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.provider.Settings
+import android.view.HapticFeedbackConstants
+import android.view.accessibility.AccessibilityManager
 import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.inset
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
+import dev.sinua.voice.SharedVoiceSource
 import dev.sinua.voice.VoiceOverrides
 import dev.sinua.voice.VoiceOverridesOptions
 import dev.sinua.voice.VoiceSource
 import org.json.JSONObject
+import uniffi.core_engine.AnnouncerState
+import uniffi.core_engine.FxAccessibility
 import uniffi.core_engine.OrbFrame
+import uniffi.core_engine.TransitionSide
 import uniffi.core_engine.VoiceStateProfile
+import uniffi.core_engine.a11yAccessibleName
+import uniffi.core_engine.a11yAnnounceStep
+import uniffi.core_engine.a11yStateWords
+import uniffi.core_engine.effectInfo
 import uniffi.core_engine.frameWithOverrides
+import uniffi.core_engine.fxSpecAccessibility
+import uniffi.core_engine.fxSpecDeriveState
+import uniffi.core_engine.fxSpecTransition
+import uniffi.core_engine.patternLayout
 import uniffi.core_engine.resolveFxSpec
 import uniffi.core_engine.resolveFxSpecWith
 import uniffi.core_engine.resolvedOpts
@@ -56,7 +85,9 @@ enum class FxReducedMotion { AUTO, ALWAYS, NEVER }
  *
  * [state] picks the spec's lifecycle state; with a voice it defaults to the voice's `AgentState` wire name
  * ("listening", "speaking", ...), so a v1.1 spec's `states` follow the
- * conversation; state changes cross-fade over [crossFade]. A
+ * conversation. State changes animate: the same pattern interpolates its parameters, a
+ * pattern change morphs (the orb lattice trio) or cross-fades, over the spec's `transitions`
+ * (default 0.6 s); [crossFade] overrides every change's duration (0 = a cut). A
  * [VoiceSource] holds one callback of each kind, so the view binds it; if
  * your app already listens to the source, pass [voiceOverrides] you feed
  * yourself instead. The view never connects or disconnects the source.
@@ -70,7 +101,7 @@ fun SinuaView(
     state: String? = null,
     inputs: Map<String, Double> = emptyMap(),
     voiceLevelInput: String? = null,
-    crossFade: Double = 0.25,
+    crossFade: Double? = null,
     theme: FxTheme = FxTheme.AUTO,
     paused: Boolean = false,
     reducedMotion: FxReducedMotion = FxReducedMotion.AUTO,
@@ -78,12 +109,24 @@ fun SinuaView(
     maxFps: Double? = null,
     lowPower: FxLowPower = FxLowPower.AUTO,
     onFrame: ((FxFrameStats) -> Unit)? = null,
+    /** Words per state for the accessible name and announcements; win over the spec's `accessibility.states`. */
+    labels: Map<String, String> = emptyMap(),
+    /** Speak state changes to TalkBack (polite, rate-limited). Default: the spec's, else true. */
+    announce: Boolean? = null,
+    /** A light tap when the agent starts listening. Off by default; never under reduced motion. */
+    haptics: Boolean = false,
+    /** Derive the state from the spec's 1.9 `rules` and [inputs] (off while a voice is bound). */
+    rules: Boolean = true,
+    /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
+    effect: SinuaEffectTrigger? = null,
 ) {
     val model = remember(spec, voice, voiceOverrides) { FxModel(FxInput.Spec(spec), voice, voiceOverrides) }
     model.crossFade = crossFade
     model.specState = state
     model.inputs = inputs
     model.voiceLevelInput = voiceLevelInput
+    model.a11yOptions(labels, announce, haptics, rules)
+    SideEffect { model.play(effect) }
     FxCanvas(model, modifier, theme, paused, reducedMotion, contentDescription, maxFps, lowPower, onFrame)
 }
 
@@ -111,6 +154,14 @@ fun SinuaView(
     maxFps: Double? = null,
     lowPower: FxLowPower = FxLowPower.AUTO,
     onFrame: ((FxFrameStats) -> Unit)? = null,
+    /** Words per state for the accessible name and announcements ("listening" -> "Coach is listening"). */
+    labels: Map<String, String> = emptyMap(),
+    /** Speak state changes to TalkBack (polite, rate-limited). Default true. */
+    announce: Boolean? = null,
+    /** A light tap when the agent starts listening. Off by default; never under reduced motion. */
+    haptics: Boolean = false,
+    /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
+    effect: SinuaEffectTrigger? = null,
 ) {
     // `speed` and `overrides` are *not* part of the key: rebuilding the model would reset
     // its clock, which would jump the pose exactly when a speed change should be smooth.
@@ -120,6 +171,8 @@ fun SinuaView(
     model.updatePlainInput(overrides, speed)
     model.specState = state
     model.inputs = inputs
+    model.a11yOptions(labels, announce, haptics, rules = false)
+    SideEffect { model.play(effect) }
     FxCanvas(model, modifier, theme, paused, reducedMotion, contentDescription, maxFps, lowPower, onFrame)
 }
 
@@ -142,7 +195,7 @@ fun SinuaView(
     voiceOverrides: VoiceOverrides? = null,
     inputs: Map<String, Double> = emptyMap(),
     voiceLevelInput: String? = null,
-    crossFade: Double = 0.25,
+    crossFade: Double? = null,
     theme: FxTheme = FxTheme.AUTO,
     paused: Boolean = false,
     reducedMotion: FxReducedMotion = FxReducedMotion.AUTO,
@@ -216,7 +269,14 @@ private fun FxCanvas(
         FxTheme.AUTO -> isSystemInDarkTheme()
     }
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
-    val running = !paused && lifecycle.isAtLeast(Lifecycle.State.RESUMED)
+    // On screen: a view scrolled out of a clipping parent has empty window bounds and
+    // stops, like the Web and iOS views (roadmap 10). True until the first layout.
+    var onScreen by remember { mutableStateOf(true) }
+    val running = !paused && onScreen && lifecycle.isAtLeast(Lifecycle.State.RESUMED)
+    // Short side in px, for the small-view cap (0 until measured).
+    var shortPx by remember { mutableStateOf(0) }
+    val smallPx = with(LocalDensity.current) { FX_SMALL_VIEW_DP.dp.toPx() }
+    val small = shortPx in 1 until smallPx.toInt()
     val reducedNow by rememberUpdatedState(reduced)
     val powerSave = rememberPowerSaveMode()
     val lowPowerOn = when (lowPower) {
@@ -224,7 +284,8 @@ private fun FxCanvas(
         FxLowPower.OFF -> false
         FxLowPower.AUTO -> powerSave
     }
-    val perf = remember(model, lowPowerOn, maxFps) { model.performance(lowPowerOn, maxFps) }
+    DisposableEffect(model) { onDispose { model.release() } }
+    val perf = remember(model, lowPowerOn, maxFps, small) { model.performance(lowPowerOn, maxFps, small) }
     model.perf = perf
     model.onFrame = onFrame
     val cap = if (reduced) min(30.0, perf.maxFps ?: 30.0) else perf.maxFps
@@ -232,9 +293,10 @@ private fun FxCanvas(
     // Frame clock: the latest vsync time; reading it in the draw lambda
     // invalidates the Canvas each frame. Reduced motion without a voice: no loop.
     val frameNanos = remember { mutableLongStateOf(0L) }
-    LaunchedEffect(running, reduced, model.hasVoice, cap) {
+    LaunchedEffect(running, reduced, model.hasVoice, model.effectRunning, cap) {
         model.resetTick()
-        if (!running || (reduced && !model.hasVoice)) return@LaunchedEffect
+        // A one-shot effect keeps the loop up under reduced motion too (its reduced variant).
+        if (!running || (reduced && !model.hasVoice && !model.effectRunning)) return@LaunchedEffect
         // Frame cap: skipped vsyncs don't write the frame state, so nothing redraws.
         // An infinite animation: `withInfiniteAnimationFrameNanos` honours
         // `InfiniteAnimationPolicy`, so a host app's Compose UI tests can go idle while a
@@ -250,21 +312,43 @@ private fun FxCanvas(
         }
     }
 
+    // Accessibility (docs/fx-view.md): the name follows the state; changes are spoken to
+    // TalkBack (only while an accessibility service is on); an opt-in tap on "listening".
+    val view = LocalView.current
+    val accessibility = remember { context.getSystemService(AccessibilityManager::class.java) }
+    model.appLabel = label
+    model.reducedNow = reduced
+    model.speak = { text -> if (accessibility?.isEnabled == true) view.announceForAccessibility(text) }
+    model.tap = {
+        view.performHapticFeedback(
+            if (Build.VERSION.SDK_INT >= 30) HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.KEYBOARD_TAP,
+        )
+    }
+    SideEffect { model.refreshA11y() }
     val a11y = if (label?.isEmpty() == true) {
         Modifier.clearAndSetSemantics {} // decorative
     } else {
-        val text = label ?: model.defaultLabel
+        val text = model.a11yLabel
         Modifier.semantics {
             contentDescription = text
             role = Role.Image
         }
     }
-    Canvas(modifier.then(a11y)) {
-        val frame = model.frame(frameNanos.longValue, running, reduced) ?: return@Canvas
+    val measure = Modifier
+        .onSizeChanged { shortPx = min(it.width, it.height) }
+        // Clipped away entirely (scrolled out): stop. A view with no size of its own keeps
+        // the old behaviour -- there's nothing to judge by.
+        .onGloballyPositioned { onScreen = it.size.width == 0 || it.size.height == 0 || !it.boundsInWindow().isEmpty }
+    Canvas(modifier.then(a11y).then(measure)) {
+        // A box-layout pattern (edge `framing`, signal `playing`) gets the box ratio as `aspect`.
+        val aspect = if (model.boxLayout && size.height > 0f) {
+            (size.width / size.height).toDouble().coerceIn(0.125, 8.0)
+        } else {
+            null
+        }
+        val frame = model.frame(frameNanos.longValue, running, reduced, aspect) ?: return@Canvas
         val t1 = if (model.onFrame != null) System.nanoTime() else 0L
-        // Square engine space, centered in whatever box the view has.
-        val side = min(size.width, size.height)
-        inset((size.width - side) / 2, (size.height - side) / 2) {
+        val paint: DrawScope.() -> Unit = {
             val engineSize = model.engineSize
             if (frame.previous != null) {
                 paintFxFrame(frame.previous, engineSize, dark, alphaScale = (1 - frame.blend).toFloat())
@@ -272,6 +356,15 @@ private fun FxCanvas(
             } else {
                 paintFxFrame(frame.frame, engineSize, dark)
             }
+        }
+        if (model.boxLayout) {
+            // The whole box at the height's scale: paintFxFrame scales by its scope's width,
+            // so the scope is `height` wide; the frame itself runs `size * aspect` across.
+            inset(0f, 0f, size.width - size.height, 0f, paint)
+        } else {
+            // Square engine space, centered in whatever box the view has.
+            val side = min(size.width, size.height)
+            inset((size.width - side) / 2, (size.height - side) / 2, paint)
         }
         model.onFrame?.let { cb ->
             // DrawScope records display-list ops; paintMs is the record time, not GPU raster.
@@ -331,7 +424,8 @@ internal class PhaseClock {
 }
 
 internal class FxModel(private val input: FxInput, source: VoiceSource?, given: VoiceOverrides?) {
-    var crossFade = 0.25
+    /** Overrides every state change's duration (0 = a cut); null = the spec's `transitions` / 0.6 s. */
+    var crossFade: Double? = null
     var specState: String? = null
     var inputs: Map<String, Double> = emptyMap()
     var voiceLevelInput: String? = null
@@ -351,17 +445,151 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
         private set
     val engineSize: Int get() = size.toInt()
 
+    /** The pattern fills the box ([patternLayout] == "box"): the view passes `aspect`. */
+    var boxLayout = false
+        private set
+
+    // --- Accessibility (docs/fx-view.md, *Accessibility*) and the 1.9 rules glue ---
+    private var labels: Map<String, String> = emptyMap()
+    private var announce: Boolean? = null
+    private var haptics = false
+    private var rules = true
+    internal var appLabel: String? = null
+    internal var reducedNow = false
+
+    /** Delivery, set by the view (and by tests): TalkBack announcement, haptic tap, the clock. */
+    internal var speak: (String) -> Unit = {}
+    internal var tap: () -> Unit = {}
+    internal var now: () -> Double = { SystemClock.uptimeMillis() / 1000.0 }
+
+    /** The accessible name now; Compose state, so the semantics follow it. */
+    var a11yLabel by mutableStateOf("")
+        private set
+    private var a11yInfo = FxAccessibility(null, emptyMap(), null)
+    private var a11yStarted = false
+    private var a11yState: String? = null
+    private var announcer = AnnouncerState(false, null, 0.0, null, 0.0)
+    private var announceGen = 0
+    private val handler by lazy { Handler(Looper.getMainLooper()) }
+    private var offVoiceState: (() -> Unit)? = null
+
+    /** The spec's rules: the state they picked last (hysteresis) and the inputs it was for. */
+    private var derived: String? = null
+    private var rulesInputs: Map<String, Double>? = null
+
+    fun a11yOptions(labels: Map<String, String>, announce: Boolean?, haptics: Boolean, rules: Boolean) {
+        val reword = labels != this.labels || announce != this.announce
+        this.labels = labels
+        this.announce = announce
+        this.haptics = haptics
+        if (rules != this.rules) rulesInputs = null
+        this.rules = rules
+        // Re-word the current state: a sentinel no state equals, so the next refresh runs.
+        if (reword) a11yState = "\u0000"
+    }
+
+    /** With a voice bound: the app's `state` ?: the voice's. Without: the rules' state ?: the app's. */
+    internal fun lifecycle(): String? {
+        val v = voice
+        if (v != null) return specState ?: v.state.wire
+        applyRules()
+        return derived ?: specState
+    }
+
+    private fun applyRules() {
+        val json = (input as? FxInput.Spec)?.json
+        if (json == null || !ok || !rules || voice != null) {
+            derived = null
+            rulesInputs = null
+            return
+        }
+        if (inputs == rulesInputs) return
+        rulesInputs = inputs
+        derived = fxSpecDeriveState(json, inputs, derived)
+    }
+
+    // --- One-shot effect (docs/fx-view.md, *One-shot effects*) ---
+
+    /** Compose state: keeps the frame loop up under reduced motion while an effect plays. */
+    var effectRunning by mutableStateOf(false)
+        private set
+    private var effectPlayed: Long? = null
+    private var effectCode = 0u
+    private var effectDuration = 0.0
+    private var effectStart = 0.0
+
+    /** Plays [trigger] if it's a new one (each [SinuaEffectTrigger] value plays once). */
+    fun play(trigger: SinuaEffectTrigger?) {
+        if (trigger == null || trigger.id == effectPlayed) return
+        effectPlayed = trigger.id
+        val info = effectInfo(trigger.kind.wire) ?: return
+        effectCode = info.code
+        effectDuration = info.duration
+        effectStart = now()
+        effectRunning = true
+        // An event: spoken now, outside the state rate limit.
+        val base = appLabel ?: a11yInfo.name ?: defaultLabel
+        if (base.isNotEmpty() && (announce ?: a11yInfo.announce ?: true)) {
+            speak(labels["effect:${trigger.kind.wire}"] ?: info.words)
+        }
+    }
+
+    /** The running effect's runtime keys (empty once it has ended). */
+    internal fun effectKeys(reduced: Boolean): Map<String, Double> {
+        if (!effectRunning) return emptyMap()
+        val age = now() - effectStart
+        if (age >= effectDuration) {
+            effectRunning = false
+            return emptyMap()
+        }
+        return mapOf(
+            "effectCode" to effectCode.toDouble(),
+            "effectAge" to max(0.0, age),
+            "effectReduced" to if (reduced) 1.0 else 0.0,
+        )
+    }
+
+    /** The state may have changed: rename the view, and let the announcer decide. */
+    fun refreshA11y() {
+        val st = lifecycle()
+        if (a11yStarted && st == a11yState) return
+        val first = !a11yStarted
+        a11yStarted = true
+        a11yState = st
+        val base = appLabel ?: a11yInfo.name ?: defaultLabel
+        a11yLabel = if (base.isEmpty()) "" else a11yAccessibleName(base, st, a11yInfo.states, labels)
+        val on = base.isNotEmpty() && (announce ?: a11yInfo.announce ?: true)
+        stepAnnouncer(if (on) a11yStateWords(base, st, a11yInfo.states, labels) else null)
+        if (!first && st == "listening" && haptics && !reducedNow) tap()
+    }
+
+    private fun stepAnnouncer(words: String?) {
+        val gen = ++announceGen
+        val t = now()
+        val out = a11yAnnounceStep(announcer, words, t)
+        announcer = out.state
+        out.announce?.let { speak(it) }
+        out.recheckAt?.let { at ->
+            handler.postDelayed({
+                if (gen ==
+                    announceGen
+                ) {
+                    stepAnnouncer(announcer.current)
+                }
+            }, ((at - t) * 1000).toLong().coerceAtLeast(0))
+        }
+    }
+
     private val voice: VoiceOverrides?
+    private var tracked: SharedVoiceSource.Tracked? = null
     val hasVoice: Boolean get() = voice != null
 
     internal val clock = PhaseClock()
 
-    /**
-     * The engine speed per lifecycle state of a spec, cached. [FxStatePlayer] resolves the
-     * spec *with* the state and multiplies by that state's speed, so the view must use the
-     * same number; the file's base speed would make a state with its own speed jump once.
-     */
-    private val specSpeeds = HashMap<String, Double>()
+    /** The plain path's state transition (the spec path's lives in [FxStatePlayer]). */
+    private val transition = StateTransition()
+    private var lastLifecycle: String? = null
+    private var sawLifecycle = false
     internal var lastComputeStart = 0L
     internal var lastRawDt = 0.0
     private var lastNanos = 0L
@@ -411,7 +639,28 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
                 }
             }
         }
-        voice = given ?: source?.let { VoiceOverrides.bind(it, voiceOptions(family, overrides)) }
+        boxLayout = ok && patternLayout(state) == "box"
+        // A raw source is bound through its SharedVoiceSource: this view keeps its own tracker
+        // (its family's easing), and other views / a voice button keep theirs.
+        tracked = if (given == null && source != null) {
+            SharedVoiceSource.of(source).track(voiceOptions(family, overrides))
+        } else {
+            null
+        }
+        voice = given ?: tracked?.overrides
+        a11yInfo = (input as? FxInput.Spec)?.json?.takeIf { ok }?.let { fxSpecAccessibility(it) }
+            ?: FxAccessibility(null, emptyMap(), null)
+        // The name and announcements follow the conversation even while the view is paused.
+        offVoiceState = tracked?.source?.listenState { handler.post { refreshA11y() } }
+    }
+
+    /** Unsubscribes this view from a shared source (the model is replaced or leaves composition). */
+    fun release() {
+        offVoiceState?.invoke()
+        offVoiceState = null
+        announceGen++ // cancels a pending recheck
+        tracked?.release()
+        tracked = null
     }
 
     /**
@@ -419,15 +668,15 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
      * the cap for this power state and sheds the spec's `lowPower.disable`
      * itself ([FxStatePlayer.lowPower] passes it to every resolution).
      */
-    fun performance(lowPower: Boolean, optionMaxFps: Double?): FxPerformance {
-        if (player.lowPower != lowPower) specSpeeds.clear() // a state's resolved speed can change
+    fun performance(lowPower: Boolean, optionMaxFps: Double?, small: Boolean = false): FxPerformance {
         player.lowPower = lowPower
-        val json = (input as? FxInput.Spec)?.json ?: return fxPerformance(lowPower, optionMaxFps)
+        val json = (input as? FxInput.Spec)?.json
+            ?: return fxPerformance(lowPower, fxOptionMaxFps(optionMaxFps, null, small))
         val r = resolveFxSpecWith(json, null, emptyMap(), lowPower)
         val handles = runCatching {
             JSONObject(json).optJSONObject("performance")?.has("lowPower") == true
         }.getOrDefault(false)
-        return fxPerformance(lowPower, optionMaxFps, r.maxFps, handles)
+        return fxPerformance(lowPower, fxOptionMaxFps(optionMaxFps, r.maxFps, small), r.maxFps, handles)
     }
 
     /** Next vsync starts from a zero dt (after a pause the pose continues, doesn't jump). */
@@ -452,10 +701,17 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
         return value
     }
 
-    /** The engine speed of one lifecycle state of a spec (the product the player will use). */
-    private fun specSpeed(spec: String, state: String?): Double = specSpeeds.getOrPut(state ?: "") {
-        val r = resolveFxSpecWith(spec, state, emptyMap(), player.lowPower)
-        if (r.ok) (resolvedOpts(r.state, r.size)?.speed ?: 1.0) * r.speed else 1.0
+    /**
+     * The plain path's design for a lifecycle state, as a transition side: the voice-state
+     * profile under the app's overrides, at the effective speed. Live keys are not part of it.
+     */
+    private fun plainSide(lifecycle: String?): TransitionSide {
+        val profile = profile(state, lifecycle)
+        return TransitionSide(
+            state,
+            presetSpeed * speed * (profile?.speed ?: 1.0),
+            (profile?.overrides ?: emptyMap()) + overrides,
+        )
     }
 
     /**
@@ -468,7 +724,7 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
         this.speed = speed
     }
 
-    fun frame(nanos: Long, running: Boolean, reduced: Boolean): FxFrames? {
+    fun frame(nanos: Long, running: Boolean, reduced: Boolean, aspect: Double? = null): FxFrames? {
         if (!ok) return null
         val t0 = if (onFrame != null) System.nanoTime() else 0L
         val rawDt = if (lastNanos == 0L || nanos == 0L) 0.0 else max(0.0, (nanos - lastNanos) / 1e9)
@@ -478,7 +734,10 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
         lastComputeStart = t0
         lastRawDt = rawDt
         // Low-power overrides sit between the spec's and the voice's.
-        val voiceMap = perf.overrides + (voice?.overrides(rawDt) ?: emptyMap())
+        val live = perf.overrides + (voice?.overrides(rawDt) ?: emptyMap())
+        val boxed = if (aspect != null) live + ("aspect" to aspect) else live
+        // A one-shot effect the view is playing: its runtime keys.
+        val voiceMap = boxed + effectKeys(reduced)
         return when (input) {
             is FxInput.Spec -> {
                 val ins = HashMap(inputs)
@@ -486,10 +745,11 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
                 val name = voiceLevelInput
                 if (name != null && v != null) ins[name] = v.metrics.level
                 player.crossFade = crossFade
-                player.setState(specState ?: v?.state?.wire)
-                // The player multiplies by *this state's* speed, so the view divides by the
-                // same one. max(1e-9, …) only guards the division; the phase freezes at speed 0.
-                val stateSpeed = specSpeed(input.json, specState ?: v?.state?.wire)
+                player.setState(lifecycle(), input.json)
+                if (reduced) player.skipTransition()
+                // The player multiplies by its effective speed (mixed mid-transition), so the view
+                // divides by the same one. max(1e-9, …) only guards the division.
+                val stateSpeed = player.speed(input.json, ins)
                 val at = if (reduced) {
                     REDUCED_MOTION_T / max(1e-9, stateSpeed)
                 } else {
@@ -501,14 +761,31 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
             is FxInput.State -> {
                 // With a lifecycle state (given, or the bound voice's), the built-in voice-state
                 // profile goes *under* the app's own overrides; the voice's live keys stay last.
-                val lifecycle = specState ?: voice?.state?.wire
+                val lifecycle = lifecycle()
+                if (sawLifecycle && lifecycle != lastLifecycle) {
+                    // A state change animates (0.6 s easeInOut, or `crossFade` seconds); reduced motion cuts.
+                    transition.start(if (reduced) 0.0 else (crossFade ?: 0.6), "easeInOut")
+                }
+                sawLifecycle = true
+                lastLifecycle = lifecycle
+                transition.advance(min(rawDt, MAX_DT_S))
+                if (reduced) transition.cancel()
                 val profile = profile(state, lifecycle)
-                val t = if (reduced) REDUCED_MOTION_T else clock.phase(presetSpeed, speed * (profile?.speed ?: 1.0))
-                var merged = (profile?.overrides ?: emptyMap()) + overrides + voiceMap
+                val side = plainSide(lifecycle)
+                val t = when {
+                    reduced -> REDUCED_MOTION_T
+                    transition.active -> clock.phase(1.0, transition.speed(side, size))
+                    else -> clock.phase(presetSpeed, speed * (profile?.speed ?: 1.0))
+                }
                 // `audioInput` names which app input drives `audioLevel` (never an engine key).
                 val level = profile?.audioInput?.let { inputs[it] }
-                if (level != null) merged = merged + ("audioLevel" to level)
-                frameWithOverrides(state, size, t, merged)?.let { FxFrames(it, null, 1.0) }
+                val live = if (level != null) voiceMap + ("audioLevel" to level) else voiceMap
+                if (transition.active) {
+                    transition.frames(side, size, t, live)
+                } else {
+                    transition.settle(side)
+                    frameWithOverrides(state, size, t, side.overrides + live)?.let { FxFrames(it, null, 1.0) }
+                }
             }
         }
     }
@@ -532,24 +809,45 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
 }
 
 /**
- * Native counterpart of @sinua/core's `FxSpecPlayer`: the Studio's state
- * cross-fade (cubic ease-out) over `resolveFxSpecWith`, plus runtime keys
- * (the voice's) spread last.
+ * Native counterpart of @sinua/core's `FxSpecPlayer`: the spec's lifecycle state and its
+ * transitions ([StateTransition]; the spec's 1.9 `transitions`, or [crossFade] seconds when
+ * set) over `resolveFxSpecWith`, plus runtime keys (the voice's) spread last.
  */
 internal class FxStatePlayer {
-    var crossFade = 0.25
+    /** Overrides every state change's duration (0 = a cut); null = the spec's `transitions`. */
+    var crossFade: Double? = null
 
     /** FX Spec 1.2 low power, passed to the resolver (sheds `performance.lowPower.disable`). */
     var lowPower = false
     private var current: String? = null
-    private var previous: String? = null
-    private var fadeAge = Double.POSITIVE_INFINITY
+    private var started = false
+    private val transition = StateTransition()
 
-    fun setState(key: String?) {
-        if (key == current) return
-        previous = current
+    fun setState(key: String?, spec: String) {
+        if (started && key == current) return
+        if (started) {
+            val t = fxSpecTransition(spec, current, key)
+            transition.start(crossFade ?: t.duration, t.curve)
+        }
+        started = true
         current = key
-        fadeAge = if (crossFade > 0) 0.0 else Double.POSITIVE_INFINITY
+    }
+
+    /** End a running transition now (reduced motion). */
+    fun skipTransition() = transition.cancel()
+
+    /** The current state as a transition side (effective speed), or null if the spec has errors. */
+    private fun side(spec: String, inputs: Map<String, Double>): Pair<TransitionSide, UInt>? {
+        val r = resolveFxSpecWith(spec, current, inputs, lowPower)
+        if (!r.ok) return null
+        val preset = resolvedOpts(r.state, r.size)?.speed ?: 1.0
+        return TransitionSide(r.state, preset * r.speed, r.overrides) to r.size
+    }
+
+    /** The effective speed multiplier the next frame renders at (mixed mid-transition). */
+    fun speed(spec: String, inputs: Map<String, Double>): Double {
+        val (s, size) = side(spec, inputs) ?: return 1.0
+        return transition.speed(s, size)
     }
 
     fun frame(
@@ -559,12 +857,12 @@ internal class FxStatePlayer {
         inputs: Map<String, Double>,
         extra: Map<String, Double>,
     ): FxFrames? {
-        fadeAge += dt
-        val now = render(spec, current, elapsed, inputs, extra, lowPower) ?: return null
-        if (fadeAge >= crossFade) return FxFrames(now, null, 1.0)
-        val prev = render(spec, previous, elapsed, inputs, extra, lowPower)
-        val u = fadeAge / crossFade
-        return FxFrames(now, prev, 1 - (1 - u).pow(3))
+        transition.advance(dt)
+        val (s, size) = side(spec, inputs) ?: run {
+            transition.cancel()
+            return null
+        }
+        return transition.frames(s, size, elapsed * transition.speed(s, size), extra)
     }
 
     companion object {
@@ -587,5 +885,5 @@ internal class FxStatePlayer {
 /** Test hook: the SinuaView canvas over a given model (same code path as the public SinuaView). */
 @androidx.annotation.VisibleForTesting
 @Composable
-internal fun FxCanvasForTest(model: FxModel, maxFps: Double?) =
-    FxCanvas(model, Modifier, FxTheme.LIGHT, false, FxReducedMotion.NEVER, null, maxFps, FxLowPower.OFF, null)
+internal fun FxCanvasForTest(model: FxModel, maxFps: Double?, modifier: Modifier = Modifier) =
+    FxCanvas(model, modifier, FxTheme.LIGHT, false, FxReducedMotion.NEVER, null, maxFps, FxLowPower.OFF, null)

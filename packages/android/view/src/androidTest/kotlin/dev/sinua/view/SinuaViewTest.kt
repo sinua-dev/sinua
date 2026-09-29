@@ -25,9 +25,16 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import uniffi.core_engine.FxTransition
 import uniffi.core_engine.OrbFrame
+import uniffi.core_engine.TransitionSide
 import uniffi.core_engine.frame
 import uniffi.core_engine.frameFromFxSpec
+import uniffi.core_engine.frameWithOverrides
+import uniffi.core_engine.fxSpecTransition
+import uniffi.core_engine.resolveFxSpecWith
+import uniffi.core_engine.resolvedOpts
+import uniffi.core_engine.transitionMix
 import java.io.File
 
 /**
@@ -67,9 +74,17 @@ class SinuaViewTest {
         // A floor, not a count: it only guards a loader that read too little.
         assertTrue("only ${states.size} patterns read -- the asset or the loader moved", states.size >= 34)
         var compared = 0
+        var perVertex = 0
         for (s in states) {
             val f: OrbFrame = frame(s, 64u, 1.7)
                 ?: throw AssertionError("$s is in spec/parameters.json but does not render through core_engine")
+            // The old painter is from before per-vertex stroke colour (golden 1.6.0,
+            // `Polyline.hues`) and can't draw a frame that uses it (edge `framing`,
+            // colourful by default). The materials cases check that paint rule instead.
+            if (f.polylines.any { it.hues.isNotEmpty() }) {
+                perVertex++
+                continue
+            }
             for (dark in listOf(false, true)) {
                 for (alpha in listOf(1f, 0.37f)) {
                     val old = raster { oldPaintFrame(f, 64, dark, alpha) }
@@ -80,7 +95,8 @@ class SinuaViewTest {
             }
         }
         // The denominator, exactly: two themes x two alphas for every pattern.
-        assertEquals("four rasters per pattern", states.size * 4, compared)
+        assertEquals("four rasters per pattern", (states.size - perVertex) * 4, compared)
+        assertTrue("only edge `framing` draws per-vertex colour by default", perVertex <= 1)
         println("FxPaint parity: $compared rasters identical across ${states.size} patterns")
     }
 
@@ -103,18 +119,60 @@ class SinuaViewTest {
         assertTrue("checked $checked", checked > 3)
     }
 
+    /** A pattern change cross-fades (the engine's `crossFade` technique), then settles on one frame. */
     @Test
-    fun statePlayerCrossFadesThenSettles() {
+    fun statePlayerCrossFadesAPatternChangeThenSettles() {
         val p = FxStatePlayer().apply { crossFade = 0.25 }
         val json = """{"fxSpec":"1.8","object":"orb","pattern":"listening","states":{"speaking":{"pattern":"speaking"}}}"""
-        p.setState(null)
+        p.setState(null, json)
         p.frame(json, 1.0, 0.016, emptyMap(), emptyMap())
-        p.setState("speaking")
+        p.setState("speaking", json)
         val mid = p.frame(json, 1.0, 0.1, emptyMap(), emptyMap())!!
         assertTrue(mid.previous != null)
-        assertEquals(1 - Math.pow(1 - 0.4, 3.0), mid.blend, 1e-12)
+        val side = { s: String? ->
+            val r = resolveFxSpecWith(json, s, emptyMap(), false)
+            TransitionSide(r.state, (resolvedOpts(r.state, r.size)?.speed ?: 1.0) * r.speed, r.overrides)
+        }
+        val want = transitionMix(side(null), side("speaking"), 64u, 0.4, "easeInOut")!!
+        assertEquals("crossFade", want.technique)
+        assertEquals(want.weight, mid.blend, 1e-12)
         val end = p.frame(json, 1.0, 0.2, emptyMap(), emptyMap())!!
         assertNull(end.previous)
+    }
+
+    /** The same pattern across states: one frame whose parameters flow, landing exactly on the new state. */
+    @Test
+    fun statePlayerInterpolatesASamePatternChange() {
+        val json = """{"fxSpec":"1.9","object":"orb","pattern":"glowing","states":{"idle":{"ink":0.6,"speed":0.5},"speaking":{"ink":1,"speed":1.2}},"transitions":{"default":{"duration":0.5,"curve":"linear"}}}"""
+        assertEquals(FxTransition(0.5, "linear"), fxSpecTransition(json, "idle", "speaking"))
+        val p = FxStatePlayer()
+        p.setState("idle", json)
+        p.frame(json, 1.0, 0.016, emptyMap(), emptyMap())
+        val idleSpeed = p.speed(json, emptyMap())
+        p.setState("speaking", json)
+        val mid = p.frame(json, 1.0, 0.15, emptyMap(), emptyMap())!!
+        assertNull("one frame before the count/choice swap window", mid.previous)
+        val x = resolveFxSpecWith(json, "speaking", emptyMap(), false)
+        val preset = resolvedOpts(x.state, x.size)?.speed ?: 1.0
+        val midSpeed = p.speed(json, emptyMap())
+        assertTrue(midSpeed > idleSpeed && midSpeed < preset * x.speed)
+        p.frame(json, 1.0, 0.4, emptyMap(), emptyMap())
+        assertEquals("lands on speaking", preset * x.speed, p.speed(json, emptyMap()), 1e-12)
+        val end = p.frame(json, 2.0, 0.016, emptyMap(), emptyMap())!!
+        assertEquals(frameWithOverrides(x.state, x.size, 2.0 * preset * x.speed, x.overrides), end.frame)
+    }
+
+    /** `crossFade = 0.0` is a cut, as before. */
+    @Test
+    fun statePlayerCutsWithCrossFadeZero() {
+        val json = """{"fxSpec":"1.8","object":"orb","pattern":"glowing","states":{"idle":{"ink":0.6},"speaking":{"ink":1}}}"""
+        val p = FxStatePlayer().apply { crossFade = 0.0 }
+        p.setState("idle", json)
+        p.frame(json, 1.0, 0.016, emptyMap(), emptyMap())
+        p.setState("speaking", json)
+        val f = p.frame(json, 1.0, 0.016, emptyMap(), emptyMap())!!
+        assertNull(f.previous)
+        assertEquals(FxStatePlayer.render(json, "speaking", 1.0, emptyMap(), emptyMap()), f.frame)
     }
 
     /**
@@ -321,6 +379,12 @@ class SinuaViewTest {
                 "completing",
                 mapOf("holoStrength" to 1.0, "interruptAge" to 0.15),
             ),
+            // Edge `framing` is colourful by default: a per-vertex stroke round a square box.
+            Triple(
+                "framing-64-0.6-square-speaking",
+                "framing",
+                mapOf("audioLevel" to 0.7, "idleOpacity" to 0.45),
+            ),
             // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC).
             Triple(
                 "x-completing-64-0.6-holo-glowblur",
@@ -346,7 +410,8 @@ class SinuaViewTest {
             val f = uniffi.core_engine.frameWithOverrides(state, 64u, 0.6, overrides)!!
             if (!key.contains("liquid-outline") && !key.contains("liquid-dots") && !key.contains("particles") &&
                 !key.contains("holo") &&
-                !key.contains("gradient3")
+                !key.contains("gradient3") &&
+                !key.contains("framing")
             ) {
                 assertTrue(
                     "$key has materials",

@@ -175,18 +175,5 @@ class OpenAIRealtimeCoreTest {
                 OpenAIRealtimeSignaling.answer(200, "{}")
             }.exceptionOrNull() is OpenAIRealtimeSignaling.SignalingException.Malformed,
         )
-
-        val m = OpenAIRealtimeSignaling.clientSecretRequest("sk-dev", instructions = "Be brief.")
-        assertEquals(mapOf("Authorization" to "Bearer sk-dev"), m.headers)
-        val session = JSONObject(m.body).getJSONObject("session")
-        assertEquals("gpt-realtime", session.getString("model"))
-        assertEquals("Be brief.", session.getString("instructions"))
-        assertEquals(
-            "server_vad",
-            session.getJSONObject("audio").getJSONObject("input").getJSONObject("turn_detection").getString("type"),
-        )
-        assertEquals(600, JSONObject(m.body).getJSONObject("expires_after").getInt("seconds"))
-        assertEquals("ek_abc", OpenAIRealtimeSignaling.clientSecret(200, """{"value":"ek_abc"}"""))
-        assertTrue(runCatching { OpenAIRealtimeSignaling.clientSecret(200, "{}") }.isFailure)
     }
 }

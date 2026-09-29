@@ -100,7 +100,7 @@ class FxSpecTests {
         val cat = org.json.JSONObject(parameterCatalogJson())
         val objects = cat.getJSONArray("objects")
         assertEquals(
-            listOf("SinuaOrb", "SinuaSignal", "SinuaRing", "SinuaCore", "SinuaBeacon"),
+            listOf("SinuaOrb", "SinuaSignal", "SinuaRing", "SinuaCore", "SinuaBeacon", "SinuaEdge"),
             (0 until objects.length()).map { objects.getJSONObject(it).getString("component") },
         )
         assertEquals(

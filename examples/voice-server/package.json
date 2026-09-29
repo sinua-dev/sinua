@@ -1,0 +1,21 @@
+{
+  "name": "sinua-voice-server-examples",
+  "private": true,
+  "description": "Minimal credential endpoints for @sinua/voice: Next.js, Express, Cloudflare Worker, Supabase Edge. Type-checked and tested in CI; copy the one you need.",
+  "type": "module",
+  "scripts": {
+    "check": "tsc -p tsconfig.json && node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@sinua/voice": "file:../../packages/voice"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "express": "^5.1.0",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

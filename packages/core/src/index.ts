@@ -20,8 +20,11 @@ import {
   parameter_catalog_json,
   check_overrides_json,
   voice_state_profile_json,
+  pattern_layout_json,
+  playback_seek_progress_json,
 } from "../pkg/sinua_core_inline.js";
 import type { ReactiveTarget } from "./reactive.js";
+import type { AgentState } from "./voice.js";
 // Frames cross the wasm boundary packed (one Float64Array), not as JSON:
 // 8-18x faster in node (bench/transport.mjs), bit-identical
 // (test/packed.test.mjs). The `*_json` exports stay for compatibility.
@@ -75,6 +78,8 @@ export type OrbState =
   | "scrolling"
   // ...and a dot-grid LED EQ (`matrix`, audioMotion-analyzer's LED mode).
   | "metering"
+  // ...and a recorded voice message with its position (`playback`; box layout).
+  | "playing"
   // The `ring` family (`crates/core_engine/src/ring/`): a determinate
   // progress ring, an indeterminate activity spinner, concentric
   // multi-value rings (`progress0..3`, generic -- not Apple's Activity
@@ -85,6 +90,8 @@ export type OrbState =
   | "tracking"
   | "stepping"
   | "measuring"
+  // ...and a voice ring round an avatar (`speaker`).
+  | "talking"
   // The `beacon` family (`crates/core_engine/src/beacon/`): discrete-event
   // attention indicators -- a notification ping, a connection pulse with
   // a quality ring, a location halo.
@@ -98,7 +105,10 @@ export type OrbState =
   // The `core` family (`crates/core_engine/src/core_fx/`): inline
   // "generating..." indicators -- a shimmer sweep and typing dots.
   | "generating"
-  | "typing";
+  | "typing"
+  // The `edge` family (`crates/core_engine/src/edge/`): the in-app screen-edge
+  // glow (`rim`; box layout).
+  | "framing";
 
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;
@@ -296,6 +306,90 @@ export function frameTransition(
   return JSON.parse(frame_transition_json(fromState, toState, size, t, blend)) as OrbFrame | null;
 }
 
+/** One side of a state change (`core_engine::TransitionSide`). */
+export interface TransitionSide {
+  /** The state (pattern) it draws. */
+  state: string;
+  /** The effective speed multiplier it runs at (preset x spec/app x voice state). */
+  speed: number;
+  /** Its design overrides (spec-resolved, or a voice-state profile under the app's). */
+  overrides: Record<string, number>;
+}
+
+/** What to draw at one instant of a state change (`core_engine::TransitionMix`). */
+export interface TransitionMix {
+  technique: "params" | "morph" | "crossFade";
+  /** The eased progress: the morph / cross-fade blend. */
+  weight: number;
+  /** The speed multiplier to run the phase at now. */
+  speed: number;
+  /** `params`: the design to draw (continuous keys interpolated). */
+  overrides: Record<string, number>;
+  /** `params`: the to side's counts/choices that differ; empty = one frame. */
+  structuralTo: Record<string, number>;
+  /** `params`: the weight of the `overrides + structuralTo` frame. */
+  swap: number;
+}
+
+/** One instant of a simulated conversation (`core_engine::ConversationFrame`). */
+export interface ConversationFrame {
+  /** False when the script has errors. */
+  ok: boolean;
+  diagnostics: FxDiagnostic[];
+  state: AgentState | string;
+  /** The voice level, 0..1 (0 while nobody talks). */
+  level: number;
+  bands: number[];
+  turn: number;
+  /** 0..1 through the current turn. */
+  progress: number;
+  /** Characters of `line` said by now. */
+  shown: number;
+  line: string;
+  bargeIn: boolean;
+  /** The script's length in seconds. */
+  total: number;
+  /** The script time shown (wrapped when it loops). */
+  time: number;
+}
+
+/** An FX Spec's 1.9 `accessibility` block (docs/fx-spec.md). */
+export interface FxAccessibility {
+  name: string | null;
+  states: Record<string, string>;
+  announce: boolean | null;
+}
+
+/** What `announceStep` remembers between calls (opaque to callers; start from `null`). */
+export interface AnnouncerState {
+  started: boolean;
+  current: string | null;
+  since: number;
+  last: string | null;
+  lastAt: number;
+}
+
+/** One `announceStep`: the next state, the words to speak now, and when to call again. */
+export interface AnnounceStep {
+  state: AnnouncerState;
+  announce: string | null;
+  recheckAt: number | null;
+}
+
+/** A conversation script (docs/audio-pipeline.md, *Simulated conversations*). */
+export interface ConversationScript {
+  name?: string;
+  loop?: boolean;
+  seed?: number;
+  turns: { state: AgentState | string; seconds: number; voice?: "user" | "agent"; bargeIn?: boolean; line?: string }[];
+}
+
+/** A state change's duration (seconds) and CSS keyword curve (`core_engine::FxTransition`). */
+export interface FxTransition {
+  duration: number;
+  curve: string;
+}
+
 /** Mirrors `core_engine::Resolved` in Rust. */
 export interface ResolvedPreset {
   mode: string;
@@ -315,7 +409,7 @@ export interface FxSpec {
   fxSpec: string;
   name?: string;
   description?: string;
-  object: "orb" | "signal" | "ring" | "beacon" | "core";
+  object: "orb" | "signal" | "ring" | "beacon" | "core" | "edge";
   state: string;
   size?: OrbSize;
   speed?: number;
@@ -448,6 +542,10 @@ export function fxColorToHsl(color: FxColor): FxHsl | null {
 }
 
 export * from "./fxPlayer.js";
+export * from "./transition.js";
+export * from "./simulated.js";
+export * from "./shared.js";
+export * from "./voiceButton.js";
 export * from "./packed.js";
 
 // ------------------------------------------------------------------ cost --
@@ -569,15 +667,19 @@ export interface ParameterDefinition {
 export interface ParameterPattern {
   id: OrbState;
   label: string;
+  /** One line: what the pattern is for and what it looks like. */
+  description: string;
   mode: string;
   speed: number;
   sizes: OrbSize[];
   params: { ref: string; default: Record<string, number | number[] | null> }[];
   materialDefaults: { particles: Record<string, number>; liquid: Record<string, number> };
+  /** `"box"`: the pattern fills the view's box (`patternLayout`); absent = a centred square. */
+  layout?: "box";
 }
 
 export interface ParameterObject {
-  id: "orb" | "signal" | "ring" | "core" | "beacon";
+  id: "orb" | "signal" | "ring" | "core" | "beacon" | "edge";
   label: string;
   component: string;
   patterns: ParameterPattern[];
@@ -662,4 +764,24 @@ export interface VoiceStateProfile {
  */
 export function voiceStateProfile(pattern: OrbState | string, state: VoiceStateName | string): VoiceStateProfile | null {
   return JSON.parse(voice_state_profile_json(pattern, state)) as VoiceStateProfile | null;
+}
+
+/**
+ * How `pattern` lays out in a view's box. `"box"`: engine space follows the
+ * box ratio -- pass the box's width / height as the `aspect` input and map
+ * engine space (`size * aspect` by `size`) onto the whole box (edge `framing`,
+ * signal `playing`). `"square"`: a square centred in the box, like every
+ * other pattern (and an unknown one).
+ */
+export function patternLayout(pattern: OrbState | string): "box" | "square" {
+  return pattern_layout_json(pattern) === "box" ? "box" : "square";
+}
+
+/**
+ * Signal `playing`: the playback position (0..1) under a touch, on the same row of
+ * bars the pattern draws. `aspect` is the box's width / height; `x` is the touch's
+ * distance from the box's left edge divided by the box's height.
+ */
+export function playbackSeekProgress(aspect: number, x: number): number {
+  return playback_seek_progress_json(aspect, x);
 }

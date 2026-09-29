@@ -50,4 +50,4 @@ export function SinuaRing(props: SinuaRingProps) {
   return <SinuaView {...(options as Options)} pattern={pattern} size={size} state={state} inputs={inputs} overrides={overrides} />;
 }
 
-const PARAM_KEYS = ["gap","hue","ink","saturation","strokeWidth","trackOpacity","progress","hueStep","ringCount","spacing","maxLaps","segmentCount","segment","fill","marker","sweep","glow","noise","pulse","gradient","color","liquid","particles","holographic"];
+const PARAM_KEYS = ["gap","hue","ink","saturation","strokeWidth","trackOpacity","progress","hueStep","ringCount","spacing","maxLaps","segmentCount","segment","fill","marker","sweep","avatarGap","idleOpacity","innerRadius","thickness","flow","rippleCount","shimmer","reach","glow","noise","pulse","gradient","color","liquid","particles","holographic"];

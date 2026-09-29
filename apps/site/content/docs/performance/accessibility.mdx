@@ -3,9 +3,42 @@ title: Accessibility
 description: Labels, reduced motion and contrast — what views do for you and what to set.
 ---
 
-## A label
+## A label that follows the state
 
-Every view exposes one accessible element with an image role. Its name defaults to the FX Spec's `name`, else the pattern. Set your own (`label` on the web, `accessibilityLabel` in SwiftUI, `contentDescription` on Android) to say what it means in your app: "Assistant is listening", not "listening". Pass an empty label when the visual is purely decorative and the same information is elsewhere on screen.
+Every view exposes one accessible element with an image role. Its name is your `label` (`accessibilityLabel` in SwiftUI, `contentDescription` on Android), else the FX Spec's `accessibility.name` or `name`, else the pattern. Pass an empty label when the visual is purely decorative and the same information is elsewhere on screen.
+
+The name follows the state it shows: "Coach" while idle, "Coach, listening" while the agent listens. The words for each state come from your `labels` (this is how you translate them), then the FX Spec's `accessibility.states`, then the built-in words for the voice states.
+
+## State changes are spoken
+
+When the state changes, the view tells screen reader users, politely, without interrupting them: an `aria-live` region on the web, VoiceOver on iOS, TalkBack on Android. So a conversation doesn't turn into a stream of announcements, the rule is strict and the same on every platform:
+
+- a state is spoken only after it has held for 1 second, and at most once every 3 seconds;
+- only when its words differ from the last ones spoken;
+- never for the view's first state, and never for `idle`.
+
+A conversation that flips between listening and speaking every second says nothing until it settles. `announce: false` turns it off (the FX Spec's `accessibility.announce` sets the default). On iOS and Android, `haptics: true` adds a light tap when the agent starts listening, the "your turn" moment; never with reduced motion on.
+
+<Tabs groupId="platform" items={["Web", "SwiftUI", "Compose"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="accessibility-announce-web.ts"'>../../../snippets/perf/accessibility-announce-web.ts</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="accessibility-announce.swift"'>../../../snippets/perf/accessibility-announce.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="accessibility-announce.kt"'>../../../snippets/perf/accessibility-announce.kt</include>
+</Tab>
+</Tabs>
+
+| Option | Web (`mount`, `<sinua-view>`, React) | iOS | Android | React Native |
+|---|---|---|---|---|
+| words per state | `labels` | `labels:` | `labels =` | `labels` |
+| speak state changes (on) | `announce` | `announce:` | `announce =` | `announce` |
+| a tap when listening starts (off) | — | `haptics:` | `haptics =` | `haptics` |
+| derive the state from `rules` (on) | `rules` | `rules:` | `rules =` | `rules` |
+
+[One-shot effects](/docs/connect/effects) are announced too, right away, since they're events.
 
 ## Reduced motion
 

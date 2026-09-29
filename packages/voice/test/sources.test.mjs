@@ -150,16 +150,6 @@ test("gemini: token URL + setup, setupComplete -> listening, model audio -> spea
   assert.equal(w.states.at(-1), "idle");
 });
 
-test("gemini: an API key uses the key endpoint (opt-in path)", async () => {
-  const { GeminiLiveVoiceSource } = await import("../dist/gemini.js");
-  const src = new GeminiLiveVoiceSource({ credential: "AIza-test", allowInsecureApiKey: true });
-  const connecting = src.connect();
-  await until(() => FakeWebSocket.instances.length === 1);
-  assert.match(FakeWebSocket.instances[0].url, /BidiGenerateContent\?key=AIza-test$/);
-  FakeWebSocket.instances[0].close(1006);
-  await assert.rejects(connecting, /closed during setup/);
-});
-
 test("openai: ek_ key posts the SDP offer, data channel events drive the state", async () => {
   const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
   const src = new OpenAIRealtimeVoiceSource({ credential: "ek_test", reconnect: false });
@@ -298,7 +288,7 @@ test("elevenlabs: an open reply with no audio for 10 s gives up to listening", a
   }
 });
 
-// ---- Raw API keys: refused unless the caller opts in ----------------------
+// ---- Raw API keys: always refused (the allowInsecureApiKey opt-in is gone) --
 // The rule lives in src/insecureCredential.ts. What matters here is not only
 // that connect() rejects, but that it rejects *before* the microphone, the
 // audio graph or the socket -- a refused credential must not open a device.
@@ -314,11 +304,11 @@ test("gemini: a raw API key is refused before the mic or the socket", async () =
   const { GeminiLiveVoiceSource } = await import("../dist/gemini.js");
   const src = new GeminiLiveVoiceSource({ credential: "AIza-test" });
   const w = watch(src);
-  await assert.rejects(src.connect(), /refusing a raw, long-lived API key/);
+  await assert.rejects(src.connect(), /refusing what looks like a raw, long-lived API key/);
   assert.match(
     (await src.connect().catch((e) => e.message)),
-    /auth_tokens\/….*v1beta\/auth_tokens.*allowInsecureApiKey/s,
-    "the message says what to pass instead and how to opt in",
+    /auth_tokens\/….*@sinua\/voice\/server.*dev-proxy.*credentialUrl/s,
+    "the message says what to pass instead",
   );
   assert.equal(mic.requests, 0, "no microphone was requested");
   assert.equal(audio.contexts.length, 0, "no AudioContext was created");
@@ -342,60 +332,34 @@ test("gemini: an auth_tokens/ credential is unaffected by the gate", async () =>
   }
 });
 
-test("gemini: the opt-in connects and warns exactly once", async () => {
-  const { GeminiLiveVoiceSource } = await import("../dist/gemini.js");
-  const cap = captureWarnings();
-  try {
-    const src = new GeminiLiveVoiceSource({ credential: "AIza-test", allowInsecureApiKey: true });
-    const connecting = src.connect();
-    await until(() => FakeWebSocket.instances.length === 1);
-    const warnings = cap.seen.filter((m) => m.includes("raw, long-lived API key"));
-    assert.equal(warnings.length, 1, "one warning per connect");
-    assert.match(warnings[0], /local demos, not for shipping/);
-    FakeWebSocket.instances[0].close(1006);
-    await assert.rejects(connecting);
-  } finally {
-    cap.restore();
-  }
-});
-
 test("openai: a raw API key is refused before the mic, and is fatal", async () => {
   const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
   const src = new OpenAIRealtimeVoiceSource({ credential: "sk-test" });
   const w = watch(src);
-  await assert.rejects(src.connect(), /refusing a raw, long-lived API key/);
-  assert.equal(net.requests.length, 0, "no client_secrets mint was attempted");
+  await assert.rejects(src.connect(), /refusing what looks like a raw, long-lived API key/);
+  assert.equal(net.requests.length, 0, "no request of any kind");
   assert.equal(mic.requests, 0, "no microphone was requested");
   assert.equal(w.states.at(-1), "idle", "the refusal ends in idle, not a half-open session");
   assert.ok(!w.states.includes("listening"));
 });
 
-test("openai: getCredential returning a raw key is refused too", async () => {
+test("openai: a provider returning a raw key is refused too (getCredential alias)", async () => {
   const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
   const src = new OpenAIRealtimeVoiceSource({ getCredential: async () => "sk-from-backend" });
-  await assert.rejects(src.connect(), /refusing a raw, long-lived API key/);
+  await assert.rejects(src.connect(), /refusing what looks like a raw, long-lived API key/);
   assert.equal(net.requests.length, 0);
   assert.equal(mic.requests, 0);
 });
 
-test("openai: the opt-in mints an ek_ from the raw key, as before", async () => {
+test("the removed allowInsecureApiKey no longer lets a raw key through", async () => {
   const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
-  const cap = captureWarnings();
-  try {
-    net.respond = async (url) =>
-      String(url).includes("client_secrets")
-        ? { ok: true, status: 200, text: async () => "", json: async () => ({ value: "ek_minted" }) }
-        : { ok: true, status: 200, text: async () => "v=0 fake-answer", json: async () => ({}) };
-    const src = new OpenAIRealtimeVoiceSource({ credential: "sk-test", allowInsecureApiKey: true, reconnect: false });
-    await src.connect();
-    try {
-      assert.match(net.requests[0].url, /client_secrets$/, "the dev mint still runs");
-      assert.equal(net.requests[1].init.headers.Authorization, "Bearer ek_minted");
-      assert.equal(cap.seen.filter((m) => m.includes("raw, long-lived API key")).length, 1);
-    } finally {
-      src.disconnect();
-    }
-  } finally {
-    cap.restore();
-  }
+  const { GeminiLiveVoiceSource } = await import("../dist/gemini.js");
+  await assert.rejects(
+    new OpenAIRealtimeVoiceSource({ credential: "sk-test", allowInsecureApiKey: true }).connect(),
+    /refusing what looks like a raw/,
+  );
+  await assert.rejects(new GeminiLiveVoiceSource({ credential: "AIza-test", allowInsecureApiKey: true }).connect(), /refusing what looks like a raw/);
+  assert.equal(net.requests.length, 0);
+  assert.equal(mic.requests, 0);
+  assert.equal(FakeWebSocket.instances.length, 0);
 });

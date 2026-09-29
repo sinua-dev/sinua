@@ -4,8 +4,11 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import dev.sinua.voice.AgentState
+import dev.sinua.voice.CredentialSource
 import dev.sinua.voice.LiveKitAgentTracker
 import dev.sinua.voice.LiveKitParticipantRole
+import dev.sinua.voice.MainDispatcher
+import dev.sinua.voice.SinuaCredential
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import io.livekit.android.LiveKit
@@ -23,9 +26,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import livekit.org.webrtc.AudioTrackSink
 import java.nio.ByteBuffer
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /**
  * `VoiceSource` for a LiveKit Room with a LiveKit Agents voice agent in it -- the
@@ -53,14 +59,23 @@ import java.nio.ByteBuffer
 class LiveKitVoiceSource private constructor(
     private val room: Room,
     private val ownsRoom: Boolean,
-    private val url: String?,
-    private val token: String?,
+    /** Own Room: where the join credential comes from (`{ credential: <jwt>, url }`). */
+    private val credentials: CredentialSource?,
     private val publishMicrophone: Boolean,
 ) : VoiceSource {
-    constructor(room: Room) : this(room, ownsRoom = false, url = null, token = null, publishMicrophone = false)
+    constructor(room: Room) : this(room, ownsRoom = false, credentials = null, publishMicrophone = false)
 
     private val tracker = LiveKitAgentTracker()
     private val handler = Handler(Looper.getMainLooper())
+    private val mainDispatcher = object : MainDispatcher {
+        override fun post(r: Runnable) {
+            handler.post(r)
+        }
+        override fun postDelayed(r: Runnable, delayMs: Long) {
+            handler.postDelayed(r, delayMs)
+        }
+        override fun remove(r: Runnable) = handler.removeCallbacks(r)
+    }
     private var scope: CoroutineScope? = null
     private var tappedTrack: RemoteAudioTrack? = null
     private var errorCb: ((Throwable) -> Unit)? = null
@@ -85,6 +100,32 @@ class LiveKitVoiceSource private constructor(
         }
     }
 
+    override val supportsMute: Boolean get() = true
+    override val reportsConnection: Boolean get() = true
+    private var connectionCb: ((Boolean) -> Unit)? = null
+    private var sessionUp = false
+
+    override fun onConnectionChange(cb: (Boolean) -> Unit) {
+        connectionCb = cb
+    }
+
+    private fun setSessionUp(up: Boolean) {
+        if (up == sessionUp) return
+        sessionUp = up
+        connectionCb?.invoke(up)
+    }
+    private var muted = false
+
+    /**
+     * Muted, the local microphone is muted (`setMicrophoneEnabled(false)`): the agent hears
+     * nothing and the room stays joined. On an attached Room this mutes the app's mic too.
+     */
+    override fun setMuted(muted: Boolean) {
+        this.muted = muted
+        if (!sessionUp) return
+        scope?.launch { runCatching { room.localParticipant.setMicrophoneEnabled(!muted) } }
+    }
+
     override fun onMetrics(cb: (VoiceMetrics) -> Unit) {
         tracker.onMetrics = cb
     }
@@ -98,7 +139,7 @@ class LiveKitVoiceSource private constructor(
     }
 
     /** Owned Room only: connection / agent-join failures (the state is already back to idle). */
-    fun onError(cb: (Throwable) -> Unit) {
+    override fun onError(cb: (Throwable) -> Unit) {
         errorCb = cb
     }
 
@@ -113,12 +154,19 @@ class LiveKitVoiceSource private constructor(
         if (!ownsRoom) {
             room.remoteParticipants.values.forEach { seen(it) }
             handler.post(ticker)
+            setSessionUp(true)
+            if (muted) setMuted(true)
             return
         }
         s.launch {
             try {
-                room.connect(url!!, token!!)
-                if (publishMicrophone) room.localParticipant.setMicrophoneEnabled(true)
+                val join = suspendCancellableCoroutine { cont ->
+                    credentials!!.resolve("LiveKitVoiceSource", mainDispatcher, needsUrl = true) { r ->
+                        r.fold({ cont.resume(it) }, { cont.resumeWithException(it) })
+                    }
+                }
+                room.connect(join.url!!, join.credential)
+                if (publishMicrophone) room.localParticipant.setMicrophoneEnabled(!muted)
                 room.remoteParticipants.values.forEach { seen(it) }
                 handler.post(ticker)
                 if (tracker.agentIdentity == null) {
@@ -131,6 +179,7 @@ class LiveKitVoiceSource private constructor(
                         )
                     }
                 }
+                setSessionUp(true)
             } catch (e: Throwable) {
                 if (e is CancellationException) throw e
                 teardown()
@@ -230,6 +279,7 @@ class LiveKitVoiceSource private constructor(
 
     private fun teardown() {
         val s = scope ?: return
+        setSessionUp(false)
         scope = null
         handler.removeCallbacks(ticker)
         untap()
@@ -251,6 +301,18 @@ class LiveKitVoiceSource private constructor(
 
         /** Owns its Room (`LiveKit.create`), connected by `connect()` and released on `disconnect()`. */
         fun owned(context: Context, url: String, token: String, publishMicrophone: Boolean = true) =
-            LiveKitVoiceSource(LiveKit.create(context.applicationContext), true, url, token, publishMicrophone)
+            owned(context, CredentialSource.provider { SinuaCredential(token, url = url) }, publishMicrophone)
+
+        /**
+         * Owns its Room; the join credential comes from your backend in the shared shape
+         * `{ credential: <room jwt>, url }` (`mintLiveKitCredential` in `@sinua/voice/server`,
+         * or `npx @sinua/voice dev-proxy`): [CredentialSource.url] or a provider.
+         */
+        fun owned(context: Context, credential: CredentialSource, publishMicrophone: Boolean = true) =
+            LiveKitVoiceSource(LiveKit.create(context.applicationContext), true, credential, publishMicrophone)
+
+        /** Owns its Room; `credentialUrl` answers `{ credential, url, expiresAt? }`. */
+        fun withCredentialUrl(context: Context, credentialUrl: String, publishMicrophone: Boolean = true) =
+            owned(context, CredentialSource.url(credentialUrl), publishMicrophone)
     }
 }

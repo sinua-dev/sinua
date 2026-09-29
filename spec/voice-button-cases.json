@@ -1,0 +1,85 @@
+{
+  "about": "The voice button's state machine (docs/fx-view.md, *Voice button*). Each step: [event, state after, effects]. Events: press, release, end, connectOk, connectFail:<reason>, dropped, muted:<true|false>. Read by packages/core (node), iOS SinuaTests and Android tests.",
+  "cases": [
+    { "name": "toggle: connect, mute, unmute, end", "mode": "toggle", "canMute": true, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["connectOk", "listening", []],
+      ["press", "muted", ["mute"]],
+      ["press", "listening", ["unmute"]],
+      ["end", "ready", ["disconnect"]]
+    ] },
+    { "name": "toggle: presses while connecting are ignored", "mode": "toggle", "canMute": true, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["press", "connecting", []],
+      ["release", "connecting", []],
+      ["connectOk", "listening", []]
+    ] },
+    { "name": "toggle: a failed connect shows the reason; a press retries", "mode": "toggle", "canMute": true, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["connectFail:no credential", "error", []],
+      ["press", "connecting", ["connect"]],
+      ["connectOk", "listening", []]
+    ] },
+    { "name": "toggle: end dismisses an error", "mode": "toggle", "canMute": true, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["connectFail:x", "error", []],
+      ["end", "ready", []]
+    ] },
+    { "name": "toggle: end while connecting cancels it", "mode": "toggle", "canMute": true, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["end", "ready", ["disconnect"]],
+      ["connectOk", "ready", []]
+    ] },
+    { "name": "toggle: a remote drop goes back to ready, muted or not", "mode": "toggle", "canMute": true, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["connectOk", "listening", []],
+      ["press", "muted", ["mute"]],
+      ["dropped", "ready", []],
+      ["dropped", "ready", []]
+    ] },
+    { "name": "toggle: a mute from elsewhere is followed", "mode": "toggle", "canMute": true, "steps": [
+      ["muted:true", "ready", []],
+      ["press", "connecting", ["connect"]],
+      ["connectOk", "listening", []],
+      ["muted:true", "muted", []],
+      ["muted:false", "listening", []]
+    ] },
+    { "name": "toggle without mute: a press ends the session", "mode": "toggle", "canMute": false, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["connectOk", "listening", []],
+      ["press", "ready", ["disconnect"]]
+    ] },
+    { "name": "push-to-talk: hold to talk, release mutes, the session stays up", "mode": "pushToTalk", "canMute": true, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["connectOk", "listening", []],
+      ["release", "muted", ["mute"]],
+      ["press", "listening", ["unmute"]],
+      ["release", "muted", ["mute"]],
+      ["end", "ready", ["disconnect"]]
+    ] },
+    { "name": "push-to-talk: released before the session is up, it starts muted", "mode": "pushToTalk", "canMute": true, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["release", "connecting", []],
+      ["connectOk", "muted", ["mute"]]
+    ] },
+    { "name": "push-to-talk: pressed again while connecting, it starts live", "mode": "pushToTalk", "canMute": true, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["release", "connecting", []],
+      ["press", "connecting", []],
+      ["connectOk", "listening", []]
+    ] },
+    { "name": "push-to-talk: a stray release does nothing", "mode": "pushToTalk", "canMute": true, "steps": [
+      ["release", "ready", []],
+      ["press", "connecting", ["connect"]],
+      ["connectOk", "listening", []],
+      ["release", "muted", ["mute"]],
+      ["release", "muted", []]
+    ] },
+    { "name": "push-to-talk without mute behaves as toggle", "mode": "pushToTalk", "canMute": false, "steps": [
+      ["press", "connecting", ["connect"]],
+      ["release", "connecting", []],
+      ["connectOk", "listening", []],
+      ["press", "ready", ["disconnect"]]
+    ] }
+  ]
+}

@@ -42,9 +42,18 @@ final class SinuaViewTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(
             states.count, 34, "only \(states.count) patterns read -- the file or the loader moved")
         var compared = 0
+        var perVertex = 0
         for s in states {
             guard let frame = frame(state: s, size: 64, t: 1.7) else {
                 XCTFail("\(s) is in spec/parameters.json but does not render through CoreEngine")
+                continue
+            }
+            // OldOrbPaint is the 2026-09-18 painter, from before per-vertex stroke colour
+            // (golden 1.6.0, `Polyline.hues`): it can't draw a frame that uses it (edge
+            // `framing`, colourful by default). That paint rule is checked across
+            // platforms by MaterialsRenderTests instead.
+            if frame.polylines.contains(where: { !$0.hues.isEmpty }) {
+                perVertex += 1
                 continue
             }
             for dark in [false, true] {
@@ -59,7 +68,8 @@ final class SinuaViewTests: XCTestCase {
             }
         }
         // The denominator, exactly: two themes for every pattern that exists.
-        XCTAssertEqual(compared, states.count * 2, "one bitmap pair per pattern")
+        XCTAssertEqual(compared, (states.count - perVertex) * 2, "one bitmap pair per pattern")
+        XCTAssertLessThanOrEqual(perVertex, 1, "only edge `framing` draws per-vertex colour by default")
         print("FxPaint parity: \(compared) bitmaps identical across \(states.count) patterns")
     }
 
@@ -81,20 +91,73 @@ final class SinuaViewTests: XCTestCase {
         XCTAssertGreaterThan(checked, 3)
     }
 
-    func testStatePlayerCrossFadesThenSettles() throws {
+    /// A pattern change cross-fades (the engine's `crossFade` technique), over the
+    /// `crossFade` override here; then it settles on one frame.
+    func testStatePlayerCrossFadesAPatternChangeThenSettles() throws {
         var p = FxStatePlayer()
         p.crossFade = 0.25
         let json =
             #"{"fxSpec":"1.8","object":"orb","pattern":"listening","states":{"speaking":{"pattern":"speaking"}}}"#
-        p.setState(nil)
+        p.setState(nil, spec: json)
         _ = p.frame(spec: json, elapsed: 1, dt: 0.016, inputs: [:], extra: [:])
-        p.setState("speaking")
+        p.setState("speaking", spec: json)
         let mid = p.frame(spec: json, elapsed: 1, dt: 0.1, inputs: [:], extra: [:])
         XCTAssertNotNil(mid.previous)
-        XCTAssertEqual(mid.blend, 1 - pow(1 - 0.4, 3), accuracy: 1e-12)
+        let r = { (s: String?) -> TransitionSide in
+            let x = resolveFxSpecWith(json: json, state: s, inputs: [:], lowPower: false)
+            return TransitionSide(
+                state: x.state, speed: (resolvedOpts(state: x.state, size: x.size)?.speed ?? 1) * x.speed,
+                overrides: x.overrides)
+        }
+        let want = try XCTUnwrap(
+            transitionMix(from: r(nil), to: r("speaking"), size: 64, progress: 0.4, curve: "easeInOut"))
+        XCTAssertEqual(want.technique, "crossFade")
+        XCTAssertEqual(mid.blend, want.weight, accuracy: 1e-12)
         let end = p.frame(spec: json, elapsed: 1, dt: 0.2, inputs: [:], extra: [:])
         XCTAssertNil(end.previous)
         XCTAssertEqual(end.blend, 1)
+    }
+
+    /// The same pattern across states: one frame whose parameters flow (no dissolve outside
+    /// the short count/choice swap window), landing exactly on the new state.
+    func testStatePlayerInterpolatesASamePatternChange() throws {
+        let json =
+            #"{"fxSpec":"1.9","object":"orb","pattern":"glowing","states":{"idle":{"ink":0.6,"speed":0.5},"speaking":{"ink":1,"speed":1.2}},"transitions":{"default":{"duration":0.5,"curve":"linear"}}}"#
+        XCTAssertEqual(
+            fxSpecTransition(json: json, from: "idle", to: "speaking"), FxTransition(duration: 0.5, curve: "linear"))
+        var p = FxStatePlayer()
+        p.setState("idle", spec: json)
+        _ = p.frame(spec: json, elapsed: 1, dt: 0.016, inputs: [:], extra: [:])
+        let idleSpeed = p.speed(spec: json, inputs: [:])
+        p.setState("speaking", spec: json)
+        let mid = p.frame(spec: json, elapsed: 1, dt: 0.15, inputs: [:], extra: [:])
+        XCTAssertNil(mid.previous, "one frame before the count/choice swap window: the parameters interpolate")
+        let midSpeed = p.speed(spec: json, inputs: [:])
+        XCTAssertGreaterThan(midSpeed, idleSpeed)
+        let x = resolveFxSpecWith(json: json, state: "speaking", inputs: [:], lowPower: false)
+        let preset = resolvedOpts(state: x.state, size: x.size)?.speed ?? 1
+        XCTAssertLessThan(midSpeed, preset * x.speed)
+        _ = p.frame(spec: json, elapsed: 1, dt: 0.4, inputs: [:], extra: [:])
+        XCTAssertEqual(p.speed(spec: json, inputs: [:]), preset * x.speed, accuracy: 1e-12, "lands on speaking")
+        let end = p.frame(spec: json, elapsed: 2, dt: 0.016, inputs: [:], extra: [:])
+        XCTAssertEqual(
+            end.frame, frameWithOverrides(state: x.state, size: x.size, t: 2 * preset * x.speed, overrides: x.overrides)
+        )
+    }
+
+    /// `crossFade: 0` is a cut, as before.
+    func testStatePlayerCutsWithCrossFadeZero() throws {
+        let json =
+            #"{"fxSpec":"1.8","object":"orb","pattern":"glowing","states":{"idle":{"ink":0.6},"speaking":{"ink":1}}}"#
+        var p = FxStatePlayer()
+        p.crossFade = 0
+        p.setState("idle", spec: json)
+        _ = p.frame(spec: json, elapsed: 1, dt: 0.016, inputs: [:], extra: [:])
+        p.setState("speaking", spec: json)
+        let f = p.frame(spec: json, elapsed: 1, dt: 0.016, inputs: [:], extra: [:])
+        XCTAssertNil(f.previous)
+        XCTAssertEqual(
+            f.frame, FxStatePlayer.render(spec: json, state: "speaking", elapsed: 1, inputs: [:], extra: [:]))
     }
 
     func testSinuaViewRendersASpecAndAState() throws {

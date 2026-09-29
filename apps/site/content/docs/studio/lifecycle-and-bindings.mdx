@@ -7,7 +7,7 @@ description: Design your app's states and data bindings in the Studio, and previ
 
 The **Spec** panel edits everything an FX Spec holds beyond the look:
 
-- **States:** add your app's lifecycle states (`idle`, `listening`, … for a voice agent). Each state is a patch over the base design: change its pattern, colour, materials or speed, and see only what differs. Switching states in the Studio swaps the design immediately; in your app the view cross-fades over 250 ms.
+- **States:** add your app's lifecycle states (`idle`, `listening`, … for a voice agent). Each state is a patch over the base design: change its pattern, colour, materials or speed, and see only what differs. Switching states in the Studio swaps the design immediately; in your app the view animates the change (0.6 s by default, per pair in the file's [`transitions`](/docs/reference/fx-spec#transitions)).
 
 See [States vs patterns](/docs/connect/states-vs-patterns).
 - **Bindings:** map your app's inputs onto values (`progress`, `audioLevel`, `glow.strength`, …) with input and output ranges and a curve. Sliders for each input let you preview the binding before any code exists. See [Bindings](/docs/connect/bindings).

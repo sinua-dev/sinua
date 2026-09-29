@@ -15,6 +15,12 @@
 //! any future tune-this-at-runtime use case." `t` still drives a slow idle
 //! spin so the sphere doesn't look frozen while progress itself sits still
 //! between updates.
+//!
+//! The terminator lives in **view space**, not on the sphere: the lit side
+//! always grows from the left edge of the screen as `progress` rises, and
+//! the spinning dots pass through a line that stays put (a day/night line
+//! under a fixed sun). Measured in object space it turned with the sphere,
+//! which read as a spinning two-tone ball rather than progress.
 
 use crate::orbs::core::{
     fib_dir, finalize_frame, radius_scale, Dot, LatticeSample, OrbFrame, Proj,
@@ -47,7 +53,10 @@ pub(crate) fn lattice_sample(
     let boundary = 1.0 - 2.0 * progress;
 
     let (dx, dy, dz) = fib_dir(i as f64, node_n as f64);
-    let sweep = dx;
+    // Screen-space x after the camera's yaw (`Proj::project`'s `x1`),
+    // negated so the lit side starts at the left.
+    let yaw = t * CAMERA.0;
+    let sweep = -(dx * yaw.cos() + dz * yaw.sin());
     let lit = sweep > boundary;
 
     let (_px, _py, z) = pt.project(dx * r, dy * r, dz * r);
@@ -80,7 +89,7 @@ pub fn frame_eclipse(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let pt = Proj::new(t * CAMERA.0, CAMERA.1, cx, cy, 1.0);
     let node_n = get(o, "nodeCount", 260.0) as i64;
 
-    // `sweep` (a dot's position along the terminator axis, -1..1) compared
+    // `sweep` (a dot's position along the screen's terminator axis, -1..1) compared
     // against `boundary`: at progress=0 the boundary sits past +1 (nothing
     // can be lit), at progress=1 it sits past -1 (everything is lit) -- see
     // `lattice_sample`, which computes this per point.
@@ -144,5 +153,35 @@ mod tests {
             (0.3..0.7).contains(&frac),
             "expected roughly half lit at progress=0.5, got {frac}"
         );
+    }
+
+    #[test]
+    fn the_terminator_stays_put_on_screen_while_the_sphere_spins() {
+        let mut o = opts(&[("nodeCount", 400.0), ("rMin", 0.3)]);
+        o.insert("progress".to_string(), 0.3);
+        let fracs: Vec<f64> = [0.0, 5.0, 20.0, 40.0]
+            .iter()
+            .map(|&t| {
+                let f = frame_eclipse(64.0, t, &o);
+                // Every lit dot sits left of the line at x = cx + r·(2p - 1): the
+                // lit side is the screen's left, whatever the yaw.
+                let r = 32.0 * 0.82;
+                let line = 32.0 + r * (2.0 * 0.3 - 1.0);
+                for d in f.dots.iter().filter(|d| d.a > 0.5) {
+                    assert!(
+                        d.x < line + 1.0,
+                        "lit dot at x={} right of the terminator {line} (t={t})",
+                        d.x
+                    );
+                }
+                lit_fraction(&f)
+            })
+            .collect();
+        for w in fracs.windows(2) {
+            assert!(
+                (w[0] - w[1]).abs() < 0.03,
+                "lit fraction drifts with yaw: {fracs:?}"
+            );
+        }
     }
 }

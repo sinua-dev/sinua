@@ -8,6 +8,7 @@ The signal component is `SinuaSignal`. Pick a look with `pattern`; each pattern 
 | Waveform (`waveform`) | `waveform` | 1× | — |
 | Scrolling (`scrolling`) | `scroll` | 1× | — |
 | Meter (`metering`) | `matrix` | 1× | — |
+| Playing (`playing`) | `playback` | 1× | `progress`, `envelope` |
 
 ### Bars [#signaling]
 
@@ -63,3 +64,28 @@ The signal component is `SinuaSignal`. Pick a look with `pattern`; each pattern 
 | `minLevel` | Appearance | number | 0–1 (UI 0–0.5) fraction | 0.125 | Level of a silent column. |
 | `mirror` | Appearance | boolean |  | 0 | Columns grow out from the middle row instead of rising from the bottom. |
 | `saturation` | Appearance | number | 0–1 fraction | 0 | How far the ink moves from grey toward the hue (0 = the grey ink). |
+
+### Playing [#playing]
+
+`pattern: "playing"` · mode `playback` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `barCount` | Appearance | integer | 0–128 (UI 0–96) | 0 | How many bars to draw: 0 = one per envelope value; otherwise the envelope is resampled (keeping peaks). |
+| `barWidth` | Appearance | number | 0.05–1 (UI 0.2–0.9) fraction | 0.6 | Bar width as a fraction of each slot. |
+| `hue` | Appearance | number | 0–360 deg | 200 | Ink hue in degrees; applies once saturation is above 0. |
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `minHeight` | Appearance | number | 0–1 (UI 0–0.4) fraction | 0.08 | Height of a silent bar, as a fraction of full height. |
+| `playhead` | Appearance | boolean |  | 0 | Draw a thin line at the playback position. |
+| `saturation` | Appearance | number | 0–1 fraction | 0 | How far the ink moves from grey toward the hue (0 = the grey ink). |
+| `unplayedOpacity` | Appearance | number | 0–1 fraction | 0.35 | Opacity of the bars not played yet, relative to the played ones. |
+| `progress` | Inputs | number | 0–1 fraction | 0 | Playback position, 0 to 1: bars before it are played (full ink), the rest dimmed. |
+
+<details>
+<summary>Advanced props (1)</summary>
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `envelope` | Inputs | number[] (1–64) | 0–1 fraction | [] | The recorded clip's loudness, oldest first, 0 to 1 per value (up to 64; resample longer clips). Without it a fixed sample message is drawn. |
+
+</details>

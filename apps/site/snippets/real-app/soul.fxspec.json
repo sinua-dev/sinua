@@ -1,0 +1,8 @@
+{
+  "fxSpec": "1.8",
+  "object": "orb",
+  "pattern": "glowing",
+  "size": 64,
+  "gradient": { "stops": ["#E19A43", "#3CBB4E"], "angle": 90, "strength": 1, "saturation": 0.8 },
+  "params": { "depthTone": 0 }
+}

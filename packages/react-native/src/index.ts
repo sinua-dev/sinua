@@ -318,8 +318,19 @@ export { SinuaView } from "./SinuaView";
 export type { SinuaViewProps } from "./SinuaView";
 
 // Native voice sources (docs/audio-pipeline.md): created here, bound with `voice={handle}`.
-export { createVoiceSource, isVoiceSourceHandle } from "./voice";
-export type { AgentState, VoiceSourceConfig, VoiceSourceHandle } from "./voice";
+export { createVoiceSource, isVoiceSourceHandle, parseCredential } from "./voice";
+export { SinuaVoiceButton, VOICE_BUTTON_LONG_PRESS_MS } from "./SinuaVoiceButton";
+export type { SinuaVoiceButtonProps } from "./SinuaVoiceButton";
+export { VoiceButtonController, voiceButtonStep, voiceButtonHint, DEFAULT_VOICE_BUTTON_LABELS } from "./voiceButton";
+export type { VoiceButtonMode, VoiceButtonState, VoiceButtonLabels } from "./voiceButton";
+export type {
+  AgentState,
+  CredentialOptions,
+  CredentialProvider,
+  SinuaCredential,
+  VoiceSourceConfig,
+  VoiceSourceHandle,
+} from "./voice";
 
 // Typed components (SinuaOrb, SinuaRing, …) generated from spec/parameters.json -- docs/fx-view.md, *Typed components*.
 export * from "./generated";

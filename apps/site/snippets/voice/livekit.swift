@@ -1,10 +1,12 @@
+import Foundation
 import LiveKit
 import SinuaLiveKit   // packages/ios-livekit
 
-// Joins with your backend's access token and publishes the mic. The agent's state
-// comes from its `lk.agent.state` attribute (LiveKit Agents set it).
-func liveKitVoice(url: String, token: String) -> LiveKitVoiceSource {
-    LiveKitVoiceSource(url: url, token: token)
+// Your endpoint signs a room token and answers `{ credential, url }` (see Credentials).
+// The source joins the room and publishes the mic. The agent's state comes from its
+// `lk.agent.state` attribute (LiveKit Agents set it).
+func liveKitVoice() -> LiveKitVoiceSource {
+    LiveKitVoiceSource(credentialUrl: URL(string: "https://api.example.com/voice/livekit")!)
 }
 
 // Already have a Room? Pass it; you keep ownership.

@@ -104,7 +104,9 @@ jobs:
             packages/core/bundler-check/package-lock.json
             packages/web/package-lock.json
             packages/snippets/package-lock.json
+            packages/design/package-lock.json
             packages/voice/package-lock.json
+            examples/voice-server/package-lock.json
             packages/react-native/package-lock.json
             apps/examples/web-component/package-lock.json
             apps/site/package-lock.json
@@ -167,6 +169,13 @@ jobs:
       - name: packages/snippets -- test (the byte-for-byte export text)
         working-directory: packages/snippets
         run: npm test
+      # The look the Studio and the docs site share (tokens, fonts, controls); the site builds on it.
+      - name: packages/design -- install
+        working-directory: packages/design
+        run: npm ci
+      - name: packages/design -- build (tsc)
+        working-directory: packages/design
+        run: npm run build
       - name: packages/voice -- install
         working-directory: packages/voice
         run: npm ci
@@ -176,6 +185,9 @@ jobs:
       - name: packages/voice -- test (sources on fakes, subpath hygiene; no audio)
         working-directory: packages/voice
         run: npm test
+      - name: examples/voice-server -- credential endpoint templates (type-check + tests, vendor HTTP mocked)
+        working-directory: examples/voice-server
+        run: npm ci && npm run check
       # After packages/web + packages/voice: the samples type-check against their dist.
       - name: packages/react-native -- install (types for the docs' RN samples; no native build)
         working-directory: packages/react-native

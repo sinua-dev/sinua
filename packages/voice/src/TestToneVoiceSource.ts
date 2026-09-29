@@ -23,6 +23,8 @@ export class TestToneVoiceSource implements VoiceSource {
   private burstTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private metricsCb: ((m: VoiceMetrics) => void) | null = null;
   private stateCb: ((s: AgentState) => void) | null = null;
+  private connectionCb: ((connected: boolean) => void) | null = null;
+  private muted = false;
 
   onMetrics(cb: (m: VoiceMetrics) => void): void {
     this.metricsCb = cb;
@@ -30,6 +32,15 @@ export class TestToneVoiceSource implements VoiceSource {
 
   onStateChange(cb: (s: AgentState) => void): void {
     this.stateCb = cb;
+  }
+
+  onConnectionChange(cb: (connected: boolean) => void): void {
+    this.connectionCb = cb;
+  }
+
+  /** Muted, the tone stands in for a muted mic: the level reads 0. */
+  setMuted(muted: boolean): void {
+    this.muted = muted;
   }
 
   async connect(): Promise<void> {
@@ -82,6 +93,7 @@ export class TestToneVoiceSource implements VoiceSource {
 
     this.scheduleBursts();
     this.stateCb?.("listening");
+    this.connectionCb?.(true);
     this.intervalId = setInterval(() => this.tick(), 1000 / 30);
   }
 
@@ -98,8 +110,10 @@ export class TestToneVoiceSource implements VoiceSource {
     this.ctx?.close();
     this.ctx = null;
     this.envelope = null;
+    const was = this.analysis != null;
     this.analysis = null;
     this.stateCb?.("idle");
+    if (was) this.connectionCb?.(false);
   }
 
   private scheduleBursts(): void {
@@ -119,7 +133,8 @@ export class TestToneVoiceSource implements VoiceSource {
 
   private tick(): void {
     if (!this.analysis) return;
-    const metrics = this.analysis.read();
+    const read = this.analysis.read();
+    const metrics = this.muted ? { level: 0, bands: read.bands.map(() => 0) } : read;
     this.metricsCb?.(metrics);
     this.stateCb?.(metrics.level > 0.08 ? "speaking" : "listening");
   }

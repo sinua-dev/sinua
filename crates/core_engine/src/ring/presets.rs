@@ -9,7 +9,14 @@ use crate::primitives::ModeOpts;
 // Reserved for a future uniffi-bindgen/enum-export pass, same as the
 // other families' `STATES`.
 #[allow(dead_code)]
-pub const STATES: &[&str] = &["completing", "loading", "tracking", "stepping", "measuring"];
+pub const STATES: &[&str] = &[
+    "completing",
+    "loading",
+    "tracking",
+    "stepping",
+    "measuring",
+    "talking",
+];
 
 fn state_to_mode(state: &str) -> Option<&'static str> {
     match state {
@@ -18,6 +25,7 @@ fn state_to_mode(state: &str) -> Option<&'static str> {
         "tracking" => Some("nested"),
         "stepping" => Some("segmented"),
         "measuring" => Some("gauge"),
+        "talking" => Some("speaker"),
         _ => None,
     }
 }

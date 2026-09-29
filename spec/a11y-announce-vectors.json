@@ -1,0 +1,329 @@
+{
+  "cases": [
+    {
+      "end": 30.0,
+      "name": "a held change is spoken after 1 s",
+      "said": [
+        [
+          3.0,
+          "Speaking"
+        ]
+      ],
+      "steps": [
+        [
+          0.0,
+          "Listening"
+        ],
+        [
+          2.0,
+          "Speaking"
+        ]
+      ]
+    },
+    {
+      "end": 30.0,
+      "name": "a flapping conversation waits until it settles",
+      "said": [
+        [
+          8.5,
+          "Speaking"
+        ]
+      ],
+      "steps": [
+        [
+          0.0,
+          "Listening"
+        ],
+        [
+          0.5,
+          "Speaking"
+        ],
+        [
+          1.0,
+          "Listening"
+        ],
+        [
+          1.5,
+          "Speaking"
+        ],
+        [
+          2.0,
+          "Listening"
+        ],
+        [
+          2.5,
+          "Speaking"
+        ],
+        [
+          3.0,
+          "Listening"
+        ],
+        [
+          3.5,
+          "Speaking"
+        ],
+        [
+          4.0,
+          "Listening"
+        ],
+        [
+          4.5,
+          "Speaking"
+        ],
+        [
+          5.0,
+          "Listening"
+        ],
+        [
+          5.5,
+          "Speaking"
+        ],
+        [
+          6.0,
+          "Listening"
+        ],
+        [
+          6.5,
+          "Speaking"
+        ],
+        [
+          7.0,
+          "Listening"
+        ],
+        [
+          7.5,
+          "Speaking"
+        ]
+      ]
+    },
+    {
+      "end": 30.0,
+      "name": "at most one announcement per 3 s",
+      "said": [
+        [
+          2.0,
+          "Thinking"
+        ],
+        [
+          5.0,
+          "Listening"
+        ],
+        [
+          10.0,
+          "Speaking"
+        ]
+      ],
+      "steps": [
+        [
+          0.0,
+          "Listening"
+        ],
+        [
+          1.0,
+          "Thinking"
+        ],
+        [
+          2.5,
+          "Speaking"
+        ],
+        [
+          4.0,
+          "Listening"
+        ],
+        [
+          9.0,
+          "Speaking"
+        ]
+      ]
+    },
+    {
+      "end": 30.0,
+      "name": "a turn: listening, thinking, speaking, back",
+      "said": [
+        [
+          2.0,
+          "Listening"
+        ],
+        [
+          5.0,
+          "Thinking"
+        ],
+        [
+          8.0,
+          "Speaking"
+        ],
+        [
+          11.0,
+          "Listening"
+        ]
+      ],
+      "steps": [
+        [
+          0.0,
+          null
+        ],
+        [
+          1.0,
+          "Listening"
+        ],
+        [
+          4.0,
+          "Thinking"
+        ],
+        [
+          5.5,
+          "Speaking"
+        ],
+        [
+          10.0,
+          "Listening"
+        ]
+      ]
+    },
+    {
+      "end": 30.0,
+      "name": "a barge-in cuts speaking short",
+      "said": [
+        [
+          9.0,
+          "Speaking"
+        ]
+      ],
+      "steps": [
+        [
+          0.0,
+          "Listening"
+        ],
+        [
+          3.0,
+          "Speaking"
+        ],
+        [
+          3.6,
+          "Listening"
+        ],
+        [
+          8.0,
+          "Speaking"
+        ]
+      ]
+    },
+    {
+      "end": 30.0,
+      "name": "idle after a disconnect is never spoken",
+      "said": [
+        [
+          3.0,
+          "Speaking"
+        ]
+      ],
+      "steps": [
+        [
+          0.0,
+          "Listening"
+        ],
+        [
+          2.0,
+          "Speaking"
+        ],
+        [
+          8.0,
+          null
+        ],
+        [
+          12.0,
+          "Speaking"
+        ]
+      ]
+    }
+  ],
+  "gapSeconds": 3.0,
+  "holdSeconds": 1.0,
+  "names": [
+    {
+      "app": {
+        "speaking": "Koç konuşuyor"
+      },
+      "expect": "Coach is listening",
+      "name": "Coach",
+      "spec": {
+        "goalReached": "Goal reached!",
+        "listening": "Coach is listening"
+      },
+      "state": "listening"
+    },
+    {
+      "app": {
+        "speaking": "Koç konuşuyor"
+      },
+      "expect": "Koç konuşuyor",
+      "name": "Coach",
+      "spec": {
+        "goalReached": "Goal reached!",
+        "listening": "Coach is listening"
+      },
+      "state": "speaking"
+    },
+    {
+      "app": {
+        "speaking": "Koç konuşuyor"
+      },
+      "expect": "Coach, thinking",
+      "name": "Coach",
+      "spec": {
+        "goalReached": "Goal reached!",
+        "listening": "Coach is listening"
+      },
+      "state": "thinking"
+    },
+    {
+      "app": {
+        "speaking": "Koç konuşuyor"
+      },
+      "expect": "Coach",
+      "name": "Coach",
+      "spec": {
+        "goalReached": "Goal reached!",
+        "listening": "Coach is listening"
+      },
+      "state": "idle"
+    },
+    {
+      "app": {
+        "speaking": "Koç konuşuyor"
+      },
+      "expect": "Coach",
+      "name": "Coach",
+      "spec": {
+        "goalReached": "Goal reached!",
+        "listening": "Coach is listening"
+      },
+      "state": null
+    },
+    {
+      "app": {},
+      "expect": "Starting",
+      "name": "",
+      "spec": {},
+      "state": "initializing"
+    },
+    {
+      "app": {},
+      "expect": "Goal reached!",
+      "name": "Steps",
+      "spec": {
+        "goalReached": "Goal reached!",
+        "listening": "Coach is listening"
+      },
+      "state": "goalReached"
+    },
+    {
+      "app": {},
+      "expect": "Steps",
+      "name": "Steps",
+      "spec": {},
+      "state": "goalReached"
+    }
+  ],
+  "note": "State-aware accessibility (docs/fx-view.md). `cases`: word sequences [t, words|null] and what the announcer says [t, words], with the host loop that steps on every change and at recheck_at. `names`: accessible_name inputs and results. Checked by crates/core_engine/tests/a11y_vectors.rs and each platform's tests."
+}

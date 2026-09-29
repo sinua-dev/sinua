@@ -31,6 +31,31 @@ Values and the material masters: `progress`, `progress[0]`…`progress[3]`, `qua
 
 Bindings are part of a state's patch, like everything else. A state can add a binding, change one, or remove one with `null`. The `goalReached` state above drops the per-ring bindings and shows a full completion ring instead.
 
+## Rules: the file picks the state
+
+A binding moves a value; a **rule** (FX Spec 1.9) picks which of the file's `states` shows, from the same inputs. The app just passes numbers, and the design decides that 10,000 steps means `goalReached`:
+
+<include lang="json" meta='title="activity-rules.fxspec.json"'>../../../snippets/spec/activity-rules.fxspec.json</include>
+
+- Rules are tried in order and the **first one that holds wins**. When none holds, the view shows its own `state`, or the base design.
+- One comparison per rule: `gt`, `gte`, `lt`, `lte`, or `between: [low, high]` (inclusive). A rule whose input you don't pass doesn't hold.
+- `hysteresis` stops flicker at the edge: already in `intense`, the rule above keeps holding until the heart rate drops below 145, though it entered above 150.
+- A state that isn't in `states` is a warning (the rule never applies); a malformed rule is an error. Up to 32 rules.
+- **Voice apps:** with a voice source bound, the conversation drives the state and rules stay off. Rules are for everything else: fitness, finance, devices.
+- `rules: false` on the view turns them off (`rules="false"` on `<sinua-view>`).
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="rules-react.tsx"'>../../../snippets/bindings/rules-react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="rules.swift"'>../../../snippets/bindings/rules.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="rules.kt"'>../../../snippets/bindings/rules.kt</include>
+</Tab>
+</Tabs>
+
 ## An input that isn't passed
 
 A binding whose input you don't pass leaves its target at the design's static value, and the view reports it as *inactive*. That's how one file works for users who have a heart-rate sensor and for users who don't.

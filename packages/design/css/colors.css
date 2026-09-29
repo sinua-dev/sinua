@@ -1,0 +1,14 @@
+/* The Radix color scales tokens.css points at, light and dark. The cost badge uses
+   grass/amber/tomato; everything else is slate + indigo. */
+@import "@radix-ui/colors/slate.css";
+@import "@radix-ui/colors/slate-alpha.css";
+@import "@radix-ui/colors/slate-dark.css";
+@import "@radix-ui/colors/slate-dark-alpha.css";
+@import "@radix-ui/colors/indigo.css";
+@import "@radix-ui/colors/indigo-dark.css";
+@import "@radix-ui/colors/grass.css";
+@import "@radix-ui/colors/grass-dark.css";
+@import "@radix-ui/colors/amber.css";
+@import "@radix-ui/colors/amber-dark.css";
+@import "@radix-ui/colors/tomato.css";
+@import "@radix-ui/colors/tomato-dark.css";

@@ -37,12 +37,26 @@ class LocalMicVoiceSource : VoiceSource {
         override fun run() {
             if (!running) return
             val samples = ring.drain()
-            spectrum.push(samples)
+            spectrum.push(if (muted) FloatArray(samples.size) else samples)
             val m = analysis.read(spectrum.byteFrequencyData())
             metricsCb?.invoke(m)
             stateCb?.invoke(if (m.level > SPEAKING_LEVEL) AgentState.SPEAKING else AgentState.LISTENING)
             handler.postDelayed(this, (1000 / UPDATE_HZ).toLong())
         }
+    }
+
+    override val supportsMute: Boolean get() = true
+    override val reportsConnection: Boolean get() = true
+    private var connectionCb: ((Boolean) -> Unit)? = null
+    private var muted = false
+
+    override fun onConnectionChange(cb: (Boolean) -> Unit) {
+        connectionCb = cb
+    }
+
+    /** Muted, the level reads 0 (the analysis never leaves the device either way). */
+    override fun setMuted(muted: Boolean) {
+        this.muted = muted
     }
 
     override fun onMetrics(cb: (VoiceMetrics) -> Unit) {
@@ -72,6 +86,7 @@ class LocalMicVoiceSource : VoiceSource {
                 }
             }, "sinua-mic").also { it.start() }
             stateCb?.invoke(AgentState.LISTENING)
+            connectionCb?.invoke(true)
             handler.post(tick)
         } catch (e: Exception) {
             stop()
@@ -81,8 +96,10 @@ class LocalMicVoiceSource : VoiceSource {
     }
 
     override fun disconnect() {
+        val was = running
         stop()
         stateCb?.invoke(AgentState.IDLE)
+        if (was) connectionCb?.invoke(false)
     }
 
     private fun stop() {

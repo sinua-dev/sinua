@@ -99,8 +99,9 @@ the name of the input that drives `audioLevel`. The precedence table is in
 native sources above in a registry and returns a handle (`connect`, `disconnect`,
 `release`, `onStateChange`, `onError`, `onInterrupt`). A view binds it with
 `voice={handle}`, exactly like the native `VoiceSource` parameter, so the frame
-loop, analysis and state mapping are the native ones. Credentials are passed once
-into the native source; `getCredential` (OpenAI) round-trips per reconnect.
+loop, analysis and state mapping are the native ones. Credentials follow the
+shared contract below: `credentialUrl` or a provider is resolved in JS and
+round-trips to the native source on every connect and reconnect.
 The vendor SDKs are opt-in: CocoaPods subspecs on iOS, the `sinua.voiceVendors`
 Gradle property on Android. See [`fx-view.md`](fx-view.md), *Voice sources in React Native*.
 
@@ -208,25 +209,20 @@ during an active response and left ~300 ms after it falls following
 energy fallback stands down for the rest of the session.
 
 **Credentials — the security note, taken seriously.** The adapter takes
-one `credential` string:
-- `ek_…` → used directly for the SDP POST. This is the production shape:
-  *your backend* mints it via `client_secrets`, the browser never holds a
-  long-lived key, and the `ek_` expires (600 s default) and is bound to
-  one session. A shipped product uses only this path.
-- anything else → treated as a raw API key, and the adapter mints the
-  `ek_` **from the browser**. This is dev-only demo wiring so the local
-  Studio can talk to a real model without a backend (this project has
-  none). The key lives only in the
-  adapter instance and the Studio's React state: never persisted, never in
-  a URL, never logged. If the browser-side mint fails (CORS, 401), the
-  error tells you to mint server-side and paste the `ek_` instead, with
-  the curl one-liner. Nothing in this repo contains or stores a real key.
+the shared credential contract (*Credentials for a real integration* below):
+`credentialUrl`, a `credential` provider, or one pasted `ek_…`. Only an `ek_…`
+is accepted: *your backend* mints it via `client_secrets`
+(`mintOpenAIRealtimeCredential` in `@sinua/voice/server`, or the local
+`npx @sinua/voice dev-proxy`), the browser never holds a long-lived key, and
+the `ek_` expires (600 s default) and is bound to one session. A raw API key
+is refused before the mic is opened (the browser-side mint and its
+`allowInsecureApiKey` opt-in were removed on 2026-09-28).
 
 Session config (`server_vad` turn detection so the documented
-`speech_started/stopped` events are guaranteed, the output voice, optional
-instructions) is passed at mint time, not via a later `session.update` —
-so a backend-minted `ek_`, whose config that backend owns, takes the exact
-same connect path with nothing overridden.
+`speech_started/stopped` events are guaranteed, the output voice,
+instructions) is fixed at mint time by the backend, not by a later
+`session.update`; the adapter's own `voice`/`instructions` options are
+deprecated and ignored.
 
 #### Reconnect
 
@@ -267,9 +263,8 @@ DOM-free rules):
   `billing_hard_limit_reached`). These give up at once. 408/425/429/5xx
   and network errors are retried.
 - **Credentials, never stale:** each attempt gets a fresh one.
-  - `getCredential: () => Promise<string>` is called for every connect and
-    reconnect. That's the production shape: your backend mints a new `ek_`.
-  - Without it, a raw dev key re-mints each time.
+  - `credentialUrl` or a `credential` provider is called for every connect
+    and reconnect. That's the production shape: your backend mints a new `ek_`.
   - A pasted `ek_` alone is single-session and expiring, so it is **not**
     reused; that case still ends in `idle`.
 - **Context:** finalized turns are replayed into the new session as text
@@ -350,14 +345,15 @@ of a turn → `thinking`; audible → `speaking`; drained + done →
 with the stored `sessionResumptionUpdate.newHandle` (3 attempts, mic and
 playback graphs untouched), then `listening` or, if that fails, `idle`.
 
-**Credentials — same rule as `OpenAIRealtimeVoiceSource`.** `auth_tokens/…` →
-ephemeral token minted by your backend (`POST /v1beta/auth_tokens`, can
-lock model/config server-side), sent as `access_token` on the Constrained
-endpoint: the production shape. Anything else → raw API key on `?key=`,
-**dev-only demo wiring**: memory only, never persisted or logged; it sits
-in the socket URL only because a browser `WebSocket` cannot set an auth
-header and that is the API's documented key path — one more reason a
-product must use tokens.
+**Credentials — same contract as `OpenAIRealtimeVoiceSource`.** Only an
+`auth_tokens/…` ephemeral token is accepted, minted by your backend
+(`POST /v1beta/auth_tokens`; `mintGeminiLiveCredential` sends the model, voice
+and instructions as the token's setup and locks them with `fieldMask`, leaving
+session resumption and transcription to the client) and sent as `access_token`
+on the Constrained endpoint. A token is single-use by default, so with
+`credentialUrl` or a provider **every reconnect resumes with a new token**
+(the resumption handle travels with it); a pasted token is tried as is. A raw
+API key is refused; the `?key=` path is gone.
 
 ### `ElevenLabsVoiceSource` — ElevenLabs Conversational AI over WebSocket
 
@@ -413,13 +409,13 @@ on chunk *receipt*, `speaking` here follows the playback timeline, the
 same gate as the Gemini adapter.
 
 **Credentials.** An `agent_id` connects to a **public** agent with no
-secret anywhere — the one vendor path in this project that needs no
-dev-only caveat at all. A `wss://` credential is a **signed URL** for a
-private agent, minted by the integrator's backend (`GET
+secret anywhere. A `wss://` credential is a **signed URL** for a private
+agent, minted by the integrator's backend (`GET
 /v1/convai/conversation/get-signed-url?agent_id=…` with the `xi-api-key`
 header → `{ signed_url }`, valid 15 minutes, an already-open socket
-outlives it): the production shape. The API key itself is never accepted
-by the adapter.
+outlives it; `signElevenLabsUrl` in `@sinua/voice/server`). With
+`credentialUrl` or a provider, every `connect()` signs a new one. The API key
+itself is never accepted by the adapter.
 
 ### `LiveKitVoiceSource` — an existing LiveKit Room's agent
 
@@ -472,121 +468,99 @@ reused, counted only while the agent says it is speaking.
   successor's HTTP shape isn't published, so the Studio takes `url` +
   `token` directly (one field, whitespace-separated, for now).
 
-### Credentials for a real integration (not the Studio)
+### Credentials for a real integration
 
-The adapter subsections above describe what the *Studio* does. This one is
-for a developer shipping Orb/Signal in an actual product (a fitness app, or
-anything else), because the Studio's key field is the one thing in this
-pipeline that must **not** be copied into an app. The rules, in the order
-they apply:
+**One contract, every vendor, every platform** (2026-09-28). Your backend
+answers one JSON shape:
 
-1. **The real API key never touches this library, and never touches the
-   browser.** Neither adapter has any code path that needs a long-lived
-   secret in production. The only place a raw key is accepted is the
-   Studio's `VoiceVendorControls` field, and both adapters treat it as
-   what it is — local demo wiring (memory only, never persisted, never
-   logged), clearly not for shipping. An app must not offer that field.
-2. **The integrator's own backend holds the secret and mints a short-lived
-   credential, server-side, per session.** This is the vendors' own
-   documented pattern, not ours:
-   - OpenAI: `POST https://api.openai.com/v1/realtime/client_secrets`
-     with `Authorization: Bearer <secret key>` and the session config
-     (`type: "realtime"`, `model`, `audio.input.turn_detection`,
-     `audio.output.voice`, optional `instructions`) → `{ value: "ek_…",
-     expires_at }`. The `ek_` expires (600 s by default, 10 s–2 h
-     selectable) and is bound to one Realtime session; the session config
-     is fixed at mint time, so the client can't change the model or
-     instructions.
-   - Gemini: `POST https://generativelanguage.googleapis.com/v1beta/
-     auth_tokens` with the secret key → a token whose `name` is
-     `auth_tokens/…`. `uses` (default 1), `expireTime` (default 30 min)
-     and `newSessionExpireTime` (default 1 min — the window in which the
-     token can *start* a session) bound it, and `liveConnectConstraints`
-     can lock the model and setup config server-side so the client can't
-     alter them. Within a token's lifetime the ~10-minute connection
-     limit is still crossed with `sessionResumption`, which
-     `GeminiLiveVoiceSource` already does.
-   - ElevenLabs: for a **private** agent, `GET https://api.elevenlabs.io/
-     v1/convai/conversation/get-signed-url?agent_id=…` with the
-     `xi-api-key` header → `{ "signed_url": "wss://…&conversation_
-     signature=…" }`, valid 15 minutes — that URL is the credential. A
-     **public** agent needs no minting at all: the frontend passes the
-     `agent_id`, no secret exists on either side.
-   - LiveKit: nothing to mint for this library. Pass the app's connected
-     `Room` (`new LiveKitVoiceSource({ room })`) and no credential flows
-     through Orb/Signal at all; the Room's own token is the short-lived
-     JWT the app's backend already mints with the project's API key/secret.
-3. **The frontend asks its own backend for that credential, then hands it
-   straight to the adapter.** That string is the only thing this library
-   ever sees:
+```json
+{ "credential": "ek_…", "expiresAt": 1790000000 }
+{ "credential": "<room jwt>", "url": "wss://…", "expiresAt": 1790000000 }
+```
 
-   ```ts
-   // Your app, not this repo -- sketch of the whole client side.
-   const mintOpenAI = async () =>
-     (await fetch("/api/voice-session", { method: "POST" }).then((r) => r.json())).credential;
-   const { credential } = await fetch("/api/voice-session", { method: "POST" }).then((r) => r.json());
-   // credential is "ek_…" (OpenAI), "auth_tokens/…" (Gemini) or a signed
-   // "wss://…" URL / public agent_id (ElevenLabs); the adapters pick the
-   // production path from that shape and never mint anything.
-   const source =
-     vendor === "openai" ? new OpenAIRealtimeVoiceSource({ getCredential: mintOpenAI }) // fresh ek_ per (re)connect
-     : vendor === "gemini" ? new GeminiLiveVoiceSource({ credential })
-     : new ElevenLabsVoiceSource({ credential });
-   source.onMetrics((m) => { /* -> audioLevel / audioBandN overrides */ });
-   source.onStateChange((s) => { /* -> voiceStateCode */ });
-   await source.connect();
-   ```
+`credential` is `ek_…` (OpenAI), `auth_tokens/…` (Gemini), a signed `wss://`
+URL (ElevenLabs) or a room JWT (LiveKit, plus `url`); `expiresAt` is Unix
+seconds. Every source takes it the same way:
 
-   The `/api/voice-session` handler is the integrator's: authenticate the
-   user, decide which vendor/model/voice/instructions this session gets,
-   call the vendor's mint endpoint with the secret key from the server's
-   own secret store, return only the short-lived credential.
-4. **This project has no backend and does not ship one** (it is why the
-   Studio has a dev-only key field at all). Minting the ephemeral
-   credential server-side is the integrator's responsibility; this library
-   deliberately contains no minting code beyond the Studio's demo path, no
-   secret storage, and no opinion on the integrator's auth — it takes a
-   credential string and a `VoiceSource` interface, nothing more.
+```ts
+new OpenAIRealtimeVoiceSource({ credentialUrl: "/api/voice/openai" }); // POST, no-store, parsed
+new GeminiLiveVoiceSource({ credential: async () => myFetchCredential() }); // or a provider
+new ElevenLabsVoiceSource({ credential: "agent_public_id" }); // a public agent: no secret at all
+new LiveKitVoiceSource({ credentialUrl: "/api/voice/livekit" }); // or { room } / { url, token }
+```
 
-### A raw API key is refused unless you opt in
+The URL or provider is called on **every** connect and reconnect, so an
+expired or spent credential is never reused. A 4xx or a malformed answer is
+fatal (no retry); a network error, 429 or 5xx is retried. A plain string is one
+fixed value (a pasted ephemeral works for a single session). OpenAI's
+`getCredential` still works as a deprecated alias.
 
-Rule 1 above used to be advice. It is now enforced, identically on Web, iOS
-and Android: a credential that is not the vendor's short-lived shape is
-**refused in `connect()`**, before the microphone, the audio graph or the
-socket, so a refused credential never opens a device or a connection.
+The same contract natively, one shared type per platform:
+- **iOS** (`SinuaVoice`'s `CredentialSource`: `.url(_:)`, `.provider { … }`, `.value(_:)`): every source has
+  `init(credentialUrl:)`, `init(credential: CredentialSource)` and `init(credential: String)`. LiveKit also
+  keeps `init(room:)` / `init(url:token:)`, OpenAI keeps `init(credentialProvider:)`. Failures are
+  `CredentialError.fatal` / `.retryable`.
+- **Android** (`dev.sinua.voice.CredentialSource`: `url(…)`, `provider { … }` (runs on a background thread),
+  `fixed(…)`): the sources take a `CredentialSource` or a `String`; `OpenAIRealtimeVoiceSource.withCredentialUrl`
+  and `LiveKitVoiceSource.withCredentialUrl` / `owned(context, credential)`. Failures are
+  `CredentialException(message, fatal)`.
+- **React Native**: `credentialUrl` or `credential` (a provider or a string) on every vendor's
+  `createVoiceSource` config; resolved in JS, the fresh value handed to the native source per request.
+
+**Minting it.** `@sinua/voice/server` (server-only, no dependencies: fetch +
+WebCrypto, so Node, Next.js, Workers, Deno and Supabase alike) has one function
+per vendor, each returning that shape, and `credentialResponse()` for the
+endpoint's answer (`Cache-Control: no-store`):
+- `mintOpenAIRealtimeCredential({ apiKey, model, voice?, instructions?, expiresInSeconds? })`
+  → `POST /v1/realtime/client_secrets`;
+- `mintGeminiLiveCredential({ apiKey, model, voice?, instructions?, expiresInSeconds?, newSessionWindowSeconds?, uses? })`
+  → `POST /v1beta/auth_tokens`, config locked;
+- `signElevenLabsUrl({ apiKey, agentId })` → the 15-minute signed URL;
+- `mintLiveKitCredential({ apiKey, apiSecret, url, room, identity, name?, ttlSeconds? })`
+  → an HS256 room JWT signed locally.
+
+The model, voice and instructions are decided there, on the server. Every
+function refuses to run where there is a DOM, and a vendor error never carries
+the API key (`CredentialMintError`, with the vendor's `status`).
+
+**Templates.** `examples/voice-server/`: Next.js, Express, Cloudflare Worker and
+Supabase Edge endpoints over one shared `credentials.ts`. They're type-checked
+and tested in CI. Each refuses every request until you wire in your auth
+(`VOICE_ALLOW_ANONYMOUS=1` opens one locally).
+
+**Before you have a backend.** `npx @sinua/voice dev-proxy` reads your keys
+from `.env` / `.env.local`, listens on `127.0.0.1:8787` only and serves
+`POST /openai`, `/gemini`, `/elevenlabs`, `/livekit` in the same shape. CORS is
+open to localhost origins only (`--allow-origin` adds one), and it answers
+Chrome's Private Network Access preflight. The Studio's "Connect a model" uses
+it by default.
+
+### A raw API key is always refused
+
+A credential that is not the vendor's short-lived shape is **refused in
+`connect()`**, before the microphone, the audio graph or the socket, and it is
+fatal, so a reconnect loop never retries it. This covers whatever a provider
+or `credentialUrl` returns too, so a backend that starts handing out raw keys
+is caught at once.
 
 ```ts
 new GeminiLiveVoiceSource({ credential: rawKey });
-// Error: GeminiLiveVoiceSource: refusing a raw, long-lived API key. Pass a
-// short-lived credential (auth_tokens/…) minted by your own backend
-// (POST …/v1beta/auth_tokens). For a local demo only, set
-// `allowInsecureApiKey: true`.
+// Error: GeminiLiveVoiceSource: expected a short-lived credential (auth_tokens/…);
+// refusing what looks like a raw, long-lived API key. Mint one in your backend
+// with @sinua/voice/server, or run `npx @sinua/voice dev-proxy` and pass `credentialUrl`.
 ```
 
-`allowInsecureApiKey` (Swift/Kotlin: `allowInsecureApiKey: Bool = false`;
-React Native: the same field on `createVoiceSource`'s config) connects anyway
-and logs one warning per connect. It exists for exactly one situation — a
-developer pasting their own key into a local demo, which is what the Studio's
-credential field is — and the warning is there so that situation can't quietly
-become a deployment. It applies to whatever `getCredential` /
-`credentialProvider` returns too, so a backend that starts handing out raw keys
-is caught on the next reconnect rather than silently accepted.
-
-The rule lives in one file per platform so the three can't drift:
+The `allowInsecureApiKey` opt-in is gone on every platform (2026-09-28), and so
+is the on-device `client_secrets` mint it enabled. The dev proxy replaced the one
+case it existed for, a developer trying a model locally. The rule lives in one
+file per platform with the same message text, pinned by a test in each:
 `packages/voice/src/insecureCredential.ts`,
 `packages/ios/Sources/SinuaVoice/InsecureCredential.swift`,
-`packages/android/src/main/kotlin/dev/sinua/voice/InsecureCredential.kt` — same
-message text, asserted by a test in each. Shape for the shape's own sake:
-`openai-agents-js` refuses a raw key in a browser unless `useInsecureApiKey` is
-set, and that is the same source this project's OpenAI adapter was built from.
-
-Only OpenAI and Gemini can be handed a raw key at all. ElevenLabs takes a public
-`agent_id` (not a secret) or a signed `wss://` URL, and LiveKit takes a Room or a
-room token, so neither has anything to gate.
+`packages/android/src/main/kotlin/dev/sinua/voice/InsecureCredential.kt`.
 
 ### What actually travels, per vendor and per platform
 
-The credential *classification* — `ek_…`, `auth_tokens/…`, `wss://…`, else raw —
+The credential *classification* — `ek_…`, `auth_tokens/…`, `wss://…`, else refused —
 is the same code path on all three platforms. The transport is too, with one
 exception:
 
@@ -595,7 +569,7 @@ exception:
 | OpenAI Realtime | `Authorization: Bearer` on the HTTPS call | same |
 | ElevenLabs | `?agent_id=` or the signed URL as-is, `convai` subprotocol | same |
 | LiveKit | token handed to the SDK; nothing of ours touches it | same |
-| **Gemini Live** | **`?access_token=` / `?key=` in the socket URL** | `Authorization: Token …` / `x-goog-api-key` **headers** |
+| **Gemini Live** | **`?access_token=` in the socket URL** | `Authorization: Token …` **header** |
 
 **The Gemini row is a real weakness on the Web, and it is not fixable here.** A
 browser `WebSocket` cannot set request headers, and the Live API accepts exactly
@@ -610,6 +584,118 @@ single-use by default and expires in ~30 minutes, so a leaked URL is worth much
 less than a leaked key. Native has no such constraint and puts it in a header.
 
 No adapter on any platform logs, persists or otherwise stores a credential.
+
+## Simulated conversations
+
+A believable conversation with no audio at all: for the Studio, demos, previews and tests.
+`SimulatedVoiceSource` is an ordinary `VoiceSource` (`connect` / `disconnect` /
+`onMetrics` / `onStateChange` / `onInterrupt`), so every view, `VoiceOverrides` and FX Spec
+binding takes it unchanged. It opens no microphone, builds no audio graph, asks for no
+permission and makes no network call.
+
+```ts
+import { SimulatedVoiceSource } from "@sinua/core";
+const voice = new SimulatedVoiceSource("barge-in");   // a sample name, a script object or JSON
+mount(canvas, { pattern: "glowing", voice });
+await voice.connect();                                // plays (and loops, for the samples)
+```
+
+- **iOS:** `try SimulatedVoiceSource(sample: "barge-in")` in `Sinua`.
+- **Android:** `SimulatedVoiceSource.sample("barge-in")` in `dev.sinua.voice`.
+- **React Native:** `createVoiceSource({ vendor: "simulated", sample: "barge-in" })` (or
+  `script`), backed by the native source.
+
+**A script** is one JSON shape on every platform:
+
+```json
+{ "name": "Calendar", "loop": true, "seed": 7,
+  "turns": [
+    { "state": "idle", "seconds": 2.0 },
+    { "state": "listening", "seconds": 3.0, "voice": "user", "line": "Can you move my 3 pm call?" },
+    { "state": "thinking", "seconds": 1.5 },
+    { "state": "speaking", "seconds": 4.0, "voice": "agent", "line": "Done, it's tomorrow at 3." },
+    { "state": "listening", "seconds": 1.2, "voice": "user", "bargeIn": true }
+  ] }
+```
+
+- `voice` picks the curve: `user` for a mic-like level, `agent` for a steadier TTS-like
+  one. A turn without `voice` is silent (level 0).
+- `bargeIn: true` fires `onInterrupt` on entering the turn, so views show the barge-in cue.
+  Seeking into a turn never fires it.
+- `line` is optional caption text; `onFrame` reports how much of it has been "said"
+  (`shown`, linear in the turn's progress).
+- Bad scripts throw with the first error's path (e.g. `/turns/2/seconds: …`); a
+  `seconds` outside 0.1–60 is an error. Unknown keys, a state that isn't a voice state,
+  and `voice` on a silent state are warnings.
+
+**The curves come from the engine** (`core_engine::conversation_at(script, t, bands)`, a
+pure function of time), so every platform plays the same conversation, frame for frame:
+
+- a phrase envelope (a 0.25 s rise, a 0.3 s fall);
+- syllable bursts at about 4 Hz, their phase jittered by a hash of `seed` and the turn;
+- word gaps (a soft dip about every 1–1.5 s);
+- bands with a voice-like tilt (the most energy low-mid, little at the top), times the
+  level.
+
+There is no fast flutter; it read as noise on the landing page. `VoiceOverrides` eases on
+top as it does for a real source. `spec/conversation-vectors.json` pins the curve.
+Rust writes it (`CONVERSATION_VECTORS_WRITE=1 cargo test -p core_engine --test
+conversation_vectors -- --ignored`); the Web, iOS and Android tests read it through their
+bindings.
+
+**Built-in samples** (`spec/conversations/`, embedded in the engine), all looping:
+`calendar`, `quick-answer`, `long-answer` and `barge-in`, 10–15 s each. List them with
+`conversationSampleNames()` (Web), `SimulatedVoiceSource.sampleNames` (iOS / Android), or
+`SimulatedVoiceSource.BUILT_IN_SAMPLES` on Android, which is a constant for UI built before
+the native library loads.
+
+**Controls** for a timeline: `play()`, `pause()`, `seek(t)`, `loop`, `time`, `duration`,
+`turns` (state, start, seconds, line, bargeIn, voice) and `onFrame`. With `autoTick: false`
+(Web / Android) nothing runs on a timer: call `advance(dt)` from your own loop or a test.
+
+## Mute
+
+`setMuted(muted)` is an optional member of `VoiceSource` on every platform. Swift and
+Kotlin give it a default no-op and a `supportsMute` flag. **Silence goes out and the
+session stays up**: no reconnect, no lost context. Every built-in source implements it:
+
+| Source | Muted means |
+|---|---|
+| OpenAI Realtime (WebRTC) | the mic track is disabled (`track.enabled = false` / `isEnabled` / `setEnabled(false)`), so WebRTC sends silence; each reconnect's new track starts muted too |
+| LiveKit | `localParticipant.setMicrophoneEnabled(false)` (iOS `setMicrophone(enabled:)`); on an attached Room this mutes the app's mic too |
+| Gemini Live, ElevenLabs (PCM) | the capture chunks go out zeroed, same length and rate, so the server's turn detection keeps its timing; on the Web the mic track is disabled as well |
+| Local mic, test tone | the level and bands read 0 (the analysis never leaves the device anyway); the Web mic track is disabled, and its zero-read watchdog stands down while muted |
+| Simulated conversation | the `voice: "user"` turns go silent; the agent's keep playing |
+
+For a vendor source the metrics are the agent's audio, so they keep flowing while muted.
+
+**`onConnectionChange(connected)`**, also optional (`reportsConnection` natively), says
+when a session is up and when it ends: `disconnect()`, a remote hang-up, or a drop the
+source gave up on. It stays `true` through a reconnect. The agent state can't carry
+this, because an agent can be `idle` while connected. Every built-in source reports it.
+Android also puts `onError` on the interface (it was vendor-only), because a vendor's
+`connect()` there returns while the socket is still opening.
+
+## Sharing a source
+
+A `VoiceSource` holds **one** callback of each kind, so a second subscriber silently
+replaces the first: a second view, a voice button next to a view, or your own state
+label. `SharedVoiceSource` subscribes once and fans out:
+
+```ts
+const shared = SharedVoiceSource.of(source);   // the same instance every time for this source
+const off = shared.onStateChange(setPill);     // Web: on… returns an unsubscribe
+// Swift / Kotlin: shared.listenState { … } returns the cancel; on… is the protocol form
+shared.setMuted(true);                         // views bound to it show the muted cue
+```
+
+- It is itself a `VoiceSource`, so it goes anywhere a source goes.
+- Every view binds a raw source through it: `SharedVoiceSource.of(source).track(options)` gives the view its own `VoiceOverrides`, with its family's easing and history, fed from the fan-out and following the mute.
+- The voice button uses the same fan-out.
+- `connect()` through it always starts unmuted.
+- On React Native the native registry keeps every source behind its fan-out, so the JS events (`onStateChange`, `onError`, `onConnectionChange`, `onMuteChange`) and each view bound by id listen side by side. `handle.setMuted(muted)` crosses to it.
+- The instances are held weakly: the fan-out lives while a view, a button or your code holds it.
+- Once a source is shared, don't subscribe on the raw source: that takes its one callback away from the fan-out.
 
 ## Wiring a `VoiceSource` into Orb/Signal — the `VoiceOverrides` helper
 
@@ -1187,8 +1273,8 @@ Built 2026-09-19. It mirrors the Web `OpenAIRealtimeVoiceSource`:
   track.
 
 The state rules and the energy fallback are ported from Web (see the next
-section), as is reconnect: a new session with a fresh credential from
-`credentialProvider`, 3 attempts with LiveKit's backoff, the finalized
+section), as is reconnect: a new session with a fresh credential from the
+`CredentialSource`, 3 attempts with LiveKit's backoff, the finalized
 transcript replayed as `conversation.item.create`, and fatal codes/statuses
 giving up at once.
 

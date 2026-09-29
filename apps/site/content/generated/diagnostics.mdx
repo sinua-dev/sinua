@@ -18,6 +18,9 @@
 | Binding to something that isn't bindable | **error** | `/bindings/lanes` | `lanes` isn't a bindable target; bindings drive only the curated Reactive Inputs (progress, progress[0], progress[1], progress[2], progress[3], quality, accuracy, audioLevel, glow.strength, noise.strength, gradient.strength, pulse.strength, color.mix, muted) |
 | A lifecycle state the file doesn't list | warning | `/states` | state `speaking` isn't in `states`; rendering the base design |
 | A newer 1.x file (forward compatible) | warning | `/timeline` | unknown key `timeline` (newer 1.x spec? ignored) |
+| A 1.9 key in a 1.8 file | **error** | `/transitions` | `transitions` needs "fxSpec": "1.9" (this file says 1.8) |
+| A transitions entry that can't apply | warning | `/transitions/idle->speaking` | `speaking` is not a key of `states`, so this entry never applies |
+| A transitions entry that can't apply | **error** | `/transitions/idle->speaking/curve` | expected one of linear, ease, easeIn, easeOut, easeInOut |
 | An unsupported major version | **error** | `/fxSpec` | FX Spec 2.x isn't supported by this runtime (1.x) |
 
 ### In overrides (`checkOverrides`)

@@ -131,13 +131,13 @@ pub fn mode_defaults(mode: &str) -> &'static [(&'static str, f64)] {
             ("particleSpread", 0.22),
         ],
         // Speaking and the signal family: drift that follows the voice.
-        "spectrum" | "bar" | "waveform" | "scroll" | "matrix" => &[
+        "spectrum" | "bar" | "waveform" | "scroll" | "matrix" | "playback" => &[
             ("particleAudio", 1.0),
             ("particleCount", 32.0),
             ("particleLife", 3.0),
         ],
         // Ring family (progress, done): a few particles lifting off.
-        "arc" | "spinner" | "nested" | "segmented" | "gauge" => &[
+        "arc" | "spinner" | "nested" | "segmented" | "gauge" | "speaker" => &[
             ("particleStyle", 3.0),
             ("particleCount", 12.0),
             ("particleLife", 5.0),

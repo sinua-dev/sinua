@@ -34,24 +34,48 @@ export function env({ dpr = 1, dark = false, reduce = false, hidden = false } = 
 
 export function canvas(css = 100) {
   const calls = [];
+  let clears = 0;
   const ctx = {
-    save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {}, fill() {},
+    save() {}, restore() {}, beginPath() {}, stroke() {}, fill() {},
+    // Path points and the translate are recorded for the box-layout tests (edge,
+    // playback): they're strokes, not arcs, and fill the box instead of a square.
+    moveTo(x, y) { calls.push(["moveTo", x, y]); },
+    lineTo(x, y) { calls.push(["lineTo", x, y]); },
     scale(s) { calls.push(["scale", s]); },
-    translate() {},
-    clearRect() { calls.length = 0; }, // each frame starts with a clear: keep the latest frame only
+    translate(x, y) { calls.push(["translate", x, y]); },
+    // each frame starts with a clear: keep the latest frame only, and count frames drawn
+    clearRect() { calls.length = 0; clears++; },
     arc(x, y, r) { calls.push(["arc", x, y, r]); },
     set fillStyle(v) { calls.push(["fill", v]); },
     set strokeStyle(v) {}, set lineWidth(v) {}, set lineCap(v) {}, set lineJoin(v) {}, set globalAlpha(v) {},
   };
   const attrs = {};
+  const listeners = {};
   const el = {
     clientWidth: css, clientHeight: css, width: 300, height: 150,
     getContext: () => ctx,
     setAttribute: (k, v) => (attrs[k] = v),
     removeAttribute: (k) => delete attrs[k],
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: css, height: css }),
+    addEventListener: (type, fn) => (listeners[type] ??= new Set()).add(fn),
+    removeEventListener: (type, fn) => listeners[type]?.delete(fn),
   };
+  /** Dispatches a pointer event to whatever the view registered (nothing, if it registered nothing). */
+  const fire = (type, init = {}) => {
+    for (const fn of listeners[type] ?? []) fn({ type, clientX: 0, clientY: 0, pointerType: "mouse", ...init });
+  };
+  const listening = () => Object.values(listeners).reduce((n, set) => n + set.size, 0);
   ctx.canvas = el;
-  return { el, calls, attrs };
+  return {
+    el,
+    calls,
+    attrs,
+    fire,
+    /** How many event listeners the view has on the canvas. */
+    get listening() { return listening(); },
+    /** How many frames were drawn: every frame starts with one clearRect. */
+    get clears() { return clears; },
+  };
 }
 
 /**

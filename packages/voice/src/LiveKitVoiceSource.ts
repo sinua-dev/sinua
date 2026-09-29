@@ -9,6 +9,7 @@ import {
   type RemoteTrackPublication,
 } from "livekit-client";
 import { AudioAnalysis } from "./analysis.js";
+import { resolveCredential, type CredentialProvider } from "./credential.js";
 import {
   AGENT_STATE_ATTRIBUTE,
   agentStateFromAttributes,
@@ -39,7 +40,8 @@ import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
  *   disconnects it; `disconnect()` only removes this adapter's listeners
  *   and analyser. Does NOT `attach()` the agent track to an element either:
  *   the app already renders that audio, a second attach would double it.
- * - `{ url, token }` -- own Room (the Studio demo): connects, publishes the
+ * - `{ url, token }`, `{ credentialUrl }` or `{ credential: provider }` --
+ *   own Room (the Studio demo): connects, publishes the
  *   mic so the agent hears the user, calls `startAudio()` (a user gesture
  *   is present), attaches the agent track so it is audible, and disconnects
  *   on teardown. The token is a short-lived, room-scoped JWT the developer
@@ -54,7 +56,14 @@ import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
  */
 export type LiveKitVoiceSourceOptions =
   | { room: Room }
-  | { url: string; token: string; publishMicrophone?: boolean };
+  | { url: string; token: string; publishMicrophone?: boolean }
+  /**
+   * Own Room, credential from your backend in the shared shape
+   * `{ credential: <room JWT>, url, expiresAt? }` (`mintLiveKitCredential` in
+   * `@sinua/voice/server`, or `npx @sinua/voice dev-proxy` locally).
+   */
+  | { credentialUrl: string; publishMicrophone?: boolean }
+  | { credential: CredentialProvider; publishMicrophone?: boolean };
 
 const UPDATE_MS = 1000 / 30; // ~30fps metering, same as every other VoiceSource
 const WATCHDOG_ZERO_FRAMES = 30; // ~1s of exact-zero RMS while the agent should be audible
@@ -82,6 +91,9 @@ export class LiveKitVoiceSource implements VoiceSource {
   private metricsCb: ((m: VoiceMetrics) => void) | null = null;
   private stateCb: ((s: AgentState) => void) | null = null;
   private interruptCb: (() => void) | null = null;
+  private connectionCb: ((connected: boolean) => void) | null = null;
+  private sessionUp = false;
+  private muted = false;
   private state: AgentState = "idle";
 
   constructor(opts: LiveKitVoiceSourceOptions) {
@@ -101,12 +113,43 @@ export class LiveKitVoiceSource implements VoiceSource {
     this.interruptCb = cb;
   }
 
+  onConnectionChange(cb: (connected: boolean) => void): void {
+    this.connectionCb = cb;
+  }
+
+  /**
+   * Muted, the local microphone is unpublished-muted
+   * (`localParticipant.setMicrophoneEnabled(false)`): the agent hears nothing and
+   * the room stays joined. On an attached Room this mutes the app's mic too.
+   */
+  setMuted(muted: boolean): void {
+    this.muted = muted;
+    const room = this.room;
+    if (room && room.state === ConnectionState.Connected) {
+      void room.localParticipant.setMicrophoneEnabled(!muted).catch(() => undefined);
+    }
+  }
+
+  private setSessionUp(up: boolean): void {
+    if (up === this.sessionUp) return;
+    this.sessionUp = up;
+    this.connectionCb?.(up);
+  }
+
   async connect(): Promise<void> {
-    if (!("room" in this.opts) && (!this.opts.url || !this.opts.token)) {
+    const opts = this.opts;
+    if ("url" in opts && (!opts.url || !opts.token)) {
       throw new Error('LiveKitVoiceSource: needs a server URL and a token ("wss://… <token>"), or an existing Room');
     }
     this.setState("initializing");
     try {
+      // Own Room: the join credential, fetched before any audio is touched.
+      let join: { url: string; token: string } | null = null;
+      if ("url" in opts) join = { url: opts.url, token: opts.token };
+      else if (!("room" in opts)) {
+        const c = await resolveCredential("LiveKitVoiceSource", opts, { needsUrl: true });
+        join = { url: c.url as string, token: c.credential };
+      }
       const room = "room" in this.opts ? this.opts.room : new Room();
       this.room = room;
       this.ctx = new (globalThis.AudioContext ||
@@ -114,9 +157,9 @@ export class LiveKitVoiceSource implements VoiceSource {
       await this.ctx.resume().catch(() => undefined);
       this.bind(room);
 
-      if (!("room" in this.opts)) {
-        await room.connect(this.opts.url, this.opts.token);
-        if (this.opts.publishMicrophone !== false) await room.localParticipant.setMicrophoneEnabled(true);
+      if (join && !("room" in opts)) {
+        await room.connect(join.url, join.token);
+        if (opts.publishMicrophone !== false) await room.localParticipant.setMicrophoneEnabled(!this.muted);
         await room.startAudio().catch(() => undefined);
       } else if (room.state !== ConnectionState.Connected) {
         await this.waitForConnected(room);
@@ -130,6 +173,8 @@ export class LiveKitVoiceSource implements VoiceSource {
 
       this.connected = true;
       this.intervalId = setInterval(() => this.tick(), UPDATE_MS);
+      if (this.muted && !join) this.setMuted(true);
+      this.setSessionUp(true);
     } catch (err) {
       this.teardown();
       this.setState("idle");
@@ -140,6 +185,7 @@ export class LiveKitVoiceSource implements VoiceSource {
   disconnect(): void {
     this.teardown();
     this.setState("idle");
+    this.setSessionUp(false);
   }
 
   // --- room events (class fields so they can be `off`ed by reference) ---

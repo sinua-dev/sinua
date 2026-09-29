@@ -44,5 +44,6 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
   const page = source.getPage(params.slug);
   if (!page) return {};
   // One canonical URL per page, in the trailing-slash form the static host serves.
-  return { title: page.data.title, description: page.data.description, alternates: { canonical: `${page.url}/` } };
+  const title = page.data.metaTitle ? { absolute: page.data.metaTitle } : page.data.title;
+  return { title, description: page.data.description, alternates: { canonical: `${page.url}/` } };
 }

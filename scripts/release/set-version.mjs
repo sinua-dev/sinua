@@ -32,7 +32,7 @@ if (!SEMVER.test(version)) {
   process.exit(1);
 }
 
-const PACKAGES = ["core", "web", "voice", "snippets", "react-native"];
+const PACKAGES = ["core", "web", "voice", "snippets", "design", "react-native"];
 const PEERS = { web: ["@sinua/core"], voice: ["@sinua/core"] };
 const mismatches = [];
 const writes = new Map();

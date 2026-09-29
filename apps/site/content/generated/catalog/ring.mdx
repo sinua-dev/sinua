@@ -9,6 +9,7 @@ The ring component is `SinuaRing`. Pick a look with `pattern`; each pattern read
 | Tracking (`tracking`) | `nested` | 1× | `progress` |
 | Stepping (`stepping`) | `segmented` | 1× | `progress`, `segment` |
 | Measuring (`measuring`) | `gauge` | 1× | `progress` |
+| Talking (`talking`) | `speaker` | 1× | — |
 
 ### Completing [#completing]
 
@@ -110,3 +111,21 @@ The ring component is `SinuaRing`. Pick a look with `pattern`; each pattern read
 | `gap` | Appearance | number | 0–8 x | 1 | Gap at the gauge's value end, in stroke widths. |
 
 </details>
+
+### Talking [#talking]
+
+`pattern: "talking"` · mode `speaker` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `avatarGap` | Appearance | number | 0–0.05 (UI 0–0.04) fraction | 0.012 | Space between the avatar's edge and the ring, as a fraction of the frame. |
+| `hue` | Appearance | number | 0–360 deg | 200 | Ink hue in degrees; applies once saturation is above 0. |
+| `idleOpacity` | Appearance | number | 0–1 fraction | 0.35 | The ring's opacity when nobody is speaking (0 = hidden until there's a voice). |
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `innerRadius` | Appearance | number | 0.1–0.44 (UI 0.2–0.42) fraction | 0.34 | Radius of the avatar the ring surrounds, as a fraction of the frame; nothing is drawn inside it. |
+| `saturation` | Appearance | number | 0–1 fraction | 0 | How far the ink moves from grey toward the hue (0 = the grey ink). |
+| `thickness` | Appearance | number | 0.004–0.1 (UI 0.008–0.06) fraction | 0.022 | The ring's resting stroke width, as a fraction of the frame. |
+| `flow` | Motion | number | -1–1 | 0 | Ripples outside the ring: +1 travel outward (giving out, speaking), -1 come inward (taking in, listening), 0 none. The voice states set it. |
+| `rippleCount` | Motion | integer | 0–4 | 2 | How many ripples travel at once when flow is on. |
+| `shimmer` | Motion | number | 0–1 fraction | 0 | A brighter arc that circles the ring (thinking, connecting); 0 = off. |
+| `reach` | Energy | number | 0–0.12 fraction | 0.04 | How much thicker the ring grows at full voice, outward only, as a fraction of the frame. |

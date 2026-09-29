@@ -1,0 +1,18 @@
+{
+  "fxSpec": "1.9",
+  "name": "Voice orb (with transitions)",
+  "object": "orb",
+  "pattern": "glowing",
+  "size": 64,
+  "states": {
+    "idle": {},
+    "listening": {},
+    "thinking": {},
+    "speaking": {}
+  },
+  "transitions": {
+    "default": { "duration": 0.6, "curve": "easeInOut" },
+    "idle->listening": { "duration": 0.25, "curve": "easeOut" },
+    "*->idle": { "duration": 0.9 }
+  }
+}

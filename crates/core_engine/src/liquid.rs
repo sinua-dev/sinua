@@ -610,11 +610,11 @@ pub fn suitability(mode: &str) -> LiquidSuitability {
             "drawn mostly with lines, so there is little to melt",
         ),
         "hush" => ("notRecommended", "dim by design; nothing pools"),
-        "bar" | "waveform" | "scroll" => (
+        "bar" | "waveform" | "scroll" | "playback" => (
             "notRecommended",
             "drawn with strokes, not dots -- nothing for liquid to melt",
         ),
-        "arc" | "spinner" | "nested" | "segmented" | "gauge" => (
+        "arc" | "spinner" | "nested" | "segmented" | "gauge" | "speaker" => (
             "notRecommended",
             "a stroked ring with at most a few dots; liquid changes little",
         ),
@@ -623,6 +623,10 @@ pub fn suitability(mode: &str) -> LiquidSuitability {
             "a single dot plus strokes; liquid only rounds the dot",
         ),
         "shimmer" => ("notRecommended", "drawn with a stroke or fill, no dots"),
+        "rim" => (
+            "notRecommended",
+            "a stroked frame round the box, no dots to melt",
+        ),
         _ => ("ok", "not yet judged on a contact sheet"),
     };
     LiquidSuitability {

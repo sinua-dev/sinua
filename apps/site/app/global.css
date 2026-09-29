@@ -1,6 +1,47 @@
 @import "tailwindcss";
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
+/* The look the Studio and the site share (@sinua/design): the Radix scales, the fonts,
+   the semantic tokens (light, and dark under `.dark`) and the shared controls. */
+@import "@sinua/design/colors.css";
+@import "@sinua/design/fonts.css";
+@import "@sinua/design/tokens.css";
+@import "@sinua/design/components.css";
+
+/* Fumadocs' colors, pointed at the shared tokens: the docs wear the Studio's slate and
+   indigo instead of Fumadocs' neutral grey. One block serves both themes, because the
+   tokens themselves switch under `.dark`. */
+:root,
+.dark,
+.dark #nd-sidebar {
+  --color-fd-background: var(--bg-app);
+  --color-fd-foreground: var(--text);
+  --color-fd-muted: var(--bg-control);
+  --color-fd-muted-foreground: var(--text-2);
+  --color-fd-popover: var(--bg-elevated);
+  --color-fd-popover-foreground: var(--text);
+  --color-fd-card: var(--bg-panel);
+  --color-fd-card-foreground: var(--text);
+  --color-fd-border: var(--hairline);
+  --color-fd-primary: var(--accent-ink);
+  --color-fd-primary-foreground: var(--on-accent);
+  --color-fd-secondary: var(--bg-control);
+  --color-fd-secondary-foreground: var(--text);
+  --color-fd-accent: var(--bg-control-hover);
+  --color-fd-accent-foreground: var(--text);
+  --color-fd-ring: var(--indigo-8);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11" 1;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--font-mono);
+}
 
 html {
   scrollbar-gutter: stable;
@@ -20,4 +61,10 @@ html > body[data-scroll-locked] {
 }
 .demo-gallery .fx-demo {
   margin: 0;
+}
+
+/* Copy / download actions (gallery, docs): the Studio's toolbar button with a visible
+   edge, since they sit on the page rather than in a toolbar. */
+.copy-btn {
+  box-shadow: inset 0 0 0 1px var(--border);
 }

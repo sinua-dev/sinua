@@ -1,7 +1,10 @@
 ---
 title: Gemini Live
-description: Follow a Gemini Live voice session.
+description: "Show a Gemini Live session's state and voice as a live visual in SwiftUI, Jetpack Compose and React, over a WebSocket."
+metaTitle: "Gemini Live voice visualizer for SwiftUI, Compose and React | Sinua"
 ---
+
+<Callout title="Beta">The Gemini Live source is beta: it is tested on simulated sessions, not yet against a live Gemini Live session. If it misbehaves with your agent, an issue with the platform and version helps most.</Callout>
 
 The Gemini source streams audio to Gemini Live and plays the model's reply, reporting state and audio to the visual. Long conversations cross Gemini's connection limit transparently through session resumption.
 
@@ -22,7 +25,7 @@ The Gemini source streams audio to Gemini Live and plays the model's reply, repo
 
 ## Credentials
 
-Your server mints an ephemeral auth token (`auth_tokens/…`) with your API key. Lock the model and setup on the server side so the client can't change them, and hand the token to the source.
+Your server mints an ephemeral auth token (`auth_tokens/…`) with your API key and locks the model, voice and instructions into it, so the client can't change them: `mintGeminiLiveCredential` in `@sinua/voice/server`. Point the source at that endpoint with `credentialUrl`, the same on every platform. See [Credentials](/docs/connect/voice/credentials).
 
 ## Packages
 
@@ -34,6 +37,6 @@ Your server mints an ephemeral auth token (`auth_tokens/…`) with your API key.
 
 ## Good to know
 
-- **Ephemeral token in production.** With an `auth_tokens/…` token, the source uses Gemini's constrained endpoint automatically. A raw API key also works, but only for local development: never ship one.
-- **Reconnects are handled.** When Gemini announces the end of a connection (`goAway`) or the socket closes, the source resumes the session on a new connection.
+- **Ephemeral tokens only.** With an `auth_tokens/…` token, the source uses Gemini's constrained endpoint automatically. A raw API key is refused on every platform; for local development use `npx @sinua/voice dev-proxy`.
+- **Reconnects are handled.** When Gemini announces the end of a connection (`goAway`) or the socket closes, the source resumes the session on a new connection, with a new token from your endpoint.
 - **Start from a user gesture on the web**, since the browser only allows the microphone and audio playback after one. On iOS, add `NSMicrophoneUsageDescription`; on Android, declare `RECORD_AUDIO`. **Say where the audio goes:** the user's voice is sent to Google, so your iOS purpose string (and, on Android, the explanation you show before the system prompt, which carries no app text) should say so. For example: "Your voice is sent to Google so the assistant can hear you." App Store review expects the purpose string to explain the use.

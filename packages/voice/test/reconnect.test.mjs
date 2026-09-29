@@ -208,13 +208,13 @@ test("reconnect: a 401 on an attempt is fatal and stops the loop early", async (
   src.disconnect();
 });
 
-test("reconnect: a pasted ek_ with no getCredential is not retried", async () => {
+test("reconnect: a pasted ek_ with no provider is not retried", async () => {
   const { src, w, pc } = await connected({ credential: "ek_pasted" });
   dropDataChannel(pc);
   await until(() => w.states.at(-1) === "idle");
   await tick(200);
   assert.equal(calls(), 1, "a single-use, expiring key cannot open a second session");
-  assert.ok(quiet.seen.some((m) => m.includes("pass getCredential")), "and the message says what to do about it");
+  assert.ok(quiet.seen.some((m) => m.includes("pass credentialUrl or a credential provider")), "and the message says what to do about it");
   src.disconnect();
 });
 

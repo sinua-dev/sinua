@@ -21,12 +21,28 @@ class TestToneVoiceSource(private val sampleRate: Double = 48_000.0) : VoiceSour
     private val tick = object : Runnable {
         override fun run() {
             if (!running) return
-            spectrum.push(generator.next((sampleRate / UPDATE_HZ).toInt()))
+            val n = (sampleRate / UPDATE_HZ).toInt()
+            val samples = generator.next(n)
+            spectrum.push(if (muted) FloatArray(n) else samples)
             val m = analysis.read(spectrum.byteFrequencyData())
             metricsCb?.invoke(m)
             stateCb?.invoke(if (m.level > SPEAKING_LEVEL) AgentState.SPEAKING else AgentState.LISTENING)
             handler.postDelayed(this, (1000 / UPDATE_HZ).toLong())
         }
+    }
+
+    override val supportsMute: Boolean get() = true
+    override val reportsConnection: Boolean get() = true
+    private var connectionCb: ((Boolean) -> Unit)? = null
+    private var muted = false
+
+    override fun onConnectionChange(cb: (Boolean) -> Unit) {
+        connectionCb = cb
+    }
+
+    /** Muted, the tone stands in for a muted mic: the level reads 0. */
+    override fun setMuted(muted: Boolean) {
+        this.muted = muted
     }
 
     override fun onMetrics(cb: (VoiceMetrics) -> Unit) {
@@ -44,13 +60,16 @@ class TestToneVoiceSource(private val sampleRate: Double = 48_000.0) : VoiceSour
         analysis.reset()
         running = true
         stateCb?.invoke(AgentState.LISTENING)
+        connectionCb?.invoke(true)
         handler.post(tick)
     }
 
     override fun disconnect() {
+        val was = running
         running = false
         handler.removeCallbacks(tick)
         stateCb?.invoke(AgentState.IDLE)
+        if (was) connectionCb?.invoke(false)
     }
 
     companion object {

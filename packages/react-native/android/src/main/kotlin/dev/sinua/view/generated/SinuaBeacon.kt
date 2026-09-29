@@ -59,7 +59,7 @@ data class SinuaBeaconProps(
     val accuracy: Double? = null,
     /** Opacity of the accuracy halo. Range 0...1 (fraction). Patterns: locating. */
     val haloOpacity: Double? = null,
-    /** Contacts that light up as the sweep passes. Range 0...12. Patterns: scanning. */
+    /** How many targets were found (e.g. nearby devices): one blip each, lit as the sweep passes. 0 = still looking. Range 0...12. Patterns: scanning. */
     val blipCount: Int? = null,
     /** Seed for where the blips sit. Range 0...1000000. Patterns: scanning. */
     val seed: Int? = null,

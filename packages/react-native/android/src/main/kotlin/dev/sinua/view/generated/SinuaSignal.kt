@@ -22,21 +22,22 @@ enum class SinuaSignalPattern(val id: String) {
     WAVEFORM("waveform"),
     SCROLLING("scrolling"),
     METERING("metering"),
+    PLAYING("playing"),
 }
 
 /** Signal parameters; null keeps the pattern's value. [toOverrides] is what [SinuaSignal] hands to SinuaView. */
 data class SinuaSignalProps(
     val pattern: SinuaSignalPattern,
     val size: SinuaSize = SinuaSize.S64,
-    /** Number of level bars. Range 1...64. Patterns: signaling. */
+    /** Number of level bars. Range signaling 1...64, playing 0...128. Patterns: signaling, playing. */
     val barCount: Int? = null,
-    /** Bar width as a fraction of each slot. Range 0.05...1 (fraction). Patterns: signaling, scrolling. */
+    /** Bar width as a fraction of each slot. Range 0.05...1 (fraction). Patterns: signaling, scrolling, playing. */
     val barWidth: Double? = null,
     /** Ink hue in degrees; applies once saturation is above 0. Range 0...360 (deg). */
     val hue: Double? = null,
     /** How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction). */
     val ink: Double? = null,
-    /** Height of a silent bar, as a fraction of full height. Range 0...1 (fraction). Patterns: signaling, scrolling. */
+    /** Height of a silent bar, as a fraction of full height. Range 0...1 (fraction). Patterns: signaling, scrolling, playing. */
     val minHeight: Double? = null,
     /** How far the ink moves from grey toward the hue (0 = the grey ink). Range 0...1 (fraction). */
     val saturation: Double? = null,
@@ -60,6 +61,14 @@ data class SinuaSignalProps(
     val minLevel: Double? = null,
     /** Columns grow out from the middle row instead of rising from the bottom. Patterns: metering. */
     val mirror: Boolean? = null,
+    /** Draw a thin line at the playback position. Patterns: playing. */
+    val playhead: Boolean? = null,
+    /** Opacity of the bars not played yet, relative to the played ones. Range 0...1 (fraction). Patterns: playing. */
+    val unplayedOpacity: Double? = null,
+    /** Playback position, 0 to 1: bars before it are played (full ink), the rest dimmed. Range 0...1 (fraction). Patterns: playing. */
+    val progress: Double? = null,
+    /** The recorded clip's loudness, oldest first, 0 to 1 per value (up to 64; resample longer clips). Without it a fixed sample message is drawn. Range 0...1 (fraction). Up to 64 values. Patterns: playing. */
+    val envelope: List<Double>? = null,
     val glow: SinuaGlow? = null,
     val noise: SinuaNoise? = null,
     val pulse: SinuaPulse? = null,
@@ -87,6 +96,10 @@ data class SinuaSignalProps(
         ledSize?.let { o["ledSize"] = it }
         minLevel?.let { o["minLevel"] = it }
         mirror?.let { o["mirror"] = if (it) 1.0 else 0.0 }
+        playhead?.let { o["playhead"] = if (it) 1.0 else 0.0 }
+        unplayedOpacity?.let { o["unplayedOpacity"] = it }
+        progress?.let { o["progress"] = it }
+        envelope?.let { listOf("envelope0", "envelope1", "envelope2", "envelope3", "envelope4", "envelope5", "envelope6", "envelope7", "envelope8", "envelope9", "envelope10", "envelope11", "envelope12", "envelope13", "envelope14", "envelope15", "envelope16", "envelope17", "envelope18", "envelope19", "envelope20", "envelope21", "envelope22", "envelope23", "envelope24", "envelope25", "envelope26", "envelope27", "envelope28", "envelope29", "envelope30", "envelope31", "envelope32", "envelope33", "envelope34", "envelope35", "envelope36", "envelope37", "envelope38", "envelope39", "envelope40", "envelope41", "envelope42", "envelope43", "envelope44", "envelope45", "envelope46", "envelope47", "envelope48", "envelope49", "envelope50", "envelope51", "envelope52", "envelope53", "envelope54", "envelope55", "envelope56", "envelope57", "envelope58", "envelope59", "envelope60", "envelope61", "envelope62", "envelope63").zip(it).forEach { (key, x) -> o[key] = x } }
         glow?.writeTo(o)
         noise?.writeTo(o)
         pulse?.writeTo(o)
@@ -124,6 +137,10 @@ fun SinuaSignal(
     ledSize: Double? = null,
     minLevel: Double? = null,
     mirror: Boolean? = null,
+    playhead: Boolean? = null,
+    unplayedOpacity: Double? = null,
+    progress: Double? = null,
+    envelope: List<Double>? = null,
     glow: SinuaGlow? = null,
     noise: SinuaNoise? = null,
     pulse: SinuaPulse? = null,
@@ -150,7 +167,7 @@ fun SinuaSignal(
     lowPower: FxLowPower = FxLowPower.AUTO,
     onFrame: ((FxFrameStats) -> Unit)? = null,
 ) {
-    val overrides = SinuaSignalProps(pattern = pattern, size = size, barCount = barCount, barWidth = barWidth, hue = hue, ink = ink, minHeight = minHeight, saturation = saturation, layerCount = layerCount, lineWidth = lineWidth, pointCount = pointCount, amplitude = amplitude, fadeWidth = fadeWidth, columnCount = columnCount, ledCount = ledCount, ledSize = ledSize, minLevel = minLevel, mirror = mirror, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
+    val overrides = SinuaSignalProps(pattern = pattern, size = size, barCount = barCount, barWidth = barWidth, hue = hue, ink = ink, minHeight = minHeight, saturation = saturation, layerCount = layerCount, lineWidth = lineWidth, pointCount = pointCount, amplitude = amplitude, fadeWidth = fadeWidth, columnCount = columnCount, ledCount = ledCount, ledSize = ledSize, minLevel = minLevel, mirror = mirror, playhead = playhead, unplayedOpacity = unplayedOpacity, progress = progress, envelope = envelope, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,

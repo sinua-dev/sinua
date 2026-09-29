@@ -22,6 +22,23 @@ The signal draws sound: bars, waveforms, a scrolling history or an LED meter. Fe
 | [Waveform](#waveform) | `waveform` | Live voice: layered waveform lines. |
 | [Scrolling](#scrolling) | `scrolling` | Voice over time: a scrolling history of levels. |
 | [Meter](#metering) | `metering` | A precise meter: an LED matrix with peaks. |
+| [Playing](#playing) | `playing` | A recorded voice message: its waveform and how far it has played. |
+
+## A voice message
+
+`playing` draws a recorded message the way a chat app shows one: the waveform, the played part in full ink and the rest dimmed. It fills a wide box instead of a square. `SinuaVoiceMessage` wraps it with drag-to-seek and a slider for screen readers (not on React Native yet). Sinua decodes no audio: your app passes up to 64 loudness values as `envelope`, and `progress` from 0 to 1.
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="voice-message-react.tsx"'>../../../snippets/values/voice-message-react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="voice-message.swift"'>../../../snippets/values/voice-message.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="voice-message.kt"'>../../../snippets/values/voice-message.kt</include>
+</Tab>
+</Tabs>
 
 ## Props
 

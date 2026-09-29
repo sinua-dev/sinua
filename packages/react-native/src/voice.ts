@@ -6,48 +6,68 @@
 // action -- the mic prompt and audio need one), reads its state, may share it
 // between views, and releases it. A view only binds what it is given.
 //
-// Credentials live in the native source's memory only: they are passed once to
-// `create`, never stored, never logged, and never part of a view's props. For
-// OpenAI, pass `getCredential` instead -- it's called again for every reconnect,
-// which an `ek_` (single-use) needs.
+// Credentials: the one contract every platform shares (docs/audio-pipeline.md,
+// *Credentials for a real integration*). Pass `credentialUrl` (your endpoint,
+// answering `{ credential, expiresAt?, url? }`) or a `credential` provider: both are
+// resolved here in JS and handed to the native source on every connect and
+// reconnect, so an expired or single-use credential is never reused. A plain
+// string is one fixed value. Credentials are never stored, never logged, and never
+// part of a view's props. A raw API key is refused by the native source.
 import { NativeEventEmitter, NativeModules } from "react-native";
 
 /** The agent's lifecycle, as every sinua voice source reports it (docs/audio-pipeline.md). */
 export type AgentState = "initializing" | "idle" | "listening" | "thinking" | "speaking";
 
+/** What your credential endpoint answers, the same JSON on every platform and vendor. */
+export interface SinuaCredential {
+  /** `ek_…` (OpenAI), `auth_tokens/…` (Gemini), a signed `wss://` URL (ElevenLabs) or a room JWT (LiveKit). */
+  credential: string;
+  /** When it stops working, in Unix seconds, if the vendor says. */
+  expiresAt?: number;
+  /** LiveKit only: the server URL the token is for. */
+  url?: string;
+}
+
+/** Returns a fresh credential; called on every connect and reconnect. A string counts as `{ credential }`. */
+export type CredentialProvider = () => Promise<SinuaCredential | string>;
+
+/** How a vendor source gets its credential. */
+export interface CredentialOptions {
+  /** A provider (the production shape), or one fixed value (a pasted ephemeral, or ElevenLabs' public agent id). */
+  credential?: string | CredentialProvider;
+  /** Your endpoint: POSTed (no body, `Cache-Control: no-store`) on every connect and reconnect; answers `SinuaCredential`. */
+  credentialUrl?: string;
+}
+
 /** Vendor SDKs are opt-in per platform; an unavailable vendor rejects `connect()` with how to add it. */
 export type VoiceSourceConfig =
   | { vendor: "test" }
   | { vendor: "mic" }
-  /** A LiveKit room: the access token comes from your backend. */
+  /**
+   * A simulated conversation (no audio, no mic, no network): a built-in sample
+   * (`calendar`, `quick-answer`, `long-answer`, `barge-in`) or your own script
+   * (docs/audio-pipeline.md, *Simulated conversations*). Plays and loops on `connect()`.
+   */
+  | { vendor: "simulated"; sample?: string; script?: string | Record<string, unknown>; loop?: boolean }
+  /** A LiveKit room: the access token (and `url`) come from your backend. */
   | { vendor: "livekit"; url: string; token: string; publishMicrophone?: boolean }
-  /** OpenAI Realtime: an `ek_…` from your backend. `getCredential` is asked again on every reconnect. */
-  | {
+  | ({ vendor: "livekit"; publishMicrophone?: boolean } & CredentialOptions)
+  /** OpenAI Realtime: an `ek_…` from your backend; the model, voice and instructions are set where it's minted. */
+  | ({
       vendor: "openai";
-      credential?: string;
+      /** @deprecated Pass the same function as `credential`. */
       getCredential?: () => Promise<string>;
-      model?: string;
-      voice?: string;
-      instructions?: string;
-      /**
-       * Opt in to a raw, long-lived API key. Without it `connect()` refuses one
-       * before the mic or the call. Local demos only; ship an `ek_…` minted by
-       * your backend instead.
-       */
-      allowInsecureApiKey?: boolean;
-    }
-  /** Gemini Live: an ephemeral `auth_tokens/…` from your backend. */
-  | {
+    } & CredentialOptions)
+  /** Gemini Live: an ephemeral `auth_tokens/…` from your backend, which locks the model, voice and instructions. */
+  | ({
       vendor: "gemini";
-      credential: string;
       model?: string;
+      /** @deprecated Set instructions where your backend mints the token (it locks them). */
       instructions?: string;
       endpoint?: string;
-      /** See the OpenAI entry: opt in to a raw, long-lived API key. Local demos only. */
-      allowInsecureApiKey?: boolean;
-    }
+    } & CredentialOptions)
   /** ElevenLabs: a public agent's id, or a signed `wss://` URL from your backend. */
-  | { vendor: "elevenlabs"; credential: string; endpoint?: string };
+  | ({ vendor: "elevenlabs"; endpoint?: string } & CredentialOptions);
 
 export interface VoiceSourceHandle {
   /** Opaque native id; `<SinuaView voice={handle}>` passes it across. */
@@ -68,14 +88,25 @@ export interface VoiceSourceHandle {
   onError(cb: (message: string) => void): () => void;
   /** The user talked over the agent (where the vendor signals it). */
   onInterrupt(cb: () => void): () => void;
+  /**
+   * Mutes or unmutes the microphone: silence goes out and the session stays up. Views
+   * bound to this source show the muted cue (docs/audio-pipeline.md, *Mute*).
+   */
+  setMuted(muted: boolean): void;
+  /** The last `setMuted` value the native side confirmed. */
+  readonly muted: boolean;
+  /** `true` once the session is up, `false` when it ends (your disconnect, a hang-up, a drop). */
+  onConnectionChange(cb: (connected: boolean) => void): () => void;
+  onMuteChange(cb: (muted: boolean) => void): () => void;
 }
 
 interface VoiceNativeModule {
   create(config: Record<string, unknown>): Promise<string>;
   connect(id: string): Promise<void>;
   disconnect(id: string): void;
+  setMuted(id: string, muted: boolean): void;
   release(id: string): void;
-  provideCredential(requestId: string, credential: string | null, error: string | null): void;
+  provideCredential(requestId: string, credential: string | null, url: string | null, error: string | null, fatal: boolean): void;
 }
 
 const LINKING_ERROR =
@@ -91,9 +122,11 @@ const nativeOrThrow = (): VoiceNativeModule => {
 /** One `sinua-voice` event from the native module. */
 interface VoiceEvent {
   id: string;
-  event: "state" | "error" | "interrupt" | "credentialRequest";
+  event: "state" | "error" | "interrupt" | "connection" | "mute" | "credentialRequest";
   state?: AgentState;
   message?: string;
+  connected?: boolean;
+  muted?: boolean;
   requestId?: string;
 }
 
@@ -107,7 +140,7 @@ function subscribe(id: string, event: string, cb: (payload: never) => void): () 
     emitter.addListener("sinua-voice", (raw) => {
       const e = raw as VoiceEvent;
       if (e.event === "credentialRequest") return void credentialRequest(e.id, e.requestId ?? "");
-      for (const l of listeners) if (l.id === e.id && l.event === e.event) (l.cb as (p: unknown) => void)(e.state ?? e.message);
+      for (const l of listeners) if (l.id === e.id && l.event === e.event) (l.cb as (p: unknown) => void)(e.state ?? e.message ?? e.connected ?? e.muted);
     });
   }
   const listener: Listener = { id, event, cb };
@@ -118,17 +151,59 @@ function subscribe(id: string, event: string, cb: (payload: never) => void): () 
   };
 }
 
-/** `getCredential` per source, kept in JS: the native side asks, and the answer goes straight to it. */
-const providers = new Map<string, () => Promise<string>>();
+/** A `credential` provider or `credentialUrl` per source, kept in JS: the native side asks, the answer goes straight to it. */
+const providers = new Map<string, () => Promise<SinuaCredential>>();
+
+/** Thrown for anything a retry can't fix: a 4xx, or an answer that isn't `SinuaCredential`. */
+class FatalCredentialError extends Error {}
 
 async function credentialRequest(id: string, requestId: string): Promise<void> {
   const provider = providers.get(id);
-  if (!provider) return nativeOrThrow().provideCredential(requestId, null, "no getCredential for this source");
+  if (!provider) return nativeOrThrow().provideCredential(requestId, null, null, "no credential provider for this source", true);
   try {
-    nativeOrThrow().provideCredential(requestId, await provider(), null);
+    const c = await provider();
+    nativeOrThrow().provideCredential(requestId, c.credential, c.url ?? null, null, false);
   } catch (err) {
-    nativeOrThrow().provideCredential(requestId, null, err instanceof Error ? err.message : String(err));
+    nativeOrThrow().provideCredential(requestId, null, null, err instanceof Error ? err.message : String(err), err instanceof FatalCredentialError);
   }
+}
+
+/** Validates a provider's or an endpoint's answer (the same rules as `@sinua/voice`). Never echoes a value. */
+export function parseCredential(raw: unknown): SinuaCredential {
+  if (typeof raw === "string") {
+    if (!raw.trim()) throw new FatalCredentialError("a credential is required");
+    return { credential: raw.trim() };
+  }
+  const o = (raw ?? {}) as Record<string, unknown>;
+  if (typeof raw !== "object" || typeof o.credential !== "string" || !o.credential.trim()) {
+    throw new FatalCredentialError(`expected { credential: string, expiresAt?, url? }, got keys [${Object.keys(o).join(", ")}]`);
+  }
+  if (o.expiresAt !== undefined && typeof o.expiresAt !== "number") throw new FatalCredentialError("`expiresAt` must be Unix seconds (a number)");
+  if (o.url !== undefined && typeof o.url !== "string") throw new FatalCredentialError("`url` must be a string");
+  return {
+    credential: o.credential.trim(),
+    ...(o.expiresAt !== undefined ? { expiresAt: o.expiresAt as number } : {}),
+    ...(o.url !== undefined ? { url: o.url as string } : {}),
+  };
+}
+
+function urlProvider(url: string): () => Promise<SinuaCredential> {
+  return async () => {
+    // React Native's fetch has no `cache` option; the header asks every cache on the way to skip it.
+    const res = await fetch(url, { method: "POST", headers: { Accept: "application/json", "Cache-Control": "no-store" } });
+    if (!res.ok) {
+      const retry = res.status === 408 || res.status === 425 || res.status === 429 || res.status >= 500;
+      const message = `${url} returned ${res.status}`;
+      throw retry ? new Error(message) : new FatalCredentialError(message);
+    }
+    let body: unknown;
+    try {
+      body = await res.json();
+    } catch {
+      throw new FatalCredentialError(`${url} did not return JSON`);
+    }
+    return parseCredential(body);
+  };
 }
 
 /**
@@ -145,14 +220,30 @@ async function credentialRequest(id: string, requestId: string): Promise<void> {
 let idCounter = 0;
 
 export function createVoiceSource(config: VoiceSourceConfig): VoiceSourceHandle {
-  const { getCredential, ...rest } = config as VoiceSourceConfig & { getCredential?: () => Promise<string> };
+  const { getCredential, credentialUrl, credential, ...rest } = config as VoiceSourceConfig & {
+    getCredential?: () => Promise<string>;
+  } & CredentialOptions;
   const id = `${config.vendor}-${(idCounter += 1)}-${Date.now().toString(36)}`;
-  if (getCredential) providers.set(id, getCredential);
+  // Functions never cross the bridge: providers stay here and answer each request.
+  const fn = typeof credential === "function" ? credential : getCredential;
+  const provider = credentialUrl ? urlProvider(credentialUrl) : fn ? async () => parseCredential(await fn()) : undefined;
+  if (provider) providers.set(id, provider);
+  if (config.vendor === "simulated" && typeof (rest as { script?: unknown }).script === "object") {
+    // The native side takes the script as JSON text.
+    (rest as { script?: unknown }).script = JSON.stringify((rest as { script?: unknown }).script);
+  }
   const created = nativeOrThrow()
-    .create({ ...rest, id, hasCredentialProvider: getCredential != null })
+    .create({
+      ...rest,
+      ...(typeof credential === "string" && !provider ? { credential } : {}),
+      id,
+      hasCredentialProvider: provider != null,
+    })
     .then(() => undefined);
   created.catch(() => undefined); // surfaced by connect(); an unhandled rejection here would be noise
   let released = false;
+  let muted = false;
+  subscribe(id, "mute", ((m: boolean) => (muted = m)) as (p: never) => void);
   const handle: VoiceSourceHandle = {
     id,
     vendor: config.vendor,
@@ -174,6 +265,14 @@ export function createVoiceSource(config: VoiceSourceConfig): VoiceSourceHandle 
     onStateChange: (cb) => subscribe(id, "state", cb),
     onError: (cb) => subscribe(id, "error", cb),
     onInterrupt: (cb) => subscribe(id, "interrupt", () => cb()),
+    setMuted(m: boolean) {
+      if (!released) nativeOrThrow().setMuted(id, m);
+    },
+    get muted() {
+      return muted;
+    },
+    onConnectionChange: (cb) => subscribe(id, "connection", cb as (p: never) => void),
+    onMuteChange: (cb) => subscribe(id, "mute", cb as (p: never) => void),
   };
   return handle;
 }
@@ -193,4 +292,12 @@ export function voiceProps(voice: "none" | "test" | "mic" | VoiceSourceHandle | 
 /** True for a handle from `createVoiceSource` (vs the `"test"` / `"mic"` shorthands). */
 export function isVoiceSourceHandle(v: unknown): v is VoiceSourceHandle {
   return typeof v === "object" && v !== null && typeof (v as VoiceSourceHandle).id === "string" && typeof (v as VoiceSourceHandle).connect === "function";
+}
+
+/** The accessibility props -> the native component's (Codegen has no maps and no optional booleans). */
+export function a11yNativeProps(labels: Record<string, string> | undefined, announce: boolean | undefined): {
+  labelsJson: string | undefined;
+  announce: "auto" | "on" | "off";
+} {
+  return { labelsJson: labels ? JSON.stringify(labels) : undefined, announce: announce == null ? "auto" : announce ? "on" : "off" };
 }

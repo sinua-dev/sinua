@@ -25,7 +25,10 @@ export interface NativeProps extends ViewProps {
   /** JSON object of binding inputs (spec). */
   inputsJson?: string;
   voiceLevelInput?: string;
-  crossFade?: CodegenTypes.WithDefault<CodegenTypes.Double, 0.25>;
+  /** Every state change's duration, seconds; < 0 = the spec's `transitions` (default 0.6 s). */
+  crossFade?: CodegenTypes.WithDefault<CodegenTypes.Double, -1>;
+  /** The bound voice's pulse (VoiceOverrides `audioStrength`); < 0 = the view's default. */
+  audioStrength?: CodegenTypes.WithDefault<CodegenTypes.Double, -1>;
   voice?: CodegenTypes.WithDefault<"none" | "test" | "mic", "none">;
   /** A source created through the SinuaVoice module (src/voice.ts); takes precedence over `voice`. */
   voiceSourceId?: string;
@@ -36,6 +39,15 @@ export interface NativeProps extends ViewProps {
   maxFps?: CodegenTypes.WithDefault<CodegenTypes.Double, 0>;
   lowPower?: CodegenTypes.WithDefault<"auto" | "on" | "off", "auto">;
   label?: string;
+  /** JSON object state -> words for the accessible name and announcements. */
+  labelsJson?: string;
+  /** Speak state changes: "auto" = the spec's, else on (Codegen has no optional boolean). */
+  announce?: CodegenTypes.WithDefault<"auto" | "on" | "off", "auto">;
+  haptics?: CodegenTypes.WithDefault<boolean, false>;
+  rules?: CodegenTypes.WithDefault<boolean, true>;
+  /** A one-shot effect (`success` / `error` / `celebrate`); it plays when `effectKey` changes. */
+  effectName?: string;
+  effectKey?: CodegenTypes.WithDefault<CodegenTypes.Int32, 0>;
   /** Sent at most 4 times a second (native-side throttle); only while a handler is set. */
   reportFrames?: CodegenTypes.WithDefault<boolean, false>;
   onFrame?: CodegenTypes.DirectEventHandler<FrameEvent>;

@@ -65,7 +65,7 @@ const MATERIAL_KEYS: [&str; 3] = ["colorMix", "colorMode", "gradientStrength"];
 /// Every state this set freezes -- the complement of `PORTED` across all
 /// five families. `every_non_ported_state_is_frozen` checks each one
 /// resolves; adding a state means adding it here (docs/testing.md).
-const STATES: [&str; 25] = [
+const STATES: [&str; 28] = [
     // orbs, additive
     "glowing",
     "drifting",
@@ -81,12 +81,14 @@ const STATES: [&str; 25] = [
     "waveform",
     "scrolling",
     "metering",
+    "playing",
     // ring
     "completing",
     "loading",
     "tracking",
     "stepping",
     "measuring",
+    "talking",
     // beacon
     "notifying",
     "reconnecting",
@@ -96,6 +98,8 @@ const STATES: [&str; 25] = [
     // core
     "generating",
     "typing",
+    // edge
+    "framing",
 ];
 
 /// (state, key tag, overrides) for an input-driven extra case.
@@ -174,6 +178,47 @@ fn cases() -> Vec<Case> {
         ("waveform", "speaking-bands", speaking_bands()),
         ("metering", "speaking-bands", speaking_bands()),
         ("scrolling", "history", history),
+        (
+            "framing",
+            "square-speaking",
+            s(&[("audioLevel", 0.7), ("idleOpacity", 0.45)]),
+        ),
+        (
+            "framing",
+            "portrait-speaking",
+            s(&[
+                ("aspect", 0.46),
+                ("audioLevel", 0.7),
+                ("idleOpacity", 0.45),
+                ("glowStrength", 0.6),
+            ]),
+        ),
+        (
+            "framing",
+            "landscape-thinking",
+            s(&[("aspect", 2.0), ("shimmer", 1.0), ("idleOpacity", 0.3)]),
+        ),
+        ("playing", "envelope-progress40", {
+            let mut e = s(&[("progress", 0.4), ("playhead", 1.0), ("aspect", 4.0)]);
+            e.extend((0..24).map(|i| (format!("envelope{i}"), (i as f64 * 0.9).sin() * 0.5 + 0.5)));
+            e
+        }),
+        ("playing", "resampled", {
+            let mut e = s(&[("barCount", 12.0), ("progress", 0.75)]);
+            e.extend((0..40).map(|i| (format!("envelope{i}"), (i % 7) as f64 / 6.0)));
+            e
+        }),
+        (
+            "talking",
+            "speaking-level60",
+            s(&[("audioLevel", 0.6), ("flow", 1.0)]),
+        ),
+        (
+            "talking",
+            "listening-level40",
+            s(&[("audioLevel", 0.4), ("flow", -1.0)]),
+        ),
+        ("talking", "thinking-shimmer", s(&[("shimmer", 1.0)])),
         ("reconnecting", "quality66", s(&[("quality", 0.66)])),
         ("broadcasting", "level50", s(&[("level", 0.5)])),
         // Color system (2026-09-18, spec 1.1.0): `apply_color` on a line-heavy

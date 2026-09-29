@@ -21,6 +21,8 @@ test("attributes read as their types", async () => {
   assert.equal(attributeValue("paused", ""), true);
   assert.equal(attributeValue("paused", null), false);
   assert.equal(attributeValue("low-power", "false"), true, "boolean attributes: presence means true, like HTML's");
+  assert.equal(attributeValue("pointer", ""), true, "<sinua-view pointer> turns pointer scatter on");
+  assert.equal(attributeValue("pointer", null), false);
   assert.equal(attributeValue("theme", null), undefined);
   assert.equal(attributeValue("unknown", "x"), undefined);
 });
@@ -35,6 +37,8 @@ test("FX Spec 1.7 names map to mount's options", async () => {
   assert.equal(o.lowPower, true);
   assert.deepEqual(o.inputs, { micLevel: 0.6 });
   assert.equal(o.paused, false);
+  assert.equal(o.pointer, false, "pointer scatter is off unless asked for");
+  assert.equal(optionsFromProps({ pattern: "working", pointer: true }).pointer, true);
   assert.equal(optionsFromProps({ spec: "  " }).spec, undefined, "a blank spec attribute is no spec");
   const spec = { fxSpec: "1.8", object: "orb", pattern: "working", size: 64 };
   assert.equal(optionsFromProps({ spec }).spec, spec);

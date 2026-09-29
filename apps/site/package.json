@@ -10,19 +10,20 @@
     "start": "serve out -l 3100",
     "typecheck": "next typegen && tsc --noEmit",
     "smoke": "node scripts/smoke.mjs",
-    "specs": "node scripts/copy-specs.mjs && node scripts/changelog.mjs"
+    "specs": "node scripts/copy-specs.mjs && node scripts/changelog.mjs && node scripts/check-legal.mjs"
   },
   "dependencies": {
+    "@sinua/core": "file:../../packages/core",
+    "@sinua/design": "file:../../packages/design",
+    "@sinua/snippets": "file:../../packages/snippets",
+    "@sinua/web": "file:../../packages/web",
     "fumadocs-core": "16.15.11",
     "fumadocs-mdx": "15.4.1",
     "fumadocs-ui": "16.15.11",
+    "lucide-react": "^1.43.0",
     "next": "16.3.5",
     "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "lucide-react": "^1.43.0",
-    "@sinua/web": "file:../../packages/web",
-    "@sinua/core": "file:../../packages/core",
-    "@sinua/snippets": "file:../../packages/snippets"
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

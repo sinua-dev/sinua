@@ -129,4 +129,13 @@ function renderTable(rows: Awaited<ReturnType<typeof runCase>>[]) {
 }
 
 $("run").addEventListener("click", run);
-if (q.get("auto") === "1") run();
+if (q.get("grid")) {
+  // Many small views at once (src/grid.ts): informational, web only.
+  const { runGrid } = await import("./grid");
+  status("measuring refresh rate…");
+  const hz = await refreshHz();
+  status(`grid · ${q.get("grid")} views…`);
+  const r = await runGrid(Number(q.get("grid")), Number(q.get("px") ?? 32), measureS, q.get("state") ?? "composing", hz, $("table"));
+  (window as unknown as { __gridResult: unknown }).__gridResult = r;
+  status(`grid done · ${r.views}×${r.px}px · ${r.drawsPerS} draws/s · ${r.workMsPerS} ms work/s · frame p95 ${r.frameMs.p95} ms`);
+} else if (q.get("auto") === "1") run();

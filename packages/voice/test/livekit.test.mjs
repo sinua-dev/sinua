@@ -195,3 +195,19 @@ test("livekit: Disconnected returns to idle", async () => {
   room.emit(RoomEvent.Disconnected);
   assert.equal(w.states.at(-1), "idle");
 });
+
+test("livekit: setMuted mutes the local microphone and the room stays joined; connection is reported", async () => {
+  const room = fakeRoom({ participants: [agent({ [AGENT_STATE]: "listening" })] });
+  const calls = [];
+  room.localParticipant.setMicrophoneEnabled = async (on) => calls.push(on);
+  const src = await source(room);
+  const conn = [];
+  src.onConnectionChange((c) => conn.push(c));
+  await src.connect();
+  src.setMuted(true);
+  src.setMuted(false);
+  assert.deepEqual(calls, [false, true]);
+  assert.equal(room.disconnected, false);
+  src.disconnect();
+  assert.deepEqual(conn, [true, false]);
+});

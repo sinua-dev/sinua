@@ -1,12 +1,6 @@
 import { OpenAIRealtimeVoiceSource } from "@sinua/voice/openai";
 
-// Your backend mints a short-lived `ek_…` key (POST /v1/realtime/client_secrets with
-// your API key, which never reaches the browser). An `ek_` is single-use, so give the
-// source a function: it asks again on every reconnect.
-export const voice = new OpenAIRealtimeVoiceSource({
-  getCredential: async () => {
-    const res = await fetch("/api/openai-realtime-key", { method: "POST" });
-    return (await res.json()).key as string;
-  },
-  instructions: "You are a concise voice assistant.",
-});
+// Your endpoint mints a short-lived `ek_…` with your API key, which never reaches the
+// browser (see Credentials). The source POSTs to it on every connect and reconnect,
+// since an `ek_` works once. The model, voice and instructions are set on the server.
+export const voice = new OpenAIRealtimeVoiceSource({ credentialUrl: "/api/voice/openai" });

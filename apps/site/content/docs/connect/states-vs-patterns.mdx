@@ -46,11 +46,11 @@ A state name of your own (`"recording"`) is left alone: the visual stays the bar
 
 Here the **pattern never changes**. One shape stays on screen for the whole conversation, and each state changes how it behaves: how fast it moves, how dense and bright it is, whether the mic or the agent's voice drives it. That's what we recommend for a voice assistant, because the visual stays one recognisable thing.
 
-Pass the current state to the view (`state`) and it renders that entry. A state the file doesn't list renders the base design.
+Pass the current state to the view (`state`) and it renders that entry. A state the file doesn't list renders the base design. The file can also pick the state itself from your values, with [rules](/docs/connect/bindings#rules-the-file-picks-the-state).
 
 ### A state can also change the pattern
 
-If you want a different shape per state, name a `pattern` inside the state. The view cross-fades between the two (0.25 s by default).
+If you want a different shape per state, name a `pattern` inside the state. The view cross-fades between the two; a state that keeps the pattern flows into the next instead. Both take 0.6 s by default, and the file's [`transitions`](/docs/reference/fx-spec#transitions) sets it per pair.
 
 <include lang="json" meta='title="voice-orb-patterns.fxspec.json"'>../../../snippets/spec/voice-orb-patterns.fxspec.json</include>
 

@@ -23,7 +23,7 @@ export interface TypedElementDefinition {
 }
 
 /** Options the wrapped view takes as they are (scalars are attributes, kebab-cased). */
-const VIEW_SCALARS = ["state", "size", "speed", "theme", "paused", "reducedMotion", "maxFps", "lowPower", "label", "voiceLevelInput", "crossFade"] as const;
+const VIEW_SCALARS = ["state", "size", "speed", "theme", "paused", "reducedMotion", "maxFps", "lowPower", "pointer", "label", "voiceLevelInput", "crossFade"] as const;
 /** Objects and handles: properties only. */
 const VIEW_OBJECTS = ["spec", "inputs", "voice"] as const;
 

@@ -8,6 +8,7 @@ Before FX Spec, a design was a code snippet pasted into four codebases: a typo'd
 - Examples: [`spec/examples/`](../spec/examples/)
 - Color vectors: [`spec/fx-color-vectors.json`](../spec/fx-color-vectors.json); binding vectors: [`spec/reactive-vectors.json`](../spec/reactive-vectors.json)
 - 1.1 (states + bindings): see [*v1.1: lifecycle states and bindings*](#v11-lifecycle-states-and-bindings) below.
+- 1.9 (how state changes animate): see [*v1.9: `transitions`*](#v19-transitions) below.
 
 ## Shape
 
@@ -82,9 +83,9 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 
 - Major ≠ 1 → error; this runtime doesn't load it.
 - **The floor is 1.8** (`fx_spec.rs`'s `FLOOR_MINOR`). A `1.0`–`1.7` file is one error at `/fxSpec` (``FX Spec 1.7 isn't supported; this runtime reads 1.8 and later``) and nothing resolves. Those minors were never published; their acceptance was dropped before the first release instead of becoming a promise (docs/release-roadmap.md, decision 0.1). A missing or malformed `fxSpec` is an error too, and the rest of the file is still read as the current minor so its other problems show.
-- The runtime is **1.8** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**.
+- The runtime is **1.9** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A 1.9 key in a file that declares 1.8 (today only `transitions`) is an error naming the minor it needs.
 - A **newer 1.x** file (`1.9`) → unknown keys are **warnings** and the rest renders (graceful degradation).
-- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is one lock, `spec/fx-spec-1.8-resolved.json`, over all 13 examples; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
+- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is two locks, `spec/fx-spec-1.8-resolved.json` and `spec/fx-spec-1.9-resolved.json`, over all 13 examples (1.9 resolves them identically: it only adds `transitions`); the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
 - **A key added in a later minor is gated automatically.** `spec/fx-spec-1.8-keys.json`
   freezes every key path a 1.8 file may use (103 today, built from the resolver's own
   tables). A new key (a material, a section key, a binding target, something low power
@@ -179,7 +180,7 @@ The sections from here on record what each minor added. Since the 1.8 floor thei
 - Runtime keys that are bindable (`audioLevel`, `muted`) are rejected in `params` with a pointer to `bindings.<key>`.
 
 ### Caller loop
-State cross-fades and value easing stay caller-side. `FxSpecPlayer` (`@sinua/core`, `fxPlayer.ts`) packages the recommended loop for the web; native callers follow the same steps:
+State transitions and value easing stay caller-side. `FxSpecPlayer` (`@sinua/core`, `fxPlayer.ts`) packages the recommended loop for the web; the iOS and Android views run the same steps (`StateTransition` on each platform):
 
 ```ts
 const player = new FxSpecPlayer(specJson, { inputEaseRate: { heartRate: 4 } });
@@ -190,10 +191,13 @@ const { frame, previous, blend } = player.frame(elapsedS, dtS, voice.overrides(d
 previous ? drawCrossDissolve(ctx, previous, frame, blend) : draw(ctx, frame);
 ```
 
-1. **On a state change,** keep the previous key and cross-fade its frame into the new one over **250 ms, cubic ease-out**. This is the Studio's fade (`SignalStudio.tsx`), after LiveKit's `0.25s ease-out` state transition. A change mid-fade restarts from the state showing now.
+1. **On a state change,** animate from what is on screen now (a change mid-transition starts from the current mix), over the spec's `transitions` for that pair (below; default **0.6 s, easeInOut**). The engine's `transitionMix(from, to, size, progress, curve)` says how, per frame:
+   - **same pattern** (`params`): the continuous parameters and the speed interpolate, so one frame flows from one state to the next. Counts and choices (`nodeCount`, `particleStyle`, …) can't interpolate; they swap in a short window mid-way (40–60 % of the curve) as a brief dissolve of two frames that share every continuous value;
+   - **the orb lattice trio** (`morph`: glowing / calibrating / progressing): the point-by-point `frameTransitionWithOverrides`;
+   - **anything else** (`crossFade`): the two frames dissolve.
+   Reduced motion cuts. A view's `crossFade` option overrides every change's duration (`0` = a cut).
 2. **Ease slow inputs** yourself if they jump (`k = min(1, rate·dt)`, dt clamped to 0.1 s, the `ReactiveBinding`/`VoiceOverrides` rule). The first value is taken as-is.
-3. **Render** with `resolve…With(state, inputs)`, then `frameWithOverrides(state, size, elapsed × presetSpeed × speed, { ...overrides, ...extra })`. `extra` is for runtime keys the spec doesn't own, such as `VoiceOverrides`' spectrum bands and `voiceStateCode`.
-4. Per-state `speed` changes the time scale, so an object's phase can jump when it switches state. The cross-fade hides that. The real point-by-point `frameTransition` exists only for the `glowing`/`calibrating`/`progressing` trio.
+3. **Render** with `resolve…With(state, inputs)`, then `frameWithOverrides(state, size, t, { ...overrides, ...extra })` at a phase that runs at the effective speed (preset × `speed`, mixed mid-transition, so motion speeds up or slows down instead of jumping). `extra` is for runtime keys the spec doesn't own, such as `VoiceOverrides`' spectrum bands and `voiceStateCode`.
 
 Parsing happens on every call. A spec is a few KB of JSON, which is cheap next to rendering.
 
@@ -277,6 +281,51 @@ Unchanged: `audioLevel`, `muted`, `quality`, `accuracy`, `progress`, free input 
 **At the time** this was a minor, not 2.0: the old names stayed as aliases (with a deprecation warning in a 1.7 file), and the identity locks proved every older file resolved byte-identically. **Since the 1.8 floor the old names are errors that name the new one** (see *Old names are errors* above), because nothing had been published that would need them.
 
 **Resolver output is unchanged:** `FxSpecResolved.state` is still the pattern id, and binding targets are reported with their engine keys (`inactiveBindings`). TS's `bindReactiveInput` / `reactiveMapper` / `ReactiveBinding` accept either name (`reactiveTargetKey`, `REACTIVE_TARGET_PATHS`) -- that is the live binding API, not a file, so it isn't affected by the floor.
+
+## v1.9: `transitions`
+
+How state changes animate, per pair. Optional; without it every change takes 0.6 s, easeInOut.
+
+```json
+{ "fxSpec": "1.9", "object": "orb", "pattern": "glowing",
+  "states": { "idle": {}, "listening": {}, "thinking": {}, "speaking": {} },
+  "transitions": {
+    "default": { "duration": 0.6, "curve": "easeInOut" },
+    "idle->listening": { "duration": 0.25, "curve": "easeOut" },
+    "*->idle": { "duration": 0.9 } } }
+```
+
+- **Keys:** `default`, `"from->to"`, `"from->*"`, `"*->to"`, with `states` keys (`""`, the base design, has no key of its own and is matched by `*` and `default`). The most specific match wins field by field: the exact pair, then `from->*`, then `*->to`, then `default`, then 0.6 s / easeInOut.
+- **Fields:** `duration` (seconds, 0–10; `0` = a cut) and `curve` (one of the binding curves: `linear`, `ease`, `easeIn`, `easeOut`, `easeInOut`).
+- **Diagnostics:** a key that isn't `default` or `a->b` is an error; a state name that isn't in `states` is a warning (the entry never applies); an unknown curve or an out-of-range duration is an error.
+- `fxSpecTransition(spec, from, to)` returns `{ duration, curve }` for a pair; the players call it on every state change. The technique (interpolate / morph / cross-fade) isn't in the file: the engine picks it from the pair (see *Caller loop*).
+
+## v1.9: `accessibility`
+
+What a view is called in each state, and whether its state changes are spoken.
+Optional; without it a view is named by the app's `label`, else the file's `name`, else the
+pattern, with built-in words for the voice states.
+
+```json
+{ "fxSpec": "1.9", "object": "orb", "pattern": "glowing", "name": "Coach",
+  "states": { "listening": {}, "speaking": {}, "goalReached": {} },
+  "accessibility": {
+    "name": "Coach",
+    "states": { "listening": "Coach is listening", "speaking": "Coach is speaking",
+                "goalReached": "Goal reached!" },
+    "announce": true } }
+```
+
+- **`name`:** the view's accessible name (over the file's `name`; the app's `label` wins over both).
+- **`states`:** the words for a state, whole: they replace the name while that state shows. It takes any key of `states` and the voice states.
+  - The app's `labels` option wins per state; that's how apps translate.
+  - A voice state without words gets the built-in "<name>, listening" (`initializing` Starting, `listening`, `thinking`, `speaking`; `idle` has none).
+  - Any other state without words is just the name.
+- **`announce`:** whether a state change is spoken. Default true; the app's `announce` option wins.
+  - Changes are spoken politely and rate-limited: a state is spoken once it has held 1 s, at most once per 3 s, only if its words differ from the last spoken, never for the first state a view shows, and never for a state without words (`idle`).
+  - The rule is the engine's (`a11y_announce_step`), so every platform speaks the same things at the same moments (`spec/a11y-announce-vectors.json`).
+- **Diagnostics:** a wrong type is an error; a `states` key that is neither a voice state nor a key of `states` is a warning (its words are never used); an unknown key is reported like any other.
+- **Rules and voices:** the words follow the view's effective state. With a voice bound, that's the app's `state`, else the voice's (rules off). Without one, it's the state the file's `rules` derive from the app's inputs, else the app's own `state`.
 
 ## v1.8: `ink` and the voice-state direction
 

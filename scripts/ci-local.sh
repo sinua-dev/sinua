@@ -131,9 +131,14 @@ step "packages/snippets: npm ci";        (cd packages/snippets && npm ci)
 step "packages/snippets: npm run build"; (cd packages/snippets && npm run build)
 step "packages/snippets: npm test";      (cd packages/snippets && npm test)
 
+# The look the Studio and the docs site share (tokens, fonts, controls).
+step "packages/design: npm ci";        (cd packages/design && npm ci)
+step "packages/design: npm run build"; (cd packages/design && npm run build)
+
 step "packages/voice: npm ci";      (cd packages/voice && npm ci)
 step "packages/voice: npm run build"; (cd packages/voice && npm run build)
 step "packages/voice: npm test";      (cd packages/voice && npm test)
+step "examples/voice-server: npm ci + check (templates type-check, mocked tests)"; (cd examples/voice-server && npm ci && npm run check)
 step "packages/react-native: npm ci (types for the docs' RN samples)"; (cd packages/react-native && npm ci --ignore-scripts)
 step "docs: code samples (Web + RN type-check, install names)"; scripts/docs/check-code-snippets.sh --web
 step "scripts/test: the install-snippet checker fails when it checked nothing"; node --test 'scripts/test/*.test.mjs'

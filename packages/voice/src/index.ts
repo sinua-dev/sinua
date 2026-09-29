@@ -6,3 +6,5 @@ export type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
 export { AudioAnalysis } from "./analysis.js";
 export { PcmAudioGraph } from "./PcmAudioGraph.js";
 export type { PlaybackState, PcmAudioGraphStartOptions } from "./PcmAudioGraph.js";
+// The credential contract every vendor source takes (./credential.ts).
+export type { CredentialOptions, CredentialProvider, SinuaCredential } from "./credential.js";

@@ -74,6 +74,17 @@ fun fxPerformance(
     return FxPerformance(caps.minOrNull(), overrides)
 }
 
+/** Below this short side (dp) a view defaults to 30 fps (roadmap 10): a list of avatars, a badge. */
+const val FX_SMALL_VIEW_DP = 48f
+const val FX_SMALL_VIEW_MAX_FPS = 30.0
+
+/**
+ * The app's cap, or the small-view default: a small view draws at 30 fps unless the app
+ * gave `maxFps` (0 = display rate) or the spec has `performance.maxFps`.
+ */
+fun fxOptionMaxFps(optionMaxFps: Double?, specMaxFps: Double?, small: Boolean): Double? =
+    optionMaxFps ?: if (small && specMaxFps == null) FX_SMALL_VIEW_MAX_FPS else null
+
 /**
  * Battery Saver, observed: `PowerManager.isPowerSaveMode` plus the
  * `ACTION_POWER_SAVE_MODE_CHANGED` broadcast (registered while composed).

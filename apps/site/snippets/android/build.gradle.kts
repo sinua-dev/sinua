@@ -21,7 +21,7 @@ android {
     sourceSets {
         getByName("main") {
             // Only *.kt compiles; the folders' Swift / TS samples are ignored.
-            kotlin.srcDirs(listOf("first-visual", "platforms", "values", "states", "bindings", "voice", "perf").map { "../$it" })
+            kotlin.srcDirs(listOf("first-visual", "platforms", "values", "states", "bindings", "voice", "perf", "real-app").map { "../$it" })
             res.srcDirs("../platforms/android-res")
         }
     }

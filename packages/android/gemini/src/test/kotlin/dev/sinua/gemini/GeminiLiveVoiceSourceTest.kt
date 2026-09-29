@@ -133,6 +133,36 @@ class GeminiLiveVoiceSourceTest {
     private fun wsUrl() = server.url("/live").toString().replaceFirst("http", "ws")
 
     @Test
+    fun mutedSendsZeroedPcmAndReportsTheConnection() {
+        val c1 = ServerConn(answerSetup = true)
+        server.enqueue(MockResponse().withWebSocketUpgrade(c1))
+        val device = FakeDevice()
+        val headers = GeminiLiveSession.endpoint("auth_tokens/t1").headers
+        val source = GeminiLiveVoiceSource(
+            "auth_tokens/t1",
+            endpoint = GeminiLiveSession.Endpoint(wsUrl(), headers),
+            device = device,
+            main = main,
+        )
+        val conn: MutableList<Boolean> = Collections.synchronizedList(mutableListOf())
+        source.onConnectionChange { conn += it }
+        assertTrue(source.supportsMute)
+        main.sync { source.connect() }
+        until { device.started && conn.isNotEmpty() }
+        assertEquals(listOf(true), conn.toList())
+        source.setMuted(true)
+        device.capture!!.invoke(FloatArray(512) { 0.25f })
+        until { c1.received.any { it.contains("realtimeInput") } }
+        val msg = org.json.JSONObject(c1.received.last { it.contains("realtimeInput") })
+        val b64 = msg.getJSONObject("realtimeInput").getJSONObject("audio").getString("data")
+        val pcm = java.util.Base64.getDecoder().decode(b64)
+        assertEquals("512 samples of PCM16", 1024, pcm.size)
+        assertTrue("silence goes out", pcm.all { it == 0.toByte() })
+        main.sync { source.disconnect() }
+        assertEquals(listOf(true, false), conn.toList())
+    }
+
+    @Test
     fun handshakeMicTurnGoAwayResumeAndDisconnect() {
         val c1 = ServerConn(answerSetup = true)
         val c2 = ServerConn(answerSetup = true)
@@ -202,9 +232,8 @@ class GeminiLiveVoiceSourceTest {
         server.enqueue(MockResponse().withWebSocketUpgrade(ServerConn(answerSetup = false)))
         val device = FakeDevice()
         val source = GeminiLiveVoiceSource(
-            "AIzaKEY",
-            allowInsecureApiKey = true, // a raw key is the dev path; the gate is tested below
-            endpoint = GeminiLiveSession.Endpoint(wsUrl(), GeminiLiveSession.endpoint("AIzaKEY").headers),
+            "auth_tokens/expired",
+            endpoint = GeminiLiveSession.Endpoint(wsUrl(), emptyMap()),
             device = device,
             main = main,
         )
@@ -213,7 +242,7 @@ class GeminiLiveVoiceSourceTest {
         source.onStateChange { states += it }
         source.onError { errors += it }
         main.sync { source.connect() }
-        assertEquals("AIzaKEY", server.takeRequest(5, TimeUnit.SECONDS)!!.headers["x-goog-api-key"])
+        assertEquals("Token auth_tokens/expired", server.takeRequest(5, TimeUnit.SECONDS)!!.headers["Authorization"])
         until { errors.isNotEmpty() }
         assertEquals(AgentState.IDLE, states.last())
         assertFalse(device.started)
@@ -225,8 +254,7 @@ class GeminiLiveVoiceSourceTest {
         server.enqueue(MockResponse().withWebSocketUpgrade(ServerConn(answerSetup = true)))
         val device = FakeDevice().apply { failStart = true }
         val source = GeminiLiveVoiceSource(
-            "k",
-            allowInsecureApiKey = true,
+            "auth_tokens/k",
             endpoint = GeminiLiveSession.Endpoint(wsUrl(), emptyMap()),
             device = device,
             main = main,
@@ -259,9 +287,10 @@ class GeminiLiveVoiceSourceTest {
         source.onStateChange { states += it }
         val err = runCatching { main.sync { source.connect() } }.exceptionOrNull()
         val refused = generateSequence(err) { it.cause }
-            .filterIsInstance<dev.sinua.voice.InsecureCredential.Refused>().firstOrNull()
-        assertTrue("expected a Refused, got $err", refused != null)
-        assertTrue(refused!!.message!!, refused.message!!.contains("refusing a raw, long-lived API key"))
+            .filterIsInstance<dev.sinua.voice.CredentialException>().firstOrNull()
+        assertTrue("expected a CredentialException, got $err", refused != null)
+        assertTrue("a refusal is never retried", refused!!.fatal)
+        assertTrue(refused.message!!, refused.message!!.contains("refusing what looks like a raw, long-lived API key"))
         assertEquals("no socket was opened", 0, server.requestCount)
         assertFalse("the audio device was never started", device.started)
         assertTrue("a refusal never enters initializing", states.isEmpty())
@@ -271,6 +300,73 @@ class GeminiLiveVoiceSourceTest {
     fun missingCredentialThrows() {
         val source = GeminiLiveVoiceSource("  ", device = FakeDevice(), main = main)
         val err = runCatching { main.sync { source.connect() } }.exceptionOrNull()
-        assertTrue(err?.cause is IllegalStateException)
+        assertTrue("$err", err?.cause is dev.sinua.voice.CredentialException)
+    }
+
+    /**
+     * A token is single-use: every reconnect resumes the session with a NEW token
+     * from the provider, the resumption handle intact. Mirrors iOS
+     * `testEveryReconnectResumesWithAFreshTokenFromTheProvider` and Web's
+     * credentials.test.mjs.
+     */
+    @Test
+    fun everyReconnectResumesWithAFreshTokenFromTheProvider() {
+        val c1 = ServerConn(answerSetup = true)
+        val c2 = ServerConn(answerSetup = true)
+        server.enqueue(MockResponse().withWebSocketUpgrade(c1))
+        server.enqueue(MockResponse().withWebSocketUpgrade(c2))
+        val minted = java.util.concurrent.atomic.AtomicInteger()
+        val source = GeminiLiveVoiceSource(
+            dev.sinua.voice.CredentialSource.provider {
+                dev.sinua.voice.SinuaCredential("auth_tokens/t${minted.incrementAndGet()}")
+            },
+            endpointOverride = GeminiLiveSession.Endpoint(wsUrl(), emptyMap()),
+            device = FakeDevice(),
+            main = main,
+        )
+        val states: MutableList<AgentState> = Collections.synchronizedList(mutableListOf())
+        source.onStateChange { states += it }
+        main.sync { source.connect() }
+        assertEquals("Token auth_tokens/t1", server.takeRequest(5, TimeUnit.SECONDS)!!.headers["Authorization"])
+        until { states.lastOrNull() == AgentState.LISTENING }
+        c1.ws!!.send("""{"sessionResumptionUpdate":{"newHandle":"h1","resumable":true}}""")
+        c1.ws!!.send("""{"goAway":{"timeLeft":"1s"}}""")
+        assertEquals(
+            "a fresh token, not the spent one",
+            "Token auth_tokens/t2",
+            server.takeRequest(5, TimeUnit.SECONDS)!!.headers["Authorization"],
+        )
+        until { c2.received.any { it.contains("\"setup\"") } }
+        assertTrue(c2.received.first().contains(""""handle":"h1""""))
+        assertEquals(2, minted.get())
+        main.sync { source.disconnect() }
+    }
+
+    /** A provider that starts returning a raw key stops the reconnect at once (fatal). */
+    @Test
+    fun aProviderTurningToARawKeyStopsTheReconnect() {
+        val c1 = ServerConn(answerSetup = true)
+        server.enqueue(MockResponse().withWebSocketUpgrade(c1))
+        val minted = java.util.concurrent.atomic.AtomicInteger()
+        val source = GeminiLiveVoiceSource(
+            dev.sinua.voice.CredentialSource.provider {
+                dev.sinua.voice.SinuaCredential(if (minted.incrementAndGet() == 1) "auth_tokens/ok" else "AIzaRAW")
+            },
+            endpointOverride = GeminiLiveSession.Endpoint(wsUrl(), emptyMap()),
+            device = FakeDevice(),
+            main = main,
+        )
+        val states: MutableList<AgentState> = Collections.synchronizedList(mutableListOf())
+        val errors: MutableList<Throwable> = Collections.synchronizedList(mutableListOf())
+        source.onStateChange { states += it }
+        source.onError { errors += it }
+        main.sync { source.connect() }
+        until { states.lastOrNull() == AgentState.LISTENING }
+        c1.ws!!.send("""{"goAway":{"timeLeft":"1s"}}""")
+        until { errors.isNotEmpty() }
+        assertTrue((errors.single() as dev.sinua.voice.CredentialException).fatal)
+        assertEquals("asked once more, then gave up without retrying", 2, minted.get())
+        assertEquals("no socket for a refused credential", 1, server.requestCount)
+        assertEquals(AgentState.IDLE, states.last())
     }
 }

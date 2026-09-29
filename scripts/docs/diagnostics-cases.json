@@ -13,7 +13,9 @@
     { "title": "A section that isn't a material in a file (color / gradient)", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "materials": { "color": { "mix": 0.5 } } } },
     { "title": "Binding to something that isn't bindable", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "bindings": { "lanes": { "input": "x" } } } },
     { "title": "A lifecycle state the file doesn't list", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "states": { "listening": {} } }, "state": "speaking" },
-    { "title": "A newer 1.x file (forward compatible)", "spec": { "fxSpec": "1.9", "object": "orb", "pattern": "breathing", "timeline": {} } },
+    { "title": "A newer 1.x file (forward compatible)", "spec": { "fxSpec": "1.10", "object": "orb", "pattern": "breathing", "timeline": {} } },
+    { "title": "A 1.9 key in a 1.8 file", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "transitions": { "default": { "duration": 0.4 } } } },
+    { "title": "A transitions entry that can't apply", "spec": { "fxSpec": "1.9", "object": "orb", "pattern": "breathing", "states": { "idle": {} }, "transitions": { "idle->speaking": { "curve": "bounce" } } } },
     { "title": "An unsupported major version", "spec": { "fxSpec": "2.0", "object": "orb", "pattern": "breathing" } }
   ],
   "overrides": [

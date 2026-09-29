@@ -1,0 +1,34 @@
+---
+title: Edge
+description: "A glow round the inside edge of the screen that follows a voice agent: the whole app is listening."
+---
+
+The edge is a glow round the inside edge of your app's screen. It follows the agent: hidden at rest, faint while listening, wide while speaking, and a segment circling it while thinking. It's colourful by default; `saturation: 0` makes it grey ink.
+
+Unlike the other objects it doesn't draw in a square: it fills whatever box it's given, and the engine takes the box's shape into account. See it on a phone-shaped frame in the [gallery](/gallery/?family=edge).
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose", "React Native"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="edge-react.tsx"'>../../../snippets/voice/edge-react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="edge.swift"'>../../../snippets/voice/edge.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="edge.kt"'>../../../snippets/voice/edge.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="edge-react-native.tsx"'>../../../snippets/voice/edge-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+- **Over everything, out of the way.** Put it above your content and let taps through: `pointer-events: none` on the web, `.allowsHitTesting(false)` in SwiftUI, a `Box` overlay in Compose.
+- **Edge to edge.** In SwiftUI add `.ignoresSafeArea()`, so it reaches the rounded corners.
+- **Match the corners.** `cornerRadius` is a share of the short side: about 0.12 for a phone screen, smaller for a card.
+- **Decorative.** Give it an empty label; say what the agent is doing elsewhere on screen.
+
+On the web it's also a tag: `<sinua-edge pattern="framing">`.
+
+## Props
+
+<include>../../generated/catalog/edge.mdx</include>

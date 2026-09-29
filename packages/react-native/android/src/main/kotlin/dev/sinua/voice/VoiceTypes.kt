@@ -39,6 +39,32 @@ interface VoiceSource {
 
     /** Optional barge-in moment (see Web's `VoiceSource.onInterrupt`); a no-op by default. */
     fun onInterrupt(cb: () -> Unit) {}
+
+    /**
+     * Optional: mute or unmute the microphone (see Web's `VoiceSource.setMuted`). Silence
+     * goes out and the session stays up. A no-op by default; [supportsMute] says whether it
+     * does anything. Call it through [SharedVoiceSource] so views show the muted cue.
+     */
+    fun setMuted(muted: Boolean) {}
+
+    /** Whether [setMuted] does anything. */
+    val supportsMute: Boolean get() = false
+
+    /**
+     * Optional: `true` once the session is up, `false` when it ends -- [disconnect], a remote
+     * hang-up, a drop the source gave up on. An agent can be `idle` while connected, so the
+     * state can't say this. A no-op by default; see [reportsConnection].
+     */
+    fun onConnectionChange(cb: (Boolean) -> Unit) {}
+
+    /** Whether [onConnectionChange] ever fires. */
+    val reportsConnection: Boolean get() = false
+
+    /**
+     * Optional: failures after [connect] returned (setup, reconnect given up). On Android a
+     * vendor's [connect] returns while the session is still opening; this is where it fails.
+     */
+    fun onError(cb: (Throwable) -> Unit) {}
 }
 
 /** `primitives::audio_band`'s cap: keys `audioBand0`..`audioBand15` exist, nothing beyond. */

@@ -121,6 +121,15 @@ pub fn target(name: &str) -> Option<&'static ReactiveTarget> {
 
 pub const CURVES: [&str; 5] = ["linear", "ease", "easeIn", "easeOut", "easeInOut"];
 
+/// `u` (0..1) eased by a CSS keyword curve; an unknown name is linear.
+pub(crate) fn ease(name: &str, u: f64) -> f64 {
+    let u = u.clamp(0.0, 1.0);
+    match curve_points(name) {
+        Some(Some((x1, y1, x2, y2))) => cubic_bezier(x1, y1, x2, y2, u),
+        _ => u,
+    }
+}
+
 /// CSS keyword curves, exact values from MDN `animation-timing-function`
 /// (the same table as reactive.ts's `resolveCurve`).
 fn curve_points(name: &str) -> Option<Option<(f64, f64, f64, f64)>> {

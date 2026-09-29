@@ -13,6 +13,20 @@ export const brand = {
   wordmark: "Sinua",
   /** The hosted design tool, a separate product from the open-source runtime. */
   studioName: "Studio",
+  /**
+   * The one switch for the Studio's launch. While false the site shows the Studio's
+   * page and prices but never links to the tool itself (a decision from before
+   * payments existed). Flip it on launch day (docs/studio-launch.md, *Launch runbook*).
+   */
+  studioOpen: false,
+  /** The prices must match the live Polar products (sinua-studio apps/api wrangler.jsonc, production). */
+  studio: {
+    url: "https://studio.sinua.dev",
+    monthly: "$9",
+    yearly: "$99",
+    yearlyPerMonth: "$8.25",
+    trialDays: 14,
+  },
   /** The canonical origin: metadata, sitemap and robots are built from it. */
   siteUrl: "https://sinua.dev",
   /** One sentence for search results and link previews. */
@@ -36,8 +50,12 @@ export const brand = {
     docs: "/docs/getting-started/",
     gallery: "/gallery/",
     repo: "https://github.com/sinua-dev/sinua",
-    /** The Studio isn't open yet, so the site links only to its tour, never to the tool. */
+    /** The Studio's tour and its page with prices; neither links to the tool until `studioOpen`. */
     studioTour: "/docs/studio/",
+    studioPage: "/studio/",
+    /** DevinFit, our own app that ships Sinua (iOS; Android is in closed testing, so no Play link). */
+    devinfitAppStore: "https://apps.apple.com/app/id6767241695",
+    devinfitWeb: "https://devinfit.app",
   },
 
   copy: {
@@ -45,18 +63,11 @@ export const brand = {
     tagline: "Live visuals for voice AI.",
     heroLead:
       "One engine draws the same frame on the web, iOS, Android and React Native. Give it your agent's state and it shows what is happening: listening, thinking, speaking.",
-    useCasesLead: "The same engine, shaped for what your app is doing.",
-    useCases: [
-      { title: "A voice agent on screen", line: "The orb follows the mic while it listens, moves between turns and speaks with the agent's audio, from the agent state you already have." },
-      { title: "Work in progress", line: "Rings fill from the numbers your app already tracks: an upload, a workout, a download." },
-      { title: "Something being recorded", line: "A waveform that follows the level it is given, on a phone or in a browser tab." },
-    ],
-    frameworksLead: "One design, written once. The same props in React, SwiftUI, Compose and every web framework.",
-    pricingLead: "The runtime is open source and free. The Studio, a design tool for it, is a separate product and not open yet.",
+    pricingLead: "The runtime is open source and free. The Studio, a design tool for it, is a separate subscription.",
     pricingFree: "Packages",
     pricingPaid: "Studio",
     packagesPitch: "The engine and every renderer, Apache-2.0, shipped inside your app. Nothing to sign up for.",
-    studioPitch: "Tune a visual live and export it as code or an FX Spec file. Not open yet.",
+    studioPitch: "Tune a visual live and export it as code or an FX Spec file.",
     footerNote: "Apache-2.0. Built for voice-AI interfaces.",
   },
 } as const;

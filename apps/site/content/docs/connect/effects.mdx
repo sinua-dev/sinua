@@ -1,0 +1,34 @@
+---
+title: One-shot effects
+description: "Play a short success, error or celebrate effect on any visual when something happens in your app, then carry on."
+---
+
+`trigger` plays one short effect on top of whatever the view is showing, then the view is exactly as before. The state, the voice and any transition carry on underneath. Use it for the moments your app knows about: a saved form, a failed payment, a goal reached.
+
+<VoiceDemo effects pattern="breathing" />
+
+| Effect | What you see | Length | Spoken |
+|---|---|---|---|
+| `success` | a green pulse, a ring expanding from the shape and a tick in the middle | 0.9 s | "Done" |
+| `error` | a short shake with a red tint | 0.5 s | "Something went wrong" |
+| `celebrate` | a burst of particles and a small brightness lift | 1.4 s | "Well done" |
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="effects-web.ts"'>../../../snippets/states/effects-web.ts</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="effects.swift"'>../../../snippets/states/effects.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="effects.kt"'>../../../snippets/states/effects.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="effects-react-native.tsx"'>../../../snippets/states/effects-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+- A new trigger replaces an effect that's still running. An unknown name does nothing.
+- With reduced motion on there's no shake, burst or moving ring: the tint pulses, and success's tick fades in and out in place.
+- The effect is announced to screen readers right away, unless you turned announcements off. `labels["effect:celebrate"]` and the like replace the words.
+- The engine draws it, so it works on every pattern and looks the same on every platform.

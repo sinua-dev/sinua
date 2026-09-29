@@ -1,7 +1,13 @@
 package snippets.voice
 
 import dev.sinua.elevenlabs.ElevenLabsVoiceSource
+import dev.sinua.voice.CredentialSource
 
-// A public agent's agent_id, or a signed wss:// URL from your backend for a private one.
-// The agent's user input format must be PCM (e.g. pcm_16000).
-fun elevenLabsVoice(agentIdOrSignedUrl: String) = ElevenLabsVoiceSource(credential = agentIdOrSignedUrl)
+// The agent's user input format must be PCM (e.g. pcm_16000), set in the agent's settings.
+
+// A private agent: your endpoint signs a `wss://` URL with your API key (see Credentials),
+// a new one on every connect.
+fun privateAgent() = ElevenLabsVoiceSource(CredentialSource.url("https://api.example.com/voice/elevenlabs"))
+
+// A public agent needs no backend: its agent id is the credential.
+fun publicAgent() = ElevenLabsVoiceSource(credential = "agent_…")

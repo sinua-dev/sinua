@@ -13,6 +13,7 @@ public struct SinuaSignal: View {
         case waveform = "waveform"
         case scrolling = "scrolling"
         case metering = "metering"
+        case playing = "playing"
     }
 
     public var pattern: Pattern
@@ -23,12 +24,14 @@ public struct SinuaSignal: View {
     public var state: String?
     /// Peak wave height as a fraction of the frame. Range 0...0.5 (fraction). Patterns: waveform.
     public var amplitude: Double?
-    /// Number of level bars. Range 1...64. Patterns: signaling.
+    /// Number of level bars. Range signaling 1...64, playing 0...128. Patterns: signaling, playing.
     public var barCount: Int?
-    /// Bar width as a fraction of each slot. Range 0.05...1 (fraction). Patterns: signaling, scrolling.
+    /// Bar width as a fraction of each slot. Range 0.05...1 (fraction). Patterns: signaling, scrolling, playing.
     public var barWidth: Double?
     /// LED columns. Range 1...32. Patterns: metering.
     public var columnCount: Int?
+    /// The recorded clip's loudness, oldest first, 0 to 1 per value (up to 64; resample longer clips). Without it a fixed sample message is drawn. Range 0...1 (fraction). Up to 64 values. Patterns: playing.
+    public var envelope: [Double]?
     /// Width of the fade at the edges, as a fraction of the frame. Range 0.01...1 (fraction). Patterns: scrolling.
     public var fadeWidth: Double?
     /// Ink hue in degrees; applies once saturation is above 0. Range 0...360 (deg).
@@ -43,16 +46,22 @@ public struct SinuaSignal: View {
     public var ledSize: Double?
     /// Stroke width as a fraction of the frame. Range 0.005...0.2 (fraction). Patterns: waveform.
     public var lineWidth: Double?
-    /// Height of a silent bar, as a fraction of full height. Range 0...1 (fraction). Patterns: signaling, scrolling.
+    /// Height of a silent bar, as a fraction of full height. Range 0...1 (fraction). Patterns: signaling, scrolling, playing.
     public var minHeight: Double?
     /// Level of a silent column. Range 0...1 (fraction). Patterns: metering.
     public var minLevel: Double?
     /// Columns grow out from the middle row instead of rising from the bottom. Patterns: metering.
     public var mirror: Bool?
+    /// Draw a thin line at the playback position. Patterns: playing.
+    public var playhead: Bool?
     /// Points along each waveform line. Range 2...512. Patterns: waveform.
     public var pointCount: Int?
+    /// Playback position, 0 to 1: bars before it are played (full ink), the rest dimmed. Range 0...1 (fraction). Patterns: playing.
+    public var progress: Double?
     /// How far the ink moves from grey toward the hue (0 = the grey ink). Range 0...1 (fraction).
     public var saturation: Double?
+    /// Opacity of the bars not played yet, relative to the played ones. Range 0...1 (fraction). Patterns: playing.
+    public var unplayedOpacity: Double?
     public var color: SinuaColor?
     public var glow: SinuaGlow?
     public var gradient: SinuaGradient?
@@ -85,6 +94,7 @@ public struct SinuaSignal: View {
         barCount: Int? = nil,
         barWidth: Double? = nil,
         columnCount: Int? = nil,
+        envelope: [Double]? = nil,
         fadeWidth: Double? = nil,
         hue: Double? = nil,
         ink: Double? = nil,
@@ -95,8 +105,11 @@ public struct SinuaSignal: View {
         minHeight: Double? = nil,
         minLevel: Double? = nil,
         mirror: Bool? = nil,
+        playhead: Bool? = nil,
         pointCount: Int? = nil,
+        progress: Double? = nil,
         saturation: Double? = nil,
+        unplayedOpacity: Double? = nil,
         color: SinuaColor? = nil,
         glow: SinuaGlow? = nil,
         gradient: SinuaGradient? = nil,
@@ -124,6 +137,7 @@ public struct SinuaSignal: View {
         self.barCount = barCount
         self.barWidth = barWidth
         self.columnCount = columnCount
+        self.envelope = envelope
         self.fadeWidth = fadeWidth
         self.hue = hue
         self.ink = ink
@@ -134,8 +148,11 @@ public struct SinuaSignal: View {
         self.minHeight = minHeight
         self.minLevel = minLevel
         self.mirror = mirror
+        self.playhead = playhead
         self.pointCount = pointCount
+        self.progress = progress
         self.saturation = saturation
+        self.unplayedOpacity = unplayedOpacity
         self.color = color
         self.glow = glow
         self.gradient = gradient
@@ -191,6 +208,7 @@ public struct SinuaSignal: View {
         if let v = barCount { o["barCount"] = Double(v) }
         if let v = barWidth { o["barWidth"] = v }
         if let v = columnCount { o["columnCount"] = Double(v) }
+        if let v = envelope { for (key, x) in zip(["envelope0", "envelope1", "envelope2", "envelope3", "envelope4", "envelope5", "envelope6", "envelope7", "envelope8", "envelope9", "envelope10", "envelope11", "envelope12", "envelope13", "envelope14", "envelope15", "envelope16", "envelope17", "envelope18", "envelope19", "envelope20", "envelope21", "envelope22", "envelope23", "envelope24", "envelope25", "envelope26", "envelope27", "envelope28", "envelope29", "envelope30", "envelope31", "envelope32", "envelope33", "envelope34", "envelope35", "envelope36", "envelope37", "envelope38", "envelope39", "envelope40", "envelope41", "envelope42", "envelope43", "envelope44", "envelope45", "envelope46", "envelope47", "envelope48", "envelope49", "envelope50", "envelope51", "envelope52", "envelope53", "envelope54", "envelope55", "envelope56", "envelope57", "envelope58", "envelope59", "envelope60", "envelope61", "envelope62", "envelope63"], v) { o[key] = x } }
         if let v = fadeWidth { o["fadeWidth"] = v }
         if let v = hue { o["hue"] = v }
         if let v = ink { o["ink"] = v }
@@ -201,8 +219,11 @@ public struct SinuaSignal: View {
         if let v = minHeight { o["minHeight"] = v }
         if let v = minLevel { o["minLevel"] = v }
         if let v = mirror { o["mirror"] = v ? 1 : 0 }
+        if let v = playhead { o["playhead"] = v ? 1 : 0 }
         if let v = pointCount { o["pointCount"] = Double(v) }
+        if let v = progress { o["progress"] = v }
         if let v = saturation { o["saturation"] = v }
+        if let v = unplayedOpacity { o["unplayedOpacity"] = v }
         color?.write(into: &o)
         glow?.write(into: &o)
         gradient?.write(into: &o)

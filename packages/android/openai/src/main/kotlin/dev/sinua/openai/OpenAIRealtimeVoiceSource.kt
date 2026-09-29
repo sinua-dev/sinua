@@ -5,11 +5,15 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import dev.sinua.voice.AgentState
+import dev.sinua.voice.CredentialException
+import dev.sinua.voice.CredentialSource
 import dev.sinua.voice.InsecureCredential
+import dev.sinua.voice.MainDispatcher
 import dev.sinua.voice.OpenAIRealtimeSession
 import dev.sinua.voice.OpenAIRealtimeSignaling
 import dev.sinua.voice.PcmTap
 import dev.sinua.voice.RealtimeReconnect
+import dev.sinua.voice.SinuaCredential
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import dev.sinua.voice.isMicPermissionGranted
@@ -21,6 +25,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import livekit.org.webrtc.AudioTrack
 import livekit.org.webrtc.AudioTrackSink
@@ -61,7 +67,11 @@ import kotlin.coroutines.suspendCoroutine
  * checked before the mic track exists). `connect()` is synchronous: failures
  * after it returns go to `onError`, with the state already `idle`.
  *
- * Reconnect: a new session with a fresh credential from `credentialProvider`
+ * Credentials: the shared contract ([CredentialSource]): [CredentialSource.url]
+ * (your backend's endpoint), a provider, or one pasted `ek_`. Only an `ek_` is
+ * accepted; a raw API key is refused (docs/audio-pipeline.md).
+ *
+ * Reconnect: a new session with a fresh credential from the source
  * (up to 3 attempts, LiveKit's backoff), then the transcript is replayed; fatal
  * errors give up at once.
  *
@@ -71,11 +81,60 @@ import kotlin.coroutines.suspendCoroutine
  */
 class OpenAIRealtimeVoiceSource(
     context: Context,
-    /** Production shape: a fresh `ek_` from your backend, called again on every reconnect. */
-    private val credentialProvider: suspend () -> String,
+    /** Where the `ek_` comes from: [CredentialSource.url] / `.provider { … }` per (re)connect, or `.fixed` once. */
+    private val credentials: CredentialSource,
     private val callsUrl: String = OpenAIRealtimeSignaling.CALLS_URL,
     private val http: OpenAIHttp = OpenAIHttp(),
 ) : VoiceSource {
+    /** A fresh `ek_` from your code (e.g. your backend), called again on every reconnect. */
+    constructor(
+        context: Context,
+        credentialProvider: suspend () -> String,
+        callsUrl: String = OpenAIRealtimeSignaling.CALLS_URL,
+        http: OpenAIHttp = OpenAIHttp(),
+    ) : this(
+        context,
+        CredentialSource.provider { SinuaCredential(runBlocking { credentialProvider() }) },
+        callsUrl,
+        http,
+    )
+
+    /** A pasted `ek_` is single-session: set once it has been used. */
+    private var pastedUsed = false
+
+    /** A fresh `ek_` for this (re)connect; anything else is refused (fatal). */
+    private suspend fun resolveKey(): String {
+        val ek = suspendCancellableCoroutine { cont ->
+            credentials.resolve("OpenAIRealtimeVoiceSource", mainDispatcher) { r ->
+                r.fold({ cont.resume(it.credential) }, { cont.resumeWithException(it) })
+            }
+        }
+        InsecureCredential.check(
+            "OpenAIRealtimeVoiceSource",
+            InsecureCredential.isOpenAIEphemeral(ek),
+            InsecureCredential.OPENAI_SHAPE,
+        )
+        if (!credentials.canRefresh) {
+            if (pastedUsed) {
+                throw CredentialException(
+                    "a pasted ek_ is single-session; reconnecting needs credentialUrl or a provider",
+                    true,
+                )
+            }
+            pastedUsed = true
+        }
+        return ek
+    }
+
+    private val mainDispatcher = object : MainDispatcher {
+        override fun post(r: Runnable) {
+            handler.post(r)
+        }
+        override fun postDelayed(r: Runnable, delayMs: Long) {
+            handler.postDelayed(r, delayMs)
+        }
+        override fun remove(r: Runnable) = handler.removeCallbacks(r)
+    }
     private val appContext = context.applicationContext
     private val session = OpenAIRealtimeSession()
     private val tap = PcmTap()
@@ -110,6 +169,32 @@ class OpenAIRealtimeVoiceSource(
         }
     }
 
+    override val supportsMute: Boolean get() = true
+    override val reportsConnection: Boolean get() = true
+    private var connectionCb: ((Boolean) -> Unit)? = null
+    private var sessionUp = false
+
+    override fun onConnectionChange(cb: (Boolean) -> Unit) {
+        connectionCb = cb
+    }
+
+    private fun setSessionUp(up: Boolean) {
+        if (up == sessionUp) return
+        sessionUp = up
+        connectionCb?.invoke(up)
+    }
+    private var muted = false
+    private var micTrack: AudioTrack? = null
+
+    /** Muted, the mic track is disabled: WebRTC sends silence and the call stays up (each reconnect's track too). */
+    override fun setMuted(muted: Boolean) {
+        val apply = {
+            this.muted = muted
+            micTrack?.setEnabled(!muted)
+        }
+        if (Looper.myLooper() == Looper.getMainLooper()) apply() else handler.post { apply() }
+    }
+
     override fun onMetrics(cb: (VoiceMetrics) -> Unit) {
         metricsCb = cb
     }
@@ -123,7 +208,7 @@ class OpenAIRealtimeVoiceSource(
     }
 
     /** Failures after `connect()` returned (the state is already back to idle). */
-    fun onError(cb: (Throwable) -> Unit) {
+    override fun onError(cb: (Throwable) -> Unit) {
         errorCb = cb
     }
 
@@ -135,12 +220,13 @@ class OpenAIRealtimeVoiceSource(
         session.connecting()
         s.launch {
             try {
-                val ek = credentialProvider() // auth first: a bad credential never opens the mic
+                val ek = resolveKey() // auth first: a bad credential never opens the mic
                 if (!isMicPermissionGranted(appContext)) throw SecurityException("RECORD_AUDIO not granted")
                 call(ek)
                 session.connected()
                 live = true
                 handler.post(ticker)
+                setSessionUp(true)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -168,6 +254,8 @@ class OpenAIRealtimeVoiceSource(
         pc = peer
         val constraints = MediaConstraints()
         val mic = f.createAudioTrack("mic", f.createAudioSource(constraints))
+        mic.setEnabled(!muted)
+        micTrack = mic
         peer.addTrack(mic, listOf("mic"))
         val dc = peer.createDataChannel("oai-events", DataChannel.Init())
         channel = dc
@@ -211,6 +299,7 @@ class OpenAIRealtimeVoiceSource(
         channel?.unregisterObserver()
         channel?.close()
         channel = null
+        micTrack = null
         pc?.close()
         pc = null
     }
@@ -227,7 +316,7 @@ class OpenAIRealtimeVoiceSource(
                 for (attempt in 1..RealtimeReconnect.DEFAULT_ATTEMPTS) {
                     delay(RealtimeReconnect.delayMs(attempt).toLong())
                     try {
-                        call(credentialProvider())
+                        call(resolveKey())
                         reconnecting = false
                         session.connected()
                         return@launch
@@ -235,6 +324,9 @@ class OpenAIRealtimeVoiceSource(
                         throw e
                     } catch (e: OpenAIRealtimeSignaling.SignalingException.Fatal) {
                         break
+                    } catch (e: CredentialException) {
+                        if (e.fatal) break
+                        log("OpenAI Realtime reconnect $attempt after $reason failed: ${e.message}")
                     } catch (e: Throwable) {
                         log("OpenAI Realtime reconnect $attempt after $reason failed: ${e.message}")
                     }
@@ -248,6 +340,7 @@ class OpenAIRealtimeVoiceSource(
     }
 
     private fun teardown() {
+        setSessionUp(false)
         live = false
         handler.removeCallbacks(ticker)
         closeCall()
@@ -335,47 +428,19 @@ class OpenAIRealtimeVoiceSource(
         const val CONNECT_TIMEOUT_MS = 20_000L
         private const val TAG = "OpenAIRealtime"
 
+        /** Your backend's endpoint, answering `{ credential: "ek_…", expiresAt? }`; asked on every (re)connect. */
+        @JvmStatic
+        fun withCredentialUrl(context: Context, credentialUrl: String): OpenAIRealtimeVoiceSource =
+            OpenAIRealtimeVoiceSource(context, CredentialSource.url(credentialUrl))
+
         /**
-         * `ek_…`: used once (single-session). Anything else is a raw API key that mints
-         * an `ek_` on the device -- **DEV ONLY**, and refused unless
-         * [allowInsecureApiKey] is set ([InsecureCredential]). This is the only path
-         * on Android that accepts a raw key at all: a custom `credentialProvider` is
-         * handed straight to the call, never minted from.
+         * One pasted `ek_…` (single session: a drop without a provider ends in `idle`).
+         * The session's model, voice and instructions are fixed when your backend mints
+         * the `ek_`; there's nothing to set here.
          */
-        fun withCredential(
-            context: Context,
-            credential: String,
-            model: String = OpenAIRealtimeSignaling.DEFAULT_MODEL,
-            voice: String = OpenAIRealtimeSignaling.DEFAULT_VOICE,
-            instructions: String? = null,
-            allowInsecureApiKey: Boolean = false,
-            http: OpenAIHttp = OpenAIHttp(),
-        ): OpenAIRealtimeVoiceSource {
-            val c = credential.trim()
-            var used = false
-            return OpenAIRealtimeVoiceSource(context, credentialProvider = {
-                check(c.isNotEmpty()) { "OpenAIRealtimeVoiceSource: a credential is required" }
-                if (c.startsWith("ek_")) {
-                    check(!used) { "a pasted ek_ is single-session; reconnecting needs a credentialProvider" }
-                    used = true
-                    c
-                } else {
-                    // Inside the provider, i.e. at connect time and on every
-                    // reconnect -- before the permission prompt and the mic.
-                    InsecureCredential.check(
-                        vendor = "OpenAIRealtimeVoiceSource",
-                        isEphemeral = false,
-                        allowInsecureApiKey = allowInsecureApiKey,
-                        ephemeralShape = InsecureCredential.OPENAI_SHAPE,
-                        mintHint = InsecureCredential.OPENAI_MINT_HINT,
-                    )
-                    val (status, body) = http.send(
-                        OpenAIRealtimeSignaling.clientSecretRequest(c, model, voice, instructions),
-                    )
-                    OpenAIRealtimeSignaling.clientSecret(status, body)
-                }
-            }, http = http)
-        }
+        @JvmStatic
+        fun withCredential(context: Context, credential: String): OpenAIRealtimeVoiceSource =
+            OpenAIRealtimeVoiceSource(context, CredentialSource.fixed(credential))
     }
 }
 

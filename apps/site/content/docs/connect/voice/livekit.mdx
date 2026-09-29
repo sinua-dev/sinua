@@ -1,9 +1,12 @@
 ---
 title: LiveKit
-description: "Follow a LiveKit agent: pass your connected room, and the visual tracks the agent's state and voice."
+description: "Show a LiveKit voice agent's state and voice as a live orb, waveform or ring in SwiftUI, Jetpack Compose and React: pass the room you already have."
+metaTitle: "LiveKit agent visualizer for SwiftUI, Compose and React | Sinua"
 ---
 
-If your app already uses LiveKit, connect the visual to the room you have. The source finds the agent participant, follows its state attribute (`lk.agent.state`, the same names Sinua uses), and measures the agent's audio track for the level and bands. Pass a room you've already connected, and no credential passes through Sinua. Or let the source join itself with a URL and an access token from your backend: `new LiveKitVoiceSource({ url, token })` on the web, `LiveKitVoiceSource(url:token:)` on iOS, `LiveKitVoiceSource.owned(context, url, token)` on Android.
+<Callout title="Beta">The LiveKit source is beta: it is tested on simulated sessions, not yet against a live LiveKit session. If it misbehaves with your agent, an issue with the platform and version helps most.</Callout>
+
+If your app already uses LiveKit, connect the visual to the room you have. The source finds the agent participant, follows its state attribute (`lk.agent.state`, the same names Sinua uses), and measures the agent's audio track for the level and bands. Pass a room you've already connected, and no credential passes through Sinua. Or let the source join itself with a token from your endpoint, which answers `{ credential, url }` ([Credentials](/docs/connect/voice/credentials)): `credentialUrl` on the web, iOS and React Native, `LiveKitVoiceSource.withCredentialUrl(context, …)` on Android. A token you already have still works: `{ url, token }` on the web and React Native, `LiveKitVoiceSource(url:token:)` on iOS, `LiveKitVoiceSource.owned(context, url, token)` on Android.
 
 <Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
 <Tab value="Web">

@@ -1,13 +1,9 @@
 import Foundation
 import SinuaOpenAI   // packages/ios-openai (WebRTC via LiveKit's build)
 
-// Your backend mints a short-lived `ek_…` key; the API key never ships in the app.
-// An `ek_` is single-use, so the provider is asked again on every reconnect.
-func openAIVoice(backend: URL) -> OpenAIRealtimeVoiceSource {
-    OpenAIRealtimeVoiceSource(credentialProvider: {
-        var request = URLRequest(url: backend.appendingPathComponent("openai-realtime-key"))
-        request.httpMethod = "POST"
-        let (data, _) = try await URLSession.shared.data(for: request)
-        return String(decoding: data, as: UTF8.self)
-    })
+// Your endpoint mints a short-lived `ek_…` with your API key, which never ships in the app
+// (see Credentials). The source POSTs to it on every connect and reconnect, since an `ek_`
+// works once. The model, voice and instructions are set on the server.
+func openAIVoice() -> OpenAIRealtimeVoiceSource {
+    OpenAIRealtimeVoiceSource(credentialUrl: URL(string: "https://api.example.com/voice/openai")!)
 }

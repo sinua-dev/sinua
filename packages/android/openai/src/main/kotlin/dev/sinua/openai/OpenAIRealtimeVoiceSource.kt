@@ -75,6 +75,13 @@ import kotlin.coroutines.suspendCoroutine
  * (up to 3 attempts, LiveKit's backoff), then the transcript is replayed; fatal
  * errors give up at once.
  *
+ * `warp`: WARP (developers.openai.com `guides/realtime-webrtc-warp`) -- libwebrtc's
+ * DTLS 1.3 / SNAP / SPED field trials plus a pre-negotiated event channel whose id
+ * goes along as `dcid`, for fewer round trips at startup. Field trials are
+ * process-wide and only take effect before the app's first peer connection factory
+ * (if LiveKit made one first, only the negotiated channel applies). A `callsUrl`
+ * backend must forward `dcid` to OpenAI unchanged.
+ *
  * **Not exercised at runtime by any test**: a peer connection opens the real
  * microphone and speakers (on an emulator, the host's). Compile-verified only;
  * not verified live.
@@ -85,6 +92,7 @@ class OpenAIRealtimeVoiceSource(
     private val credentials: CredentialSource,
     private val callsUrl: String = OpenAIRealtimeSignaling.CALLS_URL,
     private val http: OpenAIHttp = OpenAIHttp(),
+    private val warp: Boolean = false,
 ) : VoiceSource {
     /** A fresh `ek_` from your code (e.g. your backend), called again on every reconnect. */
     constructor(
@@ -92,11 +100,13 @@ class OpenAIRealtimeVoiceSource(
         credentialProvider: suspend () -> String,
         callsUrl: String = OpenAIRealtimeSignaling.CALLS_URL,
         http: OpenAIHttp = OpenAIHttp(),
+        warp: Boolean = false,
     ) : this(
         context,
         CredentialSource.provider { SinuaCredential(runBlocking { credentialProvider() }) },
         callsUrl,
         http,
+        warp,
     )
 
     /** A pasted `ek_` is single-session: set once it has been used. */
@@ -109,11 +119,8 @@ class OpenAIRealtimeVoiceSource(
                 r.fold({ cont.resume(it.credential) }, { cont.resumeWithException(it) })
             }
         }
-        InsecureCredential.check(
-            "OpenAIRealtimeVoiceSource",
-            InsecureCredential.isOpenAIEphemeral(ek),
-            InsecureCredential.OPENAI_SHAPE,
-        )
+        // `ek_` on OpenAI's host; your own token (never `sk-…`) on your own calls endpoint.
+        InsecureCredential.checkOpenAI(ek, callsUrl)
         if (!credentials.canRefresh) {
             if (pastedUsed) {
                 throw CredentialException(
@@ -243,7 +250,7 @@ class OpenAIRealtimeVoiceSource(
     // --- the call (one Realtime session), main thread ---
 
     private suspend fun call(ek: String) {
-        val f = factory ?: createFactory().also { factory = it }
+        val f = factory ?: createPeerConnectionFactory(appContext, warp).also { factory = it }
         val observer = Observer()
         val peer = f.createPeerConnection(
             PeerConnection.RTCConfiguration(emptyList()).apply {
@@ -257,7 +264,13 @@ class OpenAIRealtimeVoiceSource(
         mic.setEnabled(!muted)
         micTrack = mic
         peer.addTrack(mic, listOf("mic"))
-        val dc = peer.createDataChannel("oai-events", DataChannel.Init())
+        val init = DataChannel.Init().apply {
+            if (warp) {
+                negotiated = true
+                id = OpenAIRealtimeSignaling.WARP_DATA_CHANNEL_ID
+            }
+        }
+        val dc = peer.createDataChannel("oai-events", init)
         channel = dc
         val opened = CompletableDeferred<Unit>()
         channelOpen = opened
@@ -266,24 +279,14 @@ class OpenAIRealtimeVoiceSource(
         // Posted right after setLocalDescription, as OpenAI's own browser samples do.
         val offer = peer.awaitOffer(constraints)
         peer.awaitSetLocal(offer)
-        val (status, body) = http.send(OpenAIRealtimeSignaling.callsRequest(offer.description, ek, callsUrl))
+        val dcid = if (warp) OpenAIRealtimeSignaling.WARP_DATA_CHANNEL_ID else null
+        val (status, body) = http.send(OpenAIRealtimeSignaling.callsRequest(offer.description, ek, callsUrl, dcid))
         val answer = OpenAIRealtimeSignaling.answer(status, body)
         if (pc !== peer) throw CancellationException("disconnected")
         peer.awaitSetRemote(SessionDescription(SessionDescription.Type.ANSWER, answer))
         withTimeout(CONNECT_TIMEOUT_MS) { opened.await() }
         // A reconnect: give the new session the conversation so far (empty on the first call).
         session.transcript.replayEvents().forEach { send(it) }
-    }
-
-    private fun createFactory(): PeerConnectionFactory {
-        PeerConnectionFactory.initialize(
-            PeerConnectionFactory.InitializationOptions.builder(appContext).createInitializationOptions(),
-        )
-        val adm = JavaAudioDeviceModule.builder(appContext)
-            .setUseHardwareAcousticEchoCanceler(true)
-            .setUseHardwareNoiseSuppressor(true)
-            .createAudioDeviceModule()
-        return PeerConnectionFactory.builder().setAudioDeviceModule(adm).createPeerConnectionFactory()
     }
 
     private fun send(text: String) {
@@ -444,8 +447,26 @@ class OpenAIRealtimeVoiceSource(
     }
 }
 
+/**
+ * The factory both OpenAI sources use: WebRTC's own audio device (hardware echo
+ * cancellation and noise suppression where available). [warp] adds WARP's field
+ * trials, read by libwebrtc only before its first factory in the process.
+ */
+internal fun createPeerConnectionFactory(appContext: Context, warp: Boolean): PeerConnectionFactory {
+    PeerConnectionFactory.initialize(
+        PeerConnectionFactory.InitializationOptions.builder(appContext)
+            .apply { if (warp) setFieldTrials(OpenAIRealtimeSignaling.WARP_FIELD_TRIALS) }
+            .createInitializationOptions(),
+    )
+    val adm = JavaAudioDeviceModule.builder(appContext)
+        .setUseHardwareAcousticEchoCanceler(true)
+        .setUseHardwareNoiseSuppressor(true)
+        .createAudioDeviceModule()
+    return PeerConnectionFactory.builder().setAudioDeviceModule(adm).createPeerConnectionFactory()
+}
+
 // SdpObserver -> suspend.
-private suspend fun PeerConnection.awaitOffer(c: MediaConstraints): SessionDescription = suspendCoroutine { cont ->
+internal suspend fun PeerConnection.awaitOffer(c: MediaConstraints): SessionDescription = suspendCoroutine { cont ->
     createOffer(
         object : SdpObserver {
             override fun onCreateSuccess(sdp: SessionDescription) = cont.resume(sdp)
@@ -458,11 +479,11 @@ private suspend fun PeerConnection.awaitOffer(c: MediaConstraints): SessionDescr
     )
 }
 
-private suspend fun PeerConnection.awaitSetLocal(sdp: SessionDescription) = suspendCoroutine<Unit> { cont ->
+internal suspend fun PeerConnection.awaitSetLocal(sdp: SessionDescription) = suspendCoroutine<Unit> { cont ->
     setLocalDescription(setObserver(cont), sdp)
 }
 
-private suspend fun PeerConnection.awaitSetRemote(sdp: SessionDescription) = suspendCoroutine<Unit> { cont ->
+internal suspend fun PeerConnection.awaitSetRemote(sdp: SessionDescription) = suspendCoroutine<Unit> { cont ->
     setRemoteDescription(setObserver(cont), sdp)
 }
 

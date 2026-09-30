@@ -177,6 +177,56 @@ export async function mintLiveKitCredential(o: LiveKitMintOptions): Promise<Sinu
   return { credential: await signJwtHs256(claims, o.apiSecret), url: o.url, expiresAt };
 }
 
+export interface OpenAILiveSessionOptions extends Common {
+  /** The browser's or app's SDP offer, from `OpenAILiveVoiceSource`'s `{ sdp }` request body. */
+  sdp: string;
+  /**
+   * The GPT-Live session config (`model`, `instructions`, `voice`, `delegation`, prior
+   * conversation…), sent as-is. `model` defaults to `gpt-live-1`. Leave `audio.format`
+   * out: WebRTC negotiates it.
+   */
+  session?: Record<string, unknown>;
+  /** A stable hash of your user id, sent as `OpenAI-Safety-Identifier` (OpenAI recommends it). */
+  safetyIdentifier?: string;
+}
+
+/** What `POST /v1/live/sessions` returned: the session id and the SDP answer. */
+export interface OpenAILiveSession {
+  sessionId: string;
+  sdp: string;
+}
+
+/**
+ * OpenAI GPT-Live: opens the session for an `OpenAILiveVoiceSource`'s offer --
+ * `POST /v1/live/sessions` with `{ session, transport: { type: "webrtc", sdp } }`.
+ * Answer the app with `openAILiveResponse(…)`. Keep the returned `sessionId`
+ * if your server attaches to the session (the sideband).
+ */
+export async function createOpenAILiveSession(o: OpenAILiveSessionOptions): Promise<OpenAILiveSession> {
+  assertServer("createOpenAILiveSession");
+  if (typeof o.sdp !== "string" || !o.sdp.trim()) throw new CredentialMintError("OpenAI live/sessions: an SDP offer is required", 400);
+  const headers: Record<string, string> = { Authorization: `Bearer ${o.apiKey}`, "Content-Type": "application/json" };
+  if (o.safetyIdentifier) headers["OpenAI-Safety-Identifier"] = o.safetyIdentifier;
+  const data = await call(o, "OpenAI live/sessions", "https://api.openai.com/v1/live/sessions", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ session: { model: "gpt-live-1", ...o.session }, transport: { type: "webrtc", sdp: o.sdp } }),
+  });
+  const sessionId = str((data.session as Record<string, unknown> | undefined)?.id);
+  const sdp = str((data.transport as Record<string, unknown> | undefined)?.sdp);
+  if (!sessionId || !sdp) throw new CredentialMintError("OpenAI live/sessions: the response had no session id or SDP answer", 502);
+  return { sessionId, sdp };
+}
+
+/** The endpoint's answer to `OpenAILiveVoiceSource`: OpenAI's 201 JSON shape, never cached. */
+export function openAILiveResponse(s: OpenAILiveSession, init: ResponseInit = {}): Response {
+  const headers = new Headers(init.headers);
+  headers.set("Content-Type", "application/json");
+  headers.set("Cache-Control", "no-store");
+  const body = { session: { id: s.sessionId }, transport: { type: "webrtc", sdp: s.sdp } };
+  return new Response(JSON.stringify(body), { status: 201, ...init, headers });
+}
+
 /** The endpoint's answer: the credential as JSON, never cached. */
 export function credentialResponse(c: SinuaCredential, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);

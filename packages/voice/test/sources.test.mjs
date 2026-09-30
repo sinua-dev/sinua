@@ -363,3 +363,48 @@ test("the removed allowInsecureApiKey no longer lets a raw key through", async (
   assert.equal(mic.requests, 0);
   assert.equal(FakeWebSocket.instances.length, 0);
 });
+
+// DevinFit's sideband setup: the SDP offer goes to the app's own backend, which opens
+// the OpenAI session with its own key. The credential is then the app's own token.
+test("openai: a custom callsUrl takes the app's own token and posts the offer there", async () => {
+  const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
+  const src = new OpenAIRealtimeVoiceSource({ credential: "dvf_token", callsUrl: "https://app.example/api/voice/calls", reconnect: false });
+  const w = watch(src);
+  await src.connect();
+  assert.equal(w.states.at(-1), "listening");
+  assert.equal(net.requests.length, 1);
+  assert.match(net.requests[0].url, /^https:\/\/app\.example\/api\/voice\/calls\?model=/);
+  assert.equal(net.requests[0].init.headers.Authorization, "Bearer dvf_token");
+  src.disconnect();
+});
+
+test("openai: a custom callsUrl still refuses a raw sk- key, before the mic", async () => {
+  const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
+  const src = new OpenAIRealtimeVoiceSource({ credential: "sk-proj-abc", callsUrl: "https://app.example/api/voice/calls" });
+  await assert.rejects(src.connect(), /your own calls endpoint takes your own short-lived token, never a raw OpenAI key/);
+  assert.equal(net.requests.length, 0);
+  assert.equal(mic.requests, 0);
+});
+
+test("openai: on OpenAI's own host the credential must still be an ek_", async () => {
+  const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
+  for (const callsUrl of [undefined, "https://api.openai.com/v1/realtime/calls"]) {
+    const src = new OpenAIRealtimeVoiceSource({ credential: "dvf_token", callsUrl });
+    await assert.rejects(src.connect(), /expected a short-lived credential \(ek_…\)/, String(callsUrl));
+  }
+  assert.equal(net.requests.length, 0);
+});
+
+test("openAICredentialRefusal: the rule table", async () => {
+  const { openAICredentialRefusal, isOpenAIHost } = await import("../dist/insecureCredential.js");
+  const openai = "https://api.openai.com/v1/realtime/calls";
+  const own = "https://app.example/api/voice/calls";
+  assert.equal(openAICredentialRefusal("ek_x", openai), null);
+  assert.ok(openAICredentialRefusal("dvf_x", openai));
+  assert.ok(openAICredentialRefusal("sk-x", openai));
+  assert.equal(openAICredentialRefusal("dvf_x", own), null);
+  assert.equal(openAICredentialRefusal("ek_x", own), null);
+  assert.ok(openAICredentialRefusal("sk-proj-x", own));
+  assert.ok(openAICredentialRefusal("  sk-svcacct-x", own), "leading space doesn't hide it");
+  assert.equal(isOpenAIHost("not a url"), true, "unparseable counts as OpenAI: the strict rule");
+});

@@ -40,4 +40,29 @@ class InsecureCredentialTest {
         assertTrue(InsecureCredential.isOpenAIEphemeral("ek_abc"))
         assertFalse(InsecureCredential.isOpenAIEphemeral("sk-abc"))
     }
+
+    /**
+     * The OpenAI rule by destination (the "sideband" setup): the same table as the Web's
+     * `openAICredentialRefusal` test and iOS's `testOpenAIRuleByDestination`.
+     */
+    @Test
+    fun openAIRuleByDestination() {
+        val openai = "https://api.openai.com/v1/realtime/calls"
+        val own = "https://devinfit.app/api/ai/voice/calls"
+        assertNull(InsecureCredential.openAIRefusal("ek_x", openai))
+        assertTrue(InsecureCredential.openAIRefusal("dvf_x", openai) != null)
+        assertTrue(InsecureCredential.openAIRefusal("sk-x", openai) != null)
+        assertNull(InsecureCredential.openAIRefusal("dvf_x", own))
+        assertNull(InsecureCredential.openAIRefusal("ek_x", own))
+        assertEquals(
+            "OpenAIRealtimeVoiceSource: your own calls endpoint takes your own short-lived token, never a raw OpenAI " +
+                "key (sk-…); keep the key in your backend.",
+            InsecureCredential.openAIRefusal("sk-proj-x", own),
+        )
+        assertTrue(InsecureCredential.openAIRefusal("  sk-svcacct-x", own) != null)
+        assertTrue(InsecureCredential.isOpenAIHost("not a url with spaces"))
+        val e = runCatching { InsecureCredential.checkOpenAI("sk-x", own) }.exceptionOrNull()
+        assertTrue((e as? CredentialException)?.fatal == true)
+        InsecureCredential.checkOpenAI("dvf_x", own)
+    }
 }

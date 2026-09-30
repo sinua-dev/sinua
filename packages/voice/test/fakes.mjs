@@ -96,23 +96,42 @@ export class FakeWebSocket {
 
 export class FakeRTCPeerConnection {
   static last = null;
+  /** When true, ICE gathering completes only when the test calls `finishGathering()`. */
+  static slowGathering = false;
   constructor() {
     this.connectionState = "new";
+    this.iceGatheringState = "new";
     this.tracks = [];
+    this.listeners = {};
     FakeRTCPeerConnection.last = this;
   }
   addTrack(t) {
     this.tracks.push(t);
   }
-  createDataChannel(label) {
-    this.dc = { label, readyState: "connecting", sent: [], send(t) { this.sent.push(JSON.parse(t)); }, close() {} };
+  addEventListener(type, fn) {
+    (this.listeners[type] ??= new Set()).add(fn);
+  }
+  removeEventListener(type, fn) {
+    this.listeners[type]?.delete(fn);
+  }
+  createDataChannel(label, options) {
+    this.dc = { label, options, readyState: "connecting", sent: [], send(t) { this.sent.push(JSON.parse(t)); }, close() {} };
     return this.dc;
   }
   async createOffer() {
     return { type: "offer", sdp: "v=0 fake-offer" };
   }
+  get localDescription() {
+    return this.local ?? null;
+  }
   async setLocalDescription(d) {
     this.local = d;
+    this.iceGatheringState = "gathering";
+    if (!FakeRTCPeerConnection.slowGathering) this.finishGathering();
+  }
+  finishGathering() {
+    this.iceGatheringState = "complete";
+    for (const fn of this.listeners.icegatheringstatechange ?? []) fn();
   }
   async setRemoteDescription(d) {
     this.remote = d;
@@ -192,6 +211,8 @@ export function install() {
   audio.time = 0;
   audio.contexts = [];
   FakeWebSocket.instances = [];
+  FakeRTCPeerConnection.slowGathering = false;
+  FakeRTCPeerConnection.last = null;
   // Reset the request/mic counters and the responder too, so a test can assert
   // an absolute count ("no fetch happened") without depending on what ran
   // before it in the file.

@@ -35,4 +35,25 @@ final class InsecureCredentialTests: XCTestCase {
         XCTAssertTrue(InsecureCredential.isOpenAIEphemeral("ek_abc"))
         XCTAssertFalse(InsecureCredential.isOpenAIEphemeral("sk-abc"))
     }
+
+    /// The OpenAI rule by destination (the "sideband" setup): the same table as the Web's
+    /// `openAICredentialRefusal` test and Android's `openAIRuleByDestination`.
+    func testOpenAIRuleByDestination() throws {
+        let openai = URL(string: "https://api.openai.com/v1/realtime/calls")!
+        let own = URL(string: "https://devinfit.app/api/ai/voice/calls")!
+        XCTAssertNil(InsecureCredential.openAIRefusal(credential: "ek_x", callsURL: openai))
+        XCTAssertNotNil(InsecureCredential.openAIRefusal(credential: "dvf_x", callsURL: openai))
+        XCTAssertNotNil(InsecureCredential.openAIRefusal(credential: "sk-x", callsURL: openai))
+        XCTAssertNil(InsecureCredential.openAIRefusal(credential: "dvf_x", callsURL: own))
+        XCTAssertNil(InsecureCredential.openAIRefusal(credential: "ek_x", callsURL: own))
+        XCTAssertEqual(
+            InsecureCredential.openAIRefusal(credential: "sk-proj-x", callsURL: own),
+            "OpenAIRealtimeVoiceSource: your own calls endpoint takes your own short-lived token, never a raw OpenAI "
+                + "key (sk-…); keep the key in your backend.")
+        XCTAssertNotNil(InsecureCredential.openAIRefusal(credential: "  sk-svcacct-x", callsURL: own))
+        XCTAssertThrowsError(try InsecureCredential.checkOpenAI(credential: "sk-x", callsURL: own)) {
+            XCTAssertEqual(($0 as? CredentialError)?.isFatal, true)
+        }
+        try InsecureCredential.checkOpenAI(credential: "dvf_x", callsURL: own)
+    }
 }

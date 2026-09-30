@@ -287,6 +287,78 @@ Verified under node against fakes of `RTCPeerConnection`/`fetch`/
 
 Not yet exercised against a real dropped call.
 
+#### WARP
+
+`warp: true` (off by default) follows developers.openai.com `guides/realtime-webrtc-warp`:
+- the `oai-events` channel is pre-negotiated (`negotiated: true, id: 1`);
+- `dcid=1` goes on the calls request;
+- on iOS and Android, libwebrtc also gets the DTLS 1.3 / SNAP / SPED field trials
+  (`WebRTC-ForceDtls13`, `WebRTC-Sctp-Snap`, `WebRTC-IceHandshakeDtls`) before the first
+  peer connection factory.
+
+A page can't set field trials, so the Web gets the channel and the `dcid` only. Chrome
+already has DTLS 1.3 on by default, and SNAP needs the app's own origin-trial token.
+
+Field trials are process-wide. If the app's LiveKit SDK built a factory first, they don't
+apply, but the negotiated channel still does. A `callsUrl` backend must forward `dcid` to
+OpenAI unchanged.
+
+### `OpenAILiveVoiceSource` — OpenAI GPT-Live over WebRTC
+
+GPT-Live (`gpt-live-1`) is a different API from Realtime (read 2026-09-29:
+developers.openai.com `guides/voice-webrtc?api=live`, `guides/live-migration`,
+`guides/live-conversations`, `guides/live-delegation`).
+
+**Connection.** Only your server can open a session, with its project key, via
+`POST /v1/live/sessions`. There is no `ek_`.
+- The source gathers ICE (no trickle), then POSTs `{ "sdp": … }` as JSON to your `sessionUrl`,
+  with `Authorization: Bearer` if you give it a credential.
+- Your server returns OpenAI's 201 `{ session: { id }, transport: { sdp } }` unchanged
+  (`createOpenAILiveSession` + `openAILiveResponse` in `@sinua/voice/server`). A bare SDP
+  answer also works.
+- The session is live at `session.started`. The client never sends `session.start`.
+- `sessionUrl` on `api.openai.com` is refused, and so is an `sk-…` credential.
+
+**State.** GPT-Live has none of Realtime's turn events: no `speech_started/stopped`, no
+`response.created/done`, no `output_audio_buffer.*`. OpenAI's migration guide says to drive
+the speaking indicator from the player. `OpenAILiveSession` (`openaiLive.ts`, ported to
+SinuaVoice / `dev.sinua.voice`, all held to `spec/openai-live-cases.json`) does this:
+- **speaking:** the remote track's level is above 0.05. It ends after ~300 ms of quiet.
+- **thinking:** an open delegation while the model is quiet.
+  - It opens on `session.delegation.created` or a nested `response.created` inside a
+    `response.event`.
+  - It closes on the nested `response.completed` / `failed` / `incomplete` / `cancelled`, or
+    on the `session.commentary.appended` that delivers a client delegation's result, or
+    after 30 s without news.
+  - Verified live (2026-09-30): the acknowledgment of a commentary your server sends on
+    its sideband also reaches the client, but it carries no `delegation_id` (only
+    `client_event_id` and timings), so it closes the oldest open client delegation.
+  - `session.thinking.appended` is quiet progress and keeps thinking.
+  - The model can talk while the backend works: speaking wins.
+- **barge-in:** a `session.input_transcript.delta` while the model is audible, followed by
+  the model going quiet within 1 s. GPT-Live is full duplex, so a "mhm" under continuing
+  speech isn't one.
+
+**Ending and reconnecting.**
+- `disconnect()` goes `idle` at once and silences the mic and playback. It then sends
+  `session.close` and keeps the call until `session.closed` (up to 5 s), so the final usage
+  is confirmed.
+- A `session.closed` for `expired` or `connection_lost`, or a call that drops without one,
+  is replaced by a new session with a fresh credential (the Realtime policy above).
+- `close_requested`, `remote_hangup` and `content` end in `idle`.
+- There is no transcript replay. Prior conversation is seeded by your server when it opens
+  the session.
+
+WARP: OpenAI documents no `dcid` for GPT-Live, so there's no negotiated channel. On iOS and
+Android, `warp` sets only the field trials (experimental).
+
+Verified under node against fakes, and by the shared table on iOS and Android. Verified live on the Web (2026-09-30): headless Chrome with a fake microphone fed a speech file, output muted, against `gpt-live-1`:
+- plain Q&A;
+- Responses delegation with web search;
+- client delegation answered over a sideband.
+
+Barge-in and the native WebRTC glue haven't run live yet.
+
 ### `GeminiLiveVoiceSource` — Gemini Live over WebSocket
 
 `packages/voice/src/GeminiLiveVoiceSource.ts`, with the DOM-free PCM

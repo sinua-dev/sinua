@@ -20,9 +20,30 @@ object OpenAIRealtimeSignaling {
         class Malformed(message: String) : SignalingException(message)
     }
 
-    /** The SDP offer -> `POST /v1/realtime/calls` with the ephemeral key; the answer SDP comes back as text. */
-    fun callsRequest(sdpOffer: String, ephemeralKey: String, url: String = CALLS_URL) =
-        Request(url, mapOf("Authorization" to "Bearer $ephemeralKey"), "application/sdp", sdpOffer)
+    /** WARP's pre-negotiated event channel id (any free id works; the same one goes in `dcid`). */
+    const val WARP_DATA_CHANNEL_ID = 1
+
+    /**
+     * WARP's libwebrtc field trials (developers.openai.com `guides/realtime-webrtc-warp`):
+     * DTLS 1.3, SNAP and SPED. Process-wide, and only read before the first peer connection factory.
+     */
+    const val WARP_FIELD_TRIALS =
+        "WebRTC-ForceDtls13/Enabled/WebRTC-Sctp-Snap/Enabled/WebRTC-IceHandshakeDtls/Enabled/"
+
+    /**
+     * The SDP offer -> `POST /v1/realtime/calls` with the ephemeral key; the answer SDP comes back
+     * as text. [dcid]: WARP's pre-negotiated event channel id, sent along as `?dcid=`.
+     */
+    fun callsRequest(sdpOffer: String, ephemeralKey: String, url: String = CALLS_URL, dcid: Int? = null) =
+        Request(withDcid(url, dcid), mapOf("Authorization" to "Bearer $ephemeralKey"), "application/sdp", sdpOffer)
+
+    private fun withDcid(url: String, dcid: Int?): String {
+        if (dcid == null) return url
+        val (base, fragment) = url.split('#', limit = 2).let { it[0] to it.getOrNull(1) }
+        val kept = base.substringAfter('?', "").split('&').filter { it.isNotEmpty() && !it.startsWith("dcid=") }
+        val query = (kept + "dcid=$dcid").joinToString("&")
+        return base.substringBefore('?') + "?" + query + (fragment?.let { "#$it" } ?: "")
+    }
 
     fun answer(status: Int, body: String): String {
         check(status, body)
@@ -30,7 +51,7 @@ object OpenAIRealtimeSignaling {
         return body
     }
 
-    private fun check(status: Int, body: String) {
+    internal fun check(status: Int, body: String) {
         if (status in 200..299) return
         if (RealtimeReconnect.isRetryable(status)) throw SignalingException.Retryable(status, body)
         throw SignalingException.Fatal(status, body)

@@ -1,6 +1,6 @@
 import { AudioAnalysis } from "./analysis.js";
 import { canRefreshCredential, resolveCredential, type CredentialOptions, type CredentialProvider } from "./credential.js";
-import { insecureCredentialRefusal } from "./insecureCredential.js";
+import { openAICredentialRefusal } from "./insecureCredential.js";
 import {
   DEFAULT_RECONNECT_ATTEMPTS,
   FatalConnectError,
@@ -92,6 +92,22 @@ export interface OpenAIRealtimeVoiceSourceOptions extends CredentialOptions {
   /** Realtime model id. `gpt-realtime` is the alias OpenAI's own WebRTC guide uses. */
   model?: string;
   /**
+   * Where the SDP offer goes. Default OpenAI's `https://api.openai.com/v1/realtime/calls`,
+   * with an `ek_` from your backend. Point it at your own endpoint to open the OpenAI
+   * session server-side (with your key, tools and transcripts on OpenAI's sideband
+   * connection): the credential is then your own short-lived token, any shape except a
+   * raw `sk-…` key. The answer must be the SDP text with a 2xx status.
+   */
+  callsUrl?: string;
+  /**
+   * WARP (developers.openai.com `guides/realtime-webrtc-warp`): the event channel is
+   * pre-negotiated (`negotiated: true, id: 1`) and its id goes along as `dcid=1`, saving a
+   * round trip at startup. A page can't set WebRTC field trials, so this is the part a
+   * browser can do (Chrome has DTLS 1.3 on by default; SNAP needs your origin-trial
+   * token). A `callsUrl` backend must forward `dcid` to OpenAI unchanged. Default false.
+   */
+  warp?: boolean;
+  /**
    * @deprecated Ignored: the voice is fixed when your backend mints the `ek_`
    * (`mintOpenAIRealtimeCredential({ voice })`).
    */
@@ -105,6 +121,8 @@ export interface OpenAIRealtimeVoiceSourceOptions extends CredentialOptions {
 
 const CALLS_URL = "https://api.openai.com/v1/realtime/calls";
 const DATA_CHANNEL_LABEL = "oai-events";
+/** WARP's pre-negotiated event channel id (any free id works; the same one goes in `dcid`). */
+export const WARP_DATA_CHANNEL_ID = 1;
 const UPDATE_MS = 1000 / 30; // ~30fps, decoupled from the render loop -- same as LocalMicVoiceSource
 const WATCHDOG_ZERO_FRAMES = 30; // ~1s of exact-zero RMS *while the model should be audible*
 const SPEAKING_LEVEL = 0.05; // energy floor for the no-output_audio_buffer-events fallback
@@ -117,6 +135,8 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
   private readonly replayTranscript: boolean;
   private readonly transcript = new TranscriptLog();
   private readonly model: string;
+  private readonly callsUrl: string;
+  private readonly warp: boolean;
 
   private ctx: AudioContext | null = null;
   private pc: RTCPeerConnection | null = null;
@@ -168,6 +188,8 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     this.reconnectPolicy = opts.reconnect === false ? null : opts.reconnect ?? {};
     this.replayTranscript = opts.replayTranscript ?? true;
     this.model = opts.model ?? "gpt-realtime";
+    this.callsUrl = opts.callsUrl ?? CALLS_URL;
+    this.warp = opts.warp ?? false;
   }
 
   onMetrics(cb: (m: VoiceMetrics) => void): void {
@@ -231,11 +253,7 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     // Runs on every (re)connect, and on whatever the provider returns, so a
     // backend that starts handing out raw keys is caught too. Fatal by
     // construction: a refused credential is never worth retrying.
-    const refusal = insecureCredentialRefusal({
-      vendor: "OpenAIRealtimeVoiceSource",
-      isEphemeral: credential.startsWith("ek_"),
-      ephemeralShape: "ek_…",
-    });
+    const refusal = openAICredentialRefusal(credential, this.callsUrl);
     if (refusal) throw new FatalConnectError(refusal);
     return credential;
   }
@@ -271,7 +289,10 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
       };
       pc.addTrack(mic.getAudioTracks()[0]);
 
-      const dc = pc.createDataChannel(DATA_CHANNEL_LABEL);
+      const dc = pc.createDataChannel(
+        DATA_CHANNEL_LABEL,
+        this.warp ? { negotiated: true, id: WARP_DATA_CHANNEL_ID } : undefined
+      );
       this.dc = dc;
       dc.onmessage = (e) => this.onServerEvent(String(e.data));
       dc.onclose = () => {
@@ -295,7 +316,10 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      const res = await fetch(`${CALLS_URL}?model=${encodeURIComponent(this.model)}`, {
+      const url = new URL(this.callsUrl, (globalThis as { location?: { href?: string } }).location?.href);
+      url.searchParams.set("model", this.model);
+      if (this.warp) url.searchParams.set("dcid", String(WARP_DATA_CHANNEL_ID));
+      const res = await fetch(url.href, {
         method: "POST",
         body: offer.sdp,
         headers: {
@@ -304,7 +328,7 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
         },
       });
       if (!res.ok) {
-        const message = `OpenAI ${CALLS_URL} returned ${res.status}: ${await safeText(res)}`;
+        const message = `OpenAI ${this.callsUrl} returned ${res.status}: ${await safeText(res)}`;
         throw isRetryableHttpStatus(res.status) ? new Error(message) : new FatalConnectError(message);
       }
       await pc.setRemoteDescription({ type: "answer", sdp: await res.text() });

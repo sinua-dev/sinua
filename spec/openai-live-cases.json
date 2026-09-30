@@ -1,0 +1,125 @@
+{
+  "about": "OpenAI GPT-Live source state rules (OpenAILiveSession on web, iOS, Android; docs/audio-pipeline.md, *OpenAILiveVoiceSource*). Every case starts right after connecting() (state initializing). A step is an `event` (a data-channel JSON event) or a `level` tick (remote audio level, 30 Hz; `repeat` runs it n times, 33 ms apart from `t`), at time `t` ms; `state` is the state after it, `interrupts` the total onInterrupt count so far, `closed` the session.closed reason seen, `fatal` the fatal error code seen. Read by packages/voice (node), iOS SinuaVoiceTests and Android JVM tests.",
+  "constants": { "speakingLevel": 0.05, "speakingTailFrames": 9, "bargeInWindowMs": 1000, "delegationTimeoutMs": 30000 },
+  "cases": [
+    { "name": "session.started makes the session live", "steps": [
+      { "t": 0, "level": 0.5, "state": "initializing" },
+      { "t": 10, "event": { "type": "session.started", "session": { "id": "live_1" } }, "state": "listening" }
+    ] },
+    { "name": "remote audio drives speaking; ~300 ms of quiet ends it", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "level": 0.3, "state": "speaking" },
+      { "t": 133, "level": 0, "repeat": 8, "state": "speaking" },
+      { "t": 400, "level": 0, "state": "listening" }
+    ] },
+    { "name": "a delegation is thinking until its backend response completes", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.delegation.created", "delegation": { "id": "d1", "type": "delegation", "target": "responses" } }, "state": "thinking" },
+      { "t": 200, "event": { "type": "response.event", "delegation_id": "d1", "event": { "type": "response.created" } }, "state": "thinking" },
+      { "t": 300, "event": { "type": "response.event", "delegation_id": "d1", "event": { "type": "response.output_text.delta", "delta": "Sunny" } }, "state": "thinking" },
+      { "t": 400, "event": { "type": "response.event", "delegation_id": "d1", "event": { "type": "response.completed" } }, "state": "listening" }
+    ] },
+    { "name": "a function call's continuation reopens the delegation", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.delegation.created", "delegation": { "id": "d1" } }, "state": "thinking" },
+      { "t": 200, "event": { "type": "response.event", "delegation_id": "d1", "event": { "type": "response.completed" } }, "state": "listening" },
+      { "t": 300, "event": { "type": "response.event", "delegation_id": "d1", "event": { "type": "response.created" } }, "state": "thinking" },
+      { "t": 400, "event": { "type": "response.event", "delegation_id": "d1", "event": { "type": "response.failed" } }, "state": "listening" }
+    ] },
+    { "name": "speaking wins over thinking; thinking resumes after the speech", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.delegation.created", "delegation": { "id": "d1" } }, "state": "thinking" },
+      { "t": 200, "level": 0.4, "state": "speaking" },
+      { "t": 233, "level": 0, "repeat": 9, "state": "thinking" },
+      { "t": 600, "event": { "type": "response.event", "delegation_id": "d1", "event": { "type": "response.incomplete" } }, "state": "listening" }
+    ] },
+    { "name": "several delegations: thinking until the last one ends", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.delegation.created", "delegation": { "id": "d1" } }, "state": "thinking" },
+      { "t": 150, "event": { "type": "session.delegation.created", "delegation": { "id": "d2" } }, "state": "thinking" },
+      { "t": 200, "event": { "type": "response.event", "delegation_id": "d1", "event": { "type": "response.completed" } }, "state": "thinking" },
+      { "t": 300, "event": { "type": "response.event", "delegation_id": "d2", "event": { "type": "response.cancelled" } }, "state": "listening" }
+    ] },
+    { "name": "a client delegation ends at the commentary acknowledgment (it carries no delegation_id: the oldest client delegation closes)", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.delegation.created", "delegation": { "id": "c1", "target": "client" } }, "state": "thinking" },
+      { "t": 150, "event": { "type": "session.delegation.created", "delegation": { "id": "c2", "target": "client" } }, "state": "thinking" },
+      { "t": 200, "event": { "type": "session.commentary.appended", "start_ms": 11200, "end_ms": 11400, "client_event_id": "answer_1" }, "state": "thinking" },
+      { "t": 300, "event": { "type": "session.commentary.appended", "client_event_id": "answer_2" }, "state": "listening" }
+    ] },
+    { "name": "a commentary acknowledgment naming its delegation closes that one", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.delegation.created", "delegation": { "id": "c1", "target": "client" } }, "state": "thinking" },
+      { "t": 150, "event": { "type": "session.delegation.created", "delegation": { "id": "c2", "target": "client" } }, "state": "thinking" },
+      { "t": 200, "event": { "type": "session.commentary.appended", "delegation_id": "c2" }, "state": "thinking" },
+      { "t": 300, "event": { "type": "session.commentary.appended", "delegation_id": "c1" }, "state": "listening" }
+    ] },
+    { "name": "quiet progress (thinking.appended) keeps a delegation thinking", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.delegation.created", "delegation": { "id": "c1", "target": "client" } }, "state": "thinking" },
+      { "t": 200, "event": { "type": "session.thinking.appended", "client_event_id": "progress_1" }, "state": "thinking" },
+      { "t": 300, "event": { "type": "session.commentary.appended", "client_event_id": "answer_1" }, "state": "listening" }
+    ] },
+    { "name": "the live DevinFit sequence: delegate, a filler line, the answer, then listening", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 10678, "event": { "type": "session.delegation.created", "delegation": { "id": "item_1", "type": "delegation", "target": "client" } }, "state": "thinking" },
+      { "t": 11535, "level": 0.4, "state": "speaking" },
+      { "t": 11568, "level": 0, "repeat": 9, "state": "thinking" },
+      { "t": 13414, "event": { "type": "session.commentary.appended", "start_ms": 11200, "end_ms": 11400, "client_event_id": "answer_1" }, "state": "listening" },
+      { "t": 13945, "level": 0.5, "state": "speaking" },
+      { "t": 21000, "level": 0, "repeat": 9, "state": "listening" }
+    ] },
+    { "name": "a commentary acknowledgment never closes a Responses delegation", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.delegation.created", "delegation": { "id": "r1", "target": "responses" } }, "state": "thinking" },
+      { "t": 200, "event": { "type": "session.commentary.appended", "client_event_id": "x" }, "state": "thinking" },
+      { "t": 300, "event": { "type": "response.event", "delegation_id": "r1", "event": { "type": "response.completed" } }, "state": "listening" }
+    ] },
+    { "name": "a delegation with no end event times out after 30 s without news", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 1000, "event": { "type": "session.delegation.created", "delegation": { "id": "c1", "target": "client" } }, "state": "thinking" },
+      { "t": 30999, "level": 0, "state": "thinking" },
+      { "t": 31001, "level": 0, "state": "listening" }
+    ] },
+    { "name": "backend news keeps a long delegation alive", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 1000, "event": { "type": "session.delegation.created", "delegation": { "id": "d1" } }, "state": "thinking" },
+      { "t": 25000, "event": { "type": "response.event", "delegation_id": "d1", "event": { "type": "response.output_item.done" } }, "state": "thinking" },
+      { "t": 50000, "level": 0, "state": "thinking" },
+      { "t": 55001, "level": 0, "state": "listening" }
+    ] },
+    { "name": "barge-in: the user talks over the model and its audio stops", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "level": 0.3, "state": "speaking" },
+      { "t": 500, "event": { "type": "session.input_transcript.delta", "delta": "wait", "start_ms": 400, "end_ms": 500 }, "state": "speaking", "interrupts": 0 },
+      { "t": 533, "level": 0, "repeat": 9, "state": "listening", "interrupts": 1 }
+    ] },
+    { "name": "a backchannel while the model keeps talking is not an interrupt", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "level": 0.3, "state": "speaking" },
+      { "t": 500, "event": { "type": "session.input_transcript.delta", "delta": "mhm" }, "state": "speaking" },
+      { "t": 533, "level": 0.3, "repeat": 40, "state": "speaking" },
+      { "t": 1900, "level": 0, "repeat": 9, "state": "listening", "interrupts": 0 }
+    ] },
+    { "name": "user speech while the model is quiet is not an interrupt", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.input_transcript.delta", "delta": "hello" }, "state": "listening", "interrupts": 0 },
+      { "t": 200, "event": { "type": "session.output_transcript.delta", "delta": "Hi" }, "state": "listening" }
+    ] },
+    { "name": "session.closed reports its reason", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.closed", "reason": "expired", "usage": { "seconds": 3600 } }, "state": "listening", "closed": "expired" }
+    ] },
+    { "name": "a fatal error code is remembered", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "error", "error": { "type": "invalid_request_error", "code": "immutable_field_update" } }, "state": "listening" },
+      { "t": 200, "event": { "type": "error", "error": { "code": "insufficient_quota" } }, "state": "listening", "fatal": "insufficient_quota" }
+    ] },
+    { "name": "unknown and malformed events change nothing", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "event": { "type": "session.usage.updated", "usage": { "seconds": 12 } }, "state": "listening" },
+      { "t": 200, "event": { "type": "response.event" }, "state": "listening" },
+      { "t": 300, "event": { "type": "session.delegation.created" }, "state": "listening" }
+    ] }
+  ]
+}

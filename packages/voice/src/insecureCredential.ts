@@ -37,3 +37,51 @@ export function insecureCredentialRefusal(g: InsecureCredentialGuard): string | 
     "`npx @sinua/voice dev-proxy` and pass `credentialUrl`."
   );
 }
+
+/** OpenAI's own API host: a credential sent here must be an `ek_`. */
+export const OPENAI_API_HOST = "api.openai.com";
+
+/** True when `url` is on OpenAI's own API host; an unparseable URL counts as OpenAI (the strict rule). */
+export function isOpenAIHost(url: string): boolean {
+  try {
+    return new URL(url).hostname === OPENAI_API_HOST;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * OpenAI Realtime's credential rule, by where the credential goes:
+ *
+ * - to OpenAI (`api.openai.com`): it must be an `ek_…` minted by your backend;
+ * - to your own calls endpoint (a `callsUrl` on another host, which opens the
+ *   OpenAI session with its own key -- the "sideband" setup): it's your own
+ *   short-lived token, any shape, but never a raw OpenAI key (`sk-…`).
+ *
+ * The same rule, and the same message, on iOS and Android (`InsecureCredential`).
+ */
+export function openAICredentialRefusal(credential: string, callsUrl: string, vendor = "OpenAIRealtimeVoiceSource"): string | null {
+  const c = credential.trim();
+  if (isOpenAIHost(callsUrl)) return insecureCredentialRefusal({ vendor, isEphemeral: c.startsWith("ek_"), ephemeralShape: "ek_…" });
+  if (c.startsWith("sk-")) {
+    return `${vendor}: your own calls endpoint takes your own short-lived token, never a raw OpenAI key (sk-…); keep the key in your backend.`;
+  }
+  return null;
+}
+
+/**
+ * OpenAI GPT-Live's rule: its session is only ever opened by your server
+ * (`POST /v1/live/sessions` with your project key; there is no `ek_`), so the
+ * session URL must be your own endpoint, never `api.openai.com`, and a
+ * credential for it (optional: your endpoint may use cookies) is your own
+ * token, never a raw OpenAI key (`sk-…`). Same rule and messages on iOS and Android.
+ */
+export function openAILiveRefusal(sessionUrl: string, credential: string | null, vendor = "OpenAILiveVoiceSource"): string | null {
+  if (isOpenAIHost(sessionUrl)) {
+    return `${vendor}: sessionUrl must be your own endpoint; GPT-Live sessions are opened by your server with its key (POST /v1/live/sessions), never from the app.`;
+  }
+  if (credential?.trim().startsWith("sk-")) {
+    return `${vendor}: your session endpoint takes your own short-lived token, never a raw OpenAI key (sk-…); keep the key in your backend.`;
+  }
+  return null;
+}

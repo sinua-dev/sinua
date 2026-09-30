@@ -9,6 +9,56 @@ tag `beta`, and it may still change incompatibly.
 
 How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
+## 0.1.0-beta.7
+
+### Added
+
+- OpenAI GPT-Live (`gpt-live-1`): `OpenAILiveVoiceSource` on the Web (`@sinua/voice/openai`),
+  iOS (`SinuaOpenAI`) and Android (`sinua-openai`).
+  - Your server opens the session (`POST /v1/live/sessions` with its key); the source posts
+    `{ "sdp": … }` to your `sessionUrl` and takes OpenAI's 201 JSON back unchanged (or the bare
+    SDP). `sessionUrl` can't be `api.openai.com`, and a credential for it is never `sk-…`.
+  - State without turn events: the model's audio is `speaking`, an open backend delegation is
+    `thinking`, and user speech that stops the model is a barge-in. The same table on every
+    platform: `spec/openai-live-cases.json`.
+  - `disconnect()` closes gracefully (`session.close`, then waits for `session.closed`).
+    `expired` / `connection_lost` reconnect with a new session.
+  - `@sinua/voice/server`: `createOpenAILiveSession` and `openAILiveResponse` for your endpoint.
+  - React Native doesn't have it yet. Beta: run against a live session on the Web; iOS and
+    Android are tested against fakes and the shared table, and barge-in isn't tried live yet.
+- iOS and Android typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaBeacon`,
+  `SinuaEdge`, `SinuaCore`) take `effect`, `labels`, `announce`, `haptics` and, on a spec,
+  `rules`, like `SinuaView`. Before, only `SinuaView` could play a one-shot effect there. Web
+  and React Native components already passed them through.
+- `@sinua/snippets`: `effect` on `buildSnippets` and `effectLines(platform, effect)`, the
+  lines that say how an app plays a one-shot effect (the Studio's Play effect adds them to its
+  export); `@sinua/design`: a `sparkle` icon.
+- WARP for OpenAI Realtime (`warp: true`, off by default): a pre-negotiated event channel plus
+  `dcid`. On iOS and Android it also turns on libwebrtc's DTLS 1.3 / SNAP / SPED field trials.
+  A `callsUrl` backend must forward `dcid`. On GPT-Live, `warp` sets only the native field
+  trials (OpenAI documents no `dcid` there); experimental.
+
+### Changed
+
+- FX Spec 1.10: the shared voice-state profile no longer adds particles in listening /
+  thinking / speaking, so views are calmer. Overrides or a state's `materials.particles` turn
+  them back on. 1.8 and 1.9 files resolve exactly as before (the identity locks hold them);
+  plain views follow the new profile. The orb `speaking` pattern sways within ±55° instead of
+  turning edge-on.
+- One-shot effects on box-layout patterns (the screen-edge `framing`, the voice-message bar
+  `playing`) play in place: the rim or the bars turn green, red or gold and brighten, so a
+  faint resting rim flashes too. There's no ring, tick or burst in the middle of the screen,
+  and no shake that slides the rim away.
+  `spec/effect-vectors.json` gains their cases.
+- SimulatedVoiceSource: the user's turns are louder (0.40–0.78), so signal moves while listening.
+- OpenAI Realtime: the credential rule now depends on where the credential goes. On OpenAI's
+  own host (`api.openai.com`, the default) it must still be an `ek_…`. On your own calls
+  endpoint (`callsURL` on iOS, `callsUrl` on Android and, new, on the Web) it's your own
+  short-lived token in any shape, but never a raw `sk-…` key. This is the "sideband" setup,
+  where your backend opens the OpenAI session with its own key and handles tools and
+  transcripts server-side. Beta.6 refused any non-`ek_` token even there. React Native
+  doesn't pass a calls URL yet.
+
 ## 0.1.0-beta.6
 
 ### Added

@@ -13,6 +13,8 @@ export const dynamic = "force-static";
 const CATALOG = parameterCatalog();
 const OBJECTS = CATALOG.objects.map((o) => o.id);
 const PATTERNS = CATALOG.objects.reduce((n, o) => n + o.patterns.length, 0);
+/** The FX Spec version this runtime writes (the engine's RUNTIME_MINOR), so a new minor can't leave it stale. */
+const FX_SPEC = (CATALOG as unknown as { fxSpec?: string }).fxSpec ?? "1";
 
 export function GET() {
   const url = (path: string) => new URL(path.endsWith("/") ? path : `${path}/`, brand.siteUrl).toString();
@@ -28,7 +30,7 @@ export function GET() {
     ``,
     `> ${brand.description} Public beta (${VERSION}); the API can still change between betas.`,
     ``,
-    `A design is a pattern (${PATTERNS}, in ${OBJECTS.length} families: ${OBJECTS.join(", ")}) plus props, or one FX Spec file (.fxspec.json, 1.9) that every platform reads the same way. Views take an agent state (idle, listening, thinking, speaking) or a voice source.`,
+    `A design is a pattern (${PATTERNS}, in ${OBJECTS.length} families: ${OBJECTS.join(", ")}) plus props, or one FX Spec file (.fxspec.json, ${FX_SPEC}) that every platform reads the same way. Views take an agent state (idle, listening, thinking, speaking) or a voice source.`,
     ``,
     `Install:`,
     `- Web: npm i @sinua/web@beta @sinua/core@beta (npm's untagged name still resolves to the first beta)`,

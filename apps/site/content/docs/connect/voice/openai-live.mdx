@@ -1,0 +1,52 @@
+---
+title: OpenAI GPT-Live
+description: "Show an OpenAI GPT-Live session's state and voice as a live visual on the web, iOS and Android, with the session opened by your server."
+metaTitle: "OpenAI GPT-Live voice visualizer for SwiftUI, Compose and the web | Sinua"
+---
+
+<Callout title="Beta">The GPT-Live source is beta. It has run against a live GPT-Live session on the web; on iOS and Android it is tested against fakes and the same table of cases, and barge-in hasn't been tried live yet. React Native doesn't have it yet.</Callout>
+
+GPT-Live (`gpt-live-1`) is OpenAI's full-duplex voice model, a different API from [Realtime](/docs/connect/voice/openai-realtime). Only your server can open a session, with your project key, so there is no client credential: the source sends its WebRTC offer to your endpoint, your endpoint opens the session and answers with OpenAI's reply.
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "Server"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="openai-live-web.ts"'>../../../../snippets/voice/openai-live-web.ts</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="openai-live.swift"'>../../../../snippets/voice/openai-live.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="openai-live.kt"'>../../../../snippets/voice/openai-live.kt</include>
+</Tab>
+<Tab value="Server">
+<include lang="ts" meta='title="openai-live-server.ts"'>../../../../snippets/voice/openai-live-server.ts</include>
+</Tab>
+</Tabs>
+
+## Your endpoint
+
+- The source POSTs `{ "sdp": … }` as JSON to `sessionUrl`, with `Authorization: Bearer` when you give it a credential of your own (`credentialUrl` or a provider, as on the [Credentials](/docs/connect/voice/credentials) page).
+- `createOpenAILiveSession` in `@sinua/voice/server` opens the session (`POST /v1/live/sessions`); `openAILiveResponse` answers with OpenAI's 201 JSON. A bare SDP answer works too.
+- Your server sets the model, voice, instructions, delegation and any prior conversation when it opens the session.
+- `sessionUrl` can't be `api.openai.com`, and a credential for it is never a raw `sk-…` key.
+
+## How the states map
+
+GPT-Live sends no turn events, so the source reads the call itself, the same way on every platform:
+
+| State | When |
+|---|---|
+| speaking | the model's audio is audible (it ends after about 300 ms of quiet) |
+| thinking | a backend delegation is open while the model is quiet |
+| barge-in | the user speaks while the model is audible, and the model goes quiet within a second |
+| idle | after `disconnect()`, or when the session ends |
+
+`disconnect()` goes idle at once, then closes the session cleanly so the final usage is recorded. A session that expires or drops is replaced by a new one with a fresh request to your endpoint.
+
+## Packages
+
+| Platform | Package |
+|---|---|
+| Web | `OpenAILiveVoiceSource` from `@sinua/voice/openai` |
+| iOS | `SinuaOpenAI` |
+| Android | `:sinua-openai` |

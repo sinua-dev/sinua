@@ -35,6 +35,7 @@ The two talking states move in opposite directions, which is what makes them tel
 |---|---|---|
 | LiveKit | an existing LiveKit room with an agent | [LiveKit](/docs/connect/voice/livekit) |
 | OpenAI Realtime | OpenAI's Realtime API over WebRTC | [OpenAI Realtime](/docs/connect/voice/openai-realtime) |
+| OpenAI GPT-Live | OpenAI's full-duplex GPT-Live, a session your server opens (web, iOS, Android) | [OpenAI GPT-Live](/docs/connect/voice/openai-live) |
 | Gemini Live | Google's Gemini Live API | [Gemini Live](/docs/connect/voice/gemini-live) |
 | ElevenLabs | ElevenLabs Conversational AI | [ElevenLabs](/docs/connect/voice/elevenlabs) |
 | Microphone, test tone | the device mic, or a synthetic voice for previews | [Mic & test tone](/docs/connect/voice/mic-and-tone) |
@@ -48,6 +49,7 @@ A voice source never needs your vendor API key. Keep the key on **your server**,
 - **OpenAI:** an ephemeral client secret (`ek_…`).
 - **Gemini:** an ephemeral auth token (`auth_tokens/…`).
 - **ElevenLabs:** a signed URL for a private agent, or just the agent id for a public one.
+- **OpenAI GPT-Live:** no client credential at all; your server opens the session and answers the app's offer.
 - **LiveKit:** a room token from your backend, or a room you've already connected.
 
 The endpoint is yours, so you decide who gets a session and with which model, voice and instructions. `@sinua/voice/server` mints all four, the repository has ready-made endpoints for Next.js, Express, Cloudflare Workers and Supabase, and `npx @sinua/voice dev-proxy` serves them on your machine while you try things. See [Credentials](/docs/connect/voice/credentials).
@@ -58,12 +60,14 @@ Every pattern follows the four states with the same built-in profile, on top of 
 
 | State | Speed | What it adds |
 |---|---|---|
-| idle | 0.6× | a slow, soft pulse |
-| listening | 0.9× | particles that follow the user's voice, a light glow |
-| thinking | 1.05× | a few particles, a quicker pulse |
-| speaking | 1.15× | particles that follow the agent's voice, a glow |
+| idle | 0.6× | a softer ink and a slow pulse |
+| listening | 0.9× | full ink, a light glow; the user's voice moves the shape |
+| thinking | 1.05× | a glow and a quicker pulse |
+| speaking | 1.15× | a stronger glow; the agent's voice moves the shape |
 
-Your `overrides` go on top of the profile, in every state and on every platform. To keep a view calm, turn the particles off and soften the rest:
+Since FX Spec 1.10 the states add no particles; files written for 1.8 or 1.9 keep the particles they had.
+
+Your `overrides` go on top of the profile, in every state and on every platform. To make a view quieter still, soften the glow and drop the pulse:
 
 <Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
 <Tab value="Web">
@@ -80,7 +84,7 @@ Your `overrides` go on top of the profile, in every state and on every platform.
 </Tab>
 </Tabs>
 
-The keys are the materials' master strengths: `particleStrength`, `glowStrength`, `pulseStrength` (0 turns one off). With a `spec` instead of a `pattern`, the file decides: put the same values in its [states](/docs/connect/states-vs-patterns).
+The keys are the materials' master strengths: `glowStrength`, `pulseStrength`, `particleStrength` (0 turns one off; `particleStrength: 1` brings particles back). With a `spec` instead of a `pattern`, the file decides: put the same values in its [states](/docs/connect/states-vs-patterns).
 
 ## Driving the visual yourself
 

@@ -32,3 +32,6 @@ description: "Play a short success, error or celebrate effect on any visual when
 - With reduced motion on there's no shake, burst or moving ring: the tint pulses, and success's tick fades in and out in place.
 - The effect is announced to screen readers right away, unless you turned announcements off. `labels["effect:celebrate"]` and the like replace the words.
 - The engine draws it, so it works on every pattern and looks the same on every platform.
+- On the screen-edge glow (`framing`) and the voice-message bar (`playing`) the effect plays in place: the rim or the bars turn green, red or gold and brighten. There's no ring, tick or burst in the middle of the screen, and no shake.
+- On iOS and Android the typed views (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaBeacon`, `SinuaEdge`, `SinuaCore`) take `effect` too, like `SinuaView`.
+- The [Studio](/docs/studio) previews all three on your design with **Play effect**.

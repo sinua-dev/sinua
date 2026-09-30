@@ -9,7 +9,7 @@ An **FX Spec** is a small JSON file that describes a visual completely: the obje
 
 ## Structure
 
-- **`fxSpec`** (required): the version, `"1.9"`.
+- **`fxSpec`** (required): the version, `"1.10"`.
 - **`object`** (required) and **`pattern`** (required): what to draw. See the [catalog](/docs/catalog).
 - **`size`** (20 · 32 · 64) and **`speed`**: see [Speed & size](/docs/look/speed-and-size).
 - **`ink`** (1.8): how present the visual is, `0` to `1` (default `1`). It fades everything, halos included, and a state can patch it — an assistant rests below full ink when idle and comes to full ink when it listens.
@@ -28,7 +28,15 @@ Point `$schema` at `fx-spec-1.schema.json` for completion and validation in your
 
 ## Versioning
 
-`fxSpec` is `"1.9"`, written as `major.minor`. A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.9"` and use whatever this page documents. A `"1.8"` file without `transitions` stays valid and renders the same.
+`fxSpec` is `"1.10"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.10"` and use whatever this page documents. An older file stays valid and renders the same.
+
+### 1.10: calmer voice states
+
+1.10 adds no keys. It changes the built-in look of the voice states: `listening`, `thinking` and `speaking` no longer add particles (see [How the states look](/docs/connect/voice#how-the-states-look-and-changing-it)).
+
+- **A `"1.10"` file:** its voice states have no particles. To keep them, set them in the state's entry: `"listening": { "materials": { "particles": { "strength": 1 } } }`.
+- **A `"1.8"` or `"1.9"` file:** renders exactly as before, particles included.
+- **A view without a spec** (`pattern` + `state`) follows the current look; `overrides` turns particles back on for that view.
 
 ## Transitions
 

@@ -4,6 +4,7 @@
     "index",
     "livekit",
     "openai-realtime",
+    "openai-live",
     "gemini-live",
     "elevenlabs",
     "credentials",

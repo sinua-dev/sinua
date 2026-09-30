@@ -11,11 +11,11 @@ import dev.sinua.voice.LocalMicVoiceSource
 @Composable
 fun CalmSignal() {
     val voice = remember { LocalMicVoiceSource() }
-    // The voice states add particles, glow and pulse; your overrides go on top of them,
-    // in every state. Here: no particles, a softer glow, no pulse.
+    // The voice states add a glow and a pulse; your overrides go on top of them,
+    // in every state. Here: a softer glow and no pulse.
     SinuaView(
         pattern = "waveform",
-        overrides = mapOf("particleStrength" to 0.0, "glowStrength" to 0.15, "pulseStrength" to 0.0),
+        overrides = mapOf("glowStrength" to 0.15, "pulseStrength" to 0.0),
         voice = voice,
         modifier = Modifier.size(220.dp, 120.dp),
     )

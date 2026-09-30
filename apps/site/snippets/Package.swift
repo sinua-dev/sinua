@@ -12,7 +12,7 @@ let topics: [(folder: String, target: String, exclude: [String])] = [
     ("states", "States", ["goal-react.tsx", "react.tsx", "compose.kt", "plain-react.tsx", "plain-compose.kt", "plain-react-native.tsx",
                           "effects-web.ts", "effects.kt", "effects-react-native.tsx"]),
     ("bindings", "Bindings", ["react.tsx", "compose.kt", "rules-react.tsx", "rules.kt"]),
-    ("voice", "Voice", ["calm-web.ts", "calm.kt", "calm-react-native.tsx", "overview-web.ts", "openai-realtime-web.ts", "gemini-live-web.ts", "elevenlabs-web.ts", "livekit-web.ts", "mic-and-tone-web.ts",
+    ("voice", "Voice", ["calm-web.ts", "calm.kt", "calm-react-native.tsx", "overview-web.ts", "openai-realtime-web.ts", "openai-realtime-sideband-web.ts", "openai-live-web.ts", "openai-live-server.ts", "openai-live.kt", "gemini-live-web.ts", "elevenlabs-web.ts", "livekit-web.ts", "mic-and-tone-web.ts",
                         "overview.kt", "openai-realtime.kt", "gemini-live.kt", "elevenlabs.kt", "livekit.kt", "mic-and-tone.kt",
                         "overview-react-native.tsx", "openai-realtime-react-native.tsx", "gemini-live-react-native.tsx",
                         "elevenlabs-react-native.tsx", "livekit-react-native.tsx", "mic-and-tone-react-native.tsx",

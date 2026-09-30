@@ -1,6 +1,6 @@
 {
   "$comment": "The voice-state profile: what each agent state does to ANY pattern, as engine overrides. Compiled into the engine (crates/core_engine/src/voice_state.rs) and returned by `voiceStateProfile(pattern, state)`; the FX Spec resolver fills these into a 1.8+ file's voice-state entries for keys the file doesn't set, so an author patches the profile instead of restating it. `speed` multiplies the pattern's tuned speed; `overrides` are engine keys; `audioInput` tells a view which level to feed `audioLevel` (it is not an engine key). A negative `audioStrength` is the inward inhale, positive the outward swell. Per-pattern entries under `patterns` override the generic state for that pattern only.",
-  "profileVersion": 1,
+  "profileVersion": 2,
   "simulated": {
     "$comment": "Nothing here is simulated any more: `ink` and the listening inhale became engine keys in FX Spec 1.8, and the views' clock became phase-continuous on 2026-09-20 -- including the FX Spec path, so a state with its own `speed` keeps the pose. Kept as a field so tools reading it don't break."
   },
@@ -41,15 +41,9 @@
       "audioInput": "micLevel",
       "overrides": {
         "glowStrength": 0.3,
-        "particleStrength": 1,
-        "particleStyle": 1,
-        "particleCount": 36,
-        "particleSize": 1.4,
-        "particleSpread": 0.4,
-        "particleLife": 1.8,
-        "particleAudio": 1,
         "ink": 1,
-        "audioStrength": -0.35
+        "audioStrength": -0.35,
+        "particleStrength": 0
       }
     },
     "thinking": {
@@ -61,10 +55,8 @@
         "pulsePeriod": 1.8,
         "pulseScale": 0.015,
         "pulseOpacity": 0.45,
-        "particleStrength": 0.8,
-        "particleStyle": 2,
-        "particleCount": 16,
-        "ink": 1
+        "ink": 1,
+        "particleStrength": 0
       }
     },
     "speaking": {
@@ -72,13 +64,9 @@
       "audioInput": "agentVolume",
       "overrides": {
         "glowStrength": 0.4,
-        "particleStrength": 1,
-        "particleStyle": 0,
-        "particleCount": 32,
-        "particleLife": 1.4,
-        "particleAudio": 1,
         "ink": 1,
-        "audioStrength": 0.5
+        "audioStrength": 0.5,
+        "particleStrength": 0
       }
     }
   },
@@ -302,10 +290,7 @@
         "listening": {
           "overrides": {
             "highlightLength": 0.3,
-            "trackOpacity": 0.2,
-            "particleCount": 16,
-            "particleSize": 1.0,
-            "particleSpread": 0.25
+            "trackOpacity": 0.2
           }
         },
         "speaking": {
@@ -450,6 +435,51 @@
             "reach": 0.035,
             "shimmer": 0,
             "glowStrength": 0.6
+          }
+        }
+      }
+    }
+  },
+  "before1_10": {
+    "$comment": "FX Spec 1.8 and 1.9 files resolved their voice states with particles; from 1.10 (and in plain views) the shared profile has none. These are the old particle values, applied only for a file that declares fxSpec 1.8 or 1.9, so its meaning doesn't change (the identity locks hold it). Order: generic state, then these, then the pattern's own entry, then its entry here.",
+    "states": {
+      "listening": {
+        "overrides": {
+          "particleStrength": 1,
+          "particleStyle": 1,
+          "particleCount": 36,
+          "particleSize": 1.4,
+          "particleSpread": 0.4,
+          "particleLife": 1.8,
+          "particleAudio": 1
+        }
+      },
+      "thinking": {
+        "overrides": {
+          "particleStrength": 0.8,
+          "particleStyle": 2,
+          "particleCount": 16
+        }
+      },
+      "speaking": {
+        "overrides": {
+          "particleStrength": 1,
+          "particleStyle": 0,
+          "particleCount": 32,
+          "particleLife": 1.4,
+          "particleAudio": 1
+        }
+      }
+    },
+    "patterns": {
+      "generating": {
+        "states": {
+          "listening": {
+            "overrides": {
+              "particleCount": 16,
+              "particleSize": 1.0,
+              "particleSpread": 0.25
+            }
           }
         }
       }

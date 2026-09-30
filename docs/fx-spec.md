@@ -300,6 +300,22 @@ How state changes animate, per pair. Optional; without it every change takes 0.6
 - **Diagnostics:** a key that isn't `default` or `a->b` is an error; a state name that isn't in `states` is a warning (the entry never applies); an unknown curve or an out-of-range duration is an error.
 - `fxSpecTransition(spec, from, to)` returns `{ duration, curve }` for a pair; the players call it on every state change. The technique (interpolate / morph / cross-fade) isn't in the file: the engine picks it from the pair (see *Caller loop*).
 
+## v1.10: calmer voice states
+
+No new keys. The shared voice-state profile (docs/fx-view.md, *Voice states without a
+spec*) no longer adds particles in `listening`, `thinking` and `speaking`. With three
+views side by side they gathered into a swarm around the shapes, and the states read
+clearly without them (ink, glow, the audio-driven shape, the speed).
+
+- **A 1.10 file:** its voice states resolve without particles. To have them, set them in
+  the state's entry: `"listening": { "materials": { "particles": { "strength": 1 } } }`.
+- **A 1.8 or 1.9 file:** resolves exactly as before, particles included (the
+  `before1_10` block of `spec/voice-state-profile.json`). The identity locks
+  `spec/fx-spec-1.8-resolved.json` and `-1.9-resolved.json` hold it; `-1.10-resolved.json`
+  is new.
+- **Plain views** (`pattern` + `state`, no spec) follow the current profile: no particles.
+  `overrides` still turns them on per view.
+
 ## v1.9: `accessibility`
 
 What a view is called in each state, and whether its state changes are spoken.

@@ -27,7 +27,7 @@ use std::collections::{BTreeMap, HashMap};
 use serde_json::{Map, Value};
 
 pub const RUNTIME_MAJOR: u64 = 1;
-pub const RUNTIME_MINOR: u64 = 9;
+pub const RUNTIME_MINOR: u64 = 10;
 /// The oldest minor this runtime reads. 1.0–1.7 were never published, so their
 /// acceptance was dropped before the first release instead of becoming a
 /// compatibility promise (release decision 0.1).
@@ -2021,7 +2021,8 @@ pub fn resolve_full(
     // `or_insert`, so a profile `audioStrength` (negative while listening)
     // survives the `audioLevel` companion's positive default.
     if !key.is_empty() {
-        if let Some(p) = crate::voice_state::profile(&block.state, &key) {
+        // 1.10: the shared profile lost its particles; a 1.8/1.9 file keeps them.
+        if let Some(p) = crate::voice_state::profile_for_minor(&block.state, &key, minor) {
             for (k, v) in p.overrides {
                 if !removed.contains(&k) {
                     out.entry(k).or_insert(v);
@@ -2293,7 +2294,7 @@ mod tests {
         assert!(errors(&missing).iter().any(|d| d.path == "/pattern"));
         // A newer 1.x file: unknown keys are warnings, the rest renders.
         let newer = resolve(
-            r##"{ "fxSpec": "1.10", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
+            r##"{ "fxSpec": "1.11", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
         );
         assert!(newer.ok, "{:?}", newer.diagnostics);
         assert_eq!(warnings(&newer).len(), 2);
@@ -2652,6 +2653,30 @@ mod tests {
         // examples declare 1.8. Captured once 1.8 was stable;
         // a later minor adds its own.
         resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.8-resolved.json"), 13);
+    }
+
+    #[test]
+    fn from_1_10_the_voice_states_have_no_particles_and_older_files_keep_theirs() {
+        let file = |minor: &str| {
+            format!(
+                r##"{{ "fxSpec": "{minor}", "object": "signal", "pattern": "waveform", "states": {{ "listening": {{}} }} }}"##
+            )
+        };
+        let particles = |minor: &str| {
+            let r = resolve_full(&file(minor), Some("listening"), &HashMap::new(), false);
+            assert!(r.ok, "{:?}", r.diagnostics);
+            r.overrides.get("particleStrength").copied()
+        };
+        assert_eq!(particles("1.9"), Some(1.0), "1.9 keeps its meaning");
+        assert_eq!(particles("1.10"), Some(0.0), "1.10: particles off");
+    }
+
+    #[test]
+    fn v1_9_examples_resolve_identically() {
+        // 1.9 shipped in 0.1.0-beta.6; 1.10 changed the shared voice-state profile
+        // (no particles), and older files keep theirs (`voice_state::profile_for_minor`).
+        // This holds the 1.9 runtime's lock so that change can't leak into it.
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.9-resolved.json"), 13);
     }
 
     const HOLO: &str = include_str!("../../../spec/examples/holo-orb.fxspec.json");

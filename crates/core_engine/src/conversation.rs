@@ -241,7 +241,8 @@ fn speech_level(voice: &str, seed: f64, turn: usize, lt: f64, len: f64) -> f64 {
     let (lo, hi, depth) = if voice == "agent" {
         (0.35, 0.8, 0.7)
     } else {
-        (0.25, 0.65, 1.0)
+        // A normal speaker (0.25-0.65 read as mumbling: signal barely moved while listening).
+        (0.40, 0.78, 0.85)
     };
     let shaped = 1.0 - depth + depth * syllable;
     (env * (lo + (hi - lo) * shaped) * dip).clamp(0.0, 1.0)
@@ -390,7 +391,7 @@ mod tests {
         let (lo, hi) = levels
             .iter()
             .fold((1.0f64, 0.0f64), |(a, b), &x| (a.min(x), b.max(x)));
-        assert!(hi > 0.4 && hi <= 0.65 + 1e-9, "user peak {hi}");
+        assert!(hi > 0.55 && hi <= 0.78 + 1e-9, "user peak {hi}");
         assert!(hi - lo > 0.15, "it moves: {lo}..{hi}");
         // No fast flutter: frame-to-frame (30 fps) change stays small.
         let steps: Vec<f64> = (0..60)

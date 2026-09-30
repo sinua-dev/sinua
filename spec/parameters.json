@@ -7168,7 +7168,7 @@
       "unit": null
     }
   },
-  "fxSpec": "1.9",
+  "fxSpec": "1.10",
   "internalKeys": [
     "rSizeMul",
     "historyCount",
@@ -10984,7 +10984,7 @@
       ]
     }
   ],
-  "profileVersion": 1,
+  "profileVersion": 2,
   "runtimeInputs": [
     {
       "description": "The live voice level 0 to 1; drives the radial breathing pulse on any pattern.",

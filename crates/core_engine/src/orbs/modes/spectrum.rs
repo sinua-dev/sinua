@@ -19,7 +19,11 @@ pub fn frame_spectrum(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let cx = size / 2.0;
     let cy = size / 2.0;
     let r = (size / 2.0) * 0.82;
-    let pt = Proj::new(t * 0.15, 0.3, cx, cy, 1.0);
+    // The ring sways within ±55° of face-on (same peak turn speed as the old full
+    // turn, 0.15 rad per unit): a full turn passed edge-on every ~42 units and read as a
+    // thin line, for seconds at idle's slow speed.
+    const SWAY: f64 = 0.96;
+    let pt = Proj::new(SWAY * (t * 0.15 / SWAY).sin(), 0.3, cx, cy, 1.0);
     let rs = radius_scale(size, get(o, "rsPow", 0.6));
 
     let bars = get(o, "barCount", 24.0) as i64;

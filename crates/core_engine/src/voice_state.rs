@@ -75,15 +75,40 @@ fn numbers(v: Option<&Value>) -> HashMap<String, f64> {
 /// `None` for an unknown state -- an app's own key, like "recording", is
 /// simply not part of the voice language and gets the file's design as-is.
 pub fn profile(pattern: &str, state: &str) -> Option<VoiceStateProfile> {
+    profile_for_minor(pattern, state, crate::fx_spec::RUNTIME_MINOR)
+}
+
+/// The first FX Spec minor whose voice states have no particles (the shared
+/// profile's `before1_10` block holds the values older files keep).
+pub const PARTICLE_FREE_FROM_MINOR: u64 = 10;
+
+/// The profile as a file of FX Spec `1.<minor>` reads it: a 1.8 or 1.9 file keeps
+/// the particles its voice states had (`before1_10`), so its meaning doesn't change.
+/// Order: the generic state, the old generic values, the pattern's own entry, its
+/// old entry -- so a pattern that turned particles off keeps them off.
+pub fn profile_for_minor(pattern: &str, state: &str, minor: u64) -> Option<VoiceStateProfile> {
     let src = source();
     let generic = src["states"].get(state)?;
     let own = src["patterns"]
         .get(pattern)
         .and_then(|p| p["states"].get(state));
+    let legacy = (minor < PARTICLE_FREE_FROM_MINOR).then(|| &src["before1_10"]);
 
     let mut overrides = numbers(generic.get("overrides"));
+    if let Some(l) = legacy {
+        overrides.extend(numbers(
+            l["states"].get(state).and_then(|o| o.get("overrides")),
+        ));
+    }
     for (k, v) in numbers(own.and_then(|o| o.get("overrides"))) {
         overrides.insert(k, v);
+    }
+    if let Some(l) = legacy {
+        let old_own = l["patterns"]
+            .get(pattern)
+            .and_then(|p| p["states"].get(state))
+            .and_then(|o| o.get("overrides"));
+        overrides.extend(numbers(old_own));
     }
     let speed = own
         .and_then(|o| o["speed"].as_f64())
@@ -103,6 +128,18 @@ pub fn profile(pattern: &str, state: &str) -> Option<VoiceStateProfile> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn particles_are_gone_from_1_10_and_kept_for_older_files() {
+        let now = profile("waveform", "listening").unwrap();
+        assert_eq!(now.overrides.get("particleStrength"), Some(&0.0));
+        let old = profile_for_minor("waveform", "listening", 9).unwrap();
+        assert_eq!(old.overrides.get("particleStrength"), Some(&1.0));
+        assert_eq!(old.overrides.get("particleCount"), Some(&36.0));
+        // A pattern that turned them off keeps them off in older files too.
+        let spk = profile_for_minor("speaking", "listening", 8).unwrap();
+        assert_eq!(spk.overrides.get("particleStrength"), Some(&0.0));
+    }
 
     #[test]
     fn every_voice_state_has_a_generic_profile() {

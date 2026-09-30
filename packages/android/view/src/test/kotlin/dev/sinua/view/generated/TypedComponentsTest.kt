@@ -1,5 +1,8 @@
 package dev.sinua.view.generated
 
+import androidx.compose.runtime.Composable
+import dev.sinua.view.SinuaEffect
+import dev.sinua.view.SinuaEffectTrigger
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -37,4 +40,16 @@ class TypedComponentsTest {
         assertNull(sinuaSpecError(orb, "orb"))
         assertNull(sinuaSpecError("not json", "ring"))
     }
+}
+
+/**
+ * Compile-level: the typed components take SinuaView's accessibility and effect parameters
+ * (both overloads). Never called; a JVM test can't compose.
+ */
+@Suppress("unused")
+@Composable
+private fun typedComponentsTakeAccessibilityAndEffects(trigger: SinuaEffectTrigger = SinuaEffectTrigger(SinuaEffect.SUCCESS)) {
+    val labels = mapOf("listening" to "Coach is listening")
+    SinuaRing(SinuaRingPattern.COMPLETING, labels = labels, announce = false, haptics = true, effect = trigger)
+    SinuaEdge(spec = "{}", labels = labels, announce = true, haptics = false, rules = false, effect = trigger)
 }

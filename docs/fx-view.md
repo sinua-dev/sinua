@@ -678,6 +678,15 @@ carry on underneath.
 - The effect is spoken at once (it's an event, so the state rate limit doesn't apply)
   unless `announce` is false. `labels["effect:success"]` etc. replace the words.
 - Unknown names do nothing.
+- Box-layout patterns play effects in place: the screen-edge `framing` and the
+  voice-message bar `playing`. The rim or the bars turn green, red or gold and brighten
+  toward full opacity, so a faint resting rim flashes too, and nothing is drawn in the
+  middle. A rim that draws nothing (the voice `idle` state's `idleOpacity: 0`) has nothing
+  to flash. There's no ring, tick, burst or shake, which would otherwise land on
+  the app's content or slide the rim off the screen.
+- The typed components take the same parameter (`SinuaRing(…, effect:)`,
+  `SinuaEdge(…, effect = …)`), along with `labels`, `announce`, `haptics` and, on a spec,
+  `rules`.
 
 ```ts
 const fx = mount(canvas, { pattern: "tracking" });

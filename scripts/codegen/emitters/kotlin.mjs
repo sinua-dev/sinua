@@ -135,6 +135,7 @@ import dev.sinua.view.FxFrameStats
 import dev.sinua.view.FxLowPower
 import dev.sinua.view.FxReducedMotion
 import dev.sinua.view.FxTheme
+import dev.sinua.view.SinuaEffectTrigger
 import dev.sinua.view.SinuaView
 import dev.sinua.voice.VoiceOverrides
 import dev.sinua.voice.VoiceSource
@@ -185,12 +186,21 @@ ${params}
     maxFps: Double? = null,
     lowPower: FxLowPower = FxLowPower.AUTO,
     onFrame: ((FxFrameStats) -> Unit)? = null,
+    /** Words per state for the accessible name and announcements ("listening" -> "Coach is listening"). */
+    labels: Map<String, String> = emptyMap(),
+    /** Speak state changes to TalkBack (polite, rate-limited). Default: the spec's, else true. */
+    announce: Boolean? = null,
+    /** A light tap when the agent starts listening. Off by default; never under reduced motion. */
+    haptics: Boolean = false,
+    /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
+    effect: SinuaEffectTrigger? = null,
 ) {
     val overrides = ${props}(${passArgs}).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,
         contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
+        labels = labels, announce = announce, haptics = haptics, effect = effect,
     )
 }
 
@@ -215,6 +225,16 @@ fun ${m.typeName}(
     lowPower: FxLowPower = FxLowPower.AUTO,
     onError: ((${P}SpecError) -> Unit)? = null,
     onFrame: ((FxFrameStats) -> Unit)? = null,
+    /** Words per state for the accessible name and announcements; win over the spec's \`accessibility.states\`. */
+    labels: Map<String, String> = emptyMap(),
+    /** Speak state changes to TalkBack (polite, rate-limited). Default: the spec's, else true. */
+    announce: Boolean? = null,
+    /** A light tap when the agent starts listening. Off by default; never under reduced motion. */
+    haptics: Boolean = false,
+    /** Derive the state from the spec's 1.9 \`rules\` and [inputs] (off while a voice is bound). */
+    rules: Boolean = true,
+    /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
+    effect: SinuaEffectTrigger? = null,
 ) {
     val error = ${P.toLowerCase()}SpecError(spec, ${str(m.object)})
     if (error != null) {
@@ -226,6 +246,7 @@ fun ${m.typeName}(
         spec = spec, modifier = modifier, voice = voice, voiceOverrides = voiceOverrides, state = state,
         inputs = inputs, voiceLevelInput = voiceLevelInput, theme = theme, paused = paused, reducedMotion = reducedMotion,
         contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
+        labels = labels, announce = announce, haptics = haptics, rules = rules, effect = effect,
     )
 }
 `;

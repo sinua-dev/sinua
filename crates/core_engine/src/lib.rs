@@ -194,7 +194,7 @@ fn post(
     let frame = primitives::apply_interrupt(frame, opts);
     // A one-shot feedback effect (success / error / celebrate) the view is
     // playing: on top of the flash, before the decay and the mute cue.
-    let frame = effects::apply_effect(frame, size as f64, opts);
+    let frame = effects::apply_effect(frame, size as f64, opts, effects::plays_in_place(mode));
     let frame = primitives::apply_decay(frame, opts);
     let frame = primitives::apply_muted(frame, opts);
     // Last: `blurScale` (low power) scales / strips every blur sigma.

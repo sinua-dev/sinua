@@ -3,8 +3,8 @@
   "files": {
     "packages/android/view/src/main/kotlin/dev/sinua/view/generated/SinuaBeacon.kt": {
       "(top level)": [
-        "@Composable fun SinuaBeacon(pattern:SinuaBeaconPattern,modifier:Modifier,size:SinuaSize,dotSize:Double?,hue:Double?,ink:Double?,ringCount:Int?,saturation:Double?,period:Double?,once:Boolean?,ringReach:Double?,ringWidth:Double?,quality:Double?,segmentGap:Double?,segmentRadius:Double?,segmentWidth:Double?,accuracy:Double?,haloOpacity:Double?,blipCount:Int?,seed:Int?,trailFill:Boolean?,trailLength:Double?,cumulative:Boolean?,inactiveOpacity:Double?,sides:Int?,waveCount:Int?,reversing:Boolean?,level:Double?,strokeWidth:Double?,waveSweep:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?)",
-        "@Composable fun SinuaBeacon(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?)"
+        "@Composable fun SinuaBeacon(pattern:SinuaBeaconPattern,modifier:Modifier,size:SinuaSize,dotSize:Double?,hue:Double?,ink:Double?,ringCount:Int?,saturation:Double?,period:Double?,once:Boolean?,ringReach:Double?,ringWidth:Double?,quality:Double?,segmentGap:Double?,segmentRadius:Double?,segmentWidth:Double?,accuracy:Double?,haloOpacity:Double?,blipCount:Int?,seed:Int?,trailFill:Boolean?,trailLength:Double?,cumulative:Boolean?,inactiveOpacity:Double?,sides:Int?,waveCount:Int?,reversing:Boolean?,level:Double?,strokeWidth:Double?,waveSweep:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?)",
+        "@Composable fun SinuaBeacon(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,rules:Boolean,effect:SinuaEffectTrigger?)"
       ],
       "SinuaBeaconPattern": [
         "decl enum class SinuaBeaconPattern(val id:String)",
@@ -21,8 +21,8 @@
     },
     "packages/android/view/src/main/kotlin/dev/sinua/view/generated/SinuaCore.kt": {
       "(top level)": [
-        "@Composable fun SinuaCore(pattern:SinuaCorePattern,modifier:Modifier,size:SinuaSize,highlightFill:Boolean?,highlightLength:Double?,hue:Double?,ink:Double?,saturation:Double?,thickness:Double?,trackOpacity:Double?,period:Double?,length:Double?,bounceAmplitude:Double?,delay:Double?,dotCount:Int?,dotSize:Double?,spacing:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?)",
-        "@Composable fun SinuaCore(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?)"
+        "@Composable fun SinuaCore(pattern:SinuaCorePattern,modifier:Modifier,size:SinuaSize,highlightFill:Boolean?,highlightLength:Double?,hue:Double?,ink:Double?,saturation:Double?,thickness:Double?,trackOpacity:Double?,period:Double?,length:Double?,bounceAmplitude:Double?,delay:Double?,dotCount:Int?,dotSize:Double?,spacing:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?)",
+        "@Composable fun SinuaCore(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,rules:Boolean,effect:SinuaEffectTrigger?)"
       ],
       "SinuaCorePattern": [
         "decl enum class SinuaCorePattern(val id:String)",
@@ -36,8 +36,8 @@
     },
     "packages/android/view/src/main/kotlin/dev/sinua/view/generated/SinuaEdge.kt": {
       "(top level)": [
-        "@Composable fun SinuaEdge(pattern:SinuaEdgePattern,modifier:Modifier,size:SinuaSize,cornerRadius:Double?,hue:Double?,hueSpread:Double?,idleOpacity:Double?,ink:Double?,saturation:Double?,thickness:Double?,flowSpeed:Double?,shimmer:Double?,reach:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?)",
-        "@Composable fun SinuaEdge(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?)"
+        "@Composable fun SinuaEdge(pattern:SinuaEdgePattern,modifier:Modifier,size:SinuaSize,cornerRadius:Double?,hue:Double?,hueSpread:Double?,idleOpacity:Double?,ink:Double?,saturation:Double?,thickness:Double?,flowSpeed:Double?,shimmer:Double?,reach:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?)",
+        "@Composable fun SinuaEdge(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,rules:Boolean,effect:SinuaEffectTrigger?)"
       ],
       "SinuaEdgePattern": [
         "decl enum class SinuaEdgePattern(val id:String)",
@@ -50,8 +50,8 @@
     },
     "packages/android/view/src/main/kotlin/dev/sinua/view/generated/SinuaOrb.kt": {
       "(top level)": [
-        "@Composable fun SinuaOrb(pattern:SinuaOrbPattern,modifier:Modifier,size:SinuaSize,ghostA:Double?,ink:Double?,orbitParticles:Int?,ghostN:Int?,ghostR:Double?,orbitN:Int?,partR:Double?,partRDepth:Double?,rMin:Double?,rsPow:Double?,dimBase:Double?,scanMul:Double?,inkFar:Double?,inkSpan:Double?,latRings:Int?,lonDensity:Double?,rBase:Double?,rDepth:Double?,rBoost:Double?,moveCount:Int?,rActive:Double?,rings:Int?,lineW:Double?,spread:Double?,thr:Double?,signals:Int?,nodeN:Int?,nodeR:Double?,nodeRDepth:Double?,turns:Double?,strandN:Int?,bandMul:Double?,spin:Double?,wobMul:Double?,faceOn:Boolean?,lanes:Double?,segs:Int?,iconD:Double?,rDot:Double?,depthTone:Double?,hueOffset:Double?,hueSpread:Double?,saturation:Double?,surfaceScale:Double?,hueSpeed:Double?,surfaceSpeed:Double?,nodeCount:Int?,nodeSize:Double?,barCount:Int?,hue:Double?,jumpSpeed:Double?,barDotCount:Int?,dotSize:Double?,period:Double?,echoCount:Int?,coreSize:Double?,ringCount:Int?,echoSpacing:Double?,starCount:Int?,warpSpeed:Double?,decay:Double?,holdDuration:Double?,progress:Double?,driftAmplitude:Double?,lineWidth:Double?,dim:Double?,pulseAmplitude:Double?,yaw:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?)",
-        "@Composable fun SinuaOrb(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?)"
+        "@Composable fun SinuaOrb(pattern:SinuaOrbPattern,modifier:Modifier,size:SinuaSize,ghostA:Double?,ink:Double?,orbitParticles:Int?,ghostN:Int?,ghostR:Double?,orbitN:Int?,partR:Double?,partRDepth:Double?,rMin:Double?,rsPow:Double?,dimBase:Double?,scanMul:Double?,inkFar:Double?,inkSpan:Double?,latRings:Int?,lonDensity:Double?,rBase:Double?,rDepth:Double?,rBoost:Double?,moveCount:Int?,rActive:Double?,rings:Int?,lineW:Double?,spread:Double?,thr:Double?,signals:Int?,nodeN:Int?,nodeR:Double?,nodeRDepth:Double?,turns:Double?,strandN:Int?,bandMul:Double?,spin:Double?,wobMul:Double?,faceOn:Boolean?,lanes:Double?,segs:Int?,iconD:Double?,rDot:Double?,depthTone:Double?,hueOffset:Double?,hueSpread:Double?,saturation:Double?,surfaceScale:Double?,hueSpeed:Double?,surfaceSpeed:Double?,nodeCount:Int?,nodeSize:Double?,barCount:Int?,hue:Double?,jumpSpeed:Double?,barDotCount:Int?,dotSize:Double?,period:Double?,echoCount:Int?,coreSize:Double?,ringCount:Int?,echoSpacing:Double?,starCount:Int?,warpSpeed:Double?,decay:Double?,holdDuration:Double?,progress:Double?,driftAmplitude:Double?,lineWidth:Double?,dim:Double?,pulseAmplitude:Double?,yaw:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?)",
+        "@Composable fun SinuaOrb(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,rules:Boolean,effect:SinuaEffectTrigger?)"
       ],
       "SinuaOrbPattern": [
         "decl enum class SinuaOrbPattern(val id:String)",
@@ -81,8 +81,8 @@
     },
     "packages/android/view/src/main/kotlin/dev/sinua/view/generated/SinuaRing.kt": {
       "(top level)": [
-        "@Composable fun SinuaRing(pattern:SinuaRingPattern,modifier:Modifier,size:SinuaSize,gap:Double?,hue:Double?,ink:Double?,saturation:Double?,strokeWidth:Double?,trackOpacity:Double?,progress:SinuaNumbers?,hueStep:Double?,ringCount:Int?,spacing:Double?,maxLaps:Double?,segmentCount:Double?,segment:List<Double>?,fill:Boolean?,marker:Boolean?,sweep:Double?,avatarGap:Double?,idleOpacity:Double?,innerRadius:Double?,thickness:Double?,flow:Double?,rippleCount:Int?,shimmer:Double?,reach:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?)",
-        "@Composable fun SinuaRing(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?)"
+        "@Composable fun SinuaRing(pattern:SinuaRingPattern,modifier:Modifier,size:SinuaSize,gap:Double?,hue:Double?,ink:Double?,saturation:Double?,strokeWidth:Double?,trackOpacity:Double?,progress:SinuaNumbers?,hueStep:Double?,ringCount:Int?,spacing:Double?,maxLaps:Double?,segmentCount:Double?,segment:List<Double>?,fill:Boolean?,marker:Boolean?,sweep:Double?,avatarGap:Double?,idleOpacity:Double?,innerRadius:Double?,thickness:Double?,flow:Double?,rippleCount:Int?,shimmer:Double?,reach:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?)",
+        "@Composable fun SinuaRing(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,rules:Boolean,effect:SinuaEffectTrigger?)"
       ],
       "SinuaRingPattern": [
         "decl enum class SinuaRingPattern(val id:String)",
@@ -182,8 +182,8 @@
     },
     "packages/android/view/src/main/kotlin/dev/sinua/view/generated/SinuaSignal.kt": {
       "(top level)": [
-        "@Composable fun SinuaSignal(pattern:SinuaSignalPattern,modifier:Modifier,size:SinuaSize,barCount:Int?,barWidth:Double?,hue:Double?,ink:Double?,minHeight:Double?,saturation:Double?,layerCount:Int?,lineWidth:Double?,pointCount:Int?,amplitude:Double?,fadeWidth:Double?,columnCount:Int?,ledCount:Int?,ledSize:Double?,minLevel:Double?,mirror:Boolean?,playhead:Boolean?,unplayedOpacity:Double?,progress:Double?,envelope:List<Double>?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?)",
-        "@Composable fun SinuaSignal(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?)"
+        "@Composable fun SinuaSignal(pattern:SinuaSignalPattern,modifier:Modifier,size:SinuaSize,barCount:Int?,barWidth:Double?,hue:Double?,ink:Double?,minHeight:Double?,saturation:Double?,layerCount:Int?,lineWidth:Double?,pointCount:Int?,amplitude:Double?,fadeWidth:Double?,columnCount:Int?,ledCount:Int?,ledSize:Double?,minLevel:Double?,mirror:Boolean?,playhead:Boolean?,unplayedOpacity:Double?,progress:Double?,envelope:List<Double>?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?)",
+        "@Composable fun SinuaSignal(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,rules:Boolean,effect:SinuaEffectTrigger?)"
       ],
       "SinuaSignalPattern": [
         "decl enum class SinuaSignalPattern(val id:String)",
@@ -202,23 +202,27 @@
       "SinuaBeacon": [
         "decl public struct SinuaBeacon:View",
         "public func overrides()->[String:Double]",
-        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],accuracy:Double?,blipCount:Int?,cumulative:Bool?,dotSize:Double?,haloOpacity:Double?,hue:Double?,inactiveOpacity:Double?,ink:Double?,level:Double?,once:Bool?,period:Double?,quality:Double?,reversing:Bool?,ringCount:Int?,ringReach:Double?,ringWidth:Double?,saturation:Double?,seed:Int?,segmentGap:Double?,segmentRadius:Double?,segmentWidth:Double?,sides:Int?,strokeWidth:Double?,trailFill:Bool?,trailLength:Double?,waveCount:Int?,waveSweep:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?)",
-        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?)",
+        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],accuracy:Double?,blipCount:Int?,cumulative:Bool?,dotSize:Double?,haloOpacity:Double?,hue:Double?,inactiveOpacity:Double?,ink:Double?,level:Double?,once:Bool?,period:Double?,quality:Double?,reversing:Bool?,ringCount:Int?,ringReach:Double?,ringWidth:Double?,saturation:Double?,seed:Int?,segmentGap:Double?,segmentRadius:Double?,segmentWidth:Double?,sides:Int?,strokeWidth:Double?,trailFill:Bool?,trailLength:Double?,waveCount:Int?,waveSweep:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?)",
+        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,rules:Bool,effect:SinuaEffectTrigger?)",
         "public var accessibilityLabel:String?",
         "public var accuracy:Double?",
+        "public var announce:Bool?",
         "public var blipCount:Int?",
         "public var body:some View",
         "public var color:SinuaColor?",
         "public var cumulative:Bool?",
         "public var dotSize:Double?",
+        "public var effect:SinuaEffectTrigger?",
         "public var glow:SinuaGlow?",
         "public var gradient:SinuaGradient?",
         "public var haloOpacity:Double?",
+        "public var haptics:Bool",
         "public var holographic:SinuaHolographic?",
         "public var hue:Double?",
         "public var inactiveOpacity:Double?",
         "public var ink:Double?",
         "public var inputs:[String:Double]",
+        "public var labels:[String:String]",
         "public var level:Double?",
         "public var liquid:SinuaLiquid?",
         "public var lowPower:FxLowPower",
@@ -269,23 +273,27 @@
       "SinuaCore": [
         "decl public struct SinuaCore:View",
         "public func overrides()->[String:Double]",
-        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],bounceAmplitude:Double?,delay:Double?,dotCount:Int?,dotSize:Double?,highlightFill:Bool?,highlightLength:Double?,hue:Double?,ink:Double?,length:Double?,period:Double?,saturation:Double?,spacing:Double?,thickness:Double?,trackOpacity:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?)",
-        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?)",
+        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],bounceAmplitude:Double?,delay:Double?,dotCount:Int?,dotSize:Double?,highlightFill:Bool?,highlightLength:Double?,hue:Double?,ink:Double?,length:Double?,period:Double?,saturation:Double?,spacing:Double?,thickness:Double?,trackOpacity:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?)",
+        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,rules:Bool,effect:SinuaEffectTrigger?)",
         "public var accessibilityLabel:String?",
+        "public var announce:Bool?",
         "public var body:some View",
         "public var bounceAmplitude:Double?",
         "public var color:SinuaColor?",
         "public var delay:Double?",
         "public var dotCount:Int?",
         "public var dotSize:Double?",
+        "public var effect:SinuaEffectTrigger?",
         "public var glow:SinuaGlow?",
         "public var gradient:SinuaGradient?",
+        "public var haptics:Bool",
         "public var highlightFill:Bool?",
         "public var highlightLength:Double?",
         "public var holographic:SinuaHolographic?",
         "public var hue:Double?",
         "public var ink:Double?",
         "public var inputs:[String:Double]",
+        "public var labels:[String:String]",
         "public var length:Double?",
         "public var liquid:SinuaLiquid?",
         "public var lowPower:FxLowPower",
@@ -320,21 +328,25 @@
       "SinuaEdge": [
         "decl public struct SinuaEdge:View",
         "public func overrides()->[String:Double]",
-        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],cornerRadius:Double?,flowSpeed:Double?,hue:Double?,hueSpread:Double?,idleOpacity:Double?,ink:Double?,reach:Double?,saturation:Double?,shimmer:Double?,thickness:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?)",
-        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?)",
+        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],cornerRadius:Double?,flowSpeed:Double?,hue:Double?,hueSpread:Double?,idleOpacity:Double?,ink:Double?,reach:Double?,saturation:Double?,shimmer:Double?,thickness:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?)",
+        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,rules:Bool,effect:SinuaEffectTrigger?)",
         "public var accessibilityLabel:String?",
+        "public var announce:Bool?",
         "public var body:some View",
         "public var color:SinuaColor?",
         "public var cornerRadius:Double?",
+        "public var effect:SinuaEffectTrigger?",
         "public var flowSpeed:Double?",
         "public var glow:SinuaGlow?",
         "public var gradient:SinuaGradient?",
+        "public var haptics:Bool",
         "public var holographic:SinuaHolographic?",
         "public var hue:Double?",
         "public var hueSpread:Double?",
         "public var idleOpacity:Double?",
         "public var ink:Double?",
         "public var inputs:[String:Double]",
+        "public var labels:[String:String]",
         "public var liquid:SinuaLiquid?",
         "public var lowPower:FxLowPower",
         "public var maxFps:Double?",
@@ -366,9 +378,10 @@
       "SinuaOrb": [
         "decl public struct SinuaOrb:View",
         "public func overrides()->[String:Double]",
-        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],bandMul:Double?,barCount:Int?,barDotCount:Int?,coreSize:Double?,decay:Double?,depthTone:Double?,dim:Double?,dimBase:Double?,dotSize:Double?,driftAmplitude:Double?,echoCount:Int?,echoSpacing:Double?,faceOn:Bool?,ghostA:Double?,ghostN:Int?,ghostR:Double?,holdDuration:Double?,hue:Double?,hueOffset:Double?,hueSpeed:Double?,hueSpread:Double?,iconD:Double?,ink:Double?,inkFar:Double?,inkSpan:Double?,jumpSpeed:Double?,lanes:Double?,latRings:Int?,lineW:Double?,lineWidth:Double?,lonDensity:Double?,moveCount:Int?,nodeCount:Int?,nodeN:Int?,nodeR:Double?,nodeRDepth:Double?,nodeSize:Double?,orbitN:Int?,orbitParticles:Int?,partR:Double?,partRDepth:Double?,period:Double?,progress:Double?,pulseAmplitude:Double?,rActive:Double?,rBase:Double?,rBoost:Double?,rDepth:Double?,rDot:Double?,ringCount:Int?,rings:Int?,rMin:Double?,rsPow:Double?,saturation:Double?,scanMul:Double?,segs:Int?,signals:Int?,spin:Double?,spread:Double?,starCount:Int?,strandN:Int?,surfaceScale:Double?,surfaceSpeed:Double?,thr:Double?,turns:Double?,warpSpeed:Double?,wobMul:Double?,yaw:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?)",
-        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?)",
+        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],bandMul:Double?,barCount:Int?,barDotCount:Int?,coreSize:Double?,decay:Double?,depthTone:Double?,dim:Double?,dimBase:Double?,dotSize:Double?,driftAmplitude:Double?,echoCount:Int?,echoSpacing:Double?,faceOn:Bool?,ghostA:Double?,ghostN:Int?,ghostR:Double?,holdDuration:Double?,hue:Double?,hueOffset:Double?,hueSpeed:Double?,hueSpread:Double?,iconD:Double?,ink:Double?,inkFar:Double?,inkSpan:Double?,jumpSpeed:Double?,lanes:Double?,latRings:Int?,lineW:Double?,lineWidth:Double?,lonDensity:Double?,moveCount:Int?,nodeCount:Int?,nodeN:Int?,nodeR:Double?,nodeRDepth:Double?,nodeSize:Double?,orbitN:Int?,orbitParticles:Int?,partR:Double?,partRDepth:Double?,period:Double?,progress:Double?,pulseAmplitude:Double?,rActive:Double?,rBase:Double?,rBoost:Double?,rDepth:Double?,rDot:Double?,ringCount:Int?,rings:Int?,rMin:Double?,rsPow:Double?,saturation:Double?,scanMul:Double?,segs:Int?,signals:Int?,spin:Double?,spread:Double?,starCount:Int?,strandN:Int?,surfaceScale:Double?,surfaceSpeed:Double?,thr:Double?,turns:Double?,warpSpeed:Double?,wobMul:Double?,yaw:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?)",
+        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,rules:Bool,effect:SinuaEffectTrigger?)",
         "public var accessibilityLabel:String?",
+        "public var announce:Bool?",
         "public var bandMul:Double?",
         "public var barCount:Int?",
         "public var barDotCount:Int?",
@@ -383,12 +396,14 @@
         "public var driftAmplitude:Double?",
         "public var echoCount:Int?",
         "public var echoSpacing:Double?",
+        "public var effect:SinuaEffectTrigger?",
         "public var faceOn:Bool?",
         "public var ghostA:Double?",
         "public var ghostN:Int?",
         "public var ghostR:Double?",
         "public var glow:SinuaGlow?",
         "public var gradient:SinuaGradient?",
+        "public var haptics:Bool",
         "public var holdDuration:Double?",
         "public var holographic:SinuaHolographic?",
         "public var hue:Double?",
@@ -401,6 +416,7 @@
         "public var inkSpan:Double?",
         "public var inputs:[String:Double]",
         "public var jumpSpeed:Double?",
+        "public var labels:[String:String]",
         "public var lanes:Double?",
         "public var latRings:Int?",
         "public var lineW:Double?",
@@ -487,17 +503,20 @@
       "SinuaRing": [
         "decl public struct SinuaRing:View",
         "public func overrides()->[String:Double]",
-        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],avatarGap:Double?,fill:Bool?,flow:Double?,gap:Double?,hue:Double?,hueStep:Double?,idleOpacity:Double?,ink:Double?,innerRadius:Double?,marker:Bool?,maxLaps:Double?,progress:SinuaNumbers?,reach:Double?,ringCount:Int?,rippleCount:Int?,saturation:Double?,segment:[Double]?,segmentCount:Double?,shimmer:Double?,spacing:Double?,strokeWidth:Double?,sweep:Double?,thickness:Double?,trackOpacity:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?)",
-        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?)",
+        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],avatarGap:Double?,fill:Bool?,flow:Double?,gap:Double?,hue:Double?,hueStep:Double?,idleOpacity:Double?,ink:Double?,innerRadius:Double?,marker:Bool?,maxLaps:Double?,progress:SinuaNumbers?,reach:Double?,ringCount:Int?,rippleCount:Int?,saturation:Double?,segment:[Double]?,segmentCount:Double?,shimmer:Double?,spacing:Double?,strokeWidth:Double?,sweep:Double?,thickness:Double?,trackOpacity:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?)",
+        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,rules:Bool,effect:SinuaEffectTrigger?)",
         "public var accessibilityLabel:String?",
+        "public var announce:Bool?",
         "public var avatarGap:Double?",
         "public var body:some View",
         "public var color:SinuaColor?",
+        "public var effect:SinuaEffectTrigger?",
         "public var fill:Bool?",
         "public var flow:Double?",
         "public var gap:Double?",
         "public var glow:SinuaGlow?",
         "public var gradient:SinuaGradient?",
+        "public var haptics:Bool",
         "public var holographic:SinuaHolographic?",
         "public var hue:Double?",
         "public var hueStep:Double?",
@@ -505,6 +524,7 @@
         "public var ink:Double?",
         "public var innerRadius:Double?",
         "public var inputs:[String:Double]",
+        "public var labels:[String:String]",
         "public var liquid:SinuaLiquid?",
         "public var lowPower:FxLowPower",
         "public var marker:Bool?",
@@ -686,23 +706,27 @@
       "SinuaSignal": [
         "decl public struct SinuaSignal:View",
         "public func overrides()->[String:Double]",
-        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],amplitude:Double?,barCount:Int?,barWidth:Double?,columnCount:Int?,envelope:[Double]?,fadeWidth:Double?,hue:Double?,ink:Double?,layerCount:Int?,ledCount:Int?,ledSize:Double?,lineWidth:Double?,minHeight:Double?,minLevel:Double?,mirror:Bool?,playhead:Bool?,pointCount:Int?,progress:Double?,saturation:Double?,unplayedOpacity:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?)",
-        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?)",
+        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],amplitude:Double?,barCount:Int?,barWidth:Double?,columnCount:Int?,envelope:[Double]?,fadeWidth:Double?,hue:Double?,ink:Double?,layerCount:Int?,ledCount:Int?,ledSize:Double?,lineWidth:Double?,minHeight:Double?,minLevel:Double?,mirror:Bool?,playhead:Bool?,pointCount:Int?,progress:Double?,saturation:Double?,unplayedOpacity:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?)",
+        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,rules:Bool,effect:SinuaEffectTrigger?)",
         "public var accessibilityLabel:String?",
         "public var amplitude:Double?",
+        "public var announce:Bool?",
         "public var barCount:Int?",
         "public var barWidth:Double?",
         "public var body:some View",
         "public var color:SinuaColor?",
         "public var columnCount:Int?",
+        "public var effect:SinuaEffectTrigger?",
         "public var envelope:[Double]?",
         "public var fadeWidth:Double?",
         "public var glow:SinuaGlow?",
         "public var gradient:SinuaGradient?",
+        "public var haptics:Bool",
         "public var holographic:SinuaHolographic?",
         "public var hue:Double?",
         "public var ink:Double?",
         "public var inputs:[String:Double]",
+        "public var labels:[String:String]",
         "public var layerCount:Int?",
         "public var ledCount:Int?",
         "public var ledSize:Double?",

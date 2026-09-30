@@ -11,6 +11,13 @@
 //!   outside `0..duration`, so a frame without these keys is unchanged.
 //! - `effectReduced`: 1 = the reduced-motion variant: no shake, no burst, no
 //!   moving ring; only the tint pulse (and the tick, in place).
+//!
+//! Box-layout patterns (`framing`'s screen-edge rim, `playing`'s voice-message bar)
+//! play every effect *in place*: the tint pulse (and celebrate's lift) only. Their
+//! centroid is the middle of the screen or the bar, so a ring, a tick or a burst
+//! would land on the app's content or spill out of the bar, and a shake would slide
+//! the rim off the screen. The rim turns green, red or gold where it is, and its
+//! opacity lifts with the tint so an idle (faint) rim flashes too.
 
 use crate::primitives::{decay_envelope, Dot, ModeOpts, OrbFrame, Point, Polyline, DECAY_QUAD};
 
@@ -114,6 +121,27 @@ fn tint(frame: &mut OrbFrame, hue: f64, k: f64) {
     }
 }
 
+/// In place only: raises every element's opacity toward full by `k` (0..1), so an effect
+/// reads on a resting rim (an idle edge sits at ~35 %) and not only as a faint tint.
+fn lift(frame: &mut OrbFrame, k: f64) {
+    if k <= 0.0 {
+        return;
+    }
+    let up = |a: f64| a + (1.0 - a) * k;
+    for d in frame.dots.iter_mut() {
+        d.a = up(d.a);
+    }
+    for l in frame.lines.iter_mut() {
+        l.a = up(l.a);
+    }
+    for p in frame.polylines.iter_mut() {
+        p.a = up(p.a);
+    }
+    for f in frame.fills.iter_mut() {
+        f.a = up(f.a);
+    }
+}
+
 /// Moves every element by `dx`.
 fn shift(frame: &mut OrbFrame, dx: f64) {
     for d in frame.dots.iter_mut() {
@@ -203,8 +231,17 @@ fn hash01(i: u32, salt: u32) -> f64 {
     x as f64 / 4_294_967_296.0
 }
 
+/// Modes whose patterns fill a box (the catalog's `layout: "box"`): effects play in place there.
+const IN_PLACE_MODES: [&str; 2] = ["rim", "playback"];
+
+/// True when effects on `mode` play in place (see the module docs).
+pub fn plays_in_place(mode: &str) -> bool {
+    IN_PLACE_MODES.contains(&mode)
+}
+
 /// Draws the running effect (if any) on top of `frame`; see the module docs.
-pub fn apply_effect(mut frame: OrbFrame, size: f64, opts: &ModeOpts) -> OrbFrame {
+/// `in_place`: the box-layout variant, tint (and lift) only.
+pub fn apply_effect(mut frame: OrbFrame, size: f64, opts: &ModeOpts, in_place: bool) -> OrbFrame {
     let Some(&age) = opts.get("effectAge") else {
         return frame;
     };
@@ -216,6 +253,8 @@ pub fn apply_effect(mut frame: OrbFrame, size: f64, opts: &ModeOpts) -> OrbFrame
         return frame;
     }
     let reduced = opts.get("effectReduced").copied().unwrap_or(0.0) >= 0.5;
+    // In place: the reduced variant's rules (no ring, burst or shake), and no tick either.
+    let still = reduced || in_place;
     let Some((cx, cy, r0)) = extent(&frame) else {
         return frame;
     };
@@ -230,7 +269,11 @@ pub fn apply_effect(mut frame: OrbFrame, size: f64, opts: &ModeOpts) -> OrbFrame
     match code {
         SUCCESS => {
             tint(&mut frame, 140.0, 0.7 * pulse);
-            if !reduced {
+            if in_place {
+                lift(&mut frame, 0.8 * pulse);
+                return frame;
+            }
+            if !still {
                 // One ring, expanding from the shape and fading.
                 let rr = r0 * (1.05 + 0.55 * u);
                 frame.polylines.push(ring(
@@ -260,14 +303,21 @@ pub fn apply_effect(mut frame: OrbFrame, size: f64, opts: &ModeOpts) -> OrbFrame
                 1.0 - (u - 0.6) / 0.4
             };
             tint(&mut frame, 8.0, k);
-            if !reduced {
+            if in_place {
+                lift(&mut frame, 0.8 * k);
+            }
+            if !still {
                 // Three swings, decaying: 10 % of the size, so a 64 px view visibly shakes.
                 let dx = size * 0.1 * (u * 3.0 * std::f64::consts::TAU).sin() * (1.0 - u);
                 shift(&mut frame, dx);
             }
         }
         CELEBRATE => {
-            tint(&mut frame, 48.0, 0.35 * pulse);
+            // In place the gold tint is the whole effect, so it's as strong as success's green.
+            tint(&mut frame, 48.0, if in_place { 0.7 } else { 0.35 } * pulse);
+            if in_place {
+                lift(&mut frame, 0.8 * pulse);
+            }
             let lift = 1.0 + 0.3 * pulse;
             for d in frame.dots.iter_mut() {
                 d.a = (d.a * lift).min(1.0);
@@ -275,7 +325,7 @@ pub fn apply_effect(mut frame: OrbFrame, size: f64, opts: &ModeOpts) -> OrbFrame
             for p in frame.polylines.iter_mut() {
                 p.a = (p.a * lift).min(1.0);
             }
-            if !reduced {
+            if !still {
                 // A seeded burst: out fast, easing, fading.
                 let ease = 1.0 - (1.0 - u).powi(3);
                 for i in 0..24u32 {
@@ -335,25 +385,28 @@ mod tests {
     #[test]
     fn nothing_without_the_keys_or_outside_the_window() {
         let f = frame();
-        assert_eq!(apply_effect(f.clone(), 64.0, &ModeOpts::new()), f);
+        assert_eq!(apply_effect(f.clone(), 64.0, &ModeOpts::new(), false), f);
         assert_eq!(
-            apply_effect(f.clone(), 64.0, &opts(SUCCESS, 0.95, false)),
+            apply_effect(f.clone(), 64.0, &opts(SUCCESS, 0.95, false), false),
             f
         );
         assert_eq!(
-            apply_effect(f.clone(), 64.0, &opts(SUCCESS, -0.1, false)),
+            apply_effect(f.clone(), 64.0, &opts(SUCCESS, -0.1, false), false),
             f
         );
-        assert_eq!(apply_effect(f.clone(), 64.0, &opts(9, 0.2, false)), f);
+        assert_eq!(
+            apply_effect(f.clone(), 64.0, &opts(9, 0.2, false), false),
+            f
+        );
     }
 
     #[test]
     fn success_draws_a_ring_and_a_tick_and_turns_green() {
-        let out = apply_effect(frame(), 64.0, &opts(SUCCESS, 0.2, false));
+        let out = apply_effect(frame(), 64.0, &opts(SUCCESS, 0.2, false), false);
         assert_eq!(out.polylines.len(), 2, "ring + tick");
         assert!(out.polylines[0].points.len() > 60, "a ring");
         assert!((out.polylines[1].hue - 140.0).abs() < 1e-9);
-        let reduced = apply_effect(frame(), 64.0, &opts(SUCCESS, 0.2, true));
+        let reduced = apply_effect(frame(), 64.0, &opts(SUCCESS, 0.2, true), false);
         assert_eq!(
             reduced.polylines.len(),
             1,
@@ -370,29 +423,69 @@ mod tests {
     fn error_shakes_both_ways_unless_reduced() {
         let base = frame();
         let x0 = base.dots[0].x;
-        let at =
-            |t: f64, red: bool| apply_effect(frame(), 64.0, &opts(ERROR, t, red)).dots[0].x - x0;
+        let at = |t: f64, red: bool| {
+            apply_effect(frame(), 64.0, &opts(ERROR, t, red), false).dots[0].x - x0
+        };
         assert!(at(0.04, false) > 0.0);
         assert!(at(0.12, false) < 0.0);
         assert_eq!(at(0.12, true), 0.0);
         assert!(
-            apply_effect(frame(), 64.0, &opts(ERROR, 0.1, true)).dots[0].saturation > 0.0,
+            apply_effect(frame(), 64.0, &opts(ERROR, 0.1, true), false).dots[0].saturation > 0.0,
             "the tint still plays"
         );
     }
 
     #[test]
     fn celebrate_bursts_twenty_four_seeded_dots() {
-        let a = apply_effect(frame(), 64.0, &opts(CELEBRATE, 0.5, false));
-        let b = apply_effect(frame(), 64.0, &opts(CELEBRATE, 0.5, false));
+        let a = apply_effect(frame(), 64.0, &opts(CELEBRATE, 0.5, false), false);
+        let b = apply_effect(frame(), 64.0, &opts(CELEBRATE, 0.5, false), false);
         assert_eq!(a.dots.len(), 12 + 24);
         assert_eq!(a, b, "deterministic");
         assert_eq!(
-            apply_effect(frame(), 64.0, &opts(CELEBRATE, 0.5, true))
+            apply_effect(frame(), 64.0, &opts(CELEBRATE, 0.5, true), false)
                 .dots
                 .len(),
             12
         );
+    }
+
+    #[test]
+    fn in_place_is_the_tint_only() {
+        let base = frame();
+        for (code, age) in [(SUCCESS, 0.2), (ERROR, 0.12), (CELEBRATE, 0.2)] {
+            let out = apply_effect(frame(), 64.0, &opts(code, age, false), true);
+            assert!(out.polylines.is_empty(), "no ring, no tick ({code})");
+            assert_eq!(out.dots.len(), base.dots.len(), "no burst ({code})");
+            assert_eq!(out.dots[0].x, base.dots[0].x, "no shake ({code})");
+            assert!(out.dots[0].saturation > 0.0, "the tint plays ({code})");
+            assert!(
+                out.dots[0].a > base.dots[0].a,
+                "and lifts the opacity ({code})"
+            );
+        }
+    }
+
+    #[test]
+    fn the_in_place_modes_are_the_box_patterns_modes() {
+        let catalog = crate::catalog::catalog();
+        let mut box_modes: Vec<String> = catalog["objects"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|o| o["patterns"].as_array().unwrap().iter())
+            .filter(|p| p["layout"].as_str() == Some("box"))
+            .map(|p| {
+                crate::resolve_any(p["id"].as_str().unwrap(), 64)
+                    .unwrap()
+                    .mode
+                    .to_string()
+            })
+            .collect();
+        box_modes.sort();
+        box_modes.dedup();
+        let mut ours: Vec<String> = IN_PLACE_MODES.iter().map(|m| m.to_string()).collect();
+        ours.sort();
+        assert_eq!(box_modes, ours);
     }
 
     #[test]

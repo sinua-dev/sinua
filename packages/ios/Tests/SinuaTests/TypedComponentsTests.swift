@@ -120,4 +120,29 @@ final class TypedComponentsTests: XCTestCase {
         XCTAssertEqual(new, try pixels(SinuaView(spec: json, specState: "speaking", paused: true)))
         XCTAssertGreaterThan(inked(new), 50)
     }
+
+    /// The typed components take SinuaView's accessibility and effect parameters and pass them on.
+    func testTypedComponentsPassAccessibilityAndEffects() throws {
+        let trigger = SinuaEffectTrigger(.success)
+        let labels = ["listening": "Coach is listening"]
+        let ring = SinuaRing(
+            pattern: .completing, progress: 0.4, paused: true, labels: labels, announce: false, haptics: true,
+            effect: trigger)
+        XCTAssertEqual(ring.labels, labels)
+        XCTAssertEqual(ring.announce, false)
+        XCTAssertTrue(ring.haptics)
+        XCTAssertEqual(ring.effect, trigger)
+        // Drawn the same as SinuaView with the same words (an effect runs on its own clock, so
+        // two renders of a playing effect aren't pixel-comparable; it's checked as a value above).
+        let quiet = SinuaRing(pattern: .completing, progress: 0.4, paused: true, labels: labels, announce: false)
+        XCTAssertEqual(
+            try pixels(quiet),
+            try pixels(
+                SinuaView(
+                    pattern: "completing", overrides: quiet.overrides(), paused: true, labels: labels, announce: false)
+            ))
+        let spec = #"{"fxSpec":"1.9","object":"edge","pattern":"framing"}"#
+        let edge = SinuaEdge(spec: spec, rules: false, effect: trigger)
+        XCTAssertEqual(edge.effect, trigger)
+    }
 }

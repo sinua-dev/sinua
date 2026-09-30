@@ -12,6 +12,7 @@ import dev.sinua.view.FxFrameStats
 import dev.sinua.view.FxLowPower
 import dev.sinua.view.FxReducedMotion
 import dev.sinua.view.FxTheme
+import dev.sinua.view.SinuaEffectTrigger
 import dev.sinua.view.SinuaView
 import dev.sinua.voice.VoiceOverrides
 import dev.sinua.voice.VoiceSource
@@ -194,12 +195,21 @@ fun SinuaBeacon(
     maxFps: Double? = null,
     lowPower: FxLowPower = FxLowPower.AUTO,
     onFrame: ((FxFrameStats) -> Unit)? = null,
+    /** Words per state for the accessible name and announcements ("listening" -> "Coach is listening"). */
+    labels: Map<String, String> = emptyMap(),
+    /** Speak state changes to TalkBack (polite, rate-limited). Default: the spec's, else true. */
+    announce: Boolean? = null,
+    /** A light tap when the agent starts listening. Off by default; never under reduced motion. */
+    haptics: Boolean = false,
+    /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
+    effect: SinuaEffectTrigger? = null,
 ) {
     val overrides = SinuaBeaconProps(pattern = pattern, size = size, dotSize = dotSize, hue = hue, ink = ink, ringCount = ringCount, saturation = saturation, period = period, once = once, ringReach = ringReach, ringWidth = ringWidth, quality = quality, segmentGap = segmentGap, segmentRadius = segmentRadius, segmentWidth = segmentWidth, accuracy = accuracy, haloOpacity = haloOpacity, blipCount = blipCount, seed = seed, trailFill = trailFill, trailLength = trailLength, cumulative = cumulative, inactiveOpacity = inactiveOpacity, sides = sides, waveCount = waveCount, reversing = reversing, level = level, strokeWidth = strokeWidth, waveSweep = waveSweep, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,
         contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
+        labels = labels, announce = announce, haptics = haptics, effect = effect,
     )
 }
 
@@ -224,6 +234,16 @@ fun SinuaBeacon(
     lowPower: FxLowPower = FxLowPower.AUTO,
     onError: ((SinuaSpecError) -> Unit)? = null,
     onFrame: ((FxFrameStats) -> Unit)? = null,
+    /** Words per state for the accessible name and announcements; win over the spec's `accessibility.states`. */
+    labels: Map<String, String> = emptyMap(),
+    /** Speak state changes to TalkBack (polite, rate-limited). Default: the spec's, else true. */
+    announce: Boolean? = null,
+    /** A light tap when the agent starts listening. Off by default; never under reduced motion. */
+    haptics: Boolean = false,
+    /** Derive the state from the spec's 1.9 `rules` and [inputs] (off while a voice is bound). */
+    rules: Boolean = true,
+    /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
+    effect: SinuaEffectTrigger? = null,
 ) {
     val error = sinuaSpecError(spec, "beacon")
     if (error != null) {
@@ -235,5 +255,6 @@ fun SinuaBeacon(
         spec = spec, modifier = modifier, voice = voice, voiceOverrides = voiceOverrides, state = state,
         inputs = inputs, voiceLevelInput = voiceLevelInput, theme = theme, paused = paused, reducedMotion = reducedMotion,
         contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
+        labels = labels, announce = announce, haptics = haptics, rules = rules, effect = effect,
     )
 }

@@ -1,7 +1,8 @@
 //! `spec/effect-vectors.json`: each one-shot effect (docs/fx-view.md, *One-shot
-//! effects*) on three patterns at fixed ages, normal and reduced, as a frame
+//! effects*) on five patterns at fixed ages, normal and reduced, as a frame
 //! summary (counts, alpha sum, the mean hue of saturated items, the centroid x).
-//! The Web, iOS and Android tests render the same frames through their bindings
+//! `framing` and `playing` are box-layout patterns, so their effects play in place
+//! (tint only). The Web, iOS and Android tests render the same frames through their bindings
 //! and compare the same summary, so every platform plays the same effect.
 //! Regenerate only on purpose, with
 //! `EFFECT_VECTORS_WRITE=1 cargo test -p core_engine --test effect_vectors -- --ignored`.
@@ -15,7 +16,7 @@ const PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../spec/effect-vectors.json"
 );
-const PATTERNS: [&str; 3] = ["glowing", "completing", "waveform"];
+const PATTERNS: [&str; 5] = ["glowing", "completing", "waveform", "framing", "playing"];
 const EFFECTS: [&str; 3] = ["success", "error", "celebrate"];
 const AGES: [f64; 4] = [0.05, 0.3, 0.6, 1.2];
 const T: f64 = 1.0;

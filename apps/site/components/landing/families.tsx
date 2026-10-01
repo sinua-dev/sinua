@@ -13,7 +13,7 @@ import { LiveVisual } from "./live-visual";
 import { TINT } from "./swatches";
 
 /** One hue per family, so switching families reads at a glance. */
-const FAMILY_HUE: Record<string, number> = { orb: 265, signal: 172, ring: 38, beacon: 345, core: 200, edge: 300 };
+const FAMILY_HUE: Record<string, number> = { orb: 265, signal: 172, ring: 38, beacon: 345, core: 200, edge: 300, character: 232 };
 const tint = (family: string) => ({ ...TINT, colorHue: FAMILY_HUE[family] ?? 265 });
 
 /** Values that make a pattern read at a glance: a ring needs progress, a meter needs a level. */
@@ -92,7 +92,7 @@ export function Families() {
           {total} patterns in {objects.length} families
         </h2>
         <p className="lp-lead">
-          Orbs for an agent's inner life, signals for sound, rings for progress, beacons for attention, cores for text that is on its way and an edge that lights the whole screen. Point at one to
+          Orbs for an agent's inner life, signals for sound, rings for progress, beacons for attention, cores for text that is on its way, an edge that lights the whole screen and characters that give your assistant a face. Point at one to
           set it moving; every frame below is drawn by the engine.
         </p>
       </header>

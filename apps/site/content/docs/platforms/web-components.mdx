@@ -3,7 +3,7 @@ title: Web Components
 description: Use Sinua from Vue, Svelte, Angular, Solid or plain HTML through a custom element.
 ---
 
-`<sinua-view>` is a standard custom element, so it works in any framework, or none. Register it once with `import "@sinua/web/element"`, then use the tag. For the typed tags — `<sinua-orb>`, `<sinua-ring>`, `<sinua-signal>`, `<sinua-core>`, `<sinua-beacon>`, each with its pattern's own attributes — `import "@sinua/web/elements"` registers all five. Properties and attributes map to the same props as everywhere else, and the element fires a `fxframe` event per drawn frame when you ask for frame stats.
+`<sinua-view>` is a standard custom element, so it works in any framework, or none. Register it once with `import "@sinua/web/element"`, then use the tag. For the typed tags — `<sinua-orb>`, `<sinua-ring>`, `<sinua-signal>`, `<sinua-core>`, `<sinua-beacon>`, `<sinua-character>`, each with its pattern's own attributes — `import "@sinua/web/elements"` registers them all. Properties and attributes map to the same props as everywhere else, and the element fires a `fxframe` event per drawn frame when you ask for frame stats.
 
 <Tabs groupId="web-framework" items={["HTML", "Vue", "Svelte", "Angular", "Solid"]} persist>
 <Tab value="HTML">

@@ -9,7 +9,7 @@ An **FX Spec** is a small JSON file that describes a visual completely: the obje
 
 ## Structure
 
-- **`fxSpec`** (required): the version, `"1.10"`.
+- **`fxSpec`** (required): the version, `"1.11"`.
 - **`object`** (required) and **`pattern`** (required): what to draw. See the [catalog](/docs/catalog).
 - **`size`** (20 · 32 · 64) and **`speed`**: see [Speed & size](/docs/look/speed-and-size).
 - **`ink`** (1.8): how present the visual is, `0` to `1` (default `1`). It fades everything, halos included, and a state can patch it — an assistant rests below full ink when idle and comes to full ink when it listens.
@@ -28,7 +28,19 @@ Point `$schema` at `fx-spec-1.schema.json` for completion and validation in your
 
 ## Versioning
 
-`fxSpec` is `"1.10"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.10"` and use whatever this page documents. An older file stays valid and renders the same.
+`fxSpec` is `"1.11"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.11"` and use whatever this page documents. An older file stays valid and renders the same.
+
+### 1.11: characters
+
+1.11 adds one object, **`character`**: a [face for a voice assistant](/docs/catalog/character). Its voice states are built in, so a file only says who it is:
+
+<include lang="json" meta='title="character.fxspec.json"'>../../../snippets/spec/character.fxspec.json</include>
+
+- **`object: "character"` needs `"fxSpec": "1.11"`.** An older file gets an error at `/object`.
+- **No `color` or `gradient` on a character.** They would repaint its eyes and screen, so the file gets an error that points at `params.hue`. `hue` turns the character's own colour, and `mouth`, `accessories`, `look`, `turn` and `seed` are its other options.
+- **The pose values are `params` too.** The values the states set (`gazeX`, `lid`, `eyeSmile`, …) can go in `params` or in a state's patch, to tune how a state looks.
+- **`stateAge`** is a new runtime input: the seconds since the view's state changed. Every view sets it (a character blinks with it as your turn ends), and it can't go in `params`.
+- **Older files** (1.8 to 1.10) resolve exactly as before.
 
 ### 1.10: calmer voice states
 

@@ -1,0 +1,75 @@
+---
+title: Character
+description: "A face for your voice assistant: its gaze knows whose turn it is, and its mouth follows the voice."
+---
+
+A character is a face for your voice assistant. The gaze knows whose turn it is: it looks at you while you talk, looks up and away while it thinks, and blinks when your turn ends. The mouth follows only how loud the agent's voice is. Give it a voice source or an agent state, like every other object.
+
+<div className="demo-gallery">
+<Demo object="character" pattern="buzzy" />
+<Demo object="character" pattern="hum" />
+<Demo object="character" pattern="wisp" />
+<Demo object="character" pattern="chirp" />
+</div>
+
+<GalleryLink family="character" />
+
+## When to use which pattern
+
+| Pattern | `pattern` | Who it is | How it shows the voice |
+|---|---|---|---|
+| [Buzzy](#buzzy) | `buzzy` | A small space-hero assistant: a rounded helmet, a glass visor over a face screen, a voice core in the chest. | The mouth is a voice line: two even waves that flow, and the voice's level sets only their height, so it never jitters. While listening, sound arcs light at its ear pods with your voice. |
+| [Hum](#hum) | `hum` | A vintage studio microphone that hosts the show, with its face on the grille. | The grille's slots light with the voice. A tally light is red while listening and blinks amber while thinking. |
+| [Wisp](#wisp) | `wisp` | A helpful spirit: a glowing head flowing into a curling smoke tail. | Its sparkles gather in while it listens, circle its head while it thinks and stream out with its voice. |
+| [Chirp](#chirp) | `chirp` | A songbird with teal wings and a feather crest. | The beak opens with the voice and little notes rise from it. While thinking, three thought dots light in turn. |
+
+## How it behaves
+
+- **The eyes are shapes.** No pupils and no brows: the eye's shape is the expression, so it still reads at 20 px.
+- **It knows whose turn it is.** It looks at you while listening, looks up and away while thinking, and blinks once as your turn ends.
+- **The mouth follows the voice's loudness.** Nothing more: no lip-sync, so any voice source works.
+- **Effects are expressions.** [`success`](/docs/connect/effects) is `^ ^` eyes with a grin, `error` is `x x` eyes with a short shake, `celebrate` is star eyes with a burst.
+- **Muted, it squints and fades.** Its colours stay.
+- **State changes are smooth.** The eyes slide up as thinking starts; they don't jump.
+
+## Head turn
+
+The head turns like a solid, not a flat sticker: the face slides round its surface and the body shows the turn. At rest it looks from corner to corner, listening it turns to you, thinking it looks up and away, and speaking it nods with the voice.
+
+`turn` sets how far: the default is about ±25°, `1` is ±35° and `0` draws it flat. At 20 px the head doesn't turn, and with reduced motion only the facing of each state stays. It stays in the [light cost class](/docs/performance).
+
+## Options
+
+| Prop | Default | What it does |
+|---|---|---|
+| `hue` | 232 | Turns the character's colour. The eyes and the accents stay. |
+| `mouth` | on | Off draws eyes only. |
+| `accessories` | on | Off drops the extras: Buzzy's crest and ear arcs, Hum's tally light, Wisp's sparkles, Chirp's notes. |
+| `look` | 1 | How much the eyes glance around on their own; `0` keeps them on the viewer. |
+| `turn` | 0.71 | How far the head turns; `0` is flat. |
+| `seed` | 0 | When it blinks and glances, so two characters side by side don't move in step. |
+
+A character keeps its own colours: use `hue`, not `color` or `gradient`. In an [FX Spec](/docs/reference/fx-spec#111-characters), `color` or `gradient` on a character is an error.
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose", "React Native"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="character-react.tsx"'>../../../snippets/voice/character-react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="character.swift"'>../../../snippets/voice/character.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="character.kt"'>../../../snippets/voice/character.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="character-react-native.tsx"'>../../../snippets/voice/character-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+On the web it's also a tag: `<sinua-character pattern="buzzy" hue="190">`.
+
+## Props
+
+Every prop, per pattern. Besides the options above, the pose values the states set (`gazeX`, `lid`, `eyeSmile`, …) are props too, so you can tune how a state looks. Defaults can differ per size (20 · 32 · 64).
+
+<include>../../generated/catalog/character.mdx</include>

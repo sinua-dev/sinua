@@ -627,6 +627,10 @@ pub fn suitability(mode: &str) -> LiquidSuitability {
             "notRecommended",
             "a stroked frame round the box, no dots to melt",
         ),
+        m if crate::character::presets::is_character_mode(m) => (
+            "notRecommended",
+            "a character drawn with fills, no dots to melt",
+        ),
         _ => ("ok", "not yet judged on a contact sheet"),
     };
     LiquidSuitability {

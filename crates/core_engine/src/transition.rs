@@ -169,7 +169,10 @@ pub fn mix(
             .get(key)
             .copied()
             .unwrap_or_else(|| effective(&preset, mode, key));
-        if is_structural(mode, key) {
+        if catalog::arrives_at_once(mode, key) {
+            // An arrival value (a character's `turnBlink`): the new state's, at once.
+            out.overrides.insert(key.clone(), b);
+        } else if is_structural(mode, key) {
             out.overrides.insert(key.clone(), a);
             if a != b {
                 out.structural_to.insert(key.clone(), b);
@@ -201,6 +204,25 @@ mod tests {
             speed,
             overrides: o.iter().map(|(k, v)| (k.to_string(), *v)).collect(),
         }
+    }
+
+    #[test]
+    fn an_arrival_value_takes_the_new_states_value_at_once() {
+        // A character's turn blink: on at once entering thinking, off at once leaving it.
+        let listening = side("buzzy", 1.0, &[("turnBlink", 0.0), ("gazeX", 0.0)]);
+        let thinking = side("buzzy", 1.0, &[("turnBlink", 1.0), ("gazeX", -8.0)]);
+        let into = mix(&listening, &thinking, 64, 0.1, "linear").unwrap();
+        assert_eq!(into.overrides["turnBlink"], 1.0);
+        assert!(
+            (into.overrides["gazeX"] + 0.8).abs() < 1e-12,
+            "the gaze still slides"
+        );
+        let out_of = mix(&thinking, &listening, 64, 0.1, "linear").unwrap();
+        assert_eq!(out_of.overrides["turnBlink"], 0.0);
+        assert!(
+            out_of.structural_to.is_empty() && out_of.swap == 0.0,
+            "no dissolve for it"
+        );
     }
 
     #[test]

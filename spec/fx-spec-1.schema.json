@@ -32,7 +32,8 @@
         "ring",
         "beacon",
         "core",
-        "edge"
+        "edge",
+        "character"
       ]
     },
     "pattern": {

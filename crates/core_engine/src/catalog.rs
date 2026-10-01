@@ -91,12 +91,20 @@ pub(crate) fn layout_of(pattern: &str) -> &'static str {
     }
 }
 
-/// The definition id for `key` on `mode`: `key@mode`, else `key@shared`.
+/// The definition id for `key` on `mode`: `key@mode`, then -- for a character's
+/// mode -- the family's shared `key@character` (the rig and the options every
+/// character reads, defined once), then `key@shared`.
 fn def_id(mode: &str, key: &str) -> Option<String> {
     let defs = source()["definitions"].as_object()?;
-    [format!("{key}@{mode}"), format!("{key}@shared")]
-        .into_iter()
-        .find(|id| defs.contains_key(id))
+    let character = crate::character::presets::is_character_mode(mode);
+    [
+        Some(format!("{key}@{mode}")),
+        character.then(|| format!("{key}@character")),
+        Some(format!("{key}@shared")),
+    ]
+    .into_iter()
+    .flatten()
+    .find(|id| defs.contains_key(id))
 }
 
 /// What the catalog says about `key` on `mode`: its `type` (`number`,
@@ -121,6 +129,18 @@ pub(crate) fn key_info(mode: &str, key: &str) -> Option<(String, Option<f64>)> {
         d["type"].as_str().unwrap_or("number").to_string(),
         d["fallback"].as_f64(),
     ))
+}
+
+/// Whether `key` on `mode` is an *arrival* value (`"transition": "arrive"` in the
+/// catalog): a state change takes the new state's value at once instead of
+/// interpolating it (`transition.rs`). A character's `turnBlink` is one: it says
+/// "blink as this state starts", and a half-way value would blink on the way out
+/// of thinking and barely on the way in.
+pub(crate) fn arrives_at_once(mode: &str, key: &str) -> bool {
+    let Some(defs) = source()["definitions"].as_object() else {
+        return false;
+    };
+    def_id(mode, key).is_some_and(|id| defs[&id]["transition"].as_str() == Some("arrive"))
 }
 
 fn is_material(def: &Value) -> bool {

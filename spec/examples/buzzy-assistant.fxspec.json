@@ -1,0 +1,41 @@
+{
+  "$schema": "../fx-spec-1.schema.json",
+  "fxSpec": "1.11",
+  "name": "Buzzy",
+  "description": "A character for a voice assistant (FX Spec 1.11, the `character` object). Like the one-shape showcase, the file only says who it is: the voice-state profile ships Buzzy's state language -- listening leans in and looks at you while sound arcs light at its ears, thinking looks up and away with a blink at the turn and thinking dots, speaking smiles and its mouth is a voice line that swings with the agent's level. `hue` turns its shell (here a teal Buzzy); its eyes and amber accents stay. A `color` or `gradient` section is an error on a character: they would repaint its eyes and screen.",
+  "object": "character",
+  "pattern": "buzzy",
+  "size": 64,
+  "params": {
+    "hue": 190,
+    "seed": 3
+  },
+  "bindings": {
+    "muted": {
+      "input": "micMuted"
+    }
+  },
+  "states": {
+    "initializing": {},
+    "idle": {},
+    "listening": {
+      "bindings": {
+        "audioLevel": {
+          "input": "micLevel"
+        }
+      }
+    },
+    "thinking": {},
+    "speaking": {
+      "bindings": {
+        "audioLevel": {
+          "input": "agentVolume",
+          "inputRange": [0, 0.8]
+        }
+      }
+    }
+  },
+  "accessibility": {
+    "name": "Buzzy"
+  }
+}

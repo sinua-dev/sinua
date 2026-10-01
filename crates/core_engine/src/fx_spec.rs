@@ -27,7 +27,9 @@ use std::collections::{BTreeMap, HashMap};
 use serde_json::{Map, Value};
 
 pub const RUNTIME_MAJOR: u64 = 1;
-pub const RUNTIME_MINOR: u64 = 10;
+pub const RUNTIME_MINOR: u64 = 11;
+/// The first minor that knows the `character` object (1.11).
+const CHARACTER_SINCE: u64 = 11;
 /// The oldest minor this runtime reads. 1.0–1.7 were never published, so their
 /// acceptance was dropped before the first release instead of becoming a
 /// compatibility promise (release decision 0.1).
@@ -406,6 +408,142 @@ fn parse_dtcg(o: &Map<String, Value>, path: &str, diag: &mut Diag) -> Option<FxH
 /// `arc::layout`'s `strokeWidth`/`gap` for the modes that share it). The
 /// resolved preset's own opts are allowed on top (ported orb keys). Kept
 /// in sync with the sources by `params_table_matches_mode_sources`.
+/// The keys every character mode reads (the rig and the character options);
+/// a character with extra motion lists its own on top (`HUM_PARAMS`).
+const CHARACTER_PARAMS: &[&str] = &[
+    "accessories",
+    "bounceGain",
+    "breath",
+    "earGain",
+    "eyeAsym",
+    "eyeH",
+    "eyeR",
+    "eyeSmile",
+    "eyeTilt",
+    "eyeW",
+    "gazeX",
+    "gazeY",
+    "hue",
+    "lean",
+    "lid",
+    "look",
+    "mouth",
+    "mouthDots",
+    "mouthGain",
+    "mouthTalk",
+    "seed",
+    "squashGain",
+    "tilt",
+    "turn",
+    "turnBlink",
+    "turnNod",
+    "turnPitch",
+    "turnWander",
+    "turnYaw",
+];
+
+/// HUM: the shared character keys plus its speaking sway.
+const HUM_PARAMS: [&str; 30] = [
+    "accessories",
+    "bounceGain",
+    "breath",
+    "earGain",
+    "eyeAsym",
+    "eyeH",
+    "eyeR",
+    "eyeSmile",
+    "eyeTilt",
+    "eyeW",
+    "gazeX",
+    "gazeY",
+    "hue",
+    "lean",
+    "lid",
+    "look",
+    "mouth",
+    "mouthDots",
+    "mouthGain",
+    "mouthTalk",
+    "seed",
+    "squashGain",
+    "swayGain",
+    "tilt",
+    "turn",
+    "turnBlink",
+    "turnNod",
+    "turnPitch",
+    "turnWander",
+    "turnYaw",
+];
+
+/// WISP: the shared character keys plus its tail curl.
+const WISP_PARAMS: [&str; 30] = [
+    "accessories",
+    "bounceGain",
+    "breath",
+    "curlGain",
+    "earGain",
+    "eyeAsym",
+    "eyeH",
+    "eyeR",
+    "eyeSmile",
+    "eyeTilt",
+    "eyeW",
+    "gazeX",
+    "gazeY",
+    "hue",
+    "lean",
+    "lid",
+    "look",
+    "mouth",
+    "mouthDots",
+    "mouthGain",
+    "mouthTalk",
+    "seed",
+    "squashGain",
+    "tilt",
+    "turn",
+    "turnBlink",
+    "turnNod",
+    "turnPitch",
+    "turnWander",
+    "turnYaw",
+];
+
+/// CHIRP: the shared character keys plus its wing flutter.
+const CHIRP_PARAMS: [&str; 30] = [
+    "accessories",
+    "bounceGain",
+    "breath",
+    "earGain",
+    "eyeAsym",
+    "eyeH",
+    "eyeR",
+    "eyeSmile",
+    "eyeTilt",
+    "eyeW",
+    "flutterGain",
+    "gazeX",
+    "gazeY",
+    "hue",
+    "lean",
+    "lid",
+    "look",
+    "mouth",
+    "mouthDots",
+    "mouthGain",
+    "mouthTalk",
+    "seed",
+    "squashGain",
+    "tilt",
+    "turn",
+    "turnBlink",
+    "turnNod",
+    "turnPitch",
+    "turnWander",
+    "turnYaw",
+];
+
 pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
     match mode {
         "aurora" => &[
@@ -627,6 +765,10 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
             "trailFill",
             "trailLength",
         ],
+        "buzzy" => CHARACTER_PARAMS,
+        "hum" => &HUM_PARAMS,
+        "wisp" => &WISP_PARAMS,
+        "chirp" => &CHIRP_PARAMS,
         "dots" => &[
             "bounceAmplitude",
             "delay",
@@ -703,6 +845,8 @@ pub(crate) fn runtime_key(key: &str) -> Option<&'static str> {
         Some("the one-shot fade is a live event (apply_decay)")
     } else if key == "aspect" {
         Some("the box ratio of a wide pattern is set by the view")
+    } else if key == "stateAge" {
+        Some("the time since the state changed is set by the view")
     } else if indexed("peak") {
         Some("matrix peaks are caller-owned live data")
     } else {
@@ -746,6 +890,8 @@ fn family_of(state: &str) -> Option<&'static str> {
         Some("core")
     } else if crate::edge::presets::resolve_preset(state, 64).is_some() {
         Some("edge")
+    } else if crate::character::presets::resolve_preset(state, 64).is_some() {
+        Some("character")
     } else {
         None
     }
@@ -1211,6 +1357,20 @@ fn resolve_block(
 ) -> Block {
     let at = |k: &str| ptr(prefix, k);
     let mut out: BTreeMap<String, f64> = BTreeMap::new();
+    // A character's palette is drawn, not tinted: the frame-wide colour and
+    // gradient would repaint its eyes and screen too. `params.hue` turns the shell.
+    if object == Some("character") {
+        for sec in ["color", "gradient"] {
+            if b.contains_key(sec) {
+                diag.error(
+                    &at(sec),
+                    format!(
+                        "`{sec}` doesn't apply to a character; set `params.hue` to turn its colour"
+                    ),
+                );
+            }
+        }
+    }
     // Whether `colorMix` was *explicitly* set to a non-zero amount. A bare
     // `value` (implicit mix 1) or `mix: 0` only supplies the colour a
     // `colorMix` binding mixes toward -- not a conflicting static amount.
@@ -1898,11 +2058,16 @@ pub fn resolve_full(
     match object {
         None => diag.error(
             "/object",
-            "missing `object` (orb, signal, ring, beacon, core or edge)",
+            "missing `object` (orb, signal, ring, beacon, core, edge or character)",
         ),
-        Some(o) if !["orb", "signal", "ring", "beacon", "core", "edge"].contains(&o) => {
+        Some(o) if !["orb", "signal", "ring", "beacon", "core", "edge", "character"].contains(&o) => {
             diag.error("/object", format!("unknown object `{o}`"))
         }
+        // The character family arrived in 1.11 (design-07); an older file can't name it.
+        Some("character") if minor < CHARACTER_SINCE => diag.error(
+            "/object",
+            format!("`object: character` needs \"fxSpec\": \"1.{CHARACTER_SINCE}\" (this file says 1.{minor})"),
+        ),
         _ => {}
     }
     let size = match root.get("size") {
@@ -2294,7 +2459,7 @@ mod tests {
         assert!(errors(&missing).iter().any(|d| d.path == "/pattern"));
         // A newer 1.x file: unknown keys are warnings, the rest renders.
         let newer = resolve(
-            r##"{ "fxSpec": "1.11", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
+            r##"{ "fxSpec": "1.12", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
         );
         assert!(newer.ok, "{:?}", newer.diagnostics);
         assert_eq!(warnings(&newer).len(), 2);
@@ -2468,6 +2633,18 @@ mod tests {
             ("shimmer", include_str!("core_fx/modes/shimmer.rs")),
             ("dots", include_str!("core_fx/modes/dots.rs")),
             ("rim", include_str!("edge/modes/rim.rs")),
+            ("buzzy", include_str!("character/modes/buzzy.rs")),
+            ("buzzy", include_str!("character/rig.rs")),
+            ("buzzy", include_str!("character/turn.rs")),
+            ("hum", include_str!("character/modes/hum.rs")),
+            ("hum", include_str!("character/rig.rs")),
+            ("hum", include_str!("character/turn.rs")),
+            ("wisp", include_str!("character/modes/wisp.rs")),
+            ("wisp", include_str!("character/rig.rs")),
+            ("wisp", include_str!("character/turn.rs")),
+            ("chirp", include_str!("character/modes/chirp.rs")),
+            ("chirp", include_str!("character/rig.rs")),
+            ("chirp", include_str!("character/turn.rs")),
         ];
         for (mode, src) in sources {
             let code = src.split("#[cfg(test)]").next().unwrap();
@@ -2486,7 +2663,11 @@ mod tests {
         }
     }
 
-    const EXAMPLES: [(&str, &str); 13] = [
+    const EXAMPLES: [(&str, &str); 14] = [
+        (
+            "buzzy-assistant",
+            include_str!("../../../spec/examples/buzzy-assistant.fxspec.json"),
+        ),
         (
             "voice-assistant-glowing",
             include_str!("../../../spec/examples/voice-assistant-glowing.fxspec.json"),
@@ -2677,6 +2858,41 @@ mod tests {
         // (no particles), and older files keep theirs (`voice_state::profile_for_minor`).
         // This holds the 1.9 runtime's lock so that change can't leak into it.
         resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.9-resolved.json"), 13);
+    }
+
+    #[test]
+    fn v1_10_examples_resolve_identically() {
+        // 1.10 shipped in 0.1.0-beta.7; 1.11 adds the `character` object and
+        // must not change how any 1.10 file resolves.
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.10-resolved.json"), 13);
+    }
+
+    #[test]
+    fn a_character_needs_1_11_and_takes_hue_not_colour() {
+        let old = resolve(r##"{ "fxSpec": "1.10", "object": "character", "pattern": "buzzy" }"##);
+        assert!(!old.ok);
+        assert!(old
+            .diagnostics
+            .iter()
+            .any(|d| d.path == "/object" && d.message.contains("1.11")));
+        let colour = resolve(
+            r##"{ "fxSpec": "1.11", "object": "character", "pattern": "buzzy", "color": "#ff0000" }"##,
+        );
+        assert!(!colour.ok);
+        assert!(colour
+            .diagnostics
+            .iter()
+            .any(|d| d.path == "/color" && d.message.contains("params.hue")));
+        let ok = resolve(
+            r##"{ "fxSpec": "1.11", "object": "character", "pattern": "buzzy", "params": { "hue": 120, "gazeX": -4 } }"##,
+        );
+        assert!(ok.ok && ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+        assert_eq!(ok.overrides["hue"], 120.0);
+        // `stateAge` is the view's, not the file's.
+        let live = resolve(
+            r##"{ "fxSpec": "1.11", "object": "character", "pattern": "buzzy", "params": { "stateAge": 1 } }"##,
+        );
+        assert!(!live.ok);
     }
 
     const HOLO: &str = include_str!("../../../spec/examples/holo-orb.fxspec.json");

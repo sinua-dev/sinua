@@ -65,7 +65,7 @@ const MATERIAL_KEYS: [&str; 3] = ["colorMix", "colorMode", "gradientStrength"];
 /// Every state this set freezes -- the complement of `PORTED` across all
 /// five families. `every_non_ported_state_is_frozen` checks each one
 /// resolves; adding a state means adding it here (docs/testing.md).
-const STATES: [&str; 28] = [
+const STATES: [&str; 32] = [
     // orbs, additive
     "glowing",
     "drifting",
@@ -100,6 +100,11 @@ const STATES: [&str; 28] = [
     "typing",
     // edge
     "framing",
+    // character
+    "buzzy",
+    "hum",
+    "wisp",
+    "chirp",
 ];
 
 /// (state, key tag, overrides) for an input-driven extra case.
@@ -219,6 +224,306 @@ fn cases() -> Vec<Case> {
             s(&[("audioLevel", 0.4), ("flow", -1.0)]),
         ),
         ("talking", "thinking-shimmer", s(&[("shimmer", 1.0)])),
+        // Character (FX Spec 1.11): the voice states as the profile sets them,
+        // with the live inputs a view feeds (level, the turn blink, a barge-in,
+        // an effect, mute) and the hue option.
+        (
+            "buzzy",
+            "listening-level70",
+            s(&[
+                ("lean", 4.0),
+                ("tilt", -0.05),
+                ("eyeW", 22.0),
+                ("eyeH", 30.0),
+                ("eyeR", 9.0),
+                ("gazeY", 2.0),
+                ("earGain", 1.0),
+                ("look", 0.0),
+                ("audioLevel", 0.7),
+            ]),
+        ),
+        (
+            "buzzy",
+            "thinking-turn-blink",
+            s(&[
+                ("tilt", 0.07),
+                ("eyeH", 24.0),
+                ("lid", 0.28),
+                ("eyeTilt", 0.22),
+                ("eyeAsym", 0.17),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("mouthDots", 1.0),
+                ("turnBlink", 1.0),
+                ("look", 0.0),
+                ("stateAge", 0.09),
+            ]),
+        ),
+        (
+            "buzzy",
+            "speaking-level80-hue",
+            s(&[
+                ("eyeW", 21.0),
+                ("eyeSmile", 0.45),
+                ("mouthTalk", 1.0),
+                ("mouthGain", 1.0),
+                ("squashGain", 0.045),
+                ("bounceGain", 3.0),
+                ("audioLevel", 0.8),
+                ("hue", 150.0),
+            ]),
+        ),
+        (
+            "buzzy",
+            "barge-in",
+            s(&[("look", 0.0), ("interruptAge", 0.05)]),
+        ),
+        (
+            "buzzy",
+            "celebrate",
+            s(&[("effectCode", 3.0), ("effectAge", 0.5)]),
+        ),
+        ("buzzy", "muted", s(&[("look", 0.0), ("muted", 1.0)])),
+        // The head turn (design note 8): thinking's facing, and `turn` 0.
+        (
+            "buzzy",
+            "turned",
+            s(&[
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("look", 0.0),
+            ]),
+        ),
+        (
+            "buzzy",
+            "turn-off",
+            s(&[("turn", 0.0), ("turnYaw", -0.7), ("turnPitch", 0.8), ("look", 0.0)]),
+        ),
+        (
+            "hum",
+            "listening-level70",
+            s(&[
+                ("tilt", -0.13),
+                ("lean", 3.0),
+                ("eyeW", 22.0),
+                ("eyeH", 30.0),
+                ("eyeR", 9.0),
+                ("gazeY", 2.0),
+                ("earGain", 1.0),
+                ("look", 0.0),
+                ("audioLevel", 0.7),
+            ]),
+        ),
+        (
+            "hum",
+            "thinking-turn-blink",
+            s(&[
+                ("tilt", 0.1),
+                ("eyeH", 24.0),
+                ("lid", 0.28),
+                ("eyeTilt", 0.22),
+                ("eyeAsym", 0.17),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("mouthDots", 1.0),
+                ("turnBlink", 1.0),
+                ("look", 0.0),
+                ("stateAge", 0.09),
+            ]),
+        ),
+        (
+            "hum",
+            "speaking-level80-hue",
+            s(&[
+                ("eyeW", 21.0),
+                ("eyeSmile", 0.45),
+                ("mouthTalk", 1.0),
+                ("mouthGain", 1.0),
+                ("swayGain", 0.05),
+                ("bounceGain", 5.0),
+                ("audioLevel", 0.8),
+                ("hue", 209.0),
+            ]),
+        ),
+        (
+            "hum",
+            "barge-in",
+            s(&[("look", 0.0), ("interruptAge", 0.05)]),
+        ),
+        (
+            "hum",
+            "celebrate",
+            s(&[("effectCode", 3.0), ("effectAge", 0.5)]),
+        ),
+        ("hum", "muted", s(&[("look", 0.0), ("muted", 1.0)])),
+        // The head turn (design note 8): thinking's facing, and `turn` 0.
+        (
+            "hum",
+            "turned",
+            s(&[
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("look", 0.0),
+            ]),
+        ),
+        (
+            "hum",
+            "turn-off",
+            s(&[("turn", 0.0), ("turnYaw", -0.7), ("turnPitch", 0.8), ("look", 0.0)]),
+        ),
+        (
+            "wisp",
+            "listening-level70",
+            s(&[
+                ("tilt", -0.12),
+                ("lean", 3.0),
+                ("eyeW", 22.0),
+                ("eyeH", 30.0),
+                ("eyeR", 9.0),
+                ("gazeY", 2.0),
+                ("earGain", 1.0),
+                ("look", 0.0),
+                ("curlGain", 0.35),
+                ("audioLevel", 0.7),
+            ]),
+        ),
+        (
+            "wisp",
+            "thinking-turn-blink",
+            s(&[
+                ("eyeH", 24.0),
+                ("lid", 0.28),
+                ("eyeTilt", 0.22),
+                ("eyeAsym", 0.17),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("mouthDots", 1.0),
+                ("turnBlink", 1.0),
+                ("look", 0.0),
+                ("curlGain", 1.4),
+                ("stateAge", 0.09),
+            ]),
+        ),
+        (
+            "wisp",
+            "speaking-level80-hue",
+            s(&[
+                ("eyeW", 21.0),
+                ("eyeSmile", 0.45),
+                ("mouthTalk", 1.0),
+                ("mouthGain", 1.0),
+                ("squashGain", 0.07),
+                ("bounceGain", 3.0),
+                ("curlGain", 0.5),
+                ("audioLevel", 0.8),
+                ("hue", 133.0),
+            ]),
+        ),
+        (
+            "wisp",
+            "barge-in",
+            s(&[("look", 0.0), ("interruptAge", 0.05)]),
+        ),
+        (
+            "wisp",
+            "celebrate",
+            s(&[("effectCode", 3.0), ("effectAge", 0.5)]),
+        ),
+        ("wisp", "muted", s(&[("look", 0.0), ("muted", 1.0)])),
+        // The head turn (design note 8): thinking's facing, and `turn` 0.
+        (
+            "wisp",
+            "turned",
+            s(&[
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("look", 0.0),
+            ]),
+        ),
+        (
+            "wisp",
+            "turn-off",
+            s(&[("turn", 0.0), ("turnYaw", -0.7), ("turnPitch", 0.8), ("look", 0.0)]),
+        ),
+        (
+            "chirp",
+            "listening-level70",
+            s(&[
+                ("tilt", -0.2),
+                ("eyeW", 22.0),
+                ("eyeH", 30.0),
+                ("eyeR", 9.0),
+                ("gazeY", 2.0),
+                ("earGain", 1.0),
+                ("look", 0.0),
+                ("audioLevel", 0.7),
+            ]),
+        ),
+        (
+            "chirp",
+            "thinking-turn-blink",
+            s(&[
+                ("tilt", 0.08),
+                ("eyeH", 24.0),
+                ("lid", 0.28),
+                ("eyeTilt", 0.22),
+                ("eyeAsym", 0.17),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("mouthDots", 1.0),
+                ("turnBlink", 1.0),
+                ("look", 0.0),
+                ("stateAge", 0.09),
+            ]),
+        ),
+        (
+            "chirp",
+            "speaking-level80-hue",
+            s(&[
+                ("eyeW", 21.0),
+                ("eyeSmile", 0.45),
+                ("mouthTalk", 1.0),
+                ("mouthGain", 1.0),
+                ("flutterGain", 0.3),
+                ("bounceGain", 4.0),
+                ("audioLevel", 0.8),
+                ("hue", 212.0),
+            ]),
+        ),
+        (
+            "chirp",
+            "barge-in",
+            s(&[("look", 0.0), ("interruptAge", 0.05)]),
+        ),
+        (
+            "chirp",
+            "celebrate",
+            s(&[("effectCode", 3.0), ("effectAge", 0.5)]),
+        ),
+        ("chirp", "muted", s(&[("look", 0.0), ("muted", 1.0)])),
+        // The head turn (design note 8): thinking's facing, and `turn` 0.
+        (
+            "chirp",
+            "turned",
+            s(&[
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("look", 0.0),
+            ]),
+        ),
+        (
+            "chirp",
+            "turn-off",
+            s(&[("turn", 0.0), ("turnYaw", -0.7), ("turnPitch", 0.8), ("look", 0.0)]),
+        ),
         ("reconnecting", "quality66", s(&[("quality", 0.66)])),
         ("broadcasting", "level50", s(&[("level", 0.5)])),
         // Color system (2026-09-18, spec 1.1.0): `apply_color` on a line-heavy
@@ -458,7 +763,7 @@ fn regenerate_sinua_golden() {
         })
         .collect();
     let doc = json!({
-        "specVersion": "1.7.0",
+        "specVersion": "1.8.0",
         "note": "Sinua's own regression / cross-platform lock for every state spec/orbs-golden.json does not cover. \
     Generated by this engine, so it proves 'unchanged since baseline', NOT correctness -- upstream's set remains the only external oracle. \
     Dot stride 8: x, y, z, r, white, a, saturation, hue (dots in draw order). Line stride 9: x1, y1, x2, y2, white, a, w, saturation, hue (1.1.0; was 7). \
@@ -469,7 +774,7 @@ fn regenerate_sinua_golden() {
     1.3.0 (materials phase 2, liquid): a fill with inner rings carries `holes` [[x, y, ...], ...] (even-odd with `points`); absent when none. \
     1.4.0 (materials phase 3): particle cases -- no new fields (particles are dots). \
     1.5.0 (materials phase 4): holographic-lite cases -- no new fields (it recolours saturation/hue); the 4 particle cases re-baselined deliberately (particles on wall-clock time, per-state defaults, calmer motion, position-picked emitters). \
-    1.6.0 (per-vertex stroke colour): a polyline whose vertex hues differ (holo / gradient on strokes) carries `hues` [h, ...], one per vertex; absent when none. 1.7.0 (size 32): the plain frame() cases at every shipped size, 64 / 32 / 20; every earlier case unchanged. Size 32 of the ported orbs is also held to upstream's own engine (spec/orbs-golden-32.json). Re-baseline only deliberately, with a LOG entry (docs/testing.md).",
+    1.6.0 (per-vertex stroke colour): a polyline whose vertex hues differ (holo / gradient on strokes) carries `hues` [h, ...], one per vertex; absent when none. 1.7.0 (size 32): the plain frame() cases at every shipped size, 64 / 32 / 20; every earlier case unchanged. Size 32 of the ported orbs is also held to upstream's own engine (spec/orbs-golden-32.json). 1.8.0 (character family, FX Spec 1.11): the four characters (buzzy, hum, wisp, chirp) at every size and time, each with six input-driven cases (listening, the turn blink, speaking with a hue, barge-in, celebrate, muted); a character is fills only; every earlier case unchanged. Re-baseline only deliberately, with a LOG entry (docs/testing.md).",
         "tolerance": TOLERANCE,
         "sizes": SIZES,
         "times": TIMES,

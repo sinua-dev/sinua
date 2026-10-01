@@ -15,6 +15,7 @@
 pub mod a11y;
 mod beacon;
 mod catalog;
+mod character;
 mod conversation;
 mod core_fx;
 mod cost;
@@ -134,6 +135,11 @@ fn render(
         "dots" => core_fx::modes::dots::frame_dots(size as f64, t, opts),
         // The `edge` family (a box-layout screen-edge glow), see `edge/mod.rs`.
         "rim" => edge::modes::rim::frame_rim(size as f64, t, opts),
+        // The  family (faces with voice states), see .
+        "buzzy" => character::modes::buzzy::frame_buzzy(size as f64, t, opts),
+        "hum" => character::modes::hum::frame_hum(size as f64, t, opts),
+        "wisp" => character::modes::wisp::frame_wisp(size as f64, t, opts),
+        "chirp" => character::modes::chirp::frame_chirp(size as f64, t, opts),
         _ => return None,
     };
     Some(post(frame, mode, size, wall, opts))
@@ -151,7 +157,13 @@ fn post(
     opts: &primitives::ModeOpts,
 ) -> OrbFrame {
     let frame = primitives::apply_pointer(frame, opts);
-    let frame = primitives::apply_audio_reactive(frame, opts);
+    // A character moves with the voice itself (the mouth, a squash: `character/rig.rs`);
+    // a bound voice's `audioStrength` would also swell the whole body.
+    let frame = if effects::draws_own(mode) {
+        frame
+    } else {
+        primitives::apply_audio_reactive(frame, opts)
+    };
     // A periodic pulse swells geometry, so it runs before the materials copy
     // or color it -- a glow halo then breathes with its source.
     let frame = primitives::apply_pulse(frame, wall, opts);
@@ -179,8 +191,19 @@ fn post(
     // gradient is more specific and wins where it's set; holographic-lite
     // (materials phase 4) is the top tint, a hue sweep by depth/facing/time
     // over the kept lightness; glow inherits all three.
-    let frame = primitives::apply_color(frame, opts);
-    let frame = primitives::apply_gradient(frame, size as f64, opts);
+    // A character's palette is drawn, not tinted: a frame-wide colour or
+    // gradient would repaint its eyes and screen (`hue` turns its shell). The
+    // FX Spec rejects both sections on a character; this covers raw overrides.
+    let (frame, tint) = if effects::draws_own(mode) {
+        (frame, false)
+    } else {
+        (primitives::apply_color(frame, opts), true)
+    };
+    let frame = if tint {
+        primitives::apply_gradient(frame, size as f64, opts)
+    } else {
+        frame
+    };
     let frame = primitives::apply_holo(frame, size as f64, wall, opts);
     let frame = primitives::apply_glow(frame, opts);
     // `ink` (FX Spec 1.8) fades the finished visual as one thing, halos
@@ -191,12 +214,29 @@ fn post(
     // The one-shot barge-in flash sits on top of everything above; a one-shot
     // decay then fades everything drawn (flash included); the mute cue runs
     // last so its dimming has the final word even mid-flash.
-    let frame = primitives::apply_interrupt(frame, opts);
+    // A character startles instead (eyes wide, a hop back: `character/rig.rs`);
+    // the generic flash darkens its whole palette.
+    let frame = if effects::draws_own(mode) {
+        frame
+    } else {
+        primitives::apply_interrupt(frame, opts)
+    };
     // A one-shot feedback effect (success / error / celebrate) the view is
     // playing: on top of the flash, before the decay and the mute cue.
-    let frame = effects::apply_effect(frame, size as f64, opts, effects::plays_in_place(mode));
+    // A character draws the effect as its own expression (`character/rig.rs`).
+    let frame = if effects::draws_own(mode) {
+        frame
+    } else {
+        effects::apply_effect(frame, size as f64, opts, effects::plays_in_place(mode))
+    };
     let frame = primitives::apply_decay(frame, opts);
-    let frame = primitives::apply_muted(frame, opts);
+    // A character keeps its colours when muted: it squints and fades a little
+    // itself (`character/rig.rs`, the mode), instead of the generic grey-out.
+    let frame = if effects::draws_own(mode) {
+        frame
+    } else {
+        primitives::apply_muted(frame, opts)
+    };
     // Last: `blurScale` (low power) scales / strips every blur sigma.
     primitives::apply_blur_scale(frame, opts)
 }
@@ -241,6 +281,13 @@ fn resolve_any(state: &str, size: u32) -> Option<AnyResolved> {
         });
     }
     if let Some(r) = edge::presets::resolve_preset(state, size) {
+        return Some(AnyResolved {
+            mode: r.mode,
+            speed: r.speed,
+            opts: r.opts,
+        });
+    }
+    if let Some(r) = character::presets::resolve_preset(state, size) {
         return Some(AnyResolved {
             mode: r.mode,
             speed: r.speed,
@@ -1062,6 +1109,7 @@ pub(crate) fn all_states() -> Vec<&'static str> {
         crate::beacon::presets::STATES,
         crate::core_fx::presets::STATES,
         crate::edge::presets::STATES,
+        crate::character::presets::STATES,
     ]
     .concat()
 }

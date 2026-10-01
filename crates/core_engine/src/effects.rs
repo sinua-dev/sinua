@@ -234,6 +234,17 @@ fn hash01(i: u32, salt: u32) -> f64 {
 /// Modes whose patterns fill a box (the catalog's `layout: "box"`): effects play in place there.
 const IN_PLACE_MODES: [&str; 2] = ["rim", "playback"];
 
+/// True when `mode` draws the effect itself: a character's face *is* the effect
+/// (a happy face, an X, star eyes), so the generic ring / tick / burst isn't added.
+pub fn draws_own(mode: &str) -> bool {
+    crate::character::presets::is_character_mode(mode)
+}
+
+/// The effect with this code's length in seconds, or `None` for no effect.
+pub(crate) fn duration_of(code: u32) -> Option<f64> {
+    duration(code)
+}
+
 /// True when effects on `mode` play in place (see the module docs).
 pub fn plays_in_place(mode: &str) -> bool {
     IN_PLACE_MODES.contains(&mode)

@@ -712,7 +712,7 @@ the effect runs. So it works on every pattern of every family and looks identica
 every platform (`spec/effect-vectors.json`). The durations and words come from
 `effect_info(name)`.
 
-## Typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaCore`, `SinuaBeacon`)
+## Typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaCore`, `SinuaBeacon`, `SinuaEdge`, `SinuaCharacter`)
 
 One component per engine object, generated from the parameter catalog
 (`spec/parameters.json`). Each one is a thin wrapper over `FxView`, with no

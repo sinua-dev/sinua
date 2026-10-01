@@ -9,6 +9,38 @@ tag `beta`, and it may still change incompatibly.
 
 How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
+## Unreleased
+
+### Added
+
+- A new family, `character`: voice-assistant characters with a face (FX Spec 1.11,
+  `docs/character.md`), as `SinuaCharacter` on every platform (`<sinua-character>` on the
+  Web). The characters:
+  - `buzzy`, a small space-hero assistant;
+  - `hum`, a vintage studio microphone whose grille lights with the voice and whose tally
+    light shows when it listens;
+  - `wisp`, a helpful spirit whose sparkles gather, orbit and stream with the conversation;
+  - `chirp`, a songbird that sings its answers: the beak opens with the voice, notes rise and
+    the wings flutter.
+  - The head turns like a solid (`turn`, ±25° by default, 0 = flat): the face slides round
+    the head, the light stays put, near parts come forward. Idle looks corner to corner,
+    listening turns to you, thinking looks up and away, speaking nods with the voice.
+  - Shape eyes (no pupils, no brows); the gaze knows whose turn it is. It looks at you while
+    listening, looks away while thinking, and blinks once at the end of your turn.
+  - The mouth is a voice line, two even waves that flow; the agent's level sets their
+    height (amplitude only). Effects are
+    expressions: success, error, celebrate.
+  - Options: `hue`, `mouth`, `accessories`, `look`, `turn`, `seed`. Mute squints and fades instead of
+    greying out.
+  - Drawn entirely with fills: no painter changed.
+- FX Spec 1.11: `object: "character"`. A character takes `params.hue`, not `color` /
+  `gradient`. 1.8–1.10 files resolve exactly as before
+  (`spec/fx-spec-1.11-resolved.json`).
+- `stateAge`, a runtime input every view now sets: seconds since the lifecycle state changed.
+- State transitions: a catalog definition can mark a value as an *arrival*
+  (`"transition": "arrive"`). A state change then takes the new state's value at once
+  instead of interpolating it (a character's turn blink).
+
 ## 0.1.0-beta.7
 
 ### Added

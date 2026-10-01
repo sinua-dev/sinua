@@ -83,9 +83,9 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 
 - Major ≠ 1 → error; this runtime doesn't load it.
 - **The floor is 1.8** (`fx_spec.rs`'s `FLOOR_MINOR`). A `1.0`–`1.7` file is one error at `/fxSpec` (``FX Spec 1.7 isn't supported; this runtime reads 1.8 and later``) and nothing resolves. Those minors were never published; their acceptance was dropped before the first release instead of becoming a promise (docs/release-roadmap.md, decision 0.1). A missing or malformed `fxSpec` is an error too, and the rest of the file is still read as the current minor so its other problems show.
-- The runtime is **1.9** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A 1.9 key in a file that declares 1.8 (today only `transitions`) is an error naming the minor it needs.
+- The runtime is **1.11** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
 - A **newer 1.x** file (`1.9`) → unknown keys are **warnings** and the rest renders (graceful degradation).
-- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is two locks, `spec/fx-spec-1.8-resolved.json` and `spec/fx-spec-1.9-resolved.json`, over all 13 examples (1.9 resolves them identically: it only adds `transitions`); the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
+- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is four locks, `spec/fx-spec-1.8-resolved.json` to `-1.11-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
 - **A key added in a later minor is gated automatically.** `spec/fx-spec-1.8-keys.json`
   freezes every key path a 1.8 file may use (103 today, built from the resolver's own
   tables). A new key (a material, a section key, a binding target, something low power
@@ -299,6 +299,33 @@ How state changes animate, per pair. Optional; without it every change takes 0.6
 - **Fields:** `duration` (seconds, 0–10; `0` = a cut) and `curve` (one of the binding curves: `linear`, `ease`, `easeIn`, `easeOut`, `easeInOut`).
 - **Diagnostics:** a key that isn't `default` or `a->b` is an error; a state name that isn't in `states` is a warning (the entry never applies); an unknown curve or an out-of-range duration is an error.
 - `fxSpecTransition(spec, from, to)` returns `{ duration, curve }` for a pair; the players call it on every state change. The technique (interpolate / morph / cross-fade) isn't in the file: the engine picks it from the pair (see *Caller loop*).
+
+## v1.11: characters
+
+A new object, **`character`**: characters with a face for a voice assistant
+([`character.md`](character.md)). Each character is a pattern: **`buzzy`**, **`hum`**, **`wisp`** and **`chirp`**.
+
+```json
+{ "fxSpec": "1.11", "object": "character", "pattern": "buzzy", "params": { "hue": 190 },
+  "states": { "idle": {}, "listening": { "bindings": { "audioLevel": { "input": "micLevel" } } },
+              "thinking": {}, "speaking": { "bindings": { "audioLevel": { "input": "agentVolume" } } } } }
+```
+(`spec/examples/buzzy-assistant.fxspec.json`)
+
+- **`object: "character"` needs `"fxSpec": "1.11"`**; an older file gets an error at `/object`.
+- **No `color` or `gradient` on a character** (an error that points at `params.hue`): they
+  repaint the whole frame, eyes and screen included. `params.hue` turns the character's own
+  colour; `mouth`, `accessories`, `look` and `seed` are its other options. The rig keys the
+  voice-state profile sets (`gazeX`, `lid`, `eyeSmile`, …) are ordinary `params` too, so a file
+  can tune a state's look.
+- **The voice-state profile** carries each character's state language
+  (`patterns.buzzy`): the generic swell, glow, pulse and particles are off, and the rig
+  values make listening lean in, thinking look away, speaking smile and talk.
+- **`stateAge`** is a new runtime input (rejected in `params`): seconds since the view's
+  lifecycle state changed, which every view sets. A character blinks at the end of the
+  user's turn with it.
+- 1.8–1.10 files resolve exactly as before (their locks are unchanged, and the 1.11 lock
+  has the same rows for them).
 
 ## v1.10: calmer voice states
 

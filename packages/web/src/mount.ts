@@ -712,7 +712,10 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
       const t = reduced ? REDUCED_MOTION_T : phaseNow(lifecycle);
       // `audioInput` names which app input drives `audioLevel` here (never an engine key).
       const level = profile?.audioInput ? opts.inputs?.[profile.audioInput] : undefined;
-      const live = level != null ? { ...extra, audioLevel: level } : extra;
+      const withLevel = level != null ? { ...extra, audioLevel: level } : extra;
+      // Seconds since the state changed (a character blinks at the end of the user's turn).
+      const age = transition.stateAge;
+      const live = age != null ? { ...withLevel, stateAge: age } : withLevel;
       if (transition.active) {
         const out = transition.frames(side, resolved.size as OrbSize, t, live);
         frame = out.frame;

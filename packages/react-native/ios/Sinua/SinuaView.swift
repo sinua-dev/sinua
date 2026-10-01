@@ -672,6 +672,8 @@ final class FxModel: ObservableObject {
             var live = extra
             // `audioInput` names which app input drives `audioLevel` (never an engine key).
             if let name = profile?.audioInput, let level = config.inputs[name] { live["audioLevel"] = level }
+            // Seconds since the state changed (a character blinks at the end of the user's turn).
+            if let age = transition.stateAge { live["stateAge"] = age }
             if transition.active {
                 let out = transition.frames(side, size: resolved.size, t: t, extra: live)
                 frame = out.frame

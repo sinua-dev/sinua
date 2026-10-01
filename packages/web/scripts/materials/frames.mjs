@@ -8,6 +8,9 @@ import { frameWithOverrides } from "@sinua/core";
 
 const golden = JSON.parse(readFileSync(new URL("../../../../spec/sinua-golden.json", import.meta.url), "utf8"));
 const MATERIALS = /(fill|glow-blur|liquid|particles|holo)/;
+// A character is fills only (docs/character.md): per character, the celebrate effect
+// (blurred glows, gradients, clipped shading, sparkles) and one more everyday frame.
+const CHARACTER = /^(buzzy-64-0\.6-(celebrate|muted|turned)|(hum|wisp|chirp)-64-0\.6-(celebrate|barge-in)|chirp-64-0\.6-turned)$/;
 // Synthetic, information-only cases (not in the golden file): per-vertex strokes
 // under a blur / additive effect run at the composite -- no golden case has one.
 // compare.cjs reports keys starting "x-" without failing on them.
@@ -25,7 +28,7 @@ const hueCase = (key, c) => /-64-0\.6-/.test(key) && (c.overrides?.aspect ?? 1) 
 const frames = [...golden.cases, ...SYNTHETIC]
   .map((c) => ({ c, key: c.key, frame: frameWithOverrides(c.state, c.size, c.t, c.overrides) }))
   // Materials by key, plus any case with per-vertex stroke colour (e.g. `…-gradient3`).
-  .filter(({ c, key, frame }) => MATERIALS.test(key) || key.startsWith("x-") || (hasHues(frame) && hueCase(key, c)))
+  .filter(({ c, key, frame }) => MATERIALS.test(key) || CHARACTER.test(key) || key.startsWith("x-") || (hasHues(frame) && hueCase(key, c)))
   .map(({ key, frame }) => ({ key, frame }));
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(frames));

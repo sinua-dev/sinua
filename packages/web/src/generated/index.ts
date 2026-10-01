@@ -8,4 +8,5 @@ export { SinuaRing, type SinuaRingProps } from "./SinuaRing.js";
 export { SinuaCore, type SinuaCoreProps } from "./SinuaCore.js";
 export { SinuaBeacon, type SinuaBeaconProps } from "./SinuaBeacon.js";
 export { SinuaEdge, type SinuaEdgeProps } from "./SinuaEdge.js";
+export { SinuaCharacter, type SinuaCharacterProps } from "./SinuaCharacter.js";
 export { defineSinuaElements, Sinua_ELEMENT_TAGS } from "./SinuaElements.js";

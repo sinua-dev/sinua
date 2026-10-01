@@ -9,12 +9,16 @@ struct StateTransition {
     private var from: TransitionSide?
     private var shown: TransitionSide?
     private var age = Double.infinity
+    /// Seconds since the last state change (cut or not); infinite before the first.
+    private var since = Double.infinity
     private var duration = 0.0
     private var curve = "easeInOut"
 
     /// A state change happened: animate from what is on screen now. `duration` 0 = a cut.
     mutating func start(duration: Double, curve: String) {
         from = shown
+        // A change of something already on screen; the first state isn't a change.
+        if shown != nil { since = 0 }
         self.duration = max(0, duration)
         self.curve = curve
         age = from != nil && self.duration > 0 ? 0 : .infinity
@@ -31,7 +35,15 @@ struct StateTransition {
         if !active { shown = to }
     }
 
-    mutating func advance(_ dt: Double) { age += max(0, dt) }
+    mutating func advance(_ dt: Double) {
+        age += max(0, dt)
+        since += max(0, dt)
+    }
+
+    /// Seconds since the lifecycle state last changed, or nil before the first change.
+    /// The frames carry it as the `stateAge` runtime key (a character blinks at the end
+    /// of the user's turn); other patterns ignore it.
+    var stateAge: Double? { since.isFinite ? since : nil }
 
     var active: Bool { from != nil && age < duration }
 
@@ -45,9 +57,11 @@ struct StateTransition {
 
     /// The frames for `to` at engine time `t`: `previous` dissolved into `frame` at `blend`.
     /// `extra` is the live runtime keys (audio, pointer), spread over both sides.
-    mutating func frames(_ to: TransitionSide, size: UInt32, t: Double, extra: [String: Double])
+    mutating func frames(_ to: TransitionSide, size: UInt32, t: Double, extra live: [String: Double])
         -> (frame: OrbFrame?, previous: OrbFrame?, blend: Double)
     {
+        var extra = live
+        if since.isFinite { extra["stateAge"] = since }
         func draw(_ s: TransitionSide) -> OrbFrame? {
             frameWithOverrides(state: s.state, size: size, t: t, overrides: s.overrides.merging(extra) { $1 })
         }

@@ -61,6 +61,15 @@ class SinuaViewTest {
         }
     }
 
+    /** The catalog's `character` patterns: drawn with fills by default (docs/character.md). */
+    private val characterPatterns: Int by lazy {
+        val objects = JSONObject(spec("parameters.json")).getJSONArray("objects")
+        (0 until objects.length())
+            .map { objects.getJSONObject(it) }
+            .filter { it.getString("id") == "character" }
+            .sumOf { it.getJSONArray("patterns").length() }
+    }
+
     private fun raster(block: CanvasDrawScope.() -> Unit): IntArray {
         val img = ImageBitmap(256, 256)
         val scope = CanvasDrawScope()
@@ -75,6 +84,7 @@ class SinuaViewTest {
         assertTrue("only ${states.size} patterns read -- the asset or the loader moved", states.size >= 34)
         var compared = 0
         var perVertex = 0
+        var filled = 0
         for (s in states) {
             val f: OrbFrame = frame(s, 64u, 1.7)
                 ?: throw AssertionError("$s is in spec/parameters.json but does not render through core_engine")
@@ -83,6 +93,12 @@ class SinuaViewTest {
             // colourful by default). The materials cases check that paint rule instead.
             if (f.polylines.any { it.hues.isNotEmpty() }) {
                 perVertex++
+                continue
+            }
+            // Nor fills (materials phase 1): a character is drawn with fills only
+            // (docs/character.md). The materials cases hold fills across platforms.
+            if (f.fills.isNotEmpty()) {
+                filled++
                 continue
             }
             for (dark in listOf(false, true)) {
@@ -95,8 +111,9 @@ class SinuaViewTest {
             }
         }
         // The denominator, exactly: two themes x two alphas for every pattern.
-        assertEquals("four rasters per pattern", (states.size - perVertex) * 4, compared)
+        assertEquals("four rasters per pattern", (states.size - perVertex - filled) * 4, compared)
         assertTrue("only edge `framing` draws per-vertex colour by default", perVertex <= 1)
+        assertEquals("exactly the character patterns draw fills by default", characterPatterns, filled)
         println("FxPaint parity: $compared rasters identical across ${states.size} patterns")
     }
 
@@ -385,6 +402,17 @@ class SinuaViewTest {
                 "framing",
                 mapOf("audioLevel" to 0.7, "idleOpacity" to 0.45),
             ),
+            // A character is fills only (docs/character.md): celebrate and one everyday frame each.
+            Triple("buzzy-64-0.6-celebrate", "buzzy", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
+            Triple("buzzy-64-0.6-muted", "buzzy", mapOf("look" to 0.0, "muted" to 1.0)),
+            Triple("hum-64-0.6-celebrate", "hum", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
+            Triple("hum-64-0.6-barge-in", "hum", mapOf("look" to 0.0, "interruptAge" to 0.05)),
+            Triple("wisp-64-0.6-celebrate", "wisp", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
+            Triple("wisp-64-0.6-barge-in", "wisp", mapOf("look" to 0.0, "interruptAge" to 0.05)),
+            Triple("chirp-64-0.6-celebrate", "chirp", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
+            Triple("chirp-64-0.6-barge-in", "chirp", mapOf("look" to 0.0, "interruptAge" to 0.05)),
+            Triple("buzzy-64-0.6-turned", "buzzy", mapOf("turnYaw" to -0.7, "turnPitch" to 0.8, "gazeX" to -8.0, "gazeY" to -4.0, "look" to 0.0)),
+            Triple("chirp-64-0.6-turned", "chirp", mapOf("turnYaw" to -0.7, "turnPitch" to 0.8, "gazeX" to -8.0, "gazeY" to -4.0, "look" to 0.0)),
             // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC).
             Triple(
                 "x-completing-64-0.6-holo-glowblur",

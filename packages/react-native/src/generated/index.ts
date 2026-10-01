@@ -8,3 +8,4 @@ export { SinuaRing, type SinuaRingProps } from "./SinuaRing";
 export { SinuaCore, type SinuaCoreProps } from "./SinuaCore";
 export { SinuaBeacon, type SinuaBeaconProps } from "./SinuaBeacon";
 export { SinuaEdge, type SinuaEdgeProps } from "./SinuaEdge";
+export { SinuaCharacter, type SinuaCharacterProps } from "./SinuaCharacter";

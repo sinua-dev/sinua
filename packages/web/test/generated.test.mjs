@@ -28,7 +28,7 @@ test("a spec for another object is reported, the right one passes", () => {
 });
 
 test("one element definition per object, tags from the config prefix", () => {
-  assert.deepEqual(Object.keys(Sinua_ELEMENT_TAGS), ["sinua-orb", "sinua-signal", "sinua-ring", "sinua-core", "sinua-beacon", "sinua-edge"]);
+  assert.deepEqual(Object.keys(Sinua_ELEMENT_TAGS), ["sinua-orb", "sinua-signal", "sinua-ring", "sinua-core", "sinua-beacon", "sinua-edge", "sinua-character"]);
   const orb = Sinua_ELEMENT_TAGS["sinua-orb"];
   assert.equal(orb.object, "orb");
   assert.ok(orb.groups.includes("glow"));

@@ -673,3 +673,94 @@ const EDGE_TABLE: Table = {"cornerRadius":{"key":"cornerRadius"},"hue":{"key":"h
 export function sinuaEdgeOverrides(pattern: SinuaEdgePattern, params: SinuaEdgeParams): Record<string, number> {
   return toOverrides(EDGE_TABLE, pattern, params as Record<string, unknown>);
 }
+
+export type SinuaCharacterPattern =
+  | "buzzy"
+  | "hum"
+  | "wisp"
+  | "chirp";
+
+/** Character parameters; unset ones keep the pattern's values. */
+export interface SinuaCharacterParams {
+  /** The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. */
+  accessories?: boolean;
+  /** Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. Range 0...360 (deg). */
+  hue?: number;
+  /** How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction). */
+  ink?: number;
+  /** Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. */
+  mouth?: boolean;
+  /** How much the eyes glance around on their own while idle (0 = always at the viewer). Range 0...2. */
+  look?: number;
+  /** Changes when it blinks and glances, so two characters side by side don't move in sync. Range 0...1000000. */
+  seed?: number;
+  /** How far the head turns like a solid (0 = flat, 1 = ±35°; the default is ±25°). Range 0...1. */
+  turn?: number;
+  /** Makes the left eye shorter (a quizzical look). Range 0...0.6. */
+  eyeAsym?: number;
+  /** Eye height, in design units. Range 8...40. */
+  eyeH?: number;
+  /** Eye corner radius, in design units. Range 0...20. */
+  eyeR?: number;
+  /** The happy arc cut from below the eyes. Range 0...1. */
+  eyeSmile?: number;
+  /** Slope of the lid: positive lowers the outer corners (pensive). Range -1...1. */
+  eyeTilt?: number;
+  /** Eye width, in the character's 200-unit design box. Range 8...36. */
+  eyeW?: number;
+  /** How far the top lid comes down (a squint), 0 to 0.9 of the eye. Range 0...0.9. */
+  lid?: number;
+  /** Above 0.5 the mouth is three thinking dots. Range 0...1. */
+  mouthDots?: number;
+  /** Above 0.5 the mouth is the voice line (speaking). Range 0...1. */
+  mouthTalk?: number;
+  /** Where the eyes look, sideways, in design units (negative = left). Range -14...14. */
+  gazeX?: number;
+  /** Where the eyes look, up and down, in design units (negative = up). Range -12...12. */
+  gazeY?: number;
+  /** Leans the whole character toward the viewer (design units). Range -8...8. */
+  lean?: number;
+  /** Tilts the whole character (radians; positive = clockwise). Range -0.3...0.3. */
+  tilt?: number;
+  /** Blink once as this state starts (the end of the user's turn). Range 0...1. */
+  turnBlink?: number;
+  /** How much the head nods with the voice level. Range 0...1. */
+  turnNod?: number;
+  /** Where this state faces, up or down (-1..1 of the turn; positive = up). Range -1...1. */
+  turnPitch?: number;
+  /** How much the head looks from corner to corner on its own, holding each look. Range 0...1. */
+  turnWander?: number;
+  /** Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). Range -1...1. */
+  turnYaw?: number;
+  /** How far the voice lifts the body while speaking (design units). Range 0...8. */
+  bounceGain?: number;
+  /** Idle breathing bob. Range 0...2. */
+  breath?: number;
+  /** How strongly the listening sound arcs show with the user's level. Range 0...1. */
+  earGain?: number;
+  /** How far the voice line swings with the level. Range 0...2. */
+  mouthGain?: number;
+  /** How much the voice squashes the body while speaking. Range 0...0.12. */
+  squashGain?: number;
+  /** How far the capsule sways on its yoke with the voice while speaking (radians). Range 0...0.15. Patterns: hum. */
+  swayGain?: number;
+  /** How tightly the smoke tail curls (thinking curls it most). Range 0...2. Patterns: wisp. */
+  curlGain?: number;
+  /** How much the wings flutter with the voice while speaking (radians). Range 0...0.6. Patterns: chirp. */
+  flutterGain?: number;
+  glow?: SinuaGlow;
+  noise?: SinuaNoise;
+  pulse?: SinuaPulse;
+  gradient?: SinuaGradient;
+  color?: SinuaColor;
+  liquid?: SinuaLiquid;
+  particles?: SinuaParticles;
+  holographic?: SinuaHolographic;
+}
+
+const CHARACTER_TABLE: Table = {"accessories":{"key":"accessories"},"hue":{"key":"hue"},"ink":{"key":"ink"},"mouth":{"key":"mouth"},"look":{"key":"look"},"seed":{"key":"seed"},"turn":{"key":"turn"},"eyeAsym":{"key":"eyeAsym"},"eyeH":{"key":"eyeH"},"eyeR":{"key":"eyeR"},"eyeSmile":{"key":"eyeSmile"},"eyeTilt":{"key":"eyeTilt"},"eyeW":{"key":"eyeW"},"lid":{"key":"lid"},"mouthDots":{"key":"mouthDots"},"mouthTalk":{"key":"mouthTalk"},"gazeX":{"key":"gazeX"},"gazeY":{"key":"gazeY"},"lean":{"key":"lean"},"tilt":{"key":"tilt"},"turnBlink":{"key":"turnBlink"},"turnNod":{"key":"turnNod"},"turnPitch":{"key":"turnPitch"},"turnWander":{"key":"turnWander"},"turnYaw":{"key":"turnYaw"},"bounceGain":{"key":"bounceGain"},"breath":{"key":"breath"},"earGain":{"key":"earGain"},"mouthGain":{"key":"mouthGain"},"squashGain":{"key":"squashGain"},"swayGain":{"key":"swayGain"},"curlGain":{"key":"curlGain"},"flutterGain":{"key":"flutterGain"}};
+
+/** The engine overrides a SinuaCharacter hands to SinuaView. */
+export function sinuaCharacterOverrides(pattern: SinuaCharacterPattern, params: SinuaCharacterParams): Record<string, number> {
+  return toOverrides(CHARACTER_TABLE, pattern, params as Record<string, unknown>);
+}

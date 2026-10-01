@@ -18,12 +18,17 @@ internal class StateTransition {
     private var from: TransitionSide? = null
     private var shown: TransitionSide? = null
     private var age = Double.POSITIVE_INFINITY
+
+    /** Seconds since the last state change (cut or not); infinite before the first. */
+    private var since = Double.POSITIVE_INFINITY
     private var duration = 0.0
     private var curve = "easeInOut"
 
     /** A state change happened: animate from what is on screen now. `duration` 0 = a cut. */
     fun start(duration: Double, curve: String) {
         from = shown
+        // A change of something already on screen; the first state isn't a change.
+        if (shown != null) since = 0.0
         this.duration = maxOf(0.0, duration)
         this.curve = curve
         age = if (from != null && this.duration > 0) 0.0 else Double.POSITIVE_INFINITY
@@ -42,7 +47,15 @@ internal class StateTransition {
 
     fun advance(dt: Double) {
         age += maxOf(0.0, dt)
+        since += maxOf(0.0, dt)
     }
+
+    /**
+     * Seconds since the lifecycle state last changed, or null before the first change.
+     * The frames carry it as the `stateAge` runtime key (a character blinks at the end
+     * of the user's turn); other patterns ignore it.
+     */
+    val stateAge: Double? get() = if (since.isFinite()) since else null
 
     val active: Boolean get() = from != null && age < duration
 
@@ -56,7 +69,8 @@ internal class StateTransition {
     fun speed(to: TransitionSide, size: UInt): Double = mix(to, size)?.speed ?: to.speed
 
     /** The frames for [to] at engine time [t]; [extra] is the live runtime keys, over both sides. */
-    fun frames(to: TransitionSide, size: UInt, t: Double, extra: Map<String, Double>): FxFrames? {
+    fun frames(to: TransitionSide, size: UInt, t: Double, live: Map<String, Double>): FxFrames? {
+        val extra = if (since.isFinite()) live + ("stateAge" to since) else live
         fun draw(s: TransitionSide): OrbFrame? = frameWithOverrides(s.state, size, t, s.overrides + extra)
         val f = from
         val m = mix(to, size)

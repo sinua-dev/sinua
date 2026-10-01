@@ -28,6 +28,19 @@ final class SinuaViewTests: XCTestCase {
         return objects.flatMap { ($0["patterns"] as? [[String: Any]] ?? []).compactMap { $0["id"] as? String } }
     }
 
+    /// The catalog's `character` patterns: drawn with fills by default (docs/character.md).
+    private static func characterPatternCount() throws -> Int {
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("spec/parameters.json")
+        let data = try Data(contentsOf: url)
+        let root = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let objects = try XCTUnwrap(root["objects"] as? [[String: Any]])
+        return objects.filter { $0["id"] as? String == "character" }
+            .reduce(0) { $0 + (($1["patterns"] as? [[String: Any]])?.count ?? 0) }
+    }
+
     private func bitmap(_ draw: @escaping (inout GraphicsContext, CGSize) -> Void) -> Data {
         let view = Canvas { ctx, size in draw(&ctx, size) }.frame(width: 128, height: 128)
         let r = ImageRenderer(content: view)
@@ -43,6 +56,7 @@ final class SinuaViewTests: XCTestCase {
             states.count, 34, "only \(states.count) patterns read -- the file or the loader moved")
         var compared = 0
         var perVertex = 0
+        var filled = 0
         for s in states {
             guard let frame = frame(state: s, size: 64, t: 1.7) else {
                 XCTFail("\(s) is in spec/parameters.json but does not render through CoreEngine")
@@ -54,6 +68,12 @@ final class SinuaViewTests: XCTestCase {
             // platforms by MaterialsRenderTests instead.
             if frame.polylines.contains(where: { !$0.hues.isEmpty }) {
                 perVertex += 1
+                continue
+            }
+            // Nor fills (materials phase 1): a character is drawn with fills only
+            // (docs/character.md). MaterialsRenderTests holds fills across platforms.
+            if !frame.fills.isEmpty {
+                filled += 1
                 continue
             }
             for dark in [false, true] {
@@ -68,8 +88,9 @@ final class SinuaViewTests: XCTestCase {
             }
         }
         // The denominator, exactly: two themes for every pattern that exists.
-        XCTAssertEqual(compared, (states.count - perVertex) * 2, "one bitmap pair per pattern")
+        XCTAssertEqual(compared, (states.count - perVertex - filled) * 2, "one bitmap pair per pattern")
         XCTAssertLessThanOrEqual(perVertex, 1, "only edge `framing` draws per-vertex colour by default")
+        XCTAssertEqual(filled, try Self.characterPatternCount(), "exactly the character patterns draw fills by default")
         print("FxPaint parity: \(compared) bitmaps identical across \(states.count) patterns")
     }
 

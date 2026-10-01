@@ -38,6 +38,17 @@ final class MaterialsRenderTests: XCTestCase {
         ("completing-64-0.6-holo-interrupt", "completing", ["holoStrength": 1, "interruptAge": 0.15]),
         // Edge `framing` is colourful by default: a per-vertex stroke round a square box.
         ("framing-64-0.6-square-speaking", "framing", ["audioLevel": 0.7, "idleOpacity": 0.45]),
+        // A character is fills only (docs/character.md): celebrate and one everyday frame each.
+        ("buzzy-64-0.6-celebrate", "buzzy", ["effectCode": 3, "effectAge": 0.5]),
+        ("buzzy-64-0.6-muted", "buzzy", ["look": 0, "muted": 1]),
+        ("hum-64-0.6-celebrate", "hum", ["effectCode": 3, "effectAge": 0.5]),
+        ("hum-64-0.6-barge-in", "hum", ["look": 0, "interruptAge": 0.05]),
+        ("wisp-64-0.6-celebrate", "wisp", ["effectCode": 3, "effectAge": 0.5]),
+        ("wisp-64-0.6-barge-in", "wisp", ["look": 0, "interruptAge": 0.05]),
+        ("chirp-64-0.6-celebrate", "chirp", ["effectCode": 3, "effectAge": 0.5]),
+        ("chirp-64-0.6-barge-in", "chirp", ["look": 0, "interruptAge": 0.05]),
+        ("buzzy-64-0.6-turned", "buzzy", ["turnYaw": -0.7, "turnPitch": 0.8, "gazeX": -8, "gazeY": -4, "look": 0]),
+        ("chirp-64-0.6-turned", "chirp", ["turnYaw": -0.7, "turnPitch": 0.8, "gazeX": -8, "gazeY": -4, "look": 0]),
         // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC):
         // per-vertex strokes under a blur / additive run at the composite.
         ("x-completing-64-0.6-holo-glowblur", "completing", ["holoStrength": 1, "glowStrength": 0.8, "glowMode": 1]),

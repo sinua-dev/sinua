@@ -108,7 +108,13 @@ export type OrbState =
   | "typing"
   // The `edge` family (`crates/core_engine/src/edge/`): the in-app screen-edge
   // glow (`rim`; box layout).
-  | "framing";
+  | "framing"
+  // The `character` family (`crates/core_engine/src/character/`): characters
+  // with a face and voice states (FX Spec 1.11).
+  | "buzzy"
+  | "hum"
+  | "wisp"
+  | "chirp";
 
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;
@@ -409,7 +415,7 @@ export interface FxSpec {
   fxSpec: string;
   name?: string;
   description?: string;
-  object: "orb" | "signal" | "ring" | "beacon" | "core" | "edge";
+  object: "orb" | "signal" | "ring" | "beacon" | "core" | "edge" | "character";
   state: string;
   size?: OrbSize;
   speed?: number;
@@ -679,7 +685,7 @@ export interface ParameterPattern {
 }
 
 export interface ParameterObject {
-  id: "orb" | "signal" | "ring" | "core" | "beacon" | "edge";
+  id: "orb" | "signal" | "ring" | "core" | "beacon" | "edge" | "character";
   label: string;
   component: string;
   patterns: ParameterPattern[];

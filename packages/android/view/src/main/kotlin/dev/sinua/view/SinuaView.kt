@@ -779,7 +779,9 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
                 }
                 // `audioInput` names which app input drives `audioLevel` (never an engine key).
                 val level = profile?.audioInput?.let { inputs[it] }
-                val live = if (level != null) voiceMap + ("audioLevel" to level) else voiceMap
+                val withLevel = if (level != null) voiceMap + ("audioLevel" to level) else voiceMap
+                // Seconds since the state changed (a character blinks at the end of the user's turn).
+                val live = transition.stateAge?.let { withLevel + ("stateAge" to it) } ?: withLevel
                 if (transition.active) {
                     transition.frames(side, size, t, live)
                 } else {

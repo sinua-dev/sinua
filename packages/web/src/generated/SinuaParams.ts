@@ -645,12 +645,16 @@ export type SinuaCharacterPattern =
 export interface SinuaCharacterParams {
   /** The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. */
   accessories?: boolean;
+  /** Film grain inside the character's bodies (FX Spec 1.13, design note 22): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1. */
+  grain?: number;
   /** Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. Range 0...360 (deg). */
   hue?: number;
   /** How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction). */
   ink?: number;
   /** Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. */
   mouth?: boolean;
+  /** Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13, design note 22). An FX Spec resolved under low power turns them off. */
+  shading?: boolean;
   /** How much the eyes glance around on their own while idle (0 = always at the viewer). Range 0...2. */
   look?: number;
   /** Changes when it blinks and glances, so two characters side by side don't move in sync. Range 0...1000000. */
@@ -721,7 +725,7 @@ export interface SinuaCharacterParams {
   holographic?: SinuaHolographic;
 }
 
-const CHARACTER_TABLE: Table = {"accessories":{"key":"accessories"},"hue":{"key":"hue"},"ink":{"key":"ink"},"mouth":{"key":"mouth"},"look":{"key":"look"},"seed":{"key":"seed"},"turn":{"key":"turn"},"eyeAsym":{"key":"eyeAsym"},"eyeH":{"key":"eyeH"},"eyeR":{"key":"eyeR"},"eyeSmile":{"key":"eyeSmile"},"eyeTilt":{"key":"eyeTilt"},"eyeW":{"key":"eyeW"},"lid":{"key":"lid"},"mouthDots":{"key":"mouthDots"},"mouthTalk":{"key":"mouthTalk"},"gazeX":{"key":"gazeX"},"gazeY":{"key":"gazeY"},"lean":{"key":"lean"},"tilt":{"key":"tilt"},"turnBlink":{"key":"turnBlink"},"turnNod":{"key":"turnNod"},"turnPitch":{"key":"turnPitch"},"turnWander":{"key":"turnWander"},"turnYaw":{"key":"turnYaw"},"bounceGain":{"key":"bounceGain"},"breath":{"key":"breath"},"earGain":{"key":"earGain"},"mouthGain":{"key":"mouthGain"},"squashGain":{"key":"squashGain"},"swayGain":{"key":"swayGain"},"curlGain":{"key":"curlGain"},"flutterGain":{"key":"flutterGain"},"arms":{"key":"arms"}};
+const CHARACTER_TABLE: Table = {"accessories":{"key":"accessories"},"grain":{"key":"grain"},"hue":{"key":"hue"},"ink":{"key":"ink"},"mouth":{"key":"mouth"},"shading":{"key":"shading"},"look":{"key":"look"},"seed":{"key":"seed"},"turn":{"key":"turn"},"eyeAsym":{"key":"eyeAsym"},"eyeH":{"key":"eyeH"},"eyeR":{"key":"eyeR"},"eyeSmile":{"key":"eyeSmile"},"eyeTilt":{"key":"eyeTilt"},"eyeW":{"key":"eyeW"},"lid":{"key":"lid"},"mouthDots":{"key":"mouthDots"},"mouthTalk":{"key":"mouthTalk"},"gazeX":{"key":"gazeX"},"gazeY":{"key":"gazeY"},"lean":{"key":"lean"},"tilt":{"key":"tilt"},"turnBlink":{"key":"turnBlink"},"turnNod":{"key":"turnNod"},"turnPitch":{"key":"turnPitch"},"turnWander":{"key":"turnWander"},"turnYaw":{"key":"turnYaw"},"bounceGain":{"key":"bounceGain"},"breath":{"key":"breath"},"earGain":{"key":"earGain"},"mouthGain":{"key":"mouthGain"},"squashGain":{"key":"squashGain"},"swayGain":{"key":"swayGain"},"curlGain":{"key":"curlGain"},"flutterGain":{"key":"flutterGain"},"arms":{"key":"arms"}};
 
 /** The engine overrides a SinuaCharacter hands to SinuaView. */
 export function sinuaCharacterOverrides(pattern: SinuaCharacterPattern, params: SinuaCharacterParams): Record<string, number> {

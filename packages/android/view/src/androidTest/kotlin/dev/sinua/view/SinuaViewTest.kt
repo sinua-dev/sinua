@@ -431,8 +431,25 @@ class SinuaViewTest {
                 ),
             ),
         )
-        for ((key, state, overrides) in cases) {
-            val f = uniffi.core_engine.frameWithOverrides(state, 64u, 0.6, overrides)!!
+        val frames = cases.map { (key, state, overrides) ->
+            key to uniffi.core_engine.frameWithOverrides(state, 64u, 0.6, overrides)!!
+        }.toMutableList()
+        // FX Spec rows (1.13, design note 22; frames.mjs SPEC_ROWS): the showcase examples
+        // resolved at their base design -- elliptical gradients, soft layers, rims, grain.
+        val assets = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().context.assets
+        for ((key, file) in listOf(
+            "rich-bean-64-0.6-spec" to "rich-bean.fxspec.json",
+            "rich-buzzy-64-0.6-spec" to "rich-buzzy.fxspec.json",
+        )) {
+            val json = assets.open(file).bufferedReader().use { it.readText() }
+            val r = uniffi.core_engine.resolveFxSpecWith(json, "idle", emptyMap())
+            assertTrue("$file: ${r.diagnostics}", r.ok)
+            val f = uniffi.core_engine.frameWithOverrides(r.state, 64u, 0.6, r.overrides)!!
+            assertTrue("$key has grain", f.fills.any { it.blend.toInt() == 2 })
+            assertTrue("$key has an elliptical gradient", f.fills.any { it.gradient?.kind?.toInt() == 2 })
+            frames.add(key to f)
+        }
+        for ((key, f) in frames) {
             if (!key.contains("liquid-outline") && !key.contains("liquid-dots") && !key.contains("particles") &&
                 !key.contains("holo") &&
                 !key.contains("gradient3")

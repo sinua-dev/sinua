@@ -59,17 +59,41 @@ final class MaterialsRenderTests: XCTestCase {
         ),
     ]
 
+    /// FX Spec rows (1.13, design note 22; frames.mjs SPEC_ROWS): the showcase examples
+    /// resolved at their base design -- elliptical gradients, soft layers, rims, grain.
+    static let specRows: [(key: String, file: String)] = [
+        ("rich-bean-64-0.6-spec", "rich-bean.fxspec.json"),
+        ("rich-buzzy-64-0.6-spec", "rich-buzzy.fxspec.json"),
+    ]
+
     func testRenderMaterialsGoldenCases() throws {
         let golden = try goldenOverrides()
+        var frames: [(String, OrbFrame)] = []
         for c in Self.cases {
             let overrides = golden[c.key] ?? c.overrides
-            let frame = try XCTUnwrap(frameWithOverrides(state: c.state, size: 64, t: 0.6, overrides: overrides), c.key)
-            if !c.key.contains("liquid-outline") && !c.key.contains("liquid-dots") && !c.key.contains("particles")
-                && !c.key.contains("holo") && !c.key.contains("gradient3")
+            frames.append(
+                (
+                    c.key,
+                    try XCTUnwrap(frameWithOverrides(state: c.state, size: 64, t: 0.6, overrides: overrides), c.key)
+                ))
+        }
+        for row in Self.specRows {
+            let json = try String(contentsOf: specURL("examples/\(row.file)"), encoding: .utf8)
+            let r = resolveFxSpecWith(json: json, state: "idle", inputs: [:])
+            XCTAssertTrue(r.ok, "\(row.file): \(r.diagnostics)")
+            let frame = try XCTUnwrap(
+                frameWithOverrides(state: r.state, size: 64, t: 0.6, overrides: r.overrides), row.key)
+            XCTAssertTrue(frame.fills.contains { $0.blend == 2 }, "\(row.key) has grain")
+            XCTAssertTrue(frame.fills.contains { $0.gradient?.kind == 2 }, "\(row.key) has an elliptical gradient")
+            frames.append((row.key, frame))
+        }
+        for (key, frame) in frames {
+            if !key.contains("liquid-outline") && !key.contains("liquid-dots") && !key.contains("particles")
+                && !key.contains("holo") && !key.contains("gradient3")
             {
-                XCTAssertTrue(!frame.fills.isEmpty || !frame.effects.isEmpty, "\(c.key) has materials")
+                XCTAssertTrue(!frame.fills.isEmpty || !frame.effects.isEmpty, "\(key) has materials")
             }
-            if c.key.contains("liquid-fill") {
+            if key.contains("liquid-fill") {
                 XCTAssertFalse(frame.fills.allSatisfy { $0.holes.isEmpty }, "the liquid fill has a hole")
             }
             for dark in [false, true] {
@@ -80,19 +104,34 @@ final class MaterialsRenderTests: XCTestCase {
                 r.scale = 1
                 let png = try XCTUnwrap(r.uiImage?.pngData())
                 let a = XCTAttachment(data: png, uniformTypeIdentifier: "public.png")
-                a.name = "ios-\(c.key)-\(dark ? "dark" : "light").png"
+                a.name = "ios-\(key)-\(dark ? "dark" : "light").png"
                 a.lifetime = .keepAlways
                 add(a)
             }
         }
     }
 
-    /// The overrides recorded in the golden file (so the frames match families' cases exactly).
-    private func goldenOverrides() throws -> [String: [String: Double]] {
-        let url = URL(fileURLWithPath: #filePath)
+    /// The grain tile's hash (design note 22) matches the vectors every platform checks
+    /// (packages/web/test/materials.test.mjs, GrainVectorsTest.kt).
+    func testGrainHashMatchesTheVectors() {
+        let want: [(Int, Int, Double)] = [
+            (0, 0, 0.573750742), (1, 0, 0.78714704), (0, 1, 0.399833626), (63, 63, 0.680704963), (17, 42, 0.127631493),
+        ]
+        for (x, y, v) in want { XCTAssertEqual(FxPaint.grainValue(x, y), v, accuracy: 1e-9, "\(x),\(y)") }
+        XCTAssertNotNil(FxPaint.grainTile)
+    }
+
+    /// A file under the repository's `spec/`.
+    private func specURL(_ path: String) -> URL {
+        URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("spec/sinua-golden.json")
+            .appendingPathComponent("spec/\(path)")
+    }
+
+    /// The overrides recorded in the golden file (so the frames match families' cases exactly).
+    private func goldenOverrides() throws -> [String: [String: Double]] {
+        let url = specURL("sinua-golden.json")
         guard let data = try? Data(contentsOf: url),
             let d = try JSONSerialization.jsonObject(with: data) as? [String: Any],
             let cases = d["cases"] as? [[String: Any]]

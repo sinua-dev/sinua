@@ -54,6 +54,8 @@ public struct SinuaCharacter: View {
     public var gazeX: Double?
     /// Where the eyes look, up and down, in design units (negative = up). Range -12...12.
     public var gazeY: Double?
+    /// Film grain inside the character's bodies (FX Spec 1.13, design note 22): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1.
+    public var grain: Double?
     /// Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. Range 0...360 (deg).
     public var hue: Double?
     /// How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction).
@@ -74,6 +76,8 @@ public struct SinuaCharacter: View {
     public var mouthTalk: Double?
     /// Changes when it blinks and glances, so two characters side by side don't move in sync. Range 0...1000000.
     public var seed: Int?
+    /// Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13, design note 22). An FX Spec resolved under low power turns them off.
+    public var shading: Bool?
     /// How much the voice squashes the body while speaking. Range 0...0.12.
     public var squashGain: Double?
     /// How far the capsule sways on its yoke with the voice while speaking (radians). Range 0...0.15. Patterns: hum.
@@ -150,6 +154,7 @@ public struct SinuaCharacter: View {
         flutterGain: Double? = nil,
         gazeX: Double? = nil,
         gazeY: Double? = nil,
+        grain: Double? = nil,
         hue: Double? = nil,
         ink: Double? = nil,
         lean: Double? = nil,
@@ -160,6 +165,7 @@ public struct SinuaCharacter: View {
         mouthGain: Double? = nil,
         mouthTalk: Double? = nil,
         seed: Int? = nil,
+        shading: Bool? = nil,
         squashGain: Double? = nil,
         swayGain: Double? = nil,
         tilt: Double? = nil,
@@ -214,6 +220,7 @@ public struct SinuaCharacter: View {
         self.flutterGain = flutterGain
         self.gazeX = gazeX
         self.gazeY = gazeY
+        self.grain = grain
         self.hue = hue
         self.ink = ink
         self.lean = lean
@@ -224,6 +231,7 @@ public struct SinuaCharacter: View {
         self.mouthGain = mouthGain
         self.mouthTalk = mouthTalk
         self.seed = seed
+        self.shading = shading
         self.squashGain = squashGain
         self.swayGain = swayGain
         self.tilt = tilt
@@ -316,6 +324,7 @@ public struct SinuaCharacter: View {
         if let v = flutterGain { o["flutterGain"] = v }
         if let v = gazeX { o["gazeX"] = v }
         if let v = gazeY { o["gazeY"] = v }
+        if let v = grain { o["grain"] = v }
         if let v = hue { o["hue"] = v }
         if let v = ink { o["ink"] = v }
         if let v = lean { o["lean"] = v }
@@ -326,6 +335,7 @@ public struct SinuaCharacter: View {
         if let v = mouthGain { o["mouthGain"] = v }
         if let v = mouthTalk { o["mouthTalk"] = v }
         if let v = seed { o["seed"] = Double(v) }
+        if let v = shading { o["shading"] = v ? 1 : 0 }
         if let v = squashGain { o["squashGain"] = v }
         if let v = swayGain { o["swayGain"] = v }
         if let v = tilt { o["tilt"] = v }

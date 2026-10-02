@@ -21,7 +21,7 @@
     },
     "packages/android/view/src/main/kotlin/dev/sinua/view/generated/SinuaCharacter.kt": {
       "(top level)": [
-        "@Composable fun SinuaCharacter(pattern:SinuaCharacterPattern,modifier:Modifier,size:SinuaSize,accessories:Boolean?,hue:Double?,ink:Double?,mouth:Boolean?,look:Double?,seed:Int?,turn:Double?,eyeAsym:Double?,eyeH:Double?,eyeR:Double?,eyeSmile:Double?,eyeTilt:Double?,eyeW:Double?,lid:Double?,mouthDots:Double?,mouthTalk:Double?,gazeX:Double?,gazeY:Double?,lean:Double?,tilt:Double?,turnBlink:Double?,turnNod:Double?,turnPitch:Double?,turnWander:Double?,turnYaw:Double?,bounceGain:Double?,breath:Double?,earGain:Double?,mouthGain:Double?,squashGain:Double?,swayGain:Double?,curlGain:Double?,flutterGain:Double?,arms:Boolean?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?,tap:Boolean,expression:String?,palette:Map<String,String>)",
+        "@Composable fun SinuaCharacter(pattern:SinuaCharacterPattern,modifier:Modifier,size:SinuaSize,accessories:Boolean?,grain:Double?,hue:Double?,ink:Double?,mouth:Boolean?,shading:Boolean?,look:Double?,seed:Int?,turn:Double?,eyeAsym:Double?,eyeH:Double?,eyeR:Double?,eyeSmile:Double?,eyeTilt:Double?,eyeW:Double?,lid:Double?,mouthDots:Double?,mouthTalk:Double?,gazeX:Double?,gazeY:Double?,lean:Double?,tilt:Double?,turnBlink:Double?,turnNod:Double?,turnPitch:Double?,turnWander:Double?,turnYaw:Double?,bounceGain:Double?,breath:Double?,earGain:Double?,mouthGain:Double?,squashGain:Double?,swayGain:Double?,curlGain:Double?,flutterGain:Double?,arms:Boolean?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,liquid:SinuaLiquid?,particles:SinuaParticles?,holographic:SinuaHolographic?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?,tap:Boolean,expression:String?,palette:Map<String,String>)",
         "@Composable fun SinuaCharacter(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,rules:Boolean,effect:SinuaEffectTrigger?,tap:Boolean,expression:String?,palette:Map<String,String>)"
       ],
       "SinuaCharacterPattern": [
@@ -35,7 +35,7 @@
         "entry WISP(\"wisp\")"
       ],
       "SinuaCharacterProps": [
-        "decl data class SinuaCharacterProps(val pattern:SinuaCharacterPattern,val size:SinuaSize,val accessories:Boolean?,val hue:Double?,val ink:Double?,val mouth:Boolean?,val look:Double?,val seed:Int?,val turn:Double?,val eyeAsym:Double?,val eyeH:Double?,val eyeR:Double?,val eyeSmile:Double?,val eyeTilt:Double?,val eyeW:Double?,val lid:Double?,val mouthDots:Double?,val mouthTalk:Double?,val gazeX:Double?,val gazeY:Double?,val lean:Double?,val tilt:Double?,val turnBlink:Double?,val turnNod:Double?,val turnPitch:Double?,val turnWander:Double?,val turnYaw:Double?,val bounceGain:Double?,val breath:Double?,val earGain:Double?,val mouthGain:Double?,val squashGain:Double?,val swayGain:Double?,val curlGain:Double?,val flutterGain:Double?,val arms:Boolean?,val glow:SinuaGlow?,val noise:SinuaNoise?,val pulse:SinuaPulse?,val gradient:SinuaGradient?,val color:SinuaColor?,val liquid:SinuaLiquid?,val particles:SinuaParticles?,val holographic:SinuaHolographic?)",
+        "decl data class SinuaCharacterProps(val pattern:SinuaCharacterPattern,val size:SinuaSize,val accessories:Boolean?,val grain:Double?,val hue:Double?,val ink:Double?,val mouth:Boolean?,val shading:Boolean?,val look:Double?,val seed:Int?,val turn:Double?,val eyeAsym:Double?,val eyeH:Double?,val eyeR:Double?,val eyeSmile:Double?,val eyeTilt:Double?,val eyeW:Double?,val lid:Double?,val mouthDots:Double?,val mouthTalk:Double?,val gazeX:Double?,val gazeY:Double?,val lean:Double?,val tilt:Double?,val turnBlink:Double?,val turnNod:Double?,val turnPitch:Double?,val turnWander:Double?,val turnYaw:Double?,val bounceGain:Double?,val breath:Double?,val earGain:Double?,val mouthGain:Double?,val squashGain:Double?,val swayGain:Double?,val curlGain:Double?,val flutterGain:Double?,val arms:Boolean?,val glow:SinuaGlow?,val noise:SinuaNoise?,val pulse:SinuaPulse?,val gradient:SinuaGradient?,val color:SinuaColor?,val liquid:SinuaLiquid?,val particles:SinuaParticles?,val holographic:SinuaHolographic?)",
         "fun toOverrides():Map<String,Double>"
       ]
     },
@@ -279,7 +279,7 @@
       "SinuaCharacter": [
         "decl public struct SinuaCharacter:View",
         "public func overrides()->[String:Double]",
-        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],accessories:Bool?,arms:Bool?,bounceGain:Double?,breath:Double?,curlGain:Double?,earGain:Double?,eyeAsym:Double?,eyeH:Double?,eyeR:Double?,eyeSmile:Double?,eyeTilt:Double?,eyeW:Double?,flutterGain:Double?,gazeX:Double?,gazeY:Double?,hue:Double?,ink:Double?,lean:Double?,lid:Double?,look:Double?,mouth:Bool?,mouthDots:Double?,mouthGain:Double?,mouthTalk:Double?,seed:Int?,squashGain:Double?,swayGain:Double?,tilt:Double?,turn:Double?,turnBlink:Double?,turnNod:Double?,turnPitch:Double?,turnWander:Double?,turnYaw:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?,tap:Bool,expression:String?,palette:[String:String])",
+        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],accessories:Bool?,arms:Bool?,bounceGain:Double?,breath:Double?,curlGain:Double?,earGain:Double?,eyeAsym:Double?,eyeH:Double?,eyeR:Double?,eyeSmile:Double?,eyeTilt:Double?,eyeW:Double?,flutterGain:Double?,gazeX:Double?,gazeY:Double?,grain:Double?,hue:Double?,ink:Double?,lean:Double?,lid:Double?,look:Double?,mouth:Bool?,mouthDots:Double?,mouthGain:Double?,mouthTalk:Double?,seed:Int?,shading:Bool?,squashGain:Double?,swayGain:Double?,tilt:Double?,turn:Double?,turnBlink:Double?,turnNod:Double?,turnPitch:Double?,turnWander:Double?,turnYaw:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,holographic:SinuaHolographic?,liquid:SinuaLiquid?,noise:SinuaNoise?,particles:SinuaParticles?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?,tap:Bool,expression:String?,palette:[String:String])",
         "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,rules:Bool,effect:SinuaEffectTrigger?,tap:Bool,expression:String?,palette:[String:String])",
         "public var accessibilityLabel:String?",
         "public var accessories:Bool?",
@@ -304,6 +304,7 @@
         "public var gazeY:Double?",
         "public var glow:SinuaGlow?",
         "public var gradient:SinuaGradient?",
+        "public var grain:Double?",
         "public var haptics:Bool",
         "public var holographic:SinuaHolographic?",
         "public var hue:Double?",
@@ -329,6 +330,7 @@
         "public var pulse:SinuaPulse?",
         "public var reducedMotion:FxReducedMotion",
         "public var seed:Int?",
+        "public var shading:Bool?",
         "public var size:SinuaSize",
         "public var specError:SinuaSpecError?",
         "public var speed:Double",
@@ -921,6 +923,7 @@
         "gazeY?:number",
         "glow?:SinuaGlow",
         "gradient?:SinuaGradient",
+        "grain?:number",
         "holographic?:SinuaHolographic",
         "hue?:number",
         "ink?:number",
@@ -936,6 +939,7 @@
         "particles?:SinuaParticles",
         "pulse?:SinuaPulse",
         "seed?:number",
+        "shading?:boolean",
         "squashGain?:number",
         "swayGain?:number",
         "tilt?:number",
@@ -1324,6 +1328,7 @@
         "param flutterGain",
         "param gazeX",
         "param gazeY",
+        "param grain",
         "param hue",
         "param ink",
         "param lean",
@@ -1334,6 +1339,7 @@
         "param mouthGain",
         "param mouthTalk",
         "param seed",
+        "param shading",
         "param squashGain",
         "param swayGain",
         "param tilt",
@@ -1599,6 +1605,7 @@
         "gazeY?:number",
         "glow?:SinuaGlow",
         "gradient?:SinuaGradient",
+        "grain?:number",
         "holographic?:SinuaHolographic",
         "hue?:number",
         "ink?:number",
@@ -1614,6 +1621,7 @@
         "particles?:SinuaParticles",
         "pulse?:SinuaPulse",
         "seed?:number",
+        "shading?:boolean",
         "squashGain?:number",
         "swayGain?:number",
         "tilt?:number",

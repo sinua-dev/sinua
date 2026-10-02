@@ -118,3 +118,60 @@ test("holes: outer + hole rings as one path, filled even-odd; no holes keeps the
     assert.deepEqual(fills, [rule]);
   }
 });
+
+// FX Spec 1.13, design note 22: elliptical radial gradients (kind 2) and grain (blend 2).
+function recorder2() {
+  const r = recorder();
+  const t = [];
+  const pts = [];
+  Object.assign(r.ctx, {
+    transform(...m) { t.push(m); },
+    moveTo(x, y) { pts.push([x, y]); },
+    lineTo(x, y) { pts.push([x, y]); },
+    createPattern(img, rep) { return { kind: "pattern", img, rep }; },
+  });
+  let alpha = 1;
+  Object.defineProperty(r.ctx, "globalAlpha", { set(v) { alpha = v; }, get() { return alpha; } });
+  return { ...r, t, pts, alpha: () => alpha };
+}
+
+test("an elliptical gradient draws a circle in its own space: transform, radius rx, the path mapped back", () => {
+  const { ctx, log, t, pts } = recorder2();
+  // Centre (50, 40), first radius 20 along x, second radius 10.
+  const g = { kind: 2, x0: 50, y0: 40, x1: 70, y1: 40, r: 10, stops: [{ offset: 0, white: 0.5, a: 1, saturation: 0, hue: 0 }, { offset: 1, white: 0.5, a: 0, saturation: 0, hue: 0 }] };
+  const ring = [{ x: 50, y: 40 }, { x: 70, y: 40 }, { x: 50, y: 50 }];
+  drawFrame(ctx, { ...base, fills: [{ points: ring, white: 0.5, a: 1, saturation: 0, hue: 0, gradient: g, blur: 0, blend: 0 }] }, false, 1);
+  const style = log.find((l) => l[0] === "fill")[1].style;
+  assert.equal(style.kind, "radial");
+  assert.deepEqual(style.a, [0, 0, 0, 0, 0, 20], "the unit circle of radius rx at the origin");
+  assert.deepEqual(t[0], [1, 0, -0, 0.5, 0, 0], "no rotation, squashed by r / rx");
+  // The centre maps to the origin, the axis end to (rx, 0), the minor end to (0, rx).
+  assert.deepEqual(pts.slice(0, 3), [[0, 0], [20, 0], [0, 20]]);
+});
+
+test("a grain fill fills its shape with the noise pattern at fill.a; no pattern support draws nothing", () => {
+  class FakeOffscreen {
+    constructor(w, h) { this.width = w; this.height = h; }
+    getContext() { return { createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }), putImageData() {} }; }
+  }
+  globalThis.OffscreenCanvas = FakeOffscreen;
+  try {
+    const { ctx, log, alpha } = recorder2();
+    drawFrame(ctx, { ...base, fills: [{ points: square, white: 0.5, a: 0.08, saturation: 0, hue: 0, gradient: null, blur: 0, blend: 2 }] }, false, 2);
+    const fill = log.find((l) => l[0] === "fill");
+    assert.equal(fill[1].style.kind, "pattern");
+    assert.equal(fill[1].style.rep, "repeat");
+    assert.equal(fill[1].comp, "source-over", "plain source-over inside the body, no compositing");
+  } finally {
+    delete globalThis.OffscreenCanvas;
+  }
+  const { ctx, log } = recorder();
+  drawFrame(ctx, { ...base, fills: [{ points: square, white: 0.5, a: 0.08, saturation: 0, hue: 0, gradient: null, blur: 0, blend: 2 }] }, false, 2);
+  assert.equal(log.filter((l) => l[0] === "fill").length, 0);
+});
+
+test("the grain tile's hash matches the vectors every platform checks", async () => {
+  const { grainValue } = await import("../dist/paint.js");
+  const want = [[0, 0, 0.573750742], [1, 0, 0.78714704], [0, 1, 0.399833626], [63, 63, 0.680704963], [17, 42, 0.127631493]];
+  for (const [x, y, v] of want) assert.ok(Math.abs(grainValue(x, y) - v) < 1e-9, `${x},${y}: ${grainValue(x, y)}`);
+});

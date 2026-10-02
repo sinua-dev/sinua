@@ -283,6 +283,7 @@ pub fn schema() -> Value {
             "properties": {
                 "id": { "type": "string", "pattern": "^[a-z0-9-]{1,32}$", "description": c("id") },
                 "label": { "type": "string", "description": c("label") },
+                "category": { "enum": crate::character::cosmetic::CATEGORIES, "description": c("category") },
                 "slot": { "type": "string", "description": c("slot") },
                 "palette": { "type": "object", "description": c("palette"), "additionalProperties": nums(3) },
                 "parts": { "type": "array", "description": c("parts"), "minItems": 1, "maxItems": MAX_PARTS,

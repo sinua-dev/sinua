@@ -890,6 +890,10 @@ pub(crate) fn runtime_key(key: &str) -> Option<&'static str> {
         Some("the box ratio of a wide pattern is set by the view")
     } else if key == "stateAge" {
         Some("the time since the state changed is set by the view")
+    } else if key == "still" {
+        Some("a thumbnail's still pose is set by frameStill")
+    } else if key.starts_with("wear") {
+        Some("a loadout change is drawn by the view's transition")
     } else if key == "tapX" || key == "tapY" {
         Some("where the view was tapped is set by the view, during the hop")
     } else if indexed("peak") {
@@ -1315,7 +1319,7 @@ fn migrate(mut doc: Value, diag: &mut Diag) -> Value {
 
 // ------------------------------------------------------------ resolving --
 
-const TOP_KEYS: [&str; 23] = [
+const TOP_KEYS: [&str; 24] = [
     "$schema",
     "fxSpec",
     "name",
@@ -1339,6 +1343,7 @@ const TOP_KEYS: [&str; 23] = [
     "expression",
     "palette",
     "cosmetics",
+    "wardrobe",
 ];
 /// The design keys of a block: the base (top level) and each `states` entry.
 const ENTRY_KEYS: [&str; 10] = [
@@ -1422,7 +1427,191 @@ const SINCE: &[(&str, u64)] = &[
     ("expression", 12),
     ("palette", 12),
     ("cosmetics", 13),
+    ("wardrobe", 13),
 ];
+
+/// The cosmetics a file offers: its `wardrobe.cosmetics`, then its `cosmetics`.
+#[inline(never)]
+fn closet(root: &Map<String, Value>) -> Vec<&Value> {
+    let mut out = Vec::new();
+    for list in [
+        entry(root, "wardrobe").and_then(|w| field(w, "cosmetics")),
+        entry(root, "cosmetics"),
+    ] {
+        if let Some(Value::Array(a)) = list {
+            out.extend(a);
+        }
+    }
+    out
+}
+
+/// `v[k]`, one lookup for every call here (inlined, each costs code).
+#[inline(never)]
+fn field<'a>(v: &'a Value, k: &str) -> Option<&'a Value> {
+    v.get(k)
+}
+
+/// `m[k]` on a map.
+#[inline(never)]
+fn entry<'a>(m: &'a Map<String, Value>, k: &str) -> Option<&'a Value> {
+    m.get(k)
+}
+
+/// `m.remove(k)`, out of line.
+#[inline(never)]
+fn take(m: &mut Map<String, Value>, k: &str) -> Option<Value> {
+    m.remove(k)
+}
+
+/// `m[k] = v`, out of line for the same reason.
+#[inline(never)]
+fn put(m: &mut Map<String, Value>, k: &str, v: Value) {
+    m.insert(k.to_string(), v);
+}
+
+/// `v[k]` as a string ("" when it isn't one).
+#[inline(never)]
+fn text<'a>(v: &'a Value, k: &str) -> &'a str {
+    field(v, k).and_then(Value::as_str).unwrap_or_default()
+}
+
+/// A loadout (design note 25) applied to an FX Spec: the file with the
+/// loadout's choices in it, and warnings. A loadout is what an end user picked,
+/// stored by the app for months, so nothing in it is an error: an item or a
+/// palette the file no longer offers is skipped with a warning, and the rest
+/// applies. `{ "loadout": 1, "wear": [ids], "palette": name, "eyeStyle": name }`:
+/// - `wear`: cosmetics from the file's `wardrobe` (or its `cosmetics`), one per
+///   slot (a later one replaces an earlier one); `[]` wears none;
+/// - `palette`: a `wardrobe.palettes` name or a built-in palette;
+/// - `eyeStyle`: one of `params.eyeStyle`'s names.
+pub fn apply_loadout(spec: &str, loadout: &str) -> (String, Vec<FxDiagnostic>) {
+    let mut diag = Diag(Vec::new());
+    let (Ok(Value::Object(mut root)), Ok(Value::Object(l))) = (
+        serde_json::from_str::<Value>(spec),
+        serde_json::from_str::<Value>(loadout),
+    ) else {
+        diag.warn(
+            "/loadout",
+            String::from("not a loadout; the file draws as it is"),
+        );
+        return (spec.to_string(), diag.0);
+    };
+    let mut worn: Vec<Value> = Vec::new();
+    for (k, v) in &l {
+        let at = format!("/loadout/{k}");
+        let name = v.as_str().unwrap_or_default();
+        let why = match k.as_str() {
+            "loadout" => (v.as_f64().unwrap_or(1.0) > 1.0)
+                .then_some("a newer loadout: what this runtime knows applies".to_string()),
+            "wear" => {
+                let all = closet(&root);
+                for (i, id) in v.as_array().into_iter().flatten().enumerate() {
+                    let id = id.as_str().unwrap_or_default();
+                    let at = format!("{at}/{i}");
+                    let Some(c) = all.iter().find(|c| text(c, "id") == id) else {
+                        diag.warn(&at, format!("`{id}` isn't in the wardrobe; skipped"));
+                        continue;
+                    };
+                    if let Some(j) = worn.iter().position(|w| text(w, "slot") == text(c, "slot")) {
+                        diag.warn(
+                            &at,
+                            format!("one per slot: `{id}` replaces `{}`", text(&worn[j], "id")),
+                        );
+                        worn.remove(j);
+                    }
+                    worn.push((*c).clone());
+                }
+                None
+            }
+            "palette" => {
+                let own = entry(&root, "wardrobe")
+                    .and_then(|w| field(w, "palettes"))
+                    .and_then(|p| field(p, name))
+                    .cloned();
+                let built_in = crate::character::palette::THEMES
+                    .iter()
+                    .any(|t| t.0 == name);
+                match own.or_else(|| built_in.then(|| v.clone())) {
+                    Some(p) => {
+                        put(&mut root, "palette", p);
+                        None
+                    }
+                    None => Some(format!("no palette `{name}`; the file's stays")),
+                }
+            }
+            "eyeStyle" if EYE_STYLE_NAMES.contains(&name) => {
+                let mut p = match take(&mut root, "params") {
+                    Some(Value::Object(p)) => p,
+                    _ => Map::new(),
+                };
+                put(&mut p, k, v.clone());
+                put(&mut root, "params", Value::Object(p));
+                None
+            }
+            _ => Some("not a loadout choice; ignored".to_string()),
+        };
+        if let Some(why) = why {
+            diag.warn(&at, why);
+        }
+    }
+    if entry(&l, "wear").is_some() {
+        take(&mut root, "cosmetics");
+        if !worn.is_empty() {
+            put(&mut root, "cosmetics", Value::Array(worn));
+        }
+    }
+    (Value::Object(root).to_string(), diag.0)
+}
+
+/// What the file's wardrobe offers `character` (a built-in id, or the file's own
+/// recipe's id), for a picker (design note 25): one entry per item, `path` its id,
+/// `severity` the reason as a key to translate (`fits`, `not-made-for`, `no-slot`)
+/// and `message` the English text (empty when it fits). The diagnostic record
+/// carries it, so no new record crosses the bridges; the packages give it as
+/// `{ id, fits, reason, why }`. Its label and category are in the file.
+pub fn cosmetics_for(spec: &str, character: &str) -> Vec<FxDiagnostic> {
+    let Ok(Value::Object(root)) = serde_json::from_str::<Value>(spec) else {
+        return Vec::new();
+    };
+    // The character's slots: the file's own recipe's, else the built-in's.
+    let mut slots: Vec<String> = Vec::new();
+    match entry(&root, "recipe").filter(|r| text(r, "id") == character) {
+        Some(r) => {
+            if let Some(Value::Object(m)) = field(r, "slots") {
+                slots.extend(m.keys().cloned());
+            }
+        }
+        None => {
+            if let Some(r) = crate::character::recipe::recipes().get(character) {
+                slots.extend(r.slots.iter().map(|s| s.name.clone()));
+            }
+        }
+    }
+    closet(&root)
+        .into_iter()
+        .map(|c| {
+            let (id, slot) = (text(c, "id"), text(c, "slot"));
+            let made = field(c, "fits")
+                .and_then(Value::as_array)
+                .is_none_or(|a| a.iter().any(|x| x.as_str() == Some(character)));
+            let (reason, why) = if !made {
+                (
+                    "not-made-for",
+                    format!("`{id}` isn't made for `{character}`"),
+                )
+            } else if !slots.iter().any(|s| s == slot) {
+                ("no-slot", format!("`{character}` has no `{slot}` slot"))
+            } else {
+                ("fits", String::new())
+            };
+            FxDiagnostic {
+                severity: reason.into(),
+                path: id.to_string(),
+                message: why,
+            }
+        })
+        .collect()
+}
 
 /// `params.eyeStyle`'s names, in the opt's order (0 = the recipe's own).
 const EYE_STYLE_NAMES: [&str; 5] = ["auto", "shape", "glossy", "pixel", "dot"];

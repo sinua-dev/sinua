@@ -32,3 +32,4 @@ pub mod region;
 pub mod registry;
 pub mod rig;
 pub mod turn;
+pub mod wear;

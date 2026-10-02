@@ -9,6 +9,7 @@ mod cosmetics;
 mod cuppa;
 mod eyes;
 mod hum;
+mod loadout;
 mod palettes;
 mod rich;
 mod wisp;

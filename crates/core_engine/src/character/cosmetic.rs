@@ -22,7 +22,14 @@ use crate::character::parts::{self, Part};
 use crate::character::recipe::{hsl_of, valid_id, SlotSpec, Space, J};
 
 /// The keys a cosmetic may hold.
-pub const KEYS: [&str; 7] = ["id", "label", "slot", "palette", "parts", "fits", "fit"];
+pub const KEYS: [&str; 8] = [
+    "id", "label", "slot", "palette", "parts", "fits", "fit", "category",
+];
+
+/// The kinds a cosmetic's `category` names, for grouping in a picker (design note 25).
+pub const CATEGORIES: [&str; 7] = [
+    "hat", "glasses", "scarf", "badge", "frame", "effect", "other",
+];
 
 /// Local units of room above `headTop` a hat may use (design note 21).
 pub const HEAD_ROOM: f64 = 40.0;
@@ -79,6 +86,13 @@ pub fn read(list: &Value, o: Into) -> Result<(), String> {
         let slot = c.s("slot")?;
         if get(v, "label").is_some() {
             c.s("label")?;
+        }
+        if get(v, "category").is_some() && !CATEGORIES.contains(&c.s("category")?.as_str()) {
+            return Err(bad(
+                &at,
+                "category",
+                &format!("one of {}", CATEGORIES.join(", ")),
+            ));
         }
         let fits = get(v, "fits").map(|f| {
             f.as_array()

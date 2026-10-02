@@ -9,6 +9,7 @@
 //! A key is a `&'static str` like every other mode: each distinct recipe's key
 //! is leaked once (about 40 bytes) and reused when it comes back.
 
+use std::cell::Cell;
 use std::sync::{Arc, Mutex};
 
 use crate::character::recipe::{frame_recipe, Recipe};
@@ -23,12 +24,16 @@ pub const PREFIX: &str = "recipe:";
 struct Registry {
     /// Most recently used last.
     live: Vec<(&'static str, Arc<Recipe>)>,
+    /// The one recipe a thumbnail is drawn from ([`preview`]): kept apart, so a
+    /// grid of thumbnails never pushes the live characters out.
+    preview: Option<Arc<Recipe>>,
     /// Every key ever made, so a recipe that comes back reuses its key.
     keys: Vec<&'static str>,
 }
 
 static REGISTRY: Mutex<Registry> = Mutex::new(Registry {
     live: Vec::new(),
+    preview: None,
     keys: Vec::new(),
 });
 
@@ -61,6 +66,10 @@ pub fn register_with(
 ) -> Result<&'static str, String> {
     let mut recipe = Recipe::parse(text)?;
     *skipped = std::mem::take(&mut recipe.skipped);
+    if PREVIEWING.with(Cell::get) {
+        lock().preview = Some(Arc::new(recipe));
+        return Ok(PREVIEW_KEY);
+    }
     let name = format!(
         "{PREFIX}{}:{:016x}",
         recipe.id,
@@ -88,12 +97,37 @@ pub fn register_with(
     Ok(key)
 }
 
+/// The key a recipe of `id` hashed from `basis` gets (tests: was it registered?).
+#[cfg(test)]
+pub fn key_for(id: &str, basis: &str) -> String {
+    format!("{PREFIX}{id}:{:016x}", fnv64(basis))
+}
+
+/// The key of the thumbnail recipe ([`preview`]).
+pub const PREVIEW_KEY: &str = "recipe:~preview";
+
+thread_local! {
+    static PREVIEWING: Cell<bool> = const { Cell::new(false) };
+}
+
+/// Runs `f` with every recipe it registers kept in the one preview place (a
+/// thumbnail: resolved, drawn once, replaced by the next).
+pub fn preview<T>(f: impl FnOnce() -> T) -> T {
+    PREVIEWING.with(|p| p.set(true));
+    let out = f();
+    PREVIEWING.with(|p| p.set(false));
+    out
+}
+
 /// The recipe registered as `key` (and marks it used), if it is still kept.
 pub fn get(key: &str) -> Option<Arc<Recipe>> {
     if !key.starts_with(PREFIX) {
         return None;
     }
     let mut reg = lock();
+    if key == PREVIEW_KEY {
+        return reg.preview.clone();
+    }
     let i = reg.live.iter().position(|(k, _)| *k == key)?;
     let e = reg.live.remove(i);
     let r = e.1.clone();
@@ -106,7 +140,11 @@ pub fn key(key: &str) -> Option<&'static str> {
     if !key.starts_with(PREFIX) {
         return None;
     }
-    lock().live.iter().find(|(k, _)| *k == key).map(|(k, _)| *k)
+    let reg = lock();
+    if key == PREVIEW_KEY {
+        return reg.preview.as_ref().map(|_| PREVIEW_KEY);
+    }
+    reg.live.iter().find(|(k, _)| *k == key).map(|(k, _)| *k)
 }
 
 /// A registered recipe's frame (`None` once it has left the registry).

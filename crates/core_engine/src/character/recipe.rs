@@ -613,6 +613,9 @@ pub struct Ctx<'a> {
     pub float: f64,
     /// The `eyeStyle` opt (design note 24): 0 = the recipe's, else 1 + `face::Face::style`.
     pub eye_style: u8,
+    /// Each slot's size during a loadout change (design note 25): `wear.<cosmetic id>`
+    /// pops a cosmetic in or out; 1 = as drawn. Empty when no `wear.` key is given.
+    pops: Vec<f64>,
     pal: Vec<Hsl>,
     surfaces: &'a [(String, Surface)],
     slots: &'a [SlotSpec],
@@ -664,7 +667,8 @@ impl<'a> Ctx<'a> {
             }
             Space::Slot(i) => {
                 let s = &self.slots[i as usize];
-                let local = Xf::scale(s.scale, s.scale)
+                let k = s.scale * self.pops.get(i as usize).copied().unwrap_or(1.0);
+                let local = Xf::scale(k, k)
                     .then(Xf::rotate(s.angle))
                     .then(Xf::translate(s.at.0, s.at.1));
                 let face = self.surfaces.iter().position(|(n, _)| n == "face");
@@ -717,10 +721,12 @@ fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
     let tn = turn::angles(o, t, tier);
 
     let mut scale = Xf::scale(size / 200.0, size / 200.0);
-    if r.zoom != 1.0 {
+    // A loadout change eases the zoom between the two loadouts' (design note 25).
+    let zoom = get(o, "wearZoom", r.zoom);
+    if zoom != 1.0 {
         let (fx, fy) = crate::character::cosmetic::FEET;
         scale = Xf::translate(-fx, -fy)
-            .then(Xf::scale(r.zoom, r.zoom))
+            .then(Xf::scale(zoom, zoom))
             .then(Xf::translate(fx, fy))
             .then(scale);
     }
@@ -803,6 +809,14 @@ fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
         w,
         float,
         eye_style: get(o, "eyeStyle", 0.0).round().clamp(0.0, 4.0) as u8,
+        pops: if o.keys().any(|k| k.starts_with("wear.")) {
+            r.slots
+                .iter()
+                .map(|s| get(o, &format!("wear.{}", s.name), 1.0))
+                .collect()
+        } else {
+            Vec::new()
+        },
         pal,
         surfaces: &r.surfaces,
         slots: &r.slots,
@@ -818,8 +832,20 @@ pub fn frame_recipe(r: &Recipe, size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let ctx = setup(r, size, t, o);
     let tier = ctx.tier;
     let mut out: Vec<Fill> = Vec::new();
+    // `wearOnly`: just the cosmetics (the leaving side of a loadout change).
+    let only = get(o, "wearOnly", 0.0) >= 0.5;
     for p in &r.parts {
-        parts::draw(p, &ctx, &mut out);
+        let pop = match p.space {
+            Space::Slot(i) => ctx.pops.get(i as usize).copied().unwrap_or(1.0),
+            _ if only => 0.0,
+            _ => 1.0,
+        };
+        if pop > 0.0 {
+            parts::draw(p, &ctx, &mut out);
+        }
+    }
+    if only {
+        return kit::finish(out, o);
     }
     out.extend(
         kit::celebrate_burst(

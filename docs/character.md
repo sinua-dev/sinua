@@ -280,6 +280,43 @@ the `palette` prop on a view.
 | bean | bean (+Light/Dark), groove, grooveEdge, shine, cheek, aroma, foam, line, ink |
 | beep | steel (+Light/Dark), panel, screen, glow, accent (+Dark), off, red, amber, line, rivet, cheek |
 
+### Named palettes and roles (FX Spec 1.13, design note 23)
+
+A palette can also be written over **roles**, so one palette fits every character: each
+recipe's `roles` maps `primary`, `secondary` and `accent` to its own slots.
+- `"palette": "sunset"` (or `{ "theme": "sunset" }`) applies a built-in named palette:
+  `sunset`, `ocean`, `forest`, `candy`, `mono`, `night`.
+- `{ "primary": "#E63946" }` paints by role, without knowing the slot names.
+- Precedence: the theme's roles < roles written out < slots written out.
+- A role a character doesn't map is skipped from a theme (Buzzy and Bean have no
+  `secondary`); written outright, it is read as a slot name.
+- **Dark theme:** every built-in palette has a dark variant, and
+  `"dark": { "primary": "#B5202D" }` gives a file's own. The views pass `dark` in a dark theme
+  and the engine picks the variant, so no re-resolve is needed. A character without a variant
+  draws the same in both themes, as before.
+- On a view, the `palette` prop takes the same keys (`{ theme: "ocean", accent: "#FF6B6B" }`).
+
+| Character | primary | secondary | accent |
+|---|---|---|---|
+| buzzy | shell | — | amber |
+| hum | body | — | tallyRed |
+| wisp | violet | blue | teal |
+| chirp | body | belly | beak |
+| cuppa | mug | sleeve | heart |
+| bean | bean | — | aroma |
+| beep | steel | panel | accent |
+
+| Palette | primary · secondary · accent (light) | dark |
+|---|---|---|
+| sunset | #F1774B · #FFD6AD · #D5346A | #DD562C · #D89264 · #EE6391 |
+| ocean | #2E87C2 · #D4EDF7 · #17C4B3 | #2E6A9E · #72ADCA · #3CDDC7 |
+| forest | #3E8E5B · #E3F1DA · #F1AF3B | #387551 · #90B280 · #F5BB47 |
+| candy | #F490B1 · #FFF0F7 · #7E56C2 | #E56C98 · #DF9FC3 · #A07CDE |
+| mono | #8B9098 · #E8EAED · #2F3237 | #737882 · #ACB1B9 · #D8DADF |
+| night | #3B3F7D · #1F2242 · #F5C451 | #404696 · #363A63 · #F8D062 |
+
+The palettes live in `spec/palettes.json` (embedded by `build.rs` as constants).
+
 A frame-wide `color` or `gradient` doesn't apply to a character. The FX Spec reports it
 as an error, and raw `colorMix` / `gradientStrength` overrides are ignored. The generic
 effect drawing (ring, tick, burst) and the interrupt flash are skipped too

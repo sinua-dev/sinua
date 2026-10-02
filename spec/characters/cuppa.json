@@ -21,6 +21,7 @@
     "steam": [25, 0.12, 0.74]
   },
   "hue": {"base": 12, "turns": ["mug", "mugLight", "mugDark"]},
+  "roles": {"primary": "mug", "secondary": "sleeve", "accent": "heart"},
   "contrast": [["ink", "mug"]],
   "rig": {"kind": "pivot", "pivot": [92, 176], "lean": 0.5, "squash": true},
   "surfaces": {"face": {"c": [90, 110], "r": 58, "depth": 0.4, "cylinder": true}},

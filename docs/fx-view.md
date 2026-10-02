@@ -154,6 +154,10 @@ effects", families). This section covers how each renderer draws it.
 - **Low power:** FX Spec 1.3 `performance.lowPower.disable: ["blur"]` makes
   the resolver emit no runs and σ 0, so renderers do nothing special. (The
   Web test asserts the low-power frame has no runs.)
+- **Dark palettes** (FX Spec 1.13, design note 23): a view in a dark theme adds the runtime
+  key `dark` = 1 when the frame may have a palette's dark variant (a character from an FX Spec,
+  or `palette.dark.*` among its keys); the engine then reads `palette.dark.<slot>.*`. Other
+  frames are untouched. Web `mount.ts`, iOS `SinuaView` (`specIsCharacter`), Android `FxModel.dark`.
 - **Grain tile** (design note 22): 64 × 64, one tile pixel per CSS px / pt / dp
   however large the character is drawn (the pattern undoes the engine scale),
   anchored at the origin; pixel (x, y) is the integer hash `grainValue(x, y)`

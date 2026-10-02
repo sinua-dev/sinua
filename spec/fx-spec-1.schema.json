@@ -62,9 +62,18 @@
       "description": "FX Spec 1.8: the whole visual's opacity, 0 to 1. 1 draws it as the pattern defines it; lower fades everything, halos included. A state patches it (a voice assistant's idle typically sits below 1)."
     },
     "palette": {
-      "type": "object",
-      "description": "FX Spec 1.12, `object: character` only: repaint some of the character's colours (its recipe's palette names, e.g. `shell`), as hex or DTCG colours. A slot's Light/Dark tones follow it; the rest stays as drawn. A state patches it.",
-      "additionalProperties": { "$ref": "#/$defs/color" }
+      "description": "FX Spec 1.12, `object: character` only: repaint some of the character's colours (its recipe's palette names, e.g. `shell`), as hex or DTCG colours. A slot's Light/Dark tones follow it; the rest stays as drawn. A state patches it. 1.13: role names (`primary`, `secondary`, `accent`, through the recipe's `roles`), a named palette (`\"theme\": \"sunset\"`, or the string shorthand `\"palette\": \"sunset\"`) and a `dark` variant the views pick in a dark theme.",
+      "oneOf": [
+        { "enum": ["sunset", "ocean", "forest", "candy", "mono", "night"] },
+        {
+          "type": "object",
+          "properties": {
+            "theme": { "enum": ["sunset", "ocean", "forest", "candy", "mono", "night"] },
+            "dark": { "type": "object", "additionalProperties": { "$ref": "#/$defs/color" } }
+          },
+          "additionalProperties": { "$ref": "#/$defs/color" }
+        }
+      ]
     },
     "expression": {
       "enum": ["happy", "surprised", "thoughtful", "sad", "sleepy", "none"],
@@ -536,9 +545,19 @@
           "description": "FX Spec 1.8: this state's opacity; inherits the top-level `ink` when absent."
         },
         "palette": {
-          "type": ["object", "null"],
-          "description": "FX Spec 1.12: this state's palette override (a character); merged over the top-level `palette`.",
-          "additionalProperties": { "anyOf": [{ "$ref": "#/$defs/color" }, { "type": "null" }] }
+          "description": "FX Spec 1.12: this state's palette override (a character); merged over the top-level `palette`. 1.13: also a palette name, `theme`, role names and `dark`.",
+          "oneOf": [
+            { "type": "null" },
+            { "enum": ["sunset", "ocean", "forest", "candy", "mono", "night"] },
+            {
+              "type": "object",
+              "properties": {
+                "theme": { "enum": ["sunset", "ocean", "forest", "candy", "mono", "night", null] },
+                "dark": { "type": ["object", "null"], "additionalProperties": { "anyOf": [{ "$ref": "#/$defs/color" }, { "type": "null" }] } }
+              },
+              "additionalProperties": { "anyOf": [{ "$ref": "#/$defs/color" }, { "type": "null" }] }
+            }
+          ]
         },
         "expression": {
           "enum": ["happy", "surprised", "thoughtful", "sad", "sleepy", "none", null],

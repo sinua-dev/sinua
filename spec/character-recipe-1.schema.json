@@ -4132,6 +4132,22 @@
         }
       ]
     },
+    "roles": {
+      "additionalProperties": false,
+      "description": "Which palette slot plays each role, `{ \"primary\": \"<slot>\", \"secondary\": \"<slot>\", \"accent\": \"<slot>\" }` (FX Spec 1.13): a named palette (`\"palette\": \"sunset\"`) or a brand colour (`{ \"primary\": \"#E63946\" }`) reaches the character through it. A role left out isn't repainted.",
+      "properties": {
+        "accent": {
+          "$ref": "#/$defs/colour"
+        },
+        "primary": {
+          "$ref": "#/$defs/colour"
+        },
+        "secondary": {
+          "$ref": "#/$defs/colour"
+        }
+      },
+      "type": "object"
+    },
     "slots": {
       "additionalProperties": {
         "additionalProperties": false,

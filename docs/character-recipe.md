@@ -50,6 +50,7 @@ parts sit on, so they wrap round when the head turns. A shallower `depth` turns 
 | `slots` | optional | Anchor points for cosmetics: `at`, `follows` (`head` / `body` / `face`), `scale`, `angle`. See *Slots and cosmetics*. |
 | `cosmetics` | optional | Cosmetics the character always wears (FX Spec 1.13): the same objects as a file's `cosmetics`. See *Slots and cosmetics*. |
 | `grain` | optional | `{ "strength": 0–1 }`: film grain inside every body (FX Spec 1.13). See *The richer look*. |
+| `roles` | optional | `{ "primary": "<slot>", "secondary": "<slot>", "accent": "<slot>" }` (FX Spec 1.13): the slots a named palette (`"palette": "sunset"`) or a role colour (`{ "primary": "#E63946" }`) repaints. A role left out isn't repainted. |
 
 Every part has `part` (its kind) and `space` (a body layer inside `inner` may leave it out), and
 may have `when` (`notSmallOrAccessories`: left out at 20 px with `accessories` off) and `show`

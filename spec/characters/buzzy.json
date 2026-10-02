@@ -16,6 +16,7 @@
     "white": [0.0, 0.0, 1.0]
   },
   "hue": { "base": 232.0, "turns": ["shell", "shellLight", "shellDark", "line", "screen"] },
+  "roles": {"primary": "shell", "accent": "amber"},
   "contrast": [["cyan", "screen"]],
   "rig": { "kind": "upright", "base": [100.0, 184.0] },
   "surfaces": {

@@ -18,6 +18,7 @@
     "white": [0.0, 0.0, 1.0]
   },
   "hue": { "base": 9.0, "turns": ["body", "bodyLight", "bodyDark"] },
+  "roles": {"primary": "body", "accent": "tallyRed"},
   "contrast": [["glow", "grille"]],
   "rig": {
     "kind": "pivot", "pivot": [100.0, 94.0], "lean": 0.5, "squash": true,

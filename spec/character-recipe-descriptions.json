@@ -15,7 +15,8 @@
     "burst": "The celebrate burst: `at`, `r` and three `colors` (palette names), optionally a `space`.",
     "slots": "Named anchor points for cosmetics: `at`, and the chain it `follows` (`head`, `body` or `face`), with an optional `scale` and `angle` that size and turn a cosmetic for this character. `headTop`, `face`, `neck` and `chest` are the standard names cosmetics look for.",
     "cosmetics": "Cosmetics the character always wears (FX Spec 1.13): the same objects as an FX Spec file's `cosmetics`. A file's `cosmetics` come after these.",
-    "grain": "`{ \"strength\": 0–1 }`: film grain inside every body (FX Spec 1.13, design note 22), a fine, still noise of light and dark specks; 0.08 is a good start. The `grain` option overrides it. Left out at 20 px and under low power; the face stays crisp."
+    "grain": "`{ \"strength\": 0–1 }`: film grain inside every body (FX Spec 1.13, design note 22), a fine, still noise of light and dark specks; 0.08 is a good start. The `grain` option overrides it. Left out at 20 px and under low power; the face stays crisp.",
+    "roles": "Which palette slot plays each role, `{ \"primary\": \"<slot>\", \"secondary\": \"<slot>\", \"accent\": \"<slot>\" }` (FX Spec 1.13): a named palette (`\"palette\": \"sunset\"`) or a brand colour (`{ \"primary\": \"#E63946\" }`) reaches the character through it. A role left out isn't repainted."
   },
   "common": {
     "part": "The part's kind.",

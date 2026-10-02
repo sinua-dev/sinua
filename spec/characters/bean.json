@@ -17,6 +17,7 @@
     "ink": [18, 0.45, 0.1]
   },
   "hue": {"base": 24, "turns": ["bean", "beanLight", "beanDark", "groove"]},
+  "roles": {"primary": "bean", "accent": "aroma"},
   "contrast": [["ink", "bean"]],
   "rig": {"kind": "upright", "base": [100, 174]},
   "surfaces": {"face": {"c": [100, 110], "r": 58, "depth": 0.7}},

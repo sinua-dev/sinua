@@ -104,6 +104,15 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   - Examples: `spec/examples/rich-bean.fxspec.json`, `rich-buzzy.fxspec.json`. The built-ins
     are unchanged.
 
+- FX Spec 1.13: named palettes (`docs/character.md`, *Named palettes and roles*). One palette
+  fits every character:
+  - recipes map `primary` / `secondary` / `accent` to their slots (`roles`);
+  - `palette` takes role names, a built-in palette (`"palette": "sunset"`; `sunset`, `ocean`,
+    `forest`, `candy`, `mono`, `night`) and a `dark` variant that the views pick in a dark
+    theme (the Web, iOS, Android and React Native views pass `dark`);
+  - the `palette` prop on every view takes the same keys;
+  - the Studio's character panel has a palette picker.
+
 ### Changed
 
 - `parameterCatalog()` / `parameterCatalogJson()` no longer carry `description` texts: they are

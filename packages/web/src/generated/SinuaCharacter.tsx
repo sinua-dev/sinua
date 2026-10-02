@@ -49,4 +49,4 @@ export function SinuaCharacter(props: SinuaCharacterProps) {
   return <SinuaView tap {...(options as Options)} pattern={pattern} size={size} state={state} inputs={inputs} overrides={overrides} />;
 }
 
-const PARAM_KEYS = ["accessories","grain","hue","ink","mouth","shading","look","seed","turn","eyeAsym","eyeH","eyeR","eyeSmile","eyeTilt","eyeW","lid","mouthDots","mouthTalk","gazeX","gazeY","lean","tilt","turnBlink","turnNod","turnPitch","turnWander","turnYaw","bounceGain","breath","earGain","mouthGain","squashGain","swayGain","curlGain","flutterGain","arms","glow","noise","pulse","gradient","color","liquid","particles","holographic"];
+const PARAM_KEYS = ["accessories","eyeStyle","grain","hue","ink","mouth","shading","look","seed","turn","eyeAsym","eyeH","eyeR","eyeSmile","eyeTilt","eyeW","lid","mouthDots","mouthTalk","gazeX","gazeY","lean","tilt","turnBlink","turnNod","turnPitch","turnWander","turnYaw","bounceGain","breath","earGain","mouthGain","squashGain","swayGain","curlGain","flutterGain","arms","glow","noise","pulse","gradient","color","liquid","particles","holographic"];

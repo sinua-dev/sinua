@@ -441,6 +441,9 @@ class SinuaViewTest {
             "rich-bean-64-0.6-spec" to "rich-bean.fxspec.json",
             "rich-buzzy-64-0.6-spec" to "rich-buzzy.fxspec.json",
             "themed-cuppa-64-0.6-spec" to "themed-cuppa.fxspec.json",
+            "glossy-bean-64-0.6-spec" to "glossy-bean.fxspec.json",
+            "pixel-beep-64-0.6-spec" to "pixel-beep.fxspec.json",
+            "dot-hum-64-0.6-spec" to "dot-hum.fxspec.json",
         )) {
             val json = assets.open(file).bufferedReader().use { it.readText() }
             val r = uniffi.core_engine.resolveFxSpecWith(json, "idle", emptyMap())

@@ -65,6 +65,9 @@ final class MaterialsRenderTests: XCTestCase {
         ("rich-bean-64-0.6-spec", "rich-bean.fxspec.json"),
         ("rich-buzzy-64-0.6-spec", "rich-buzzy.fxspec.json"),
         ("themed-cuppa-64-0.6-spec", "themed-cuppa.fxspec.json"),
+        ("glossy-bean-64-0.6-spec", "glossy-bean.fxspec.json"),
+        ("pixel-beep-64-0.6-spec", "pixel-beep.fxspec.json"),
+        ("dot-hum-64-0.6-spec", "dot-hum.fxspec.json"),
     ]
 
     func testRenderMaterialsGoldenCases() throws {

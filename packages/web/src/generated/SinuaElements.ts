@@ -11,7 +11,7 @@ import { sinuaOrbOverrides, sinuaSignalOverrides, sinuaRingOverrides, sinuaCoreO
  * - `<sinua-ring pattern="completing">` -- Ring; parameters as attributes (gap, hue, ink…), materials as properties (`el.glow = { strength: 0.6 }`).
  * - `<sinua-core pattern="generating">` -- Core; parameters as attributes (highlight-fill, highlight-length, hue…), materials as properties (`el.glow = { strength: 0.6 }`).
  * - `<sinua-beacon pattern="notifying">` -- Beacon; parameters as attributes (dot-size, hue, ink…), materials as properties (`el.glow = { strength: 0.6 }`).
- * - `<sinua-character pattern="buzzy">` -- Character; parameters as attributes (accessories, grain, hue…), materials as properties (`el.glow = { strength: 0.6 }`).
+ * - `<sinua-character pattern="buzzy">` -- Character; parameters as attributes (accessories, eye-style, grain…), materials as properties (`el.glow = { strength: 0.6 }`).
  *
  * Scalar parameters and the view's own options are attributes (kebab-cased);
  * objects (`spec`, `inputs`, `voice`, the material groups) are properties.
@@ -54,7 +54,7 @@ export const Sinua_ELEMENT_TAGS: Record<string, TypedElementDefinition> = {
   },
   "sinua-character": {
     object: "character",
-    params: ["accessories","grain","hue","ink","mouth","shading","look","seed","turn","eyeAsym","eyeH","eyeR","eyeSmile","eyeTilt","eyeW","lid","mouthDots","mouthTalk","gazeX","gazeY","lean","tilt","turnBlink","turnNod","turnPitch","turnWander","turnYaw","bounceGain","breath","earGain","mouthGain","squashGain","swayGain","curlGain","flutterGain","arms"],
+    params: ["accessories","eyeStyle","grain","hue","ink","mouth","shading","look","seed","turn","eyeAsym","eyeH","eyeR","eyeSmile","eyeTilt","eyeW","lid","mouthDots","mouthTalk","gazeX","gazeY","lean","tilt","turnBlink","turnNod","turnPitch","turnWander","turnYaw","bounceGain","breath","earGain","mouthGain","squashGain","swayGain","curlGain","flutterGain","arms"],
     groups: ["glow","noise","pulse","gradient","color","liquid","particles","holographic"],
     toOverrides: sinuaCharacterOverrides as (pattern: string, params: Record<string, unknown>) => Record<string, number>,
     specError: sinuaSpecError,

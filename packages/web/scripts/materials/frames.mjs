@@ -28,6 +28,7 @@ export const SPEC_ROWS = [
   { key: "glossy-bean-64-0.6-spec", file: "glossy-bean.fxspec.json" },
   { key: "pixel-beep-64-0.6-spec", file: "pixel-beep.fxspec.json" },
   { key: "dot-hum-64-0.6-spec", file: "dot-hum.fxspec.json" },
+  { key: "wardrobe-bean-64-0.6-spec", file: "wardrobe-bean.fxspec.json" },
 ];
 const specFrame = (file) => {
   const json = readFileSync(new URL(`../../../../spec/examples/${file}`, import.meta.url), "utf8");

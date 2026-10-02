@@ -20,6 +20,7 @@ import {
   type FxAccessibility,
   type FxDiagnostic,
   type FxSpec,
+  type Loadout,
   type OrbFrame,
   type OrbSize,
   type PackedFrame,
@@ -157,6 +158,14 @@ export interface SinuaViewOptions {
    * A change is immediate. Problems (an unknown slot) go to `onError`.
    */
   palette?: Record<string, unknown> | null;
+  /**
+   * An end user's loadout (FX Spec 1.13, design note 25), with a `spec` that has a
+   * `wardrobe`: `{ loadout: 1, wear: ["party-hat"], palette: "sunset", eyeStyle: "glossy" }`.
+   * Store it in your app and pass it back next launch. A change eases (a hat pops in,
+   * colours blend, a new eye style swaps in a blink; a cut under reduced motion). What
+   * the spec no longer offers is skipped with a console warning, and the rest applies.
+   */
+  loadout?: Loadout | null;
 }
 
 export interface FxFrameStats {
@@ -577,6 +586,15 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
   };
   let wasSmall = false;
 
+  /** The loadout the player has (JSON), so an unchanged one pushed again is a no-op. */
+  let loadoutKey = "null";
+  /** A stored loadout naming what the spec no longer offers: say so once per change. */
+  function warnLoadout(): void {
+    loadoutKey = JSON.stringify(opts.loadout ?? null);
+    const bad = player?.loadoutDiagnostics ?? [];
+    if (bad.length) console.warn(`SinuaView loadout: ${bad.map((d) => `${d.path}: ${d.message}`).join("; ")}`);
+  }
+
   function applyInput(): void {
     const r = resolveInput(opts);
     if ("diagnostics" in r) {
@@ -589,7 +607,10 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
     transition.cancel();
     lastLifecycle = lifecycleNow();
     player =
-      resolved && opts.spec != null ? new FxSpecPlayer(asSpec(opts.spec), { crossFade: opts.crossFade, lowPower: !!opts.lowPower }) : null;
+      resolved && opts.spec != null
+        ? new FxSpecPlayer(asSpec(opts.spec), { crossFade: opts.crossFade, lowPower: !!opts.lowPower, loadout: opts.loadout })
+        : null;
+    warnLoadout();
     applyPerformance();
     applyVoice();
     const text = specText();
@@ -1023,6 +1044,11 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
       if ("pointer" in next) applyPointer();
       if ("tap" in next) applyTap();
       if ("expression" in next) applyExpression();
+      // React pushes props every render: only a different loadout changes anything.
+      if ("loadout" in next && !inputChanged && player && JSON.stringify(opts.loadout ?? null) !== loadoutKey) {
+        player.setLoadout(opts.loadout ?? null);
+        warnLoadout();
+      }
       if ("labels" in next || "announce" in next) a11yState = undefined; // re-word the current state
       refreshA11y();
       refresh();

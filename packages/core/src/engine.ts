@@ -28,6 +28,9 @@ import {
   a11y_state_words_json,
   a11y_announce_step_json,
   effect_info_json,
+  apply_loadout_json,
+  cosmetics_for_json,
+  frame_still_json,
 } from "../pkg/sinua_core_inline.js";
 import { frameWithOverridesPacked, unpackFrame } from "./packed.js";
 import type {
@@ -45,6 +48,7 @@ import type {
   FxAccessibility,
   AnnouncerState,
   AnnounceStep,
+  FxDiagnostic,
 } from "./index.js";
 
 /** A spec as the wasm bridge wants it: JSON text either way. */
@@ -212,4 +216,69 @@ export function conversationSampleNames(): string[] {
 export function conversationSample(name: string): string | null {
   const s = conversation_sample_json(name);
   return s === "null" ? null : s;
+}
+
+/**
+ * An end user's choice for a character (FX Spec 1.13, design note 25): small, so the
+ * app stores it in its own account and hands it back next launch. `wear`: ids from the
+ * spec's `wardrobe` (or its `cosmetics`), one per slot; `palette`: a `wardrobe.palettes`
+ * name or a built-in palette (`sunset`, `ocean`, ...); `eyeStyle`: an eye style.
+ */
+export interface Loadout {
+  /** The loadout format, 1. */
+  loadout?: number;
+  wear?: string[];
+  palette?: string;
+  eyeStyle?: "auto" | "shape" | "glossy" | "pixel" | "dot";
+}
+
+/** A loadout applied: the spec with the choices in it, and warnings. */
+export interface LoadoutApplied {
+  spec: string;
+  /** Warnings only: what the spec no longer offers is skipped, the rest applies. */
+  diagnostics: FxDiagnostic[];
+}
+
+/**
+ * `loadout` applied to `spec` (design note 25). Nothing in a loadout is an error: an
+ * item or palette the spec no longer offers, a newer format or an unknown key warns and
+ * is skipped, and the spec still draws. The views do this for their `loadout` option.
+ */
+export function applyLoadout(spec: FxSpec | string, loadout: Loadout | unknown): LoadoutApplied {
+  return JSON.parse(apply_loadout_json(specText(spec), JSON.stringify(loadout ?? null))) as LoadoutApplied;
+}
+
+/** One wardrobe item for a picker: whether it fits a character, and why not. */
+export interface CosmeticFit {
+  id: string;
+  fits: boolean;
+  /** A key to translate: `fits`, `no-slot` (the character has no such slot) or `not-made-for` (its `fits` leaves it out). */
+  reason: "fits" | "no-slot" | "not-made-for";
+  /** The reason in English ("" when it fits). */
+  why: string;
+}
+
+/**
+ * What `spec`'s wardrobe (and its `cosmetics`) offers `character` (a built-in id, or the
+ * spec's own recipe's id), for a picker screen. Labels and categories are in the spec.
+ */
+export function cosmeticsFor(spec: FxSpec | string, character: string): CosmeticFit[] {
+  // The engine carries each row in the diagnostic record: path = id, severity = reason.
+  const rows = JSON.parse(cosmetics_for_json(specText(spec), character)) as { path: string; severity: CosmeticFit["reason"]; message: string }[];
+  return rows.map((d) => ({ id: d.path, fits: d.severity === "fits", reason: d.severity, why: d.message }));
+}
+
+/**
+ * A thumbnail's frame (design note 25): `spec` with `loadout` in a still pose (no blink,
+ * no glance) at `size`, turned `turnYaw` radians (0 = facing; about ±0.5 shows another
+ * angle). It never takes the live characters' place in the engine. `null` if the spec
+ * doesn't resolve. Paint it with your renderer, or use `@sinua/web`'s `characterThumbnail`.
+ */
+export function frameStill(
+  spec: FxSpec | string,
+  size: OrbSize,
+  opts: { loadout?: Loadout; turnYaw?: number } = {}
+): OrbFrame | null {
+  const lo = opts.loadout ? JSON.stringify(opts.loadout) : "";
+  return JSON.parse(frame_still_json(specText(spec), lo, size, opts.turnYaw ?? 0)) as OrbFrame | null;
 }

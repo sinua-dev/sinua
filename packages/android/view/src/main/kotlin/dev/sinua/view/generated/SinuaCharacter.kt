@@ -13,6 +13,7 @@ import dev.sinua.view.FxLowPower
 import dev.sinua.view.FxReducedMotion
 import dev.sinua.view.FxTheme
 import dev.sinua.view.SinuaEffectTrigger
+import dev.sinua.view.SinuaLoadout
 import dev.sinua.view.SinuaView
 import dev.sinua.voice.VoiceOverrides
 import dev.sinua.voice.VoiceSource
@@ -301,6 +302,8 @@ fun SinuaCharacter(
     expression: String? = null,
     /** The palette, in part (design note 19): slot -> hex, e.g. mapOf("shell" to "#E63946"); empty = the character's own. */
     palette: Map<String, String> = emptyMap(),
+    /** An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a `wardrobe`; null = the file as it is. */
+    loadout: SinuaLoadout? = null,
 ) {
     val error = sinuaSpecError(spec, "character")
     if (error != null) {
@@ -312,6 +315,6 @@ fun SinuaCharacter(
         spec = spec, modifier = modifier, voice = voice, voiceOverrides = voiceOverrides, state = state,
         inputs = inputs, voiceLevelInput = voiceLevelInput, theme = theme, paused = paused, reducedMotion = reducedMotion,
         contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
-        labels = labels, announce = announce, haptics = haptics, rules = rules, effect = effect, tap = tap, expression = expression, palette = palette,
+        labels = labels, announce = announce, haptics = haptics, rules = rules, effect = effect, tap = tap, expression = expression, palette = palette, loadout = loadout,
     )
 }

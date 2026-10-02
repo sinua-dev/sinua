@@ -125,7 +125,10 @@ function emitComponent(m, naming) {
   // Tap to hop (design note 15): characters only, on by default.
   const tapOn = m.object === "character";
   const tapParam = tapOn ? "\n    /** Tap to hop: a tap plays `hop`, glancing toward it (design note 15). On by default. */\n    tap: Boolean = true,\n    /** The expression (design note 16): \"happy\", \"surprised\", \"thoughtful\", \"sad\", \"sleepy\" or \"none\"; null = the spec's. */\n    expression: String? = null,\n    /** The palette, in part (design note 19): slot -> hex, e.g. mapOf(\"shell\" to \"#E63946\"); empty = the character's own. */\n    palette: Map<String, String> = emptyMap()," : "";
-  const tapArg = tapOn ? " tap = tap, expression = expression, palette = palette," : "";
+  const tapParamSpec = tapOn ? `${tapParam}\n    /** An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a \`wardrobe\`; null = the file as it is. */\n    loadout: SinuaLoadout? = null,` : "";
+  // A loadout picks from a spec's wardrobe: the spec path only.
+  const tapArgPlain = tapOn ? " tap = tap, expression = expression, palette = palette," : "";
+  const tapArg = tapOn ? `${tapArgPlain} loadout = loadout,` : "";
   const contents = `${header()}
 
 package ${PKG}
@@ -140,7 +143,7 @@ import dev.sinua.view.FxLowPower
 import dev.sinua.view.FxReducedMotion
 import dev.sinua.view.FxTheme
 import dev.sinua.view.SinuaEffectTrigger
-import dev.sinua.view.SinuaView
+${tapOn ? "import dev.sinua.view.SinuaLoadout\n" : ""}import dev.sinua.view.SinuaView
 import dev.sinua.voice.VoiceOverrides
 import dev.sinua.voice.VoiceSource
 
@@ -204,7 +207,7 @@ ${params}
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,
         contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
-        labels = labels, announce = announce, haptics = haptics, effect = effect,${tapArg}
+        labels = labels, announce = announce, haptics = haptics, effect = effect,${tapArgPlain}
     )
 }
 
@@ -238,7 +241,7 @@ fun ${m.typeName}(
     /** Derive the state from the spec's 1.9 \`rules\` and [inputs] (off while a voice is bound). */
     rules: Boolean = true,
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
-    effect: SinuaEffectTrigger? = null,${tapParam}
+    effect: SinuaEffectTrigger? = null,${tapParamSpec}
 ) {
     val error = ${P.toLowerCase()}SpecError(spec, ${str(m.object)})
     if (error != null) {

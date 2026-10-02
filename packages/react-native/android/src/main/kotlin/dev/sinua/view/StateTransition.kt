@@ -7,6 +7,9 @@ import uniffi.core_engine.frameTransitionWithOverrides
 import uniffi.core_engine.frameWithOverrides
 import uniffi.core_engine.transitionMix
 
+/** How long a loadout change takes (design note 25), seconds. */
+internal const val WEAR_SECONDS = 0.35
+
 /**
  * State transitions, caller side -- the Kotlin mirror of `@sinua/core`'s
  * `StateTransition` (packages/core/src/transition.ts; docs/fx-spec.md,
@@ -16,6 +19,10 @@ import uniffi.core_engine.transitionMix
  */
 internal class StateTransition {
     private var from: TransitionSide? = null
+
+    /** What was on screen when the loadout last changed, while its change runs. */
+    private var wearFrom: TransitionSide? = null
+    private var wearAge = Double.POSITIVE_INFINITY
     private var shown: TransitionSide? = null
     private var age = Double.POSITIVE_INFINITY
 
@@ -34,10 +41,26 @@ internal class StateTransition {
         age = if (from != null && this.duration > 0) 0.0 else Double.POSITIVE_INFINITY
     }
 
+    /**
+     * The loadout changed (design note 25): the character eases from what is on screen now
+     * (a hat pops in, colours blend, a new eye style swaps in a blink), on its own clock, so a
+     * state change in the middle of it doesn't cut it, and the reverse.
+     */
+    fun wear() {
+        val s = shown ?: return
+        wearFrom = s
+        wearAge = 0.0
+    }
+
+    /** A loadout change is easing in. */
+    val wearing: Boolean get() = wearFrom != null
+
     /** Stop any transition now (reduced motion, a new design). */
     fun cancel() {
         age = Double.POSITIVE_INFINITY
         from = null
+        wearAge = Double.POSITIVE_INFINITY
+        wearFrom = null
     }
 
     /** No transition running: remember [to] as what is on screen. */
@@ -48,6 +71,8 @@ internal class StateTransition {
     fun advance(dt: Double) {
         age += maxOf(0.0, dt)
         since += maxOf(0.0, dt)
+        wearAge += maxOf(0.0, dt)
+        if (wearAge >= WEAR_SECONDS) wearFrom = null
     }
 
     /**
@@ -71,7 +96,24 @@ internal class StateTransition {
     /** The frames for [to] at engine time [t]; [extra] is the live runtime keys, over both sides. */
     fun frames(to: TransitionSide, size: UInt, t: Double, live: Map<String, Double>): FxFrames? {
         val extra = if (since.isFinite()) live + ("stateAge" to since) else live
-        fun draw(s: TransitionSide): OrbFrame? = frameWithOverrides(s.state, size, t, s.overrides + extra)
+        val wf = wearFrom
+        val ww = wearAge / WEAR_SECONDS
+
+        // A loadout change in progress: the new side easing from the old one (the engine
+        // answers only for two loadouts of one character; anything else draws plain).
+        fun draw(s: TransitionSide): OrbFrame? {
+            val o = s.overrides + extra
+            if (wf != null) {
+                frameTransitionWithOverrides(
+                    TransitionSide(wf.state, wf.speed, wf.overrides + extra),
+                    TransitionSide(s.state, s.speed, o),
+                    size,
+                    t,
+                    ww,
+                )?.let { return it }
+            }
+            return frameWithOverrides(s.state, size, t, o)
+        }
         val f = from
         val m = mix(to, size)
         if (f == null || m == null) {

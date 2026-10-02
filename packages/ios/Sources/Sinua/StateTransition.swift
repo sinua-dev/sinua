@@ -1,5 +1,8 @@
 import CoreEngine
 
+/// How long a loadout change takes (design note 25), seconds.
+let wearSeconds = 0.35
+
 /// State transitions, caller side -- the Swift mirror of `@sinua/core`'s
 /// `StateTransition` (packages/core/src/transition.ts; docs/fx-spec.md,
 /// *Transitions*). The engine says what to draw at an instant (`transitionMix`);
@@ -7,6 +10,9 @@ import CoreEngine
 /// from there.
 struct StateTransition {
     private var from: TransitionSide?
+    /// What was on screen when the loadout last changed, while its change runs.
+    private var wearFrom: TransitionSide?
+    private var wearAge = Double.infinity
     private var shown: TransitionSide?
     private var age = Double.infinity
     /// Seconds since the last state change (cut or not); infinite before the first.
@@ -24,10 +30,24 @@ struct StateTransition {
         age = from != nil && self.duration > 0 ? 0 : .infinity
     }
 
+    /// The loadout changed (design note 25): the character eases from what is on screen now
+    /// (a hat pops in, colours blend, a new eye style swaps in a blink), on its own clock, so a
+    /// state change in the middle of it doesn't cut it, and the reverse.
+    mutating func wear() {
+        guard let shown else { return }
+        wearFrom = shown
+        wearAge = 0
+    }
+
+    /// A loadout change is easing in.
+    var wearing: Bool { wearFrom != nil }
+
     /// Stop any transition now (reduced motion, a new design).
     mutating func cancel() {
         age = .infinity
         from = nil
+        wearAge = .infinity
+        wearFrom = nil
     }
 
     /// No transition running: remember `to` as what is on screen.
@@ -38,6 +58,8 @@ struct StateTransition {
     mutating func advance(_ dt: Double) {
         age += max(0, dt)
         since += max(0, dt)
+        wearAge += max(0, dt)
+        if wearAge >= wearSeconds { wearFrom = nil }
     }
 
     /// Seconds since the lifecycle state last changed, or nil before the first change.
@@ -62,8 +84,20 @@ struct StateTransition {
     {
         var extra = live
         if since.isFinite { extra["stateAge"] = since }
+        let wearFrom = wearFrom
+        let wearW = wearAge / wearSeconds
         func draw(_ s: TransitionSide) -> OrbFrame? {
-            frameWithOverrides(state: s.state, size: size, t: t, overrides: s.overrides.merging(extra) { $1 })
+            let o = s.overrides.merging(extra) { $1 }
+            // A loadout change in progress: the new side easing from the old one (the engine
+            // answers only for two loadouts of one character; anything else draws plain).
+            if let w = wearFrom,
+                let f = frameTransitionWithOverrides(
+                    from: TransitionSide(state: w.state, speed: w.speed, overrides: w.overrides.merging(extra) { $1 }),
+                    to: TransitionSide(state: s.state, speed: s.speed, overrides: o), size: size, t: t, blend: wearW)
+            {
+                return f
+            }
+            return frameWithOverrides(state: s.state, size: size, t: t, overrides: o)
         }
         guard let from, let m = mix(to, size: size) else {
             shown = to

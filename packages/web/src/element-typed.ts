@@ -25,7 +25,7 @@ export interface TypedElementDefinition {
 /** Options the wrapped view takes as they are (scalars are attributes, kebab-cased). */
 const VIEW_SCALARS = ["state", "size", "speed", "theme", "paused", "reducedMotion", "maxFps", "lowPower", "pointer", "tap", "expression", "label", "voiceLevelInput", "crossFade"] as const;
 /** Objects and handles: properties only. */
-const VIEW_OBJECTS = ["spec", "inputs", "voice", "palette"] as const;
+const VIEW_OBJECTS = ["spec", "inputs", "voice", "palette", "loadout"] as const;
 
 const kebab = (name: string) => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 const num = (text: string) => (text.trim() === "" || Number.isNaN(Number(text)) ? text : Number(text));

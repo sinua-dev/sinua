@@ -36,7 +36,7 @@ export function SinuaView({ className, style, onReady, ...options }: SinuaViewPr
 
   // Push changed props. Object props (spec, overrides, inputs) are compared
   // by reference: memoize them if you build them inline.
-  const { spec, pattern, state, size, overrides, speed, voice, voiceOptions, specState, inputs, voiceLevelInput, crossFade, theme, paused, reducedMotion, label, onError, maxFps, lowPower, onFrame, pointer, tap, expression, palette, labels, announce, rules } =
+  const { spec, pattern, state, size, overrides, speed, voice, voiceOptions, specState, inputs, voiceLevelInput, crossFade, theme, paused, reducedMotion, label, onError, maxFps, lowPower, onFrame, pointer, tap, expression, palette, loadout, labels, announce, rules } =
     options;
   const deps = [spec, pattern, size, overrides, speed, voice, voiceOptions, crossFade, maxFps, lowPower, pointer, tap];
   useEffect(() => {
@@ -50,7 +50,7 @@ export function SinuaView({ className, style, onReady, ...options }: SinuaViewPr
   // Per-frame values: cheap to push every render, never rebuild anything
   // (`state` rebuilds only when, spec-less and deprecated, it changes the pattern).
   useEffect(() => {
-    handle.current?.update({ state, specState, inputs, voiceLevelInput, theme, paused, reducedMotion, label, onError, onFrame, labels, announce, rules, expression, palette });
+    handle.current?.update({ state, specState, inputs, voiceLevelInput, theme, paused, reducedMotion, label, onError, onFrame, labels, announce, rules, expression, palette, loadout });
   });
 
   // A box-layout pattern (signal `playing`) fills the box it's given,

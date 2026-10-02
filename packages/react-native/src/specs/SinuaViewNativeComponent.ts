@@ -51,6 +51,8 @@ export interface NativeProps extends ViewProps {
   expression?: string;
   /** A character's palette, in part (design note 19), as JSON (slot -> hex); "" = the character's own. */
   paletteJson?: string;
+  /** An end user's loadout (FX Spec 1.13, design note 25), as JSON; "" = none (the file as it is). */
+  loadoutJson?: string;
   /** A one-shot effect (`success` / `error` / `celebrate` / `hop`); it plays when `effectKey` changes. */
   effectName?: string;
   effectKey?: CodegenTypes.WithDefault<CodegenTypes.Int32, 0>;

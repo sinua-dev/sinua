@@ -49,6 +49,7 @@ class FxHostView(context: Context) : FrameLayout(context) {
     var tap by mutableStateOf(false)
     var expression by mutableStateOf<String?>(null)
     var palette by mutableStateOf<Map<String, String>>(emptyMap())
+    var loadout by mutableStateOf<dev.sinua.view.SinuaLoadout?>(null)
     var effect by mutableStateOf<SinuaEffectTrigger?>(null)
     private var effectName: String? = null
     private var effectKey = 0
@@ -117,6 +118,7 @@ class FxHostView(context: Context) : FrameLayout(context) {
                 tap = tap,
                 expression = expression,
                 palette = palette,
+                loadout = loadout,
             )
         } else {
             SinuaView(

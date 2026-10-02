@@ -139,6 +139,8 @@ public struct SinuaCharacter: View {
     public var expression: String?
     /// The palette, in part (design note 19): slot -> hex, e.g. ["shell": "#E63946"]; empty = the character's own.
     public var palette: [String: String]
+    /// An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a `wardrobe`; nil = the file as it is.
+    public var loadout: SinuaLoadout?
     private var rules = true
     private var spec: String?
     public var inputs: [String: Double] = [:]
@@ -211,7 +213,8 @@ public struct SinuaCharacter: View {
         effect: SinuaEffectTrigger? = nil,
         tap: Bool = true,
         expression: String? = nil,
-        palette: [String: String] = [:]
+        palette: [String: String] = [:],
+        loadout: SinuaLoadout? = nil
     ) {
         self.pattern = pattern
         self.size = size
@@ -279,6 +282,7 @@ public struct SinuaCharacter: View {
         self.tap = tap
         self.expression = expression
         self.palette = palette
+        self.loadout = loadout
     }
 
     /// Plays an FX Spec (JSON). It must describe a character (`"object": "character"`): any other
@@ -306,13 +310,15 @@ public struct SinuaCharacter: View {
         effect: SinuaEffectTrigger? = nil,
         tap: Bool = true,
         expression: String? = nil,
-        palette: [String: String] = [:]
+        palette: [String: String] = [:],
+        loadout: SinuaLoadout? = nil
     ) {
         self.init(pattern: .buzzy, voice: voice, voiceOverrides: voiceOverrides, theme: theme, paused: paused,
                   reducedMotion: reducedMotion, accessibilityLabel: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
                   labels: labels, announce: announce, haptics: haptics, effect: effect, tap: tap, expression: expression, palette: palette)
         self.rules = rules
         self.spec = spec
+        self.loadout = loadout
         self.state = state
         self.inputs = inputs
         self.voiceLevelInput = voiceLevelInput
@@ -386,7 +392,7 @@ public struct SinuaCharacter: View {
                 SinuaView(spec: spec, voice: voice, voiceOverrides: voiceOverrides, state: state, inputs: inputs,
                        voiceLevelInput: voiceLevelInput, theme: theme, paused: paused, reducedMotion: reducedMotion,
                        accessibilityLabel: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-                       labels: labels, announce: announce, haptics: haptics, rules: rules, effect: effect, tap: tap, expression: expression, palette: palette)
+                       labels: labels, announce: announce, haptics: haptics, rules: rules, effect: effect, tap: tap, expression: expression, palette: palette, loadout: loadout)
             }
         } else {
             SinuaView(pattern: pattern.rawValue, size: size.rawValue, overrides: overrides(), speed: speed, state: state, inputs: inputs, voice: voice,

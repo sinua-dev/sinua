@@ -38,6 +38,7 @@ final class FxHostModel: ObservableObject {
     @Published var tap = false
     @Published var expression: String?
     @Published var palette: [String: String] = [:]
+    @Published var loadout: SinuaLoadout?
     @Published var effect: SinuaEffectTrigger?
     /// The app's real activity. SinuaView runs only while `scenePhase == .active`,
     /// and a UIHostingController inside a scene-less UIKit app (React Native's
@@ -64,7 +65,7 @@ struct FxHostContent: View {
                    maxFps: model.maxFps, lowPower: model.lowPower, onFrame: frame,
                    labels: model.labels, announce: model.announce, haptics: model.haptics, rules: model.rules,
                    effect: model.effect, tap: model.tap, expression: model.expression,
-                   palette: model.palette)
+                   palette: model.palette, loadout: model.loadout)
         } else {
             SinuaView(pattern: model.state, size: model.size, overrides: model.overrides, speed: model.speed,
                    state: model.specState, voice: model.voice, voiceOverrides: model.voiceOverrides,
@@ -134,7 +135,7 @@ public final class FxHostView: UIView {
                             audioStrength: Double, voice: String, voiceSourceId: String?, theme: String, paused: Bool, reducedMotion: String, maxFps: Double,
                             lowPower: String, label: String?, reportFrames: Bool, labelsJson: String?, announce: String,
                             haptics: Bool, rules: Bool, effectName: String?, effectKey: Int, tap: Bool,
-                            expression: String?, paletteJson: String?) {
+                            expression: String?, paletteJson: String?, loadoutJson: String?) {
         let m = model
         m.spec = (spec?.isEmpty ?? true) ? nil : spec
         m.state = (state?.isEmpty ?? true) ? "working" : state!
@@ -160,6 +161,9 @@ public final class FxHostView: UIView {
         m.expression = (expression?.isEmpty ?? true) ? nil : expression
         let pal = (paletteJson?.data(using: .utf8)).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
         m.palette = pal?.compactMapValues { $0 as? String } ?? [:]
+        let lo = (loadoutJson?.isEmpty ?? true) ? nil : loadoutJson?.data(using: .utf8)
+        let loadout = lo.flatMap { try? JSONDecoder().decode(SinuaLoadout.self, from: $0) }
+        if m.loadout != loadout { m.loadout = loadout }
         // A new key plays the effect once (a fresh trigger value).
         if effectKey != lastEffectKey {
             lastEffectKey = effectKey

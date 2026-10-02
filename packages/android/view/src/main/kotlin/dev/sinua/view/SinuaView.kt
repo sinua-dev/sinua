@@ -135,8 +135,15 @@ fun SinuaView(
      * The slots' tones follow; it wins over a spec's `palette`. A change is immediate.
      */
     palette: Map<String, String> = emptyMap(),
+    /**
+     * An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a `wardrobe`.
+     * A change eases (a hat pops in, colours blend; a cut under reduced motion). What the spec
+     * no longer offers is skipped with a logged warning, and the rest applies.
+     */
+    loadout: SinuaLoadout? = null,
 ) {
     val model = remember(spec, voice, voiceOverrides) { FxModel(FxInput.Spec(spec), voice, voiceOverrides) }
+    model.setLoadout(loadout)
     model.crossFade = crossFade
     model.specState = state
     model.inputs = inputs
@@ -487,6 +494,30 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
 
     /** The spec draws a character (it may name a palette with a dark variant). */
     private var specIsCharacter = false
+
+    /** The spec as drawn: the given one with the loadout applied (design note 25). */
+    private var specJson: String = (input as? FxInput.Spec)?.json ?: ""
+    private var loadout: SinuaLoadout? = null
+    private var loadoutSet = false
+
+    /** An end user's loadout: a change eases from what is showing. */
+    fun setLoadout(l: SinuaLoadout?) {
+        if (loadoutSet && l == loadout) return
+        val first = !loadoutSet
+        loadoutSet = true
+        loadout = l
+        val file = (input as? FxInput.Spec)?.json ?: return
+        specJson = if (l == null) {
+            file
+        } else {
+            val (out, warnings) = l.applyTo(file)
+            if (warnings.isNotEmpty()) {
+                android.util.Log.w("SinuaView", "loadout: ${warnings.joinToString { "${it.path}: ${it.message}" }}")
+            }
+            out
+        }
+        if (!first) player.wear()
+    }
 
     /** Frames the pacer let through (tests / diagnostics). */
     internal var pacedFrames = 0
@@ -885,17 +916,17 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
                 val name = voiceLevelInput
                 if (name != null && v != null) ins[name] = v.metrics.level
                 player.crossFade = crossFade
-                player.setState(lifecycle(), input.json)
+                player.setState(lifecycle(), specJson)
                 if (reduced) player.skipTransition()
                 // The player multiplies by its effective speed (mixed mid-transition), so the view
                 // divides by the same one. max(1e-9, …) only guards the division.
-                val stateSpeed = player.speed(input.json, ins)
+                val stateSpeed = player.speed(specJson, ins)
                 val at = if (reduced) {
                     REDUCED_MOTION_T / max(1e-9, stateSpeed)
                 } else {
                     clock.phase(stateSpeed, 1.0) / max(1e-9, stateSpeed)
                 }
-                player.frame(input.json, at, min(rawDt, MAX_DT_S), ins, voiceMap)
+                player.frame(specJson, at, min(rawDt, MAX_DT_S), ins, voiceMap)
             }
 
             is FxInput.State -> {
@@ -977,6 +1008,9 @@ internal class FxStatePlayer {
 
     /** End a running transition now (reduced motion). */
     fun skipTransition() = transition.cancel()
+
+    /** The loadout changed: ease from what is showing (design note 25). */
+    fun wear() = transition.wear()
 
     /** The current state as a transition side (effective speed), or null if the spec has errors. */
     private fun side(spec: String, inputs: Map<String, Double>): Pair<TransitionSide, UInt>? {

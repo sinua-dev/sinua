@@ -18,7 +18,7 @@
 // cross-fades. Duration and curve come from the spec's 1.9 `transitions`
 // (default 0.6 s, easeInOut).
 
-import { fxSpecTransition, resolveFxSpec, resolvedOpts } from "./engine.js";
+import { applyLoadout, fxSpecTransition, resolveFxSpec, resolvedOpts, type Loadout } from "./engine.js";
 import type { FxSpec, FxSpecResolved, OrbFrame, OrbSize, OrbState, TransitionSide } from "./index.js";
 import { StateTransition } from "./transition.js";
 
@@ -36,6 +36,8 @@ export interface FxSpecPlayerOptions {
   inputEaseRate?: Record<string, number>;
   /** Start in low power (see `setLowPower`). */
   lowPower?: boolean;
+  /** An end user's loadout (FX Spec 1.13, design note 25; see `setLoadout`). */
+  loadout?: Loadout | null;
 }
 
 export interface FxPlayerFrame {
@@ -53,7 +55,11 @@ export interface FxPlayerFrame {
 const MAX_DT_S = 0.1;
 
 export class FxSpecPlayer {
-  private readonly spec: string;
+  /** The file as given. */
+  private readonly file: string;
+  /** The file with the loadout applied (what is resolved). */
+  private spec: string;
+  private loadoutWarnings: FxSpecResolved["diagnostics"] = [];
   private readonly fadeS: number | undefined;
   private readonly rates: Record<string, number>;
   private readonly goals = new Map<string, number>();
@@ -63,7 +69,9 @@ export class FxSpecPlayer {
   private lowPower: boolean;
 
   constructor(spec: FxSpec | string, opts: FxSpecPlayerOptions = {}) {
-    this.spec = typeof spec === "string" ? spec : JSON.stringify(spec);
+    this.file = typeof spec === "string" ? spec : JSON.stringify(spec);
+    this.spec = this.file;
+    if (opts.loadout) this.applyLoadout(opts.loadout);
     this.fadeS = opts.crossFade == null ? undefined : Math.max(0, opts.crossFade);
     this.rates = { ...opts.inputEaseRate };
     this.lowPower = opts.lowPower ?? false;
@@ -77,6 +85,34 @@ export class FxSpecPlayer {
    */
   setLowPower(on: boolean): void {
     this.lowPower = on;
+  }
+
+  /**
+   * An end user's loadout (FX Spec 1.13, design note 25): what they wear from the spec's
+   * `wardrobe`, a palette and an eye style. A change eases (a hat pops in, colours blend)
+   * on its own clock; `null` goes back to the file as it is. What the spec no longer
+   * offers is skipped (see `loadoutDiagnostics`), the rest applies.
+   */
+  setLoadout(loadout: Loadout | null): void {
+    const before = this.spec;
+    this.applyLoadout(loadout);
+    if (this.spec !== before) this.transition.wear();
+  }
+
+  /** The warnings from applying the loadout (stale items, unknown palettes). */
+  get loadoutDiagnostics(): FxSpecResolved["diagnostics"] {
+    return this.loadoutWarnings;
+  }
+
+  private applyLoadout(loadout: Loadout | null): void {
+    if (!loadout) {
+      this.spec = this.file;
+      this.loadoutWarnings = [];
+      return;
+    }
+    const r = applyLoadout(this.file, loadout);
+    this.spec = r.spec;
+    this.loadoutWarnings = r.diagnostics;
   }
 
   /** The lifecycle key now (a `states` key; `undefined` = the top-level design). */

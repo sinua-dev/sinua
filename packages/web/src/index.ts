@@ -4,6 +4,8 @@
 // See docs/fx-view.md.
 export { drawFrame, drawCrossDissolve, drawPacked, ink } from "./paint.js";
 export type { FxFill, FxFillGradient, FxGradientStop, FxEffectRun, PaintFrame } from "./paint.js";
+export { characterThumbnail } from "./thumbnail.js";
+export type { ThumbnailOptions } from "./thumbnail.js";
 export { mount, viewLayout, defaultVoiceOptions, DPR_CAP, REDUCED_MOTION_T } from "./mount.js";
 export { defineSinuaVoiceButtonElement, voiceButtonRing, VOICE_BUTTON_LONG_PRESS_MS } from "./voice-button.js";
 export type { SinuaVoiceButtonElement, SinuaVoiceButtonElementProps, VoiceButtonChangeDetail } from "./voice-button.js";

@@ -11,7 +11,8 @@ amplitude.
 
 It is the seventh sibling family (`crates/core_engine/src/character/`), tried after the
 others by `lib.rs`'s `resolve_any`. Object `character`, component `SinuaCharacter`
-(`SinuaAvatar` is the ring-around-a-picture component from `ring`). FX Spec 1.11.
+(`SinuaAvatar` is the ring-around-a-picture component from `ring`). FX Spec 1.11; in 1.12 every
+character became a recipe (data, not code), and a file can carry its own.
 
 Design note and research (private repo): `sinua-studio/docs/agents/families/design-07-characters.md`,
 `research-characters.md`.
@@ -26,6 +27,7 @@ Design note and research (private repo): `sinua-studio/docs/agents/families/desi
 | `chirp` | A songbird: a coral egg-shaped body with a cream breast, teal wings and a three-feather crest | the beak is the mouth: it opens with the level while speaking and little notes rise from it, the wings flutter (`flutterGain`); it tilts its head and lifts its crest while listening; while thinking the crest drops and three thought dots light in turn |
 | `cuppa` | A coffee mug on its saucer (FX Spec 1.12, design note 14): drawn from an SVG path, the handle is a hole; coffee at the rim, a sleeve with a heart | the mouth is an oval that opens with the level; its steam (the `steam` part) rises higher while it listens, curls while it thinks and thickens with the voice; it squashes a little as it talks |
 | `bean` | A coffee bean on little feet (FX Spec 1.12, design note 14): an SVG-path body with its S-shaped groove and lit edge as path patches, rosy cheeks | the mouth is an oval that opens with the level; aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice |
+| `beep` | A small tin robot (FX Spec 1.12, design note 17): a path head and body, a face screen, an antenna light, a chest core, legs, and **arms** | a hand goes to the ear to listen and to the chin to think, and the arms beat with the voice while speaking; the antenna light is red while listening and amber while thinking; `arms: false` takes the arms off |
 
 **Expressions** (design note 16): the app picks one with `expression` (a view prop, or the
 FX Spec key in the base and in `states`). It stays until changed, and a change eases over 0.6 s.
@@ -55,10 +57,10 @@ FX Spec key in the base and in `states`). It stays until changed, and a change e
 - `tap: false` turns it off; reduced motion keeps only the smile. See
   [`fx-view.md`](fx-view.md), *One-shot effects*.
 
-| `beep` | A small tin robot (FX Spec 1.12, design note 17): a path head and body, a face screen, an antenna light, a chest core, legs, and **arms** | a hand goes to the ear to listen and to the chin to think, and the arms beat with the voice while speaking; the antenna light is red while listening and amber while thinking; `arms: false` takes the arms off |
-
-Cuppa and Bean are the first characters made **only from recipes** (1.12 item 5). They
-needed no new drawing code, only one new library part: the steam.
+All seven are recipes (`spec/characters/*.json`): the first four were moved over in 1.12 with
+their drawing unchanged bit for bit. Cuppa and Bean were the first new ones made **only from
+recipes** (1.12 item 5): they needed no new drawing code, only one new library part, the steam.
+Beep added the `arms` part.
 
 **Shared, not repeated.** What every character does alike lives once: the face (`face.rs`),
 the rig (`rig.rs`), the drawing helpers (`geom.rs`) and the kit (`kit.rs`: the size tiers, the
@@ -247,6 +249,7 @@ and mouth, with heavier lines.
 | `look` | 1 | how much the eyes glance around on their own (0 = at the viewer) |
 | `turn` | 0.71 | how far the head turns (see *The head turn*; 0 = flat) |
 | `seed` | 0 | when it blinks and glances |
+| `arms` | 1 | 0 takes the arms off (a character with an `arms` part: Beep) |
 
 ## Palette (FX Spec 1.12, design note 19)
 

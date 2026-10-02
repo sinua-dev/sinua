@@ -68,6 +68,41 @@ fn recipes() {
     std::fs::write(Path::new(&dir).join("recipes.rs"), table).unwrap();
 }
 
+/// The named palettes (`spec/palettes.json`, design note 23) as Rust constants:
+/// no JSON to parse at run time.
+fn themes() {
+    let src = "../../spec/palettes.json";
+    println!("cargo:rerun-if-changed={src}");
+    let text = std::fs::read_to_string(src).unwrap_or_else(|e| panic!("{src}: {e}"));
+    let v: Value = serde_json::from_str(&text).unwrap_or_else(|e| panic!("{src}: {e}"));
+    let roles = |o: &Value| -> String {
+        let mut out = String::new();
+        for role in ["primary", "secondary", "accent"] {
+            if let Some(c) = o.get(role).and_then(Value::as_array) {
+                let n = |i: usize| {
+                    c[i].as_f64()
+                        .unwrap_or_else(|| panic!("{src}: {role}: [h, s, l]"))
+                };
+                out += &format!("(\"{role}\", [{:?}, {:?}, {:?}]), ", n(0), n(1), n(2));
+            }
+        }
+        out
+    };
+    let mut table = String::from(
+        "/// A theme's roles: (role, [h, s, l]).\npub type ThemeRoles = &'static [(&'static str, [f32; 3])];\npub const THEMES: &[(&str, ThemeRoles, ThemeRoles)] = &[\n",
+    );
+    for (name, t) in v.as_object().expect("palettes: an object") {
+        if name.starts_with('$') {
+            continue;
+        }
+        let dark = t.get("dark").map(roles).unwrap_or_default();
+        table += &format!("    (\"{name}\", &[{}], &[{dark}]),\n", roles(t));
+    }
+    table += "];\n";
+    let dir = std::env::var("OUT_DIR").expect("OUT_DIR");
+    std::fs::write(Path::new(&dir).join("themes.rs"), table).unwrap();
+}
+
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     recipes();
@@ -76,6 +111,7 @@ fn main() {
         "catalog_runtime.json",
         &["description", "$comment", "note"],
     );
+    themes();
     lean(
         "../../spec/voice-state-profile.json",
         "voice_state_profile.json",

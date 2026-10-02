@@ -361,6 +361,10 @@ pub fn schema() -> Value {
                 "type": "array", "description": top("cosmetics"),
                 "items": { "$ref": "#/$defs/cosmetic" }
             },
+            "roles": {
+                "type": "object", "description": top("roles"), "additionalProperties": false,
+                "properties": { "primary": colour(), "secondary": colour(), "accent": colour() }
+            },
             "grain": {
                 "type": "object", "description": top("grain"), "additionalProperties": false,
                 "required": ["strength"],

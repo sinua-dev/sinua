@@ -13,12 +13,74 @@
 use crate::character::geom::Hsl;
 use crate::character::recipe::Recipe;
 
+/// The roles a recipe may map to its slots (design note 23).
+pub const ROLES: [&str; 3] = ["primary", "secondary", "accent"];
+
+// `THEMES`: the named palettes (name, light roles, dark roles), from
+// `spec/palettes.json` by build.rs.
+include!(concat!(env!("OUT_DIR"), "/themes.rs"));
+
+/// A named palette's roles as (role, colour), light or dark; `None` for an unknown name.
+pub fn theme(name: &str, dark: bool) -> Option<Vec<(String, Hsl)>> {
+    let t = THEMES.iter().find(|t| t.0 == name)?;
+    let roles = if dark { t.2 } else { t.1 };
+    Some(
+        roles
+            .iter()
+            .map(|(r, c)| {
+                let h = |i: usize| f64::from(c[i]);
+                (r.to_string(), crate::character::geom::hsl(h(0), h(1), h(2)))
+            })
+            .collect(),
+    )
+}
+
+/// `given` (slot or role, colour) as slots of `r`: roles first, through the
+/// recipe's `roles` (a role it doesn't map stays a slot name, so a 1.12 recipe
+/// with an `accent` slot keeps it), then slots, so a slot given outright wins
+/// over its role; the last of each slot wins.
+#[inline(never)]
+pub fn expand(r: &Recipe, given: &[(String, Hsl)]) -> Vec<(String, Hsl)> {
+    let role = |k: &String| {
+        r.roles
+            .iter()
+            .find(|(x, _)| x == k)
+            .map(|(_, i)| &r.palette[*i].0)
+    };
+    let mut out: Vec<(String, Hsl)> = Vec::with_capacity(given.len());
+    for pass in [true, false] {
+        for (k, c) in given {
+            let slot = match role(k) {
+                Some(s) if pass => s,
+                None if !pass => k,
+                _ => continue,
+            };
+            match out.iter().position(|(s, _)| s == slot) {
+                Some(i) => out[i].1 = *c,
+                None => out.push((slot.clone(), *c)),
+            }
+        }
+    }
+    out
+}
+
+/// A named palette's roles that `r` maps (a character without a `secondary`
+/// skips it).
+pub fn mapped(r: &Recipe, roles: &[(String, Hsl)]) -> Vec<(String, Hsl)> {
+    roles
+        .iter()
+        .filter(|(k, _)| r.roles.iter().any(|(x, _)| x == k))
+        .cloned()
+        .collect()
+}
+
 /// Below this lightness gap an ink isn't readable on its ground.
 const MIN_GAP: f64 = 0.35;
 
 /// The opts for `given` (slot, colour) on `r`, and the warnings (slot, why).
 /// An unknown slot is an error (slot, message with a suggestion).
 #[allow(clippy::type_complexity)]
+#[inline(never)]
 pub fn resolve(
     r: &Recipe,
     given: &[(String, Hsl)],

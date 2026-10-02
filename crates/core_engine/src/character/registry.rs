@@ -46,17 +46,26 @@ fn lock() -> std::sync::MutexGuard<'static, Registry> {
 /// (`<JSON pointer>: <what>`).
 #[cfg(test)]
 pub fn register(text: &str) -> Result<&'static str, String> {
-    register_with(text, &mut Vec::new())
+    register_with(text, None, &mut Vec::new())
 }
 
-/// [`register`], moving the cosmetics that didn't fit (pointer, why) into `skipped`.
+/// [`register`], moving the cosmetics that didn't fit (pointer, why) into
+/// `skipped`. `basis` (default: the text) is what the key hashes: a built-in
+/// wearing cosmetics hashes its id and the cosmetics, not its own recipe text,
+/// so an edit to a built-in that draws the same doesn't change the key (or the
+/// FX Spec locks that record it).
 pub fn register_with(
     text: &str,
+    basis: Option<&str>,
     skipped: &mut Vec<(String, String)>,
 ) -> Result<&'static str, String> {
     let mut recipe = Recipe::parse(text)?;
     *skipped = std::mem::take(&mut recipe.skipped);
-    let name = format!("{PREFIX}{}:{:016x}", recipe.id, fnv64(text));
+    let name = format!(
+        "{PREFIX}{}:{:016x}",
+        recipe.id,
+        fnv64(basis.unwrap_or(text))
+    );
     let mut reg = lock();
     if let Some(i) = reg.live.iter().position(|(k, _)| *k == name) {
         let e = reg.live.remove(i);

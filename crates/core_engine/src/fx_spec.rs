@@ -956,7 +956,7 @@ fn use_recipe(root: &mut Map<String, Value>, r: &Value, object: Option<&str>, di
         );
         return;
     }
-    let Some((key, _)) = register(r, diag) else {
+    let Some((key, _)) = register(r, None, diag) else {
         return;
     };
     let mut used = false;
@@ -997,9 +997,9 @@ fn use_recipe(root: &mut Map<String, Value>, r: &Value, object: Option<&str>, di
 /// warns), or the error reported (a `/cosmetics` pointer as it is, the rest
 /// under `/recipe`).
 #[inline(never)]
-fn register(r: &Value, diag: &mut Diag) -> Option<(&'static str, usize)> {
+fn register(r: &Value, basis: Option<&str>, diag: &mut Diag) -> Option<(&'static str, usize)> {
     let mut skipped = Vec::new();
-    match crate::character::registry::register_with(&r.to_string(), &mut skipped) {
+    match crate::character::registry::register_with(&r.to_string(), basis, &mut skipped) {
         Ok(k) => {
             let n = skipped.len();
             for (at, why) in skipped {
@@ -1066,7 +1066,9 @@ fn wear(
                     r.insert("profile".into(), Value::String(id.to_string()));
                     // Nothing worn (none fits): the built-in draws as it is.
                     let worn = c.as_array().map_or(0, Vec::len);
-                    k = register(&Value::Object(r), diag)
+                    // The key hashes the built-in's id and the cosmetics (see `register_with`).
+                    let basis = format!("{id}+{c}");
+                    k = register(&Value::Object(r), Some(&basis), diag)
                         .filter(|(_, skipped)| *skipped < worn)
                         .map(|(k, _)| k);
                 }
@@ -1077,6 +1079,131 @@ fn wear(
     };
     if let Some(k) = key {
         b.insert("pattern".into(), Value::String(k.into()));
+    }
+}
+
+/// Before 1.13 a palette is slot colours only: a name (`"palette": "sunset"`),
+/// `theme` and `dark` are errors naming the minor they need.
+fn palette_gate(root: &Map<String, Value>, diag: &mut Diag) {
+    let check = |p: Option<&Value>, at: String, diag: &mut Diag| match p {
+        Some(Value::String(_)) => diag.error(&at, "a palette name needs \"fxSpec\": \"1.13\""),
+        Some(Value::Object(o)) => {
+            for k in ["theme", "dark"] {
+                if o.contains_key(k) {
+                    diag.error(
+                        &ptr(&at, k),
+                        format!("`palette.{k}` needs \"fxSpec\": \"1.13\""),
+                    );
+                }
+            }
+        }
+        _ => {}
+    };
+    check(root.get("palette"), "/palette".into(), diag);
+    if let Some(Value::Object(states)) = root.get("states") {
+        for (k, e) in states {
+            check(
+                e.get("palette"),
+                format!("{}/palette", ptr("/states", k)),
+                diag,
+            );
+        }
+    }
+}
+
+/// A palette object's colours (slot or role -> colour), `theme` and `dark` aside.
+#[inline(never)]
+fn palette_colours(
+    o: &Map<String, Value>,
+    at: &str,
+    diag: &mut Diag,
+) -> Vec<(String, crate::character::geom::Hsl)> {
+    let mut g = Vec::new();
+    for (k, c) in o.iter().filter(|(k, _)| *k != "theme" && *k != "dark") {
+        if let Some(c) = parse_color(c, &ptr(at, k), diag) {
+            g.push((k.clone(), crate::character::geom::hsl(c.h, c.s, c.l)));
+        }
+    }
+    g
+}
+
+/// A character's `palette` block (design notes 19, 23): slots, roles, a named
+/// palette (`theme` or the string shorthand) and a `dark` variant, resolved
+/// through the recipe into `palette.<slot>.*` and `palette.dark.<slot>.*` opts.
+#[inline(never)]
+fn palette_block(
+    v: &Value,
+    pp: &str,
+    mode: &str,
+    out: &mut BTreeMap<String, f64>,
+    diag: &mut Diag,
+) {
+    use crate::character::palette;
+    let empty = Map::new();
+    // `"palette": "sunset"` is `{ "theme": "sunset" }`.
+    let (o, theme) = match v {
+        Value::String(n) => (&empty, Some(n.as_str())),
+        _ => match as_object(v, pp, diag) {
+            Some(o) => (o, o.get("theme").map(|t| t.as_str().unwrap_or_default())),
+            None => return,
+        },
+    };
+    let (mut theme_light, mut theme_dark) = (Vec::new(), Vec::new());
+    if let Some(name) = theme {
+        match (palette::theme(name, false), palette::theme(name, true)) {
+            (Some(l), Some(d)) => (theme_light, theme_dark) = (l, d),
+            _ => {
+                let names: Vec<&str> = palette::THEMES.iter().map(|t| t.0).collect();
+                let hint = suggest(name, &names)
+                    .map(|s| format!(" -- did you mean `{s}`?"))
+                    .unwrap_or_default();
+                diag.error(&ptr(pp, "theme"), format!("unknown palette `{name}`{hint}"));
+            }
+        }
+    }
+    let explicit = palette_colours(o, pp, diag);
+    let dark_given = match o.get("dark") {
+        Some(d) => as_object(d, &ptr(pp, "dark"), diag)
+            .map(|d| palette_colours(d, &ptr(pp, "dark"), diag))
+            .unwrap_or_default(),
+        None => Vec::new(),
+    };
+    let r = palette::with_recipe(mode, |r| {
+        // Light: the theme's roles this character maps, then what the file says.
+        let mut light = palette::mapped(r, &theme_light);
+        light.extend(explicit.iter().cloned());
+        let l = palette::resolve(r, &palette::expand(r, &light));
+        // Dark, when the theme or the file has a dark variant: its roles, the
+        // file's own colours, then the file's `dark`.
+        let d = (!theme_dark.is_empty() || !dark_given.is_empty()).then(|| {
+            let mut dark = palette::mapped(r, &theme_dark);
+            dark.extend(explicit.iter().cloned());
+            dark.extend(dark_given.iter().cloned());
+            palette::resolve(r, &palette::expand(r, &dark))
+        });
+        (l, d)
+    });
+    let Some((l, d)) = r else {
+        return;
+    };
+    for (variant, res) in [("", Some(l)), ("dark.", d)] {
+        match res {
+            Some(Ok((opts, warnings))) => {
+                for (k, x) in opts {
+                    let k = if variant.is_empty() {
+                        k
+                    } else {
+                        format!("palette.dark.{}", &k["palette.".len()..])
+                    };
+                    out.insert(k, x);
+                }
+                for (slot, why) in warnings {
+                    diag.warn(&ptr(pp, &format!("{variant}{slot}")), why);
+                }
+            }
+            Some(Err((slot, why))) => diag.error(&ptr(pp, &slot), why),
+            None => {}
+        }
     }
 }
 
@@ -1650,31 +1777,14 @@ fn resolve_block(
         .map(|r| r.mode.clone())
         .unwrap_or_default();
 
-    // 1.12: a character's palette, in part (design note 19).
+    // 1.12: a character's palette, in part (design note 19); 1.13: roles, a named
+    // palette (`theme`, or the string shorthand) and a `dark` variant (design note 23).
     if let Some(v) = b.get("palette") {
         let pp = at("palette");
         if object != Some("character") {
             diag.error(&pp, "`palette` is for `object: character`");
-        } else if let Some(o) = as_object(v, &pp, diag) {
-            let mut given = Vec::new();
-            for (slot, c) in o {
-                if let Some(c) = parse_color(c, &ptr(&pp, slot), diag) {
-                    given.push((slot.clone(), crate::character::geom::hsl(c.h, c.s, c.l)));
-                }
-            }
-            let r = crate::character::palette::with_recipe(&mode, |r| {
-                crate::character::palette::resolve(r, &given)
-            });
-            match r {
-                Some(Ok((opts, warnings))) => {
-                    out.extend(opts);
-                    for (slot, why) in warnings {
-                        diag.warn(&ptr(&pp, &slot), why);
-                    }
-                }
-                Some(Err((slot, why))) => diag.error(&ptr(&pp, &slot), why),
-                None => {}
-            }
+        } else {
+            palette_block(v, &pp, &mode, &mut out, diag);
         }
     }
     // Color.
@@ -2316,6 +2426,26 @@ pub fn resolve_full(
         if let Some(v) = root.get(k) {
             if !v.is_string() {
                 diag.error(&ptr("", k), "expected a string");
+            }
+        }
+    }
+    // 1.13: a named palette and a dark variant (design note 23) need 1.13.
+    if minor < 13 {
+        palette_gate(root, &mut diag);
+    }
+    // `"palette": "sunset"` is `{ "theme": "sunset" }`, before `states` merge over it.
+    let named = |p: &mut Value| {
+        if let Value::String(n) = p {
+            *p = serde_json::json!({ "theme": n.clone() });
+        }
+    };
+    if let Some(p) = root.get_mut("palette") {
+        named(p);
+    }
+    if let Some(Value::Object(states)) = root.get_mut("states") {
+        for e in states.values_mut() {
+            if let Some(p) = e.get_mut("palette") {
+                named(p);
             }
         }
     }

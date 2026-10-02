@@ -597,14 +597,16 @@ pub struct FxPaletteResult {
     pub diagnostics: Vec<fx_spec::FxDiagnostic>,
 }
 
-/// `palette` (a JSON object, slot -> hex or DTCG colour) on `pattern`, through
-/// the FX Spec's own `palette` rules, so a view and a file paint alike.
+/// `palette` (a JSON object: slots or roles -> hex or DTCG colour, `theme`,
+/// `dark`; design notes 19, 23) on `pattern`, through the FX Spec's own
+/// `palette` rules, so a view and a file paint alike. The dark variant comes
+/// back as `palette.dark.<slot>.*`, picked when the view passes `dark`.
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn palette_overrides(pattern: String, palette_json: String) -> FxPaletteResult {
     let palette: serde_json::Value =
         serde_json::from_str(&palette_json).unwrap_or(serde_json::Value::Null);
     let doc = serde_json::json!({
-        "fxSpec": "1.12", "object": "character", "pattern": pattern, "palette": palette,
+        "fxSpec": "1.13", "object": "character", "pattern": pattern, "palette": palette,
     });
     let r = fx_spec::resolve(&doc.to_string());
     FxPaletteResult {

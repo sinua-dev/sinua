@@ -47,7 +47,7 @@ pub const MAX_PARTS: usize = 48;
 pub const MAX_NUMBER: f64 = 1000.0;
 
 /// The keys a recipe may hold.
-const RECIPE_KEYS: [&str; 15] = [
+const RECIPE_KEYS: [&str; 16] = [
     "$schema",
     "$comment",
     "recipe",
@@ -63,6 +63,7 @@ const RECIPE_KEYS: [&str; 15] = [
     "contrast",
     "cosmetics",
     "grain",
+    "roles",
 ];
 
 /// The first number outside ±[`MAX_NUMBER`], with its JSON pointer.
@@ -270,6 +271,9 @@ pub struct Recipe {
     pub skipped: Vec<(String, String)>,
     /// Film grain over the character (design note 22), 0–1; the `grain` opt overrides.
     pub grain: f64,
+    /// Which palette slot plays each role (`primary`, `secondary`, `accent`;
+    /// design note 23): a named palette or a brand colour reaches it by role.
+    pub roles: Vec<(String, usize)>,
 }
 
 pub fn hsl_of(v: &Value, at: &str) -> Result<Hsl, String> {
@@ -364,6 +368,17 @@ impl Recipe {
                     .filter(|p| p.len() == 2)
                     .ok_or_else(|| format!("{at}: expected [ink, ground]"))?;
                 contrast.push((colour(&p[0], &at)?, colour(&p[1], &at)?));
+            }
+        }
+        let mut roles = Vec::new();
+        if let Some(o) = r.get("roles").and_then(Value::as_object) {
+            for (k, v) in o {
+                if !crate::character::palette::ROLES.contains(&k.as_str()) {
+                    return Err(format!(
+                        "/roles/{k}: not a role (primary, secondary, accent)"
+                    ));
+                }
+                roles.push((k.clone(), colour(v, &format!("/roles/{k}"))?));
             }
         }
         let hue = r.obj("hue")?;
@@ -502,6 +517,7 @@ impl Recipe {
             contrast,
             zoom,
             skipped,
+            roles,
             grain: match r.get("grain") {
                 None => 0.0,
                 Some(_) => r.obj("grain")?.f("strength")?.clamp(0.0, 1.0),
@@ -656,16 +672,23 @@ fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
     }
     // Palette overrides (design note 19) land after `hue`: a given colour isn't turned.
     if o.keys().any(|k| k.starts_with("palette.")) {
+        // The dark theme's variant (design note 23) where the view says `dark`.
+        let dark = get(o, "dark", 0.0) >= 0.5;
         for (i, (name, _)) in r.palette.iter().enumerate() {
-            let w = get(o, &format!("palette.{name}.w"), 0.0).clamp(0.0, 1.0);
+            let pre = if dark && o.contains_key(&format!("palette.dark.{name}.w")) {
+                format!("palette.dark.{name}.")
+            } else {
+                format!("palette.{name}.")
+            };
+            let at = |k: &str, d: f64| get(o, &format!("{pre}{k}"), d);
+            let w = at("w", 0.0).clamp(0.0, 1.0);
             if w > 0.0 {
                 let c = pal[i];
-                let h = get(o, &format!("palette.{name}.h"), c.h);
-                let dh = crate::fx_spec::shortest_hue_delta(c.h, h);
+                let dh = crate::fx_spec::shortest_hue_delta(c.h, at("h", c.h));
                 pal[i] = Hsl {
                     h: (c.h + dh * w).rem_euclid(360.0),
-                    s: c.s + (get(o, &format!("palette.{name}.s"), c.s) - c.s) * w,
-                    l: c.l + (get(o, &format!("palette.{name}.l"), c.l) - c.l) * w,
+                    s: c.s + (at("s", c.s) - c.s) * w,
+                    l: c.l + (at("l", c.l) - c.l) * w,
                 };
             }
         }

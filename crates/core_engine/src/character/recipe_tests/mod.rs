@@ -8,5 +8,6 @@ mod chirp;
 mod cosmetics;
 mod cuppa;
 mod hum;
+mod palettes;
 mod rich;
 mod wisp;

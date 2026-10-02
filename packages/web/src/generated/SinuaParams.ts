@@ -632,53 +632,14 @@ export function sinuaBeaconOverrides(pattern: SinuaBeaconPattern, params: SinuaB
   return toOverrides(BEACON_TABLE, pattern, params as Record<string, unknown>);
 }
 
-export type SinuaEdgePattern =
-  | "framing";
-
-/** Edge parameters; unset ones keep the pattern's values. */
-export interface SinuaEdgeParams {
-  /** Corner radius as a fraction of the box's shorter side; match your screen's or container's corners (0.12 is about a phone screen). Range 0...0.5 (fraction). */
-  cornerRadius?: number;
-  /** Base hue in degrees. Range 0...360 (deg). */
-  hue?: number;
-  /** How far the hue varies round the frame, in degrees (0 = one colour). Range 0...360 (deg). */
-  hueSpread?: number;
-  /** The rim's opacity with no voice (0 = hidden until there's a voice). Range 0...1 (fraction). */
-  idleOpacity?: number;
-  /** How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction). */
-  ink?: number;
-  /** How colourful the rim is (0 = the grey ink). Colourful by default: a grey rim reads as a border, not a glow. Range 0...1 (fraction). */
-  saturation?: number;
-  /** The rim's resting width, as a fraction of the box's shorter side. Range 0.002...0.2 (fraction). */
-  thickness?: number;
-  /** How fast the colours travel round the frame, in turns per second (negative = the other way). Range -2...2. */
-  flowSpeed?: number;
-  /** A bright segment that circles the frame (thinking); 0 = off. Range 0...1 (fraction). */
-  shimmer?: number;
-  /** How much wider the rim grows at full voice, inward only, as a fraction of the shorter side. Range 0...0.2 (fraction). */
-  reach?: number;
-  glow?: SinuaGlow;
-  noise?: SinuaNoise;
-  pulse?: SinuaPulse;
-  gradient?: SinuaGradient;
-  color?: SinuaColor;
-  liquid?: SinuaLiquid;
-  particles?: SinuaParticles;
-  holographic?: SinuaHolographic;
-}
-
-const EDGE_TABLE: Table = {"cornerRadius":{"key":"cornerRadius"},"hue":{"key":"hue"},"hueSpread":{"key":"hueSpread"},"idleOpacity":{"key":"idleOpacity"},"ink":{"key":"ink"},"saturation":{"key":"saturation"},"thickness":{"key":"thickness"},"flowSpeed":{"key":"flowSpeed"},"shimmer":{"key":"shimmer"},"reach":{"key":"reach"}};
-
-/** The engine overrides a SinuaEdge hands to SinuaView. */
-export function sinuaEdgeOverrides(pattern: SinuaEdgePattern, params: SinuaEdgeParams): Record<string, number> {
-  return toOverrides(EDGE_TABLE, pattern, params as Record<string, unknown>);
-}
-
 export type SinuaCharacterPattern =
   | "buzzy"
   | "hum"
   | "wisp"
-  | "chirp";
+  | "chirp"
+  | "cuppa"
+  | "bean"
+  | "beep";
 
 /** Character parameters; unset ones keep the pattern's values. */
 export interface SinuaCharacterParams {
@@ -748,6 +709,8 @@ export interface SinuaCharacterParams {
   curlGain?: number;
   /** How much the wings flutter with the voice while speaking (radians). Range 0...0.6. Patterns: chirp. */
   flutterGain?: number;
+  /** The character's arms (Beep): a hand to the ear while listening, to the chin while thinking, beats while speaking. Off: no arms. Patterns: beep. */
+  arms?: boolean;
   glow?: SinuaGlow;
   noise?: SinuaNoise;
   pulse?: SinuaPulse;
@@ -758,7 +721,7 @@ export interface SinuaCharacterParams {
   holographic?: SinuaHolographic;
 }
 
-const CHARACTER_TABLE: Table = {"accessories":{"key":"accessories"},"hue":{"key":"hue"},"ink":{"key":"ink"},"mouth":{"key":"mouth"},"look":{"key":"look"},"seed":{"key":"seed"},"turn":{"key":"turn"},"eyeAsym":{"key":"eyeAsym"},"eyeH":{"key":"eyeH"},"eyeR":{"key":"eyeR"},"eyeSmile":{"key":"eyeSmile"},"eyeTilt":{"key":"eyeTilt"},"eyeW":{"key":"eyeW"},"lid":{"key":"lid"},"mouthDots":{"key":"mouthDots"},"mouthTalk":{"key":"mouthTalk"},"gazeX":{"key":"gazeX"},"gazeY":{"key":"gazeY"},"lean":{"key":"lean"},"tilt":{"key":"tilt"},"turnBlink":{"key":"turnBlink"},"turnNod":{"key":"turnNod"},"turnPitch":{"key":"turnPitch"},"turnWander":{"key":"turnWander"},"turnYaw":{"key":"turnYaw"},"bounceGain":{"key":"bounceGain"},"breath":{"key":"breath"},"earGain":{"key":"earGain"},"mouthGain":{"key":"mouthGain"},"squashGain":{"key":"squashGain"},"swayGain":{"key":"swayGain"},"curlGain":{"key":"curlGain"},"flutterGain":{"key":"flutterGain"}};
+const CHARACTER_TABLE: Table = {"accessories":{"key":"accessories"},"hue":{"key":"hue"},"ink":{"key":"ink"},"mouth":{"key":"mouth"},"look":{"key":"look"},"seed":{"key":"seed"},"turn":{"key":"turn"},"eyeAsym":{"key":"eyeAsym"},"eyeH":{"key":"eyeH"},"eyeR":{"key":"eyeR"},"eyeSmile":{"key":"eyeSmile"},"eyeTilt":{"key":"eyeTilt"},"eyeW":{"key":"eyeW"},"lid":{"key":"lid"},"mouthDots":{"key":"mouthDots"},"mouthTalk":{"key":"mouthTalk"},"gazeX":{"key":"gazeX"},"gazeY":{"key":"gazeY"},"lean":{"key":"lean"},"tilt":{"key":"tilt"},"turnBlink":{"key":"turnBlink"},"turnNod":{"key":"turnNod"},"turnPitch":{"key":"turnPitch"},"turnWander":{"key":"turnWander"},"turnYaw":{"key":"turnYaw"},"bounceGain":{"key":"bounceGain"},"breath":{"key":"breath"},"earGain":{"key":"earGain"},"mouthGain":{"key":"mouthGain"},"squashGain":{"key":"squashGain"},"swayGain":{"key":"swayGain"},"curlGain":{"key":"curlGain"},"flutterGain":{"key":"flutterGain"},"arms":{"key":"arms"}};
 
 /** The engine overrides a SinuaCharacter hands to SinuaView. */
 export function sinuaCharacterOverrides(pattern: SinuaCharacterPattern, params: SinuaCharacterParams): Record<string, number> {

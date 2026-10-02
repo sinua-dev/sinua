@@ -76,13 +76,13 @@ export function ${m.typeName}(props: ${m.typeName}Props) {
   if (props.spec != null) {
     const { spec, state, onError: _e, pattern: _p, ...rest } = props;
     if (specError) return ${r.blankView};
-    return <SinuaView {...rest} spec={spec} state={state} />;
+    return <SinuaView ${m.object === "character" ? "tap " : ""}{...rest} spec={spec} state={state} />;
   }
   const { pattern, size, state, inputs, onError: _e, ...rest } = props;
   const overrides = ${fn}(pattern, rest as ${m.typeName}Params);
   const options: Record<string, unknown> = { ...rest };
   for (const k of PARAM_KEYS) delete options[k];
-  return <SinuaView {...(options as Options)} pattern={pattern} size={size} state={state} inputs={inputs} overrides={overrides} />;
+  return <SinuaView ${m.object === "character" ? "tap " : ""}{...(options as Options)} pattern={pattern} size={size} state={state} inputs={inputs} overrides={overrides} />;
 }
 
 const PARAM_KEYS = ${JSON.stringify([...flatProps(m).map((p) => p.name), ...m.groups.map((g) => g.name)])};

@@ -6,13 +6,19 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { parameterCatalog, checkOverrides, frameWithOverrides } from "../dist/index.js";
 
-const file = JSON.parse(readFileSync(fileURLToPath(new URL("../../../spec/parameters.json", import.meta.url)), "utf8"));
+const full = JSON.parse(readFileSync(fileURLToPath(new URL("../../../spec/parameters.json", import.meta.url)), "utf8"));
+// The runtime carries the catalog without its words (design note 10).
+const strip = (v) =>
+  Array.isArray(v) ? v.map(strip)
+  : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).filter(([k]) => k !== "description").map(([k, x]) => [k, strip(x)]))
+  : v;
+const file = strip(full);
 
-test("parameterCatalog() equals spec/parameters.json", () => {
+test("parameterCatalog() equals spec/parameters.json without the descriptions", () => {
   const c = parameterCatalog();
   assert.deepEqual(c, file);
   assert.deepEqual(c.objects.map((o) => [o.id, o.component, o.patterns.length]), [
-    ["orb", "SinuaOrb", 18], ["signal", "SinuaSignal", 5], ["ring", "SinuaRing", 6], ["core", "SinuaCore", 2], ["beacon", "SinuaBeacon", 5], ["edge", "SinuaEdge", 1], ["character", "SinuaCharacter", 4],
+    ["orb", "SinuaOrb", 18], ["signal", "SinuaSignal", 5], ["ring", "SinuaRing", 6], ["core", "SinuaCore", 2], ["beacon", "SinuaBeacon", 5], ["character", "SinuaCharacter", 7],
   ]);
   for (const o of c.objects) for (const p of o.patterns) for (const r of p.params) assert.ok(c.definitions[r.ref], `${p.id}: ${r.ref}`);
   assert.equal(c.definitions["glowStrength@shared"].path, "glow.strength");

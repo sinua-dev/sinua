@@ -73,6 +73,12 @@ class SinuaViewManager : SimpleViewManager<FxHostView>(), SinuaViewManagerInterf
     }
     override fun setHaptics(view: FxHostView, value: Boolean) { view.haptics = value }
     override fun setRules(view: FxHostView, value: Boolean) { view.rules = value }
+    override fun setTap(view: FxHostView, value: Boolean) { view.tap = value }
+    override fun setExpression(view: FxHostView, value: String?) { view.expression = value?.ifEmpty { null } }
+    override fun setPaletteJson(view: FxHostView, value: String?) {
+        val o = value?.ifEmpty { null }?.let { runCatching { org.json.JSONObject(it) }.getOrNull() }
+        view.palette = o?.keys()?.asSequence()?.associateWith { o.optString(it) } ?: emptyMap()
+    }
     // The name is stored; a changed key plays it (setters run in the spec's order, name first).
     override fun setEffectName(view: FxHostView, value: String?) { view.setEffectName(value?.ifEmpty { null }) }
     override fun setEffectKey(view: FxHostView, value: Int) { view.setEffect(null, value) }

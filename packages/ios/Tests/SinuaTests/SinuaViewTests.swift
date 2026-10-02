@@ -63,8 +63,8 @@ final class SinuaViewTests: XCTestCase {
                 continue
             }
             // OldOrbPaint is the 2026-09-18 painter, from before per-vertex stroke colour
-            // (golden 1.6.0, `Polyline.hues`): it can't draw a frame that uses it (edge
-            // `framing`, colourful by default). That paint rule is checked across
+            // (golden 1.6.0, `Polyline.hues`): it can't draw a frame that uses it (no pattern
+            // does by default since SinuaEdge went). That paint rule is checked across
             // platforms by MaterialsRenderTests instead.
             if frame.polylines.contains(where: { !$0.hues.isEmpty }) {
                 perVertex += 1
@@ -89,7 +89,7 @@ final class SinuaViewTests: XCTestCase {
         }
         // The denominator, exactly: two themes for every pattern that exists.
         XCTAssertEqual(compared, (states.count - perVertex - filled) * 2, "one bitmap pair per pattern")
-        XCTAssertLessThanOrEqual(perVertex, 1, "only edge `framing` draws per-vertex colour by default")
+        XCTAssertEqual(perVertex, 0, "no pattern draws per-vertex colour by default")
         XCTAssertEqual(filled, try Self.characterPatternCount(), "exactly the character patterns draw fills by default")
         print("FxPaint parity: \(compared) bitmaps identical across \(states.count) patterns")
     }

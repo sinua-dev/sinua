@@ -80,7 +80,10 @@ static NSString *_Nullable str(const std::string &s) {
                haptics:p.haptics
                  rules:p.rules
             effectName:str(p.effectName)
-             effectKey:p.effectKey];
+             effectKey:p.effectKey
+                   tap:p.tap
+            expression:str(p.expression)
+           paletteJson:str(p.paletteJson)];
   [super updateProps:props oldProps:oldProps];
 }
 

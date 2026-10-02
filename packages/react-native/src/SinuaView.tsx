@@ -47,9 +47,15 @@ export type SinuaViewProps = ViewProps & {
   rules?: boolean;
   /**
    * A one-shot effect (docs/fx-view.md, *One-shot effects*): `{ name: "success" | "error" |
-   * "celebrate", key }`. It plays each time `key` changes, e.g. a counter you bump.
+   * "celebrate" | "hop", key }`. It plays each time `key` changes, e.g. a counter you bump.
    */
-  effect?: { name: "success" | "error" | "celebrate"; key: number };
+  effect?: { name: "success" | "error" | "celebrate" | "hop"; key: number };
+  /** Tap to hop (design note 15): a tap plays `hop`, glancing toward it. Characters only; off by default (`SinuaCharacter` turns it on). */
+  tap?: boolean;
+  /** A character's expression (design note 16): "happy" | "surprised" | "thoughtful" | "sad" | "sleepy" | "none"; unset = the spec's. */
+  expression?: string | null;
+  /** A character's palette, in part (design note 19): slot -> hex, e.g. `{ shell: "#E63946" }`. Wins over the spec's; a change is immediate. */
+  palette?: Record<string, string> | null;
   theme?: "auto" | "light" | "dark";
   paused?: boolean;
   reducedMotion?: "auto" | "always" | "never";
@@ -77,7 +83,7 @@ export function nativeLabels(p: Pick<SinuaViewProps, "spec" | "pattern" | "state
   return { state: p.pattern ?? p.state, specState: p.specState };
 }
 
-export function SinuaView({ spec, pattern, state, specState, overrides, inputs, onFrame, accessibilityLabel, maxFps, voice, labels: words, announce, effect, ...rest }: SinuaViewProps) {
+export function SinuaView({ spec, pattern, state, specState, overrides, inputs, onFrame, accessibilityLabel, maxFps, voice, labels: words, announce, effect, expression, palette, ...rest }: SinuaViewProps) {
   const labels = nativeLabels({ spec, pattern, state, specState });
   const specText = React.useMemo(() => (spec == null ? undefined : typeof spec === "string" ? spec : JSON.stringify(spec)), [spec]);
   const overridesJson = React.useMemo(() => (overrides ? JSON.stringify(overrides) : undefined), [overrides]);
@@ -100,6 +106,8 @@ export function SinuaView({ spec, pattern, state, specState, overrides, inputs, 
       announce={a11y.announce}
       effectName={effect?.name}
       effectKey={effect?.key ?? 0}
+      expression={expression === undefined ? "" : (expression ?? "none")}
+      paletteJson={palette ? JSON.stringify(palette) : ""}
       maxFps={maxFps ?? 0}
       label={accessibilityLabel}
       accessibilityLabel={accessibilityLabel}

@@ -9,6 +9,7 @@ import android.view.HapticFeedbackConstants
 import android.view.accessibility.AccessibilityManager
 import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -23,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.inset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -52,10 +54,12 @@ import uniffi.core_engine.a11yAccessibleName
 import uniffi.core_engine.a11yAnnounceStep
 import uniffi.core_engine.a11yStateWords
 import uniffi.core_engine.effectInfo
+import uniffi.core_engine.expressionOverrides
 import uniffi.core_engine.frameWithOverrides
 import uniffi.core_engine.fxSpecAccessibility
 import uniffi.core_engine.fxSpecDeriveState
 import uniffi.core_engine.fxSpecTransition
+import uniffi.core_engine.paletteOverrides
 import uniffi.core_engine.patternLayout
 import uniffi.core_engine.resolveFxSpec
 import uniffi.core_engine.resolveFxSpecWith
@@ -119,6 +123,18 @@ fun SinuaView(
     rules: Boolean = true,
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
     effect: SinuaEffectTrigger? = null,
+    /** Tap to hop (design note 15): a tap plays [SinuaEffect.HOP], glancing toward it. Characters only. */
+    tap: Boolean = false,
+    /**
+     * A character's expression (design note 16): "happy", "surprised", "thoughtful", "sad",
+     * "sleepy", or "none". It wins over a spec's `expression`; null lets the spec decide.
+     */
+    expression: String? = null,
+    /**
+     * A character's palette, in part (design note 19): slot -> hex, e.g. mapOf("shell" to "#E63946").
+     * The slots' tones follow; it wins over a spec's `palette`. A change is immediate.
+     */
+    palette: Map<String, String> = emptyMap(),
 ) {
     val model = remember(spec, voice, voiceOverrides) { FxModel(FxInput.Spec(spec), voice, voiceOverrides) }
     model.crossFade = crossFade
@@ -127,7 +143,10 @@ fun SinuaView(
     model.voiceLevelInput = voiceLevelInput
     model.a11yOptions(labels, announce, haptics, rules)
     SideEffect { model.play(effect) }
-    FxCanvas(model, modifier, theme, paused, reducedMotion, contentDescription, maxFps, lowPower, onFrame)
+    model.expression = expression
+    model.palette = palette
+    val tapModifier = modifier.fxTapToHop(model, tap)
+    FxCanvas(model, tapModifier, theme, paused, reducedMotion, contentDescription, maxFps, lowPower, onFrame)
 }
 
 /** A pattern (e.g. "speaking", "tracking") with optional engine overrides and a speed multiplier. */
@@ -162,6 +181,18 @@ fun SinuaView(
     haptics: Boolean = false,
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
     effect: SinuaEffectTrigger? = null,
+    /** Tap to hop (design note 15): a tap plays [SinuaEffect.HOP], glancing toward it. Characters only. */
+    tap: Boolean = false,
+    /**
+     * A character's expression (design note 16): "happy", "surprised", "thoughtful", "sad",
+     * "sleepy", or "none". It wins over a spec's `expression`; null lets the spec decide.
+     */
+    expression: String? = null,
+    /**
+     * A character's palette, in part (design note 19): slot -> hex, e.g. mapOf("shell" to "#E63946").
+     * The slots' tones follow; it wins over a spec's `palette`. A change is immediate.
+     */
+    palette: Map<String, String> = emptyMap(),
 ) {
     // `speed` and `overrides` are *not* part of the key: rebuilding the model would reset
     // its clock, which would jump the pose exactly when a speed change should be smooth.
@@ -173,7 +204,10 @@ fun SinuaView(
     model.inputs = inputs
     model.a11yOptions(labels, announce, haptics, rules = false)
     SideEffect { model.play(effect) }
-    FxCanvas(model, modifier, theme, paused, reducedMotion, contentDescription, maxFps, lowPower, onFrame)
+    model.expression = expression
+    model.palette = palette
+    val tapModifier = modifier.fxTapToHop(model, tap)
+    FxCanvas(model, tapModifier, theme, paused, reducedMotion, contentDescription, maxFps, lowPower, onFrame)
 }
 
 /**
@@ -241,6 +275,22 @@ fun SinuaView(
     voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,
     contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
 )
+
+/** Tap to hop: where the tap fell in the centred square the engine draws in, -1..1 from its centre. */
+private fun Modifier.fxTapToHop(model: FxModel, tap: Boolean): Modifier = if (!tap) {
+    this
+} else {
+    pointerInput(model) {
+        detectTapGestures { p ->
+            val side = minOf(size.width, size.height).toFloat()
+            if (side > 0f) {
+                val x = (p.x - (size.width - side) / 2f) / side * 2f - 1f
+                val y = (p.y - (size.height - side) / 2f) / side * 2f - 1f
+                model.hop(x.coerceIn(-1f, 1f).toDouble() to y.coerceIn(-1f, 1f).toDouble())
+            }
+        }
+    }
+}
 
 @Composable
 private fun FxCanvas(
@@ -340,7 +390,7 @@ private fun FxCanvas(
         // the old behaviour -- there's nothing to judge by.
         .onGloballyPositioned { onScreen = it.size.width == 0 || it.size.height == 0 || !it.boundsInWindow().isEmpty }
     Canvas(modifier.then(a11y).then(measure)) {
-        // A box-layout pattern (edge `framing`, signal `playing`) gets the box ratio as `aspect`.
+        // A box-layout pattern (signal `playing`) gets the box ratio as `aspect`.
         val aspect = if (model.boxLayout && size.height > 0f) {
             (size.width / size.height).toDouble().coerceIn(0.125, 8.0)
         } else {
@@ -522,7 +572,12 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
     fun play(trigger: SinuaEffectTrigger?) {
         if (trigger == null || trigger.id == effectPlayed) return
         effectPlayed = trigger.id
+        if (trigger.kind == SinuaEffect.HOP) {
+            hop(null)
+            return
+        }
         val info = effectInfo(trigger.kind.wire) ?: return
+        tapAt = null
         effectCode = info.code
         effectDuration = info.duration
         effectStart = now()
@@ -534,6 +589,72 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
         }
     }
 
+    /** The app's palette (design note 19); empty = the character's own. */
+    var palette: Map<String, String> = emptyMap()
+    private var paletteFor: Pair<String, Map<String, String>>? = null
+    private var paletteCache: Map<String, Double> = emptyMap()
+
+    /** The palette's runtime keys on the drawn pattern, resolved once per (pattern, palette). */
+    internal fun paletteKeys(): Map<String, Double> {
+        val p = palette
+        if (p.isEmpty()) return emptyMap()
+        if (paletteFor != state to p) {
+            paletteFor = state to p
+            paletteCache = paletteOverrides(state, JSONObject(p.toSortedMap() as Map<*, *>).toString()).overrides
+        }
+        return paletteCache
+    }
+
+    /** The app's expression (design note 16); null = the spec's. */
+    var expression: String? = null
+    private var exprName: String? = null
+    private var exprKnown = false
+    private var exprFrom: Map<String, Double> = emptyMap()
+    private var exprTo: Map<String, Double>? = null
+    private var exprStart = 0.0
+
+    /** The expression's runtime keys now, eased from what was shown over 0.6 s; none while [expression] is null. */
+    internal fun expressionKeys(reduced: Boolean): Map<String, Double> {
+        val now = now()
+        val name = expression
+        if (!exprKnown || name != exprName) {
+            exprFrom = easedExpression(now, reduced) ?: emptyMap()
+            exprTo = name?.let { expressionOverrides(it) ?: expressionOverrides("none") ?: emptyMap() }
+            exprStart = now
+            exprName = name
+            exprKnown = true
+        }
+        return easedExpression(now, reduced) ?: emptyMap()
+    }
+
+    private fun easedExpression(now: Double, reduced: Boolean): Map<String, Double>? {
+        val to = exprTo ?: return null
+        val u = if (reduced) 1.0 else minOf(1.0, (now - exprStart) / 0.6)
+        val e = u * u * (3 - 2 * u)
+        return to.mapValues { (k, v) ->
+            val from = exprFrom[k] ?: 0.0
+            from + (v - from) * e
+        }
+    }
+
+    /** The tap hop's tap (-1..1 from the drawn square's centre), and when the last hop began. */
+    private var tapAt: Pair<Double, Double>? = null
+    private var lastHop = Double.NEGATIVE_INFINITY
+
+    /** Plays the hop (a tap at [at], or [SinuaEffect.HOP]): never over another effect, at most twice a second. */
+    fun hop(at: Pair<Double, Double>?) {
+        val info = effectInfo("hop") ?: return
+        val now = now()
+        if (effectRunning && effectCode != info.code && now - effectStart < effectDuration) return
+        if (now - lastHop < 0.5) return
+        lastHop = now
+        tapAt = at
+        effectCode = info.code
+        effectDuration = info.duration
+        effectStart = now
+        effectRunning = true
+    }
+
     /** The running effect's runtime keys (empty once it has ended). */
     internal fun effectKeys(reduced: Boolean): Map<String, Double> {
         if (!effectRunning) return emptyMap()
@@ -542,11 +663,17 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
             effectRunning = false
             return emptyMap()
         }
-        return mapOf(
+        val keys = mutableMapOf(
             "effectCode" to effectCode.toDouble(),
             "effectAge" to max(0.0, age),
             "effectReduced" to if (reduced) 1.0 else 0.0,
         )
+        val tap = tapAt
+        if (tap != null && effectCode == effectInfo("hop")?.code) {
+            keys["tapX"] = tap.first
+            keys["tapY"] = tap.second
+        }
+        return keys
     }
 
     /** The state may have changed: rename the view, and let the announcer decide. */
@@ -737,7 +864,7 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
         val live = perf.overrides + (voice?.overrides(rawDt) ?: emptyMap())
         val boxed = if (aspect != null) live + ("aspect" to aspect) else live
         // A one-shot effect the view is playing: its runtime keys.
-        val voiceMap = boxed + effectKeys(reduced)
+        val voiceMap = boxed + effectKeys(reduced) + expressionKeys(reduced) + paletteKeys()
         return when (input) {
             is FxInput.Spec -> {
                 val ins = HashMap(inputs)

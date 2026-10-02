@@ -36,7 +36,10 @@ export function canvas(css = 100) {
   const calls = [];
   let clears = 0;
   const ctx = {
-    save() {}, restore() {}, beginPath() {}, stroke() {}, fill() {},
+    save() {}, restore() {}, beginPath() {}, closePath() {}, stroke() {}, fill() {},
+    // Fills (characters) paint with gradients; the stub only needs them to exist.
+    createLinearGradient() { return { addColorStop() {} }; },
+    createRadialGradient() { return { addColorStop() {} }; },
     // Path points and the translate are recorded for the box-layout tests (edge,
     // playback): they're strokes, not arcs, and fill the box instead of a square.
     moveTo(x, y) { calls.push(["moveTo", x, y]); },

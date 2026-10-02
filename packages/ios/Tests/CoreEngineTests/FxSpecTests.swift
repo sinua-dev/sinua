@@ -53,6 +53,15 @@ final class FxSpecTests: XCTestCase {
                 }
             }
         }
+        // FX Spec 1.12: a character recipe carried in the spec draws under its registry key.
+        let pip = try String(
+            contentsOf: dir.appendingPathComponent("custom-character.fxspec.json"), encoding: .utf8)
+        let pipState = CoreEngine.resolveFxSpecWith(json: pip, state: "speaking", inputs: Self.inputs).state
+        XCTAssertTrue(pipState.hasPrefix("recipe:pip:"), pipState)
+        let pipFrame = try XCTUnwrap(
+            CoreEngine.frameFromFxSpecWith(
+                json: pip, elapsed: 1.3, state: "speaking", inputs: Self.inputs, lowPower: false))
+        XCTAssertGreaterThan(pipFrame.fills.count, 20)
         // FX Spec 1.2: low power caps fps and sheds glow + noise.
         let power = try String(
             contentsOf: dir.appendingPathComponent("status-beacon-power.fxspec.json"), encoding: .utf8)
@@ -94,7 +103,7 @@ final class FxSpecTests: XCTestCase {
         let objects = try XCTUnwrap(cat["objects"] as? [[String: Any]])
         XCTAssertEqual(
             objects.compactMap { $0["component"] as? String },
-            ["SinuaOrb", "SinuaSignal", "SinuaRing", "SinuaCore", "SinuaBeacon", "SinuaEdge", "SinuaCharacter"])
+            ["SinuaOrb", "SinuaSignal", "SinuaRing", "SinuaCore", "SinuaBeacon", "SinuaCharacter"])
         let defs = try XCTUnwrap(cat["definitions"] as? [String: [String: Any]])
         XCTAssertEqual(defs["glowStrength@shared"]?["path"] as? String, "glow.strength")
         let w = CoreEngine.checkOverrides(state: "breathing", size: 64, overrides: ["lanse": 6])

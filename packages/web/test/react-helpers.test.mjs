@@ -38,6 +38,6 @@ test("voiceMessageSeek maps a touch onto the engine's row of bars", () => {
 });
 
 test("SinuaView: a box-layout pattern gets no square default; others do", () => {
-  assert.doesNotMatch(renderToStaticMarkup(createElement(SinuaView, { pattern: "framing" })), /aspect-ratio/);
+  assert.doesNotMatch(renderToStaticMarkup(createElement(SinuaView, { pattern: "playing" })), /aspect-ratio/);
   assert.match(renderToStaticMarkup(createElement(SinuaView, { pattern: "breathing" })), /aspect-ratio:1/);
 });

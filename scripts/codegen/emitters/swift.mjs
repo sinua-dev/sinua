@@ -126,6 +126,12 @@ function emitComponent(m, models, naming) {
   const writes = flat.map((p) => write(p, "        ")).join("\n");
   const groupWrites = groups.map((g) => `        ${id(g.name)}?.write(into: &o)`).join("\n");
   const firstPattern = m.patterns[0].caseName;
+  // Tap to hop (design note 15): characters only, on by default.
+  const tapOn = m.object === "character";
+  const tapProp = tapOn ? "\n    /// Tap to hop: a tap plays `hop`, glancing toward it (design note 15). On by default.\n    public var tap: Bool\n    /// The expression (design note 16): \"happy\", \"surprised\", \"thoughtful\", \"sad\", \"sleepy\" or \"none\"; nil = the spec's.\n    public var expression: String?\n    /// The palette, in part (design note 19): slot -> hex, e.g. [\"shell\": \"#E63946\"]; empty = the character's own.\n    public var palette: [String: String]" : "";
+  const tapParam = tapOn ? ",\n        tap: Bool = true,\n        expression: String? = nil,\n        palette: [String: String] = [:]" : "";
+  const tapAssign = tapOn ? "\n        self.tap = tap\n        self.expression = expression\n        self.palette = palette" : "";
+  const tapArg = tapOn ? ", tap: tap, expression: expression, palette: palette" : "";
   const contents = `${header()}
 
 import SwiftUI
@@ -163,7 +169,7 @@ ${fields}
     /// A light tap when the agent starts listening. Off by default; never under reduced motion.
     public var haptics: Bool
     /// A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new trigger plays once.
-    public var effect: SinuaEffectTrigger?
+    public var effect: SinuaEffectTrigger?${tapProp}
     private var rules = true
     private var spec: String?
     public var inputs: [String: Double] = [:]
@@ -189,7 +195,7 @@ ${fields}
         labels: [String: String] = [:],
         announce: Bool? = nil,
         haptics: Bool = false,
-        effect: SinuaEffectTrigger? = nil
+        effect: SinuaEffectTrigger? = nil${tapParam}
     ) {
         self.pattern = pattern
         self.size = size
@@ -209,7 +215,7 @@ ${propAssigns}
         self.labels = labels
         self.announce = announce
         self.haptics = haptics
-        self.effect = effect
+        self.effect = effect${tapAssign}
     }
 
     /// Plays an FX Spec (JSON). It must describe a ${m.object} (\`"object": ${str(m.object)}\`): any other
@@ -234,11 +240,11 @@ ${propAssigns}
         announce: Bool? = nil,
         haptics: Bool = false,
         rules: Bool = true,
-        effect: SinuaEffectTrigger? = nil
+        effect: SinuaEffectTrigger? = nil${tapParam}
     ) {
         self.init(pattern: .${firstPattern}, voice: voice, voiceOverrides: voiceOverrides, theme: theme, paused: paused,
                   reducedMotion: reducedMotion, accessibilityLabel: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-                  labels: labels, announce: announce, haptics: haptics, effect: effect)
+                  labels: labels, announce: announce, haptics: haptics, effect: effect${tapArg})
         self.rules = rules
         self.spec = spec
         self.state = state
@@ -271,13 +277,13 @@ ${groupWrites}
                 SinuaView(spec: spec, voice: voice, voiceOverrides: voiceOverrides, state: state, inputs: inputs,
                        voiceLevelInput: voiceLevelInput, theme: theme, paused: paused, reducedMotion: reducedMotion,
                        accessibilityLabel: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-                       labels: labels, announce: announce, haptics: haptics, rules: rules, effect: effect)
+                       labels: labels, announce: announce, haptics: haptics, rules: rules, effect: effect${tapArg})
             }
         } else {
             SinuaView(pattern: pattern.rawValue, size: size.rawValue, overrides: overrides(), speed: speed, state: state, inputs: inputs, voice: voice,
                    voiceOverrides: voiceOverrides, theme: theme, paused: paused, reducedMotion: reducedMotion,
                    accessibilityLabel: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-                   labels: labels, announce: announce, haptics: haptics, effect: effect)
+                   labels: labels, announce: announce, haptics: haptics, effect: effect${tapArg})
         }
     }
 }

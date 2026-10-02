@@ -38,6 +38,8 @@ public struct SinuaView: View {
     @State private var onScreen = false
     /// The view's short side, for the small-view frame cap (0 until laid out).
     @State private var shortSide: CGFloat = 0
+    /// The view's box, for the tap's place in the drawn square.
+    @State private var box: CGSize = .zero
     @ObservedObject private var power = LowPowerMonitor.shared
     @ObservedObject private var app = AppActivityMonitor.shared
 
@@ -72,14 +74,18 @@ public struct SinuaView: View {
         announce: Bool? = nil,
         haptics: Bool = false,
         rules: Bool = true,
-        effect: SinuaEffectTrigger? = nil
+        effect: SinuaEffectTrigger? = nil,
+        tap: Bool = false,
+        expression: String? = nil,
+        palette: [String: String] = [:]
     ) {
         config = FxConfig(
             input: .spec(spec), voice: voice, voiceOverrides: voiceOverrides, specState: state, inputs: inputs,
             voiceLevelInput: voiceLevelInput, crossFade: crossFade, theme: theme, paused: paused,
             reducedMotion: reducedMotion,
             label: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-            labels: labels, announce: announce, haptics: haptics, rules: rules, effect: effect
+            labels: labels, announce: announce, haptics: haptics, rules: rules, effect: effect, tap: tap,
+            expression: expression, palette: palette
         )
     }
 
@@ -106,7 +112,10 @@ public struct SinuaView: View {
         labels: [String: String] = [:],
         announce: Bool? = nil,
         haptics: Bool = false,
-        effect: SinuaEffectTrigger? = nil
+        effect: SinuaEffectTrigger? = nil,
+        tap: Bool = false,
+        expression: String? = nil,
+        palette: [String: String] = [:]
     ) {
         config = FxConfig(
             input: .state(pattern, size, overrides, speed), voice: voice, voiceOverrides: voiceOverrides,
@@ -114,7 +123,8 @@ public struct SinuaView: View {
             voiceLevelInput: nil, crossFade: nil, theme: theme, paused: paused, reducedMotion: reducedMotion,
             label: accessibilityLabel,
             maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-            labels: labels, announce: announce, haptics: haptics, effect: effect
+            labels: labels, announce: announce, haptics: haptics, effect: effect, tap: tap,
+            expression: expression, palette: palette
         )
     }
 
@@ -222,7 +232,18 @@ public struct SinuaView: View {
         }
         // The box size, read without branching the body (an `if` would restart the timeline).
         .background(GeometryReader { g in Color.clear.preference(key: FxBoxSizeKey.self, value: g.size) })
-        .onPreferenceChange(FxBoxSizeKey.self) { shortSide = min($0.width, $0.height) }
+        .onPreferenceChange(FxBoxSizeKey.self) {
+            shortSide = min($0.width, $0.height)
+            box = $0
+        }
+        // Tap to hop: a touch that hardly moves (a scroll still scrolls).
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0).onEnded { g in
+                guard hypot(g.translation.width, g.translation.height) < 10 else { return }
+                model.hop(at: fxTapPoint(g.location, in: box))
+            },
+            including: config.tap ? .all : .none
+        )
         .onAppear {
             model.configureIfNeeded(config)
             onScreen = true
@@ -230,6 +251,15 @@ public struct SinuaView: View {
         .onDisappear { onScreen = false }
         .modifier(FxAccessibilityModifier(label: model.a11yLabel))
     }
+}
+
+/// Where a tap fell in the centred square the engine draws in, -1...1 from its centre.
+func fxTapPoint(_ p: CGPoint, in box: CGSize) -> (Double, Double) {
+    let side = min(box.width, box.height)
+    guard side > 0 else { return (0, 0) }
+    let x = (p.x - (box.width - side) / 2) / side * 2 - 1
+    let y = (p.y - (box.height - side) / 2) / side * 2 - 1
+    return (Double(max(-1, min(1, x))), Double(max(-1, min(1, y))))
 }
 
 /// Below this short side (points) a view defaults to 30 fps: a list of avatars,
@@ -280,6 +310,14 @@ struct FxConfig {
     var haptics = false
     var rules = true
     var effect: SinuaEffectTrigger?
+    /// Tap to hop (design note 15): a tap plays `hop`, glancing toward it. Characters only.
+    var tap = false
+    /// A character's expression (design note 16): "happy", "surprised", "thoughtful", "sad",
+    /// "sleepy", or "none". It wins over a spec's `expression`; nil lets the spec decide.
+    var expression: String?
+    /// A character's palette, in part (design note 19): slot -> hex, e.g. ["shell": "#E63946"].
+    /// The slots' tones follow; it wins over a spec's `palette`. A change is immediate.
+    var palette: [String: String] = [:]
 
     /// What forces a re-resolve / rebind (the rest is read every frame).
     var key: String {
@@ -511,12 +549,20 @@ final class FxModel: ObservableObject {
     @Published private(set) var effectRunning = false
     private var effectPlayed: UUID?
     private var effect: (code: UInt32, duration: Double, start: Double)?
+    /// The tap hop's tap (-1...1 from the drawn square's centre), and when the last hop began.
+    private var tapAt: (Double, Double)?
+    private var lastHop = -Double.infinity
 
     /// Plays `trigger` if it's a new one (each `SinuaEffectTrigger` value plays once).
     func play(_ trigger: SinuaEffectTrigger?, config c: FxConfig) {
         guard let trigger, trigger.id != effectPlayed else { return }
         effectPlayed = trigger.id
+        if trigger.kind == .hop {
+            hop(at: nil)
+            return
+        }
         guard let info = effectInfo(name: trigger.kind.rawValue) else { return }
+        tapAt = nil
         effect = (info.code, info.duration, Self.now())
         // Published after this view update, so the timeline wakes for the effect.
         DispatchQueue.main.async { [weak self] in self?.effectRunning = true }
@@ -525,6 +571,62 @@ final class FxModel: ObservableObject {
         if !base.isEmpty, c.announce ?? a11yInfo.announce ?? true {
             Self.postAnnouncement(c.labels["effect:\(trigger.kind.rawValue)"] ?? info.words)
         }
+    }
+
+    // The palette's runtime keys, resolved once per (pattern, palette).
+    private var paletteFor: (String, [String: String])?
+    private var paletteCache: [String: Double] = [:]
+
+    /// The palette's runtime keys on `pattern` (design note 19); an unknown slot draws nothing new.
+    func paletteKeys(pattern: String, _ palette: [String: String]) -> [String: Double] {
+        if palette.isEmpty { return [:] }
+        if paletteFor?.0 != pattern || paletteFor?.1 != palette {
+            paletteFor = (pattern, palette)
+            let data = (try? JSONSerialization.data(withJSONObject: palette, options: [.sortedKeys])) ?? Data()
+            let json = String(decoding: data, as: UTF8.self)
+            paletteCache = paletteOverrides(pattern: pattern, paletteJson: json).overrides
+        }
+        return paletteCache
+    }
+
+    // The expression's weights, eased from what was shown to the new target over 0.6 s.
+    private var exprName: String?? = .none
+    private var exprFrom: [String: Double] = [:]
+    private var exprTo: [String: Double]?
+    private var exprStart = 0.0
+
+    /// The expression's runtime keys now: none while the app sets none (nil).
+    func expressionKeys(_ name: String?, reduced: Bool) -> [String: Double] {
+        let now = Self.now()
+        if exprName != .some(name) {
+            exprFrom = easedExpression(now: now, reduced: reduced) ?? [:]
+            exprTo = name.map { expressionOverrides(name: $0) ?? expressionOverrides(name: "none") ?? [:] }
+            exprStart = now
+            exprName = .some(name)
+        }
+        return easedExpression(now: now, reduced: reduced) ?? [:]
+    }
+
+    private func easedExpression(now: Double, reduced: Bool) -> [String: Double]? {
+        guard let to = exprTo else { return nil }
+        let u = reduced ? 1 : min(1, (now - exprStart) / 0.6)
+        let e = u * u * (3 - 2 * u)
+        return to.reduce(into: [:]) { out, kv in
+            let from = exprFrom[kv.key] ?? 0
+            out[kv.key] = from + (kv.value - from) * e
+        }
+    }
+
+    /// Plays the hop (a tap at `at`, or `.hop`): never over another effect, at most twice a second.
+    func hop(at: (Double, Double)?) {
+        guard let info = effectInfo(name: "hop") else { return }
+        let now = Self.now()
+        if let e = effect, e.code != info.code, now - e.start < e.duration { return }
+        guard now - lastHop >= 0.5 else { return }
+        lastHop = now
+        tapAt = at
+        effect = (info.code, info.duration, now)
+        DispatchQueue.main.async { [weak self] in self?.effectRunning = true }
     }
 
     /// The running effect's runtime keys (empty once it has ended).
@@ -536,7 +638,12 @@ final class FxModel: ObservableObject {
             DispatchQueue.main.async { [weak self] in self?.effectRunning = false }
             return [:]
         }
-        return ["effectCode": Double(e.code), "effectAge": max(0, age), "effectReduced": reduced ? 1 : 0]
+        var keys = ["effectCode": Double(e.code), "effectAge": max(0, age), "effectReduced": reduced ? 1 : 0]
+        if let (x, y) = tapAt, e.code == effectInfo(name: "hop")?.code {
+            keys["tapX"] = x
+            keys["tapY"] = y
+        }
+        return keys
     }
 
     /// The state may have changed: rename the view, and let the announcer decide.
@@ -624,7 +731,11 @@ final class FxModel: ObservableObject {
         var extra = perf.overrides.merging(voiceMap) { $1 }
         // A one-shot effect the view is playing (docs/fx-view.md): its runtime keys.
         extra.merge(effectKeys(reduced: reduced)) { $1 }
-        // A box-layout pattern (edge `framing`, signal `playing`) fills the box: it
+        // The app's expression, eased over a change (design note 16).
+        extra.merge(expressionKeys(config.expression, reduced: reduced)) { $1 }
+        // The app's palette (design note 19).
+        extra.merge(paletteKeys(pattern: resolved.state, config.palette)) { $1 }
+        // A box-layout pattern (signal `playing`) fills the box: it
         // gets the box ratio as `aspect` and lays out in `size * aspect` by `size`.
         if boxLayout, size.height > 0 { extra["aspect"] = min(8, max(0.125, size.width / size.height)) }
 

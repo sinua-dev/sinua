@@ -39,6 +39,12 @@ export interface SinuaViewElementProps {
   lowPower?: boolean;
   /** Pointer and touch scatter (see `SinuaViewOptions.pointer`). */
   pointer?: boolean;
+  /** Tap to hop (see `SinuaViewOptions.tap`). */
+  tap?: boolean;
+  /** A character's expression (see `SinuaViewOptions.expression`). */
+  expression?: string | null;
+  /** A character's palette, in part (see `SinuaViewOptions.palette`; property only). */
+  palette?: Record<string, unknown> | null;
   label?: string | null;
   /** Words per state for the accessible name and announcements (property only). */
   labels?: Record<string, string> | null;
@@ -86,12 +92,14 @@ export const FX_VIEW_ATTRIBUTES: Readonly<Record<string, { prop: keyof SinuaView
   "max-fps": { prop: "maxFps", type: "number" },
   "low-power": { prop: "lowPower", type: "boolean" },
   pointer: { prop: "pointer", type: "boolean" },
+  tap: { prop: "tap", type: "boolean" },
+  expression: { prop: "expression", type: "string" },
   label: { prop: "label", type: "string" },
 };
 
 const PROPS: readonly (keyof SinuaViewElementProps)[] = [
   "spec", "pattern", "state", "size", "speed", "overrides", "inputs", "voice", "voiceLevelInput",
-  "crossFade", "theme", "paused", "reducedMotion", "maxFps", "lowPower", "pointer", "label",
+  "crossFade", "theme", "paused", "reducedMotion", "maxFps", "lowPower", "pointer", "tap", "expression", "palette", "label",
   "labels", "announce", "rules",
 ];
 
@@ -134,6 +142,9 @@ export function optionsFromProps(
     maxFps: p.maxFps ?? undefined,
     lowPower: p.lowPower ?? false,
     pointer: p.pointer ?? false,
+    tap: p.tap ?? false,
+    expression: p.expression,
+    palette: p.palette,
     label: p.label ?? undefined,
     labels: p.labels ?? undefined,
     announce: p.announce ?? undefined,

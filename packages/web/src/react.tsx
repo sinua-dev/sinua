@@ -36,24 +36,24 @@ export function SinuaView({ className, style, onReady, ...options }: SinuaViewPr
 
   // Push changed props. Object props (spec, overrides, inputs) are compared
   // by reference: memoize them if you build them inline.
-  const { spec, pattern, state, size, overrides, speed, voice, voiceOptions, specState, inputs, voiceLevelInput, crossFade, theme, paused, reducedMotion, label, onError, maxFps, lowPower, onFrame, pointer, labels, announce, rules } =
+  const { spec, pattern, state, size, overrides, speed, voice, voiceOptions, specState, inputs, voiceLevelInput, crossFade, theme, paused, reducedMotion, label, onError, maxFps, lowPower, onFrame, pointer, tap, expression, palette, labels, announce, rules } =
     options;
-  const deps = [spec, pattern, size, overrides, speed, voice, voiceOptions, crossFade, maxFps, lowPower, pointer];
+  const deps = [spec, pattern, size, overrides, speed, voice, voiceOptions, crossFade, maxFps, lowPower, pointer, tap];
   useEffect(() => {
     if (first.current) {
       first.current = false;
       return;
     }
-    handle.current?.update({ spec, pattern, size, overrides, speed, voice, voiceOptions, crossFade, maxFps, lowPower, pointer });
+    handle.current?.update({ spec, pattern, size, overrides, speed, voice, voiceOptions, crossFade, maxFps, lowPower, pointer, tap });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
   // Per-frame values: cheap to push every render, never rebuild anything
   // (`state` rebuilds only when, spec-less and deprecated, it changes the pattern).
   useEffect(() => {
-    handle.current?.update({ state, specState, inputs, voiceLevelInput, theme, paused, reducedMotion, label, onError, onFrame, labels, announce, rules });
+    handle.current?.update({ state, specState, inputs, voiceLevelInput, theme, paused, reducedMotion, label, onError, onFrame, labels, announce, rules, expression, palette });
   });
 
-  // A box-layout pattern (edge `framing`, signal `playing`) fills the box it's given,
+  // A box-layout pattern (signal `playing`) fills the box it's given,
   // so it gets no square default; the app's `style` sizes it. Every other one is square.
   const box = useMemo(() => viewLayout({ spec, pattern, state }) === "box", [spec, pattern, state]);
   const sizing: CSSProperties = box ? { display: "block", width: "100%" } : { display: "block", width: "100%", aspectRatio: "1" };

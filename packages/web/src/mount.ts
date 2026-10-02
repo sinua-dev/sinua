@@ -13,6 +13,8 @@ import {
   resolveFxSpec,
   resolvedOpts,
   voiceStateProfile,
+  expressionOverrides,
+  paletteOverrides,
   patternLayout,
   type AnnouncerState,
   type FxAccessibility,
@@ -132,6 +134,27 @@ export interface SinuaViewOptions {
    * paused. It doesn't change `touch-action`, so a page still scrolls on touch.
    */
   pointer?: boolean;
+  /**
+   * Tap to hop (design note 15): a click or a touch on the view plays the `hop`
+   * effect, and a character glances toward where it was tapped. Characters only:
+   * other families draw nothing for it. Off by default here; `SinuaCharacter`
+   * turns it on. Ignored while success / error / celebrate plays; at most two
+   * hops a second.
+   */
+  tap?: boolean;
+  /**
+   * A character's expression (design note 16): `happy`, `surprised`, `thoughtful`, `sad`,
+   * `sleepy`, or `null` / `"none"` for none. It shapes the eyes and the resting mouth; the
+   * voice state keeps the gaze, the turn and the talking mouth. It wins over a spec's
+   * `expression`; leave it unset to let the spec decide. A change eases over 0.6 s.
+   */
+  expression?: string | null;
+  /**
+   * A character's palette, in part (design note 19): slot -> hex or DTCG colour, e.g.
+   * `{ shell: "#E63946" }`. The slots' tones follow; it wins over a spec's `palette`.
+   * A change is immediate. Problems (an unknown slot) go to `onError`.
+   */
+  palette?: Record<string, unknown> | null;
 }
 
 export interface FxFrameStats {
@@ -152,7 +175,8 @@ export interface FxHandle {
   /** Seconds the clock has run (pauses excluded). */
   readonly elapsed: number;
   /**
-   * Plays a one-shot effect on top of the view: `success`, `error` or `celebrate`
+   * Plays a one-shot effect on top of the view: `success`, `error`, `celebrate`, or a
+   * character's `hop` (silent; see `tap`)
    * (docs/fx-view.md, *One-shot effects*). A new one replaces a running one; unknown
    * names do nothing. The words are spoken unless `announce` is false.
    */
@@ -201,7 +225,7 @@ export function lifecycleStateOf(o: SinuaViewOptions): string | undefined {
 
 /**
  * How a view with these options lays out: `"box"` for a box-layout pattern (edge
- * `framing`, signal `playing`: it fills whatever box it gets), else `"square"`.
+ * signal `playing`: it fills whatever box it gets), else `"square"`.
  * Wrappers use it for their default size (React: no square `aspectRatio` for a box
  * pattern). Invalid input is `"square"`.
  */
@@ -349,6 +373,10 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
   // One-shot effect (docs/fx-view.md): the running one, on the performance clock.
   let effect: { code: number; duration: number; start: number } | null = null;
   let warnedEffect = false;
+  // The tap hop: where the view was tapped (-1..1 from the drawn square's centre), and when.
+  const HOP = effectInfo("hop");
+  let tapAt: { x: number; y: number } | null = null;
+  let lastHop = -Infinity;
 
   /** The effect's runtime keys while it runs (then it's cleared). */
   function withEffect<T extends Record<string, number>>(keys: T): T | (T & Record<string, number>) {
@@ -358,7 +386,74 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
       effect = null;
       return keys;
     }
-    return { ...keys, effectCode: effect.code, effectAge: Math.max(0, age), effectReduced: isReduced() ? 1 : 0 };
+    const tap = tapAt && effect.code === HOP?.code ? { tapX: tapAt.x, tapY: tapAt.y } : {};
+    return { ...keys, effectCode: effect.code, effectAge: Math.max(0, age), effectReduced: isReduced() ? 1 : 0, ...tap };
+  }
+  // The expression's weights, eased from what was shown to the new target over 0.6 s.
+  const EXPRESSION_S = 0.6;
+  let exprName: string | null | undefined = undefined;
+  let exprFrom: Record<string, number> = {};
+  let exprTo: Record<string, number> | null = null;
+  let exprStart = 0;
+  // The palette's opts, resolved once per (pattern, palette).
+  let paletteKey = "";
+  let paletteKeys: Record<string, number> = {};
+  function paletteNow(pattern: string): Record<string, number> {
+    if (!opts.palette) return {};
+    const key = `${pattern}\u0000${JSON.stringify(opts.palette)}`;
+    if (key !== paletteKey) {
+      paletteKey = key;
+      // A file's own recipe: resolved again by its id (the registry keeps it by hash).
+      let recipe: Record<string, unknown> | undefined;
+      try {
+        const text = specText();
+        const doc = text ? (JSON.parse(text) as { recipe?: unknown }) : null;
+        if (doc?.recipe && typeof doc.recipe === "object") recipe = doc.recipe as Record<string, unknown>;
+      } catch {
+        recipe = undefined;
+      }
+      const id = recipe && typeof recipe.id === "string" ? recipe.id : pattern;
+      const r = paletteOverrides(id, opts.palette, recipe);
+      paletteKeys = r.overrides;
+      const bad = r.diagnostics.filter((d) => d.severity === "error");
+      if (bad.length) {
+        if (opts.onError) opts.onError(bad);
+        else console.warn(`SinuaView palette: ${bad.map((d) => `${d.path}: ${d.message}`).join("; ")}`);
+      }
+    }
+    return paletteKeys;
+  }
+  function expressionNow(): Record<string, number> | null {
+    if (!exprTo) return null;
+    const u = isReduced() ? 1 : Math.min(1, (performance.now() / 1000 - exprStart) / EXPRESSION_S);
+    const e = u * u * (3 - 2 * u);
+    const out: Record<string, number> = {};
+    for (const [k, v] of Object.entries(exprTo)) out[k] = (exprFrom[k] ?? 0) + (v - (exprFrom[k] ?? 0)) * e;
+    return out;
+  }
+  function applyExpression(): void {
+    const name = opts.expression;
+    if (name === exprName) return;
+    exprFrom = expressionNow() ?? {};
+    if (name === undefined) exprTo = null;
+    else {
+      const to = expressionOverrides(name ?? "none");
+      if (!to) console.warn(`SinuaView: no expression named "${name}" (happy, surprised, thoughtful, sad, sleepy)`);
+      exprTo = to ?? expressionOverrides("none");
+    }
+    exprStart = performance.now() / 1000;
+    exprName = name;
+  }
+  /** Plays the hop (from a tap at `at`, or `trigger("hop")`): never over another effect, at most twice a second. */
+  function hop(at: { x: number; y: number } | null): void {
+    if (!HOP || destroyed) return;
+    const now = performance.now() / 1000;
+    if (effect && effect.code !== HOP.code && now - effect.start < effect.duration) return;
+    if (now - lastHop < 0.5) return;
+    lastHop = now;
+    tapAt = at;
+    effect = { code: HOP.code, duration: HOP.duration, start: now };
+    refresh();
   }
   let player: FxSpecPlayer | null = null;
   let perf: FxPerformance = { maxFps: null, overrides: {} };
@@ -443,7 +538,7 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
   let lastTick: number | null = null;
   let lastReducedDraw = -Infinity;
   let scheduled = false;
-  // A box-layout pattern (`patternLayout`: edge `framing`, signal `playing`) fills
+  // A box-layout pattern (`patternLayout`: signal `playing`) fills
   // the whole box: the engine gets the box ratio as `aspect`, no centred square.
   let boxLayout = false;
   let destroyed = false;
@@ -670,7 +765,10 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
     const live = Object.keys(pointerMap).length ? { ...voiceMap, ...pointerMap } : voiceMap;
     // Low-power overrides (pre-1.2 / block-less default) sit between the spec's and the live keys.
     const withPerf = Object.keys(perf.overrides).length ? { ...perf.overrides, ...live } : live;
-    const extra = withEffect(boxLayout ? { ...withPerf, aspect: boxAspect() } : withPerf);
+    const shown = withEffect(boxLayout ? { ...withPerf, aspect: boxAspect() } : withPerf);
+    const expr = expressionNow();
+    const pal = opts.palette && resolved ? paletteNow(resolved.state) : null;
+    const extra = { ...shown, ...(expr ?? {}), ...(pal ?? {}) };
     const t0 = opts.onFrame ? performance.now() : 0;
     let frame: OrbFrame | null = null;
     let packed: PackedFrame | null = null;
@@ -843,6 +941,24 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
   const onPointerUp = (e: PointerEvent) => {
     if (e.pointerType !== "mouse") pointer.active = false;
   };
+  // Tap to hop: the tap's place in the drawn square, -1..1 from its centre.
+  const onTap = (e: PointerEvent) => {
+    const r = canvas.getBoundingClientRect();
+    const side = boxLayout ? r.height : Math.min(r.width, r.height);
+    if (!side) return;
+    const ox = boxLayout ? 0 : (r.width - side) / 2;
+    const oy = boxLayout ? 0 : (r.height - side) / 2;
+    const c = (v: number) => Math.max(-1, Math.min(1, v));
+    hop({ x: c(((e.clientX - r.left - ox) / side) * 2 - 1), y: c(((e.clientY - r.top - oy) / side) * 2 - 1) });
+  };
+  let tapBound = false;
+  function applyTap(): void {
+    const want = !!opts.tap && !destroyed;
+    if (want === tapBound) return;
+    if (want) canvas.addEventListener("pointerdown", onTap);
+    else canvas.removeEventListener("pointerdown", onTap);
+    tapBound = want;
+  }
   function applyPointer(): void {
     const want = !!opts.pointer && !destroyed;
     if (want === pointerBound) return;
@@ -866,6 +982,8 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
 
   applyInput();
   applyPointer();
+  applyTap();
+  applyExpression();
   resizeBacking();
   refresh();
 
@@ -889,6 +1007,8 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
         if ("maxFps" in next || "lowPower" in next) applyPerformance();
       }
       if ("pointer" in next) applyPointer();
+      if ("tap" in next) applyTap();
+      if ("expression" in next) applyExpression();
       if ("labels" in next || "announce" in next) a11yState = undefined; // re-word the current state
       refreshA11y();
       refresh();
@@ -897,10 +1017,12 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
       if (destroyed) return;
       const info = effectInfo(name);
       if (!info) {
-        if (!warnedEffect) console.warn(`SinuaView: no effect named "${name}" (success, error, celebrate)`);
+        if (!warnedEffect) console.warn(`SinuaView: no effect named "${name}" (success, error, celebrate, hop)`);
         warnedEffect = true;
         return;
       }
+      if (info.code === HOP?.code) return hop(null);
+      tapAt = null;
       effect = { code: info.code, duration: info.duration, start: performance.now() / 1000 };
       // An effect is an event: spoken now, outside the state rate limit.
       const base = a11yBase();
@@ -923,6 +1045,7 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
       liveRegion?.remove();
       liveRegion = null;
       applyPointer(); // destroyed: unbinds
+      applyTap();
       if (scheduled && win) cancelFrame(win, tick);
       scheduled = false;
       ro?.disconnect();

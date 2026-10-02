@@ -46,6 +46,9 @@ class FxHostView(context: Context) : FrameLayout(context) {
     var announce by mutableStateOf<Boolean?>(null)
     var haptics by mutableStateOf(false)
     var rules by mutableStateOf(true)
+    var tap by mutableStateOf(false)
+    var expression by mutableStateOf<String?>(null)
+    var palette by mutableStateOf<Map<String, String>>(emptyMap())
     var effect by mutableStateOf<SinuaEffectTrigger?>(null)
     private var effectName: String? = null
     private var effectKey = 0
@@ -111,6 +114,9 @@ class FxHostView(context: Context) : FrameLayout(context) {
                 crossFade = crossFade, theme = theme, paused = paused, reducedMotion = reducedMotion,
                 contentDescription = label, maxFps = maxFps, lowPower = lowPower, onFrame = frame,
                 labels = labels, announce = announce, haptics = haptics, rules = rules, effect = effect,
+                tap = tap,
+                expression = expression,
+                palette = palette,
             )
         } else {
             SinuaView(
@@ -119,6 +125,9 @@ class FxHostView(context: Context) : FrameLayout(context) {
                 theme = theme, paused = paused, reducedMotion = reducedMotion, contentDescription = label,
                 maxFps = maxFps, lowPower = lowPower, onFrame = frame,
                 labels = labels, announce = announce, haptics = haptics, effect = effect,
+                tap = tap,
+                expression = expression,
+                palette = palette,
             )
         }
     }

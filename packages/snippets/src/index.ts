@@ -8,6 +8,8 @@
  * test/snippets.test.mjs is the byte-for-byte lock they are diffed against.
  */
 
+export { fitPath, pathBox, svgPaths, type Box, type FitResult } from "./fitPath.js";
+
 /** One platform's tab in the export panel. */
 export interface SnippetTab {
   id: string;
@@ -34,10 +36,16 @@ export interface SnippetInput {
    * app plays it (docs/fx-view.md, *One-shot effects*). Without it the text is unchanged.
    */
   effect?: SnippetEffect;
+  /**
+   * A character's palette (FX Spec 1.12, design note 19), slot -> hex: printed as the
+   * `palette` prop, and its resolved `palette.*` keys left out of `overrides`.
+   * Without it the text is unchanged.
+   */
+  palette?: Record<string, string>;
 }
 
 /** The one-shot effects (docs/fx-view.md, *One-shot effects*). */
-export type SnippetEffect = "success" | "error" | "celebrate";
+export type SnippetEffect = "success" | "error" | "celebrate" | "hop";
 
 /**
  * How the app plays `effect` on platform `id`, as comment lines. It's an app event
@@ -104,7 +112,7 @@ export interface Snippets {
  * `layout: "box"`). The native Studios' Snippets.swift / .kt use the same numbers.
  */
 export function snippetBox(pattern: string): [number, number] {
-  return pattern === "framing" ? [180, 390] : pattern === "playing" ? [220, 44] : [160, 160];
+  return pattern === "playing" ? [220, 44] : [160, 160];
 }
 
 /**
@@ -113,8 +121,11 @@ export function snippetBox(pattern: string): [number, number] {
  * (the canonical format) and loads it. The native Studios port this text
  * exactly (the native Studios' Snippets.swift and Snippets.kt).
  */
-export function buildSnippets({ state, size, overrides, speed = 1, specFile, effect }: SnippetInput): Snippets {
+export function buildSnippets({ state, size, overrides: all, speed = 1, specFile, effect, palette }: SnippetInput): Snippets {
   const base = specFile.replace(/\.fxspec\.json$/, "");
+  const slots = palette ? Object.keys(palette).sort() : [];
+  const overrides = slots.length ? Object.fromEntries(Object.entries(all).filter(([k]) => !k.startsWith("palette."))) : all;
+  const pal = (pair: (k: string, v: string) => string) => slots.map((k) => pair(k, palette![k])).join(", ");
   const has = Object.keys(overrides).length > 0;
   const file = `// ${specFile}: the file from the Studio's Spec menu.`;
   const orFile = `// Or use the file: Spec menu → ${specFile} (File tab).`;
@@ -122,10 +133,10 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile, eff
   const composeSize = boxW === boxH ? `${boxW}.dp` : `${boxW}.dp, ${boxH}.dp`;
 
   // Props per syntax (size/speed only when not the default).
-  const jsProps = [`pattern="${state}"`, size !== 64 ? `size={${size}}` : "", has ? `overrides={${jsObject(overrides)}}` : "", speed !== 1 ? `speed={${snipNum(speed)}}` : ""]
+  const jsProps = [`pattern="${state}"`, size !== 64 ? `size={${size}}` : "", has ? `overrides={${jsObject(overrides)}}` : "", slots.length ? `palette={{ ${pal((k, v) => `${k}: "${v}"`)} }}` : "", speed !== 1 ? `speed={${snipNum(speed)}}` : ""]
     .filter(Boolean)
     .join(" ");
-  const jsOpts = [`pattern: "${state}"`, size !== 64 ? `size: ${size}` : "", has ? `overrides: ${jsObject(overrides)}` : "", speed !== 1 ? `speed: ${snipNum(speed)}` : ""]
+  const jsOpts = [`pattern: "${state}"`, size !== 64 ? `size: ${size}` : "", has ? `overrides: ${jsObject(overrides)}` : "", slots.length ? `palette: { ${pal((k, v) => `${k}: "${v}"`)} }` : "", speed !== 1 ? `speed: ${snipNum(speed)}` : ""]
     .filter(Boolean)
     .join(", ");
   const swiftArgs = [
@@ -133,6 +144,7 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile, eff
     size !== 64 ? `size: ${size}` : "",
     has ? `overrides: [${sorted(overrides).map(([k, v]) => `"${k}": ${v}`).join(", ")}]` : "",
     speed !== 1 ? `speed: ${snipNum(speed)}` : "",
+    slots.length ? `palette: [${pal((k, v) => `"${k}": "${v}"`)}]` : "",
   ]
     .filter(Boolean)
     .join(", ");
@@ -141,6 +153,7 @@ export function buildSnippets({ state, size, overrides, speed = 1, specFile, eff
     size !== 64 ? `size = ${size}u` : "",
     has ? `overrides = mapOf(${sorted(overrides).map(([k, v]) => `"${k}" to ${kotlinDouble(v)}`).join(", ")})` : "",
     speed !== 1 ? `speed = ${kotlinDouble(snipNum(speed))}` : "",
+    slots.length ? `palette = mapOf(${pal((k, v) => `"${k}" to "${v}"`)})` : "",
   ]
     .filter(Boolean)
     .join(", ");

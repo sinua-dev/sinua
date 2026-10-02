@@ -87,7 +87,7 @@ test("a spec for another object draws nothing instead of falling through", () =>
   for (const m of models) {
     const text = componentText(m);
     const bail = text.indexOf("if (specError) return <View");
-    const draw = text.indexOf("<SinuaView {...rest} spec={spec}");
+    const draw = text.search(/<SinuaView (tap )?\{\.\.\.rest\} spec=\{spec\}/);
     assert.ok(bail >= 0, `${m.typeName}: no empty-view bail-out`);
     assert.ok(draw >= 0, `${m.typeName}: no spec render path`);
     assert.ok(bail < draw, `${m.typeName}: the bail-out must come before the render, or a mismatched spec still draws`);

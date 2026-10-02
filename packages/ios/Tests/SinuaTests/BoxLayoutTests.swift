@@ -16,7 +16,6 @@ final class BoxLayoutTests: XCTestCase {
     }
 
     func testTheEngineSaysWhichPatternsFillTheBox() {
-        XCTAssertEqual(patternLayout(pattern: "framing"), "box")
         XCTAssertEqual(patternLayout(pattern: "playing"), "box")
         XCTAssertEqual(patternLayout(pattern: "breathing"), "square")
     }
@@ -51,12 +50,14 @@ final class BoxLayoutTests: XCTestCase {
         return n
     }
 
-    func testAnEdgeFillsAWideBoxAndASquarePatternStaysCentred() throws {
-        let edge = SinuaView(
-            pattern: "framing", overrides: ["idleOpacity": 0.8, "saturation": 0], reducedMotion: .never)
+    func testABoxPatternFillsAWideBoxAndASquarePatternStaysCentred() throws {
+        let bar = SinuaView(
+            pattern: "playing", overrides: ["progress": 0.4, "saturation": 0], reducedMotion: .never)
+        // The bars end a little short of the box (x ~ 249 of 256 at aspect 4): a 20 px band.
         XCTAssertGreaterThan(
-            try inkAtRightEdge(edge, width: 400, height: 100), 50, "the rim reaches the box's right edge")
+            try inkAtRightEdge(bar, width: 400, height: 100, band: 20), 20, "the bars reach the box's right side")
         let ring = SinuaView(pattern: "completing", overrides: ["progress": 1], reducedMotion: .never)
-        XCTAssertEqual(try inkAtRightEdge(ring, width: 400, height: 100), 0, "a square pattern leaves the sides empty")
+        XCTAssertEqual(
+            try inkAtRightEdge(ring, width: 400, height: 100, band: 20), 0, "a square pattern leaves the sides empty")
     }
 }

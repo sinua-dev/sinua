@@ -20,6 +20,8 @@ import {
   parameter_catalog_json,
   check_overrides_json,
   voice_state_profile_json,
+  expression_overrides_json,
+  character_recipe_json,
   pattern_layout_json,
   playback_seek_progress_json,
 } from "../pkg/sinua_core_inline.js";
@@ -106,15 +108,15 @@ export type OrbState =
   // "generating..." indicators -- a shimmer sweep and typing dots.
   | "generating"
   | "typing"
-  // The `edge` family (`crates/core_engine/src/edge/`): the in-app screen-edge
-  // glow (`rim`; box layout).
-  | "framing"
   // The `character` family (`crates/core_engine/src/character/`): characters
   // with a face and voice states (FX Spec 1.11).
   | "buzzy"
   | "hum"
   | "wisp"
-  | "chirp";
+  | "chirp"
+  | "cuppa"
+  | "bean"
+  | "beep";
 
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;
@@ -415,7 +417,7 @@ export interface FxSpec {
   fxSpec: string;
   name?: string;
   description?: string;
-  object: "orb" | "signal" | "ring" | "beacon" | "core" | "edge" | "character";
+  object: "orb" | "signal" | "ring" | "beacon" | "core" | "character";
   state: string;
   size?: OrbSize;
   speed?: number;
@@ -445,7 +447,15 @@ export interface FxSpec {
     maxFps?: number;
     lowPower?: { maxFps?: number; disable?: ("glow" | "noise" | "pulse" | "gradient")[] };
   };
+  /**
+   * v1.12 (`object: "character"`): a character recipe (the format of
+   * `spec/characters/*.json`). Every `pattern` equal to its `id` draws it.
+   */
+  recipe?: { [key: string]: FxJson };
 }
+
+/** Plain JSON, as an FX Spec's `recipe` holds it. */
+export type FxJson = null | boolean | number | string | FxJson[] | { [key: string]: FxJson };
 
 /** v1.1: one binding -- the app's `input` value mapped onto its target (see `bindReactiveInput`). */
 export interface FxBinding {
@@ -642,7 +652,8 @@ export interface ParameterDefinition {
   scope: string;
   path: string;
   label: string;
-  description: string;
+  /** Not in the runtime catalog (design note 10): it is in spec/parameters.json, the components' doc comments and on sinua.dev. */
+  description?: string;
   category: ParameterCategory["id"];
   /** `value` = app data (a direct component prop); `style` = the look. */
   group: "value" | "style";
@@ -673,8 +684,9 @@ export interface ParameterDefinition {
 export interface ParameterPattern {
   id: OrbState;
   label: string;
-  /** One line: what the pattern is for and what it looks like. */
-  description: string;
+  /** One line: what the pattern is for and what it looks like. Not in the runtime catalog
+   * (design note 10): it is in spec/parameters.json, the components' doc comments and on sinua.dev. */
+  description?: string;
   mode: string;
   speed: number;
   sizes: OrbSize[];
@@ -685,7 +697,7 @@ export interface ParameterPattern {
 }
 
 export interface ParameterObject {
-  id: "orb" | "signal" | "ring" | "core" | "beacon" | "edge" | "character";
+  id: "orb" | "signal" | "ring" | "core" | "beacon" | "character";
   label: string;
   component: string;
   patterns: ParameterPattern[];
@@ -694,7 +706,8 @@ export interface ParameterObject {
 export interface ParameterMaterial {
   id: string;
   label: string;
-  description: string;
+  /** Not in the runtime catalog (design note 10): it is in spec/parameters.json, the components' doc comments and on sinua.dev. */
+  description?: string;
   specSection: string;
   master: string;
   params: string[];
@@ -704,7 +717,8 @@ export interface RuntimeInput {
   key: string;
   path: string;
   label: string;
-  description: string;
+  /** Not in the runtime catalog (design note 10): it is in spec/parameters.json, the components' doc comments and on sinua.dev. */
+  description?: string;
   type: string;
   min?: number;
   max?: number;
@@ -729,8 +743,10 @@ let catalogCache: ParameterCatalog | null = null;
 
 /**
  * The parameter catalog: every object, pattern and tunable, with labels,
- * descriptions, valid/UI ranges, groups, paths and per-size defaults. Rust
- * owns it; this is the same JSON as `spec/parameters.json`. Parsed once.
+ * valid/UI ranges, groups, paths and per-size defaults. Rust owns it; this is
+ * `spec/parameters.json` without the descriptions (they stay out of the
+ * runtime; they are in that file, the components' doc comments and on
+ * sinua.dev). Parsed once.
  */
 export function parameterCatalog(): ParameterCatalog {
   return (catalogCache ??= JSON.parse(parameter_catalog_json()) as ParameterCatalog);
@@ -772,11 +788,56 @@ export function voiceStateProfile(pattern: OrbState | string, state: VoiceStateN
   return JSON.parse(voice_state_profile_json(pattern, state)) as VoiceStateProfile | null;
 }
 
+/** A character's palette override resolved (design note 19): engine opts and diagnostics. */
+export interface PaletteResult {
+  overrides: Record<string, number>;
+  diagnostics: FxDiagnostic[];
+}
+
+/**
+ * `palette` (slot -> hex or DTCG colour) on a character `pattern`, by the FX Spec's own
+ * rules: the slots' Light/Dark tones follow, a dark ground lifts its ink. The views use it.
+ * For a character drawn from a file's recipe, pass that `recipe` and its id as `pattern`.
+ * (Through `resolveFxSpec`: no wasm of its own.)
+ */
+export function paletteOverrides(
+  pattern: string,
+  palette: Record<string, unknown>,
+  recipe?: Record<string, unknown>
+): PaletteResult {
+  const doc = { fxSpec: "1.12", object: "character", pattern, palette, ...(recipe ? { recipe } : {}) };
+  const r = resolveFxSpec(JSON.stringify(doc));
+  const overrides: Record<string, number> = {};
+  for (const [k, v] of Object.entries(r.overrides)) if (k.startsWith("palette.")) overrides[k] = v;
+  return { overrides, diagnostics: r.diagnostics.filter((d) => d.path.startsWith("/palette") || d.path.startsWith("/pattern")) };
+}
+
+/**
+ * A built-in character's recipe (`spec/characters/<id>.json` as the engine carries it), or
+ * null for another id. A copy is the start of a remix: change it and ship it as an FX Spec
+ * 1.12 file's `recipe`. Its `palette` names are the slots `palette` takes.
+ */
+export function characterRecipe(id: string): Record<string, unknown> | null {
+  const json = character_recipe_json(id);
+  return json ? (JSON.parse(json) as Record<string, unknown>) : null;
+}
+
+/** A character's expressions (FX Spec 1.12, design note 16). */
+export type CharacterExpression = "happy" | "surprised" | "thoughtful" | "sad" | "sleepy";
+
+/**
+ * An expression as the engine opts that weigh it (the named one 1, the others 0;
+ * `"none"` all 0), or null for an unknown name. The views ease these over a change.
+ */
+export function expressionOverrides(name: CharacterExpression | "none" | string): Record<string, number> | null {
+  return JSON.parse(expression_overrides_json(name)) as Record<string, number> | null;
+}
+
 /**
  * How `pattern` lays out in a view's box. `"box"`: engine space follows the
  * box ratio -- pass the box's width / height as the `aspect` input and map
- * engine space (`size * aspect` by `size`) onto the whole box (edge `framing`,
- * signal `playing`). `"square"`: a square centred in the box, like every
+ * engine space (`size * aspect` by `size`) onto the whole box (signal
+ * `playing`). `"square"`: a square centred in the box, like every
  * other pattern (and an unknown one).
  */
 export function patternLayout(pattern: OrbState | string): "box" | "square" {

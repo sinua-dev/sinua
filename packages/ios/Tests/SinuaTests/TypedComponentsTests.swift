@@ -141,8 +141,5 @@ final class TypedComponentsTests: XCTestCase {
                 SinuaView(
                     pattern: "completing", overrides: quiet.overrides(), paused: true, labels: labels, announce: false)
             ))
-        let spec = #"{"fxSpec":"1.9","object":"edge","pattern":"framing"}"#
-        let edge = SinuaEdge(spec: spec, rules: false, effect: trigger)
-        XCTAssertEqual(edge.effect, trigger)
     }
 }

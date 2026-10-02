@@ -23,6 +23,9 @@ enum class SinuaCharacterPattern(val id: String) {
     HUM("hum"),
     WISP("wisp"),
     CHIRP("chirp"),
+    CUPPA("cuppa"),
+    BEAN("bean"),
+    BEEP("beep"),
 }
 
 /** Character parameters; null keeps the pattern's value. [toOverrides] is what [SinuaCharacter] hands to SinuaView. */
@@ -95,6 +98,8 @@ data class SinuaCharacterProps(
     val curlGain: Double? = null,
     /** How much the wings flutter with the voice while speaking (radians). Range 0...0.6. Patterns: chirp. */
     val flutterGain: Double? = null,
+    /** The character's arms (Beep): a hand to the ear while listening, to the chin while thinking, beats while speaking. Off: no arms. Patterns: beep. */
+    val arms: Boolean? = null,
     val glow: SinuaGlow? = null,
     val noise: SinuaNoise? = null,
     val pulse: SinuaPulse? = null,
@@ -139,6 +144,7 @@ data class SinuaCharacterProps(
         swayGain?.let { o["swayGain"] = it }
         curlGain?.let { o["curlGain"] = it }
         flutterGain?.let { o["flutterGain"] = it }
+        arms?.let { o["arms"] = if (it) 1.0 else 0.0 }
         glow?.writeTo(o)
         noise?.writeTo(o)
         pulse?.writeTo(o)
@@ -193,6 +199,7 @@ fun SinuaCharacter(
     swayGain: Double? = null,
     curlGain: Double? = null,
     flutterGain: Double? = null,
+    arms: Boolean? = null,
     glow: SinuaGlow? = null,
     noise: SinuaNoise? = null,
     pulse: SinuaPulse? = null,
@@ -226,13 +233,17 @@ fun SinuaCharacter(
     haptics: Boolean = false,
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
     effect: SinuaEffectTrigger? = null,
+    /** Tap to hop: a tap plays `hop`, glancing toward it (design note 15). On by default. */
+    tap: Boolean = true,
+    /** The expression (design note 16): "happy", "surprised", "thoughtful", "sad", "sleepy" or "none"; null = the spec's. */
+    expression: String? = null,
 ) {
-    val overrides = SinuaCharacterProps(pattern = pattern, size = size, accessories = accessories, hue = hue, ink = ink, mouth = mouth, look = look, seed = seed, turn = turn, eyeAsym = eyeAsym, eyeH = eyeH, eyeR = eyeR, eyeSmile = eyeSmile, eyeTilt = eyeTilt, eyeW = eyeW, lid = lid, mouthDots = mouthDots, mouthTalk = mouthTalk, gazeX = gazeX, gazeY = gazeY, lean = lean, tilt = tilt, turnBlink = turnBlink, turnNod = turnNod, turnPitch = turnPitch, turnWander = turnWander, turnYaw = turnYaw, bounceGain = bounceGain, breath = breath, earGain = earGain, mouthGain = mouthGain, squashGain = squashGain, swayGain = swayGain, curlGain = curlGain, flutterGain = flutterGain, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
+    val overrides = SinuaCharacterProps(pattern = pattern, size = size, accessories = accessories, hue = hue, ink = ink, mouth = mouth, look = look, seed = seed, turn = turn, eyeAsym = eyeAsym, eyeH = eyeH, eyeR = eyeR, eyeSmile = eyeSmile, eyeTilt = eyeTilt, eyeW = eyeW, lid = lid, mouthDots = mouthDots, mouthTalk = mouthTalk, gazeX = gazeX, gazeY = gazeY, lean = lean, tilt = tilt, turnBlink = turnBlink, turnNod = turnNod, turnPitch = turnPitch, turnWander = turnWander, turnYaw = turnYaw, bounceGain = bounceGain, breath = breath, earGain = earGain, mouthGain = mouthGain, squashGain = squashGain, swayGain = swayGain, curlGain = curlGain, flutterGain = flutterGain, arms = arms, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,
         contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
-        labels = labels, announce = announce, haptics = haptics, effect = effect,
+        labels = labels, announce = announce, haptics = haptics, effect = effect, tap = tap, expression = expression,
     )
 }
 
@@ -267,6 +278,10 @@ fun SinuaCharacter(
     rules: Boolean = true,
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
     effect: SinuaEffectTrigger? = null,
+    /** Tap to hop: a tap plays `hop`, glancing toward it (design note 15). On by default. */
+    tap: Boolean = true,
+    /** The expression (design note 16): "happy", "surprised", "thoughtful", "sad", "sleepy" or "none"; null = the spec's. */
+    expression: String? = null,
 ) {
     val error = sinuaSpecError(spec, "character")
     if (error != null) {
@@ -278,6 +293,6 @@ fun SinuaCharacter(
         spec = spec, modifier = modifier, voice = voice, voiceOverrides = voiceOverrides, state = state,
         inputs = inputs, voiceLevelInput = voiceLevelInput, theme = theme, paused = paused, reducedMotion = reducedMotion,
         contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
-        labels = labels, announce = announce, haptics = haptics, rules = rules, effect = effect,
+        labels = labels, announce = announce, haptics = haptics, rules = rules, effect = effect, tap = tap, expression = expression,
     )
 }

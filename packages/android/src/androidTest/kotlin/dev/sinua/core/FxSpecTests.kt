@@ -57,6 +57,11 @@ class FxSpecTests {
                 }
             }
         }
+        // FX Spec 1.12: a character recipe carried in the spec draws under its registry key.
+        val pip = assets.open("examples/custom-character.fxspec.json").bufferedReader().use { it.readText() }
+        val pipState = resolveFxSpecWith(pip, "speaking", INPUTS).state
+        assertTrue(pipState, pipState.startsWith("recipe:pip:"))
+        assertTrue(frameFromFxSpecWith(pip, 1.3, "speaking", INPUTS, false)!!.fills.size > 20)
         // FX Spec 1.2: low power caps fps and sheds glow + noise.
         val power = assets.open("examples/status-beacon-power.fxspec.json").bufferedReader().use { it.readText() }
         assertEquals(30.0, resolveFxSpecWith(power, null, emptyMap()).maxFps)
@@ -100,7 +105,7 @@ class FxSpecTests {
         val cat = org.json.JSONObject(parameterCatalogJson())
         val objects = cat.getJSONArray("objects")
         assertEquals(
-            listOf("SinuaOrb", "SinuaSignal", "SinuaRing", "SinuaCore", "SinuaBeacon", "SinuaEdge", "SinuaCharacter"),
+            listOf("SinuaOrb", "SinuaSignal", "SinuaRing", "SinuaCore", "SinuaBeacon", "SinuaCharacter"),
             (0 until objects.length()).map { objects.getJSONObject(it).getString("component") },
         )
         assertEquals(

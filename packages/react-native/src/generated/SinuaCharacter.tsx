@@ -41,13 +41,13 @@ export function SinuaCharacter(props: SinuaCharacterProps) {
   if (props.spec != null) {
     const { spec, state, onError: _e, pattern: _p, ...rest } = props;
     if (specError) return <View style={rest.style} />;
-    return <SinuaView {...rest} spec={spec} state={state} />;
+    return <SinuaView tap {...rest} spec={spec} state={state} />;
   }
   const { pattern, size, state, inputs, onError: _e, ...rest } = props;
   const overrides = sinuaCharacterOverrides(pattern, rest as SinuaCharacterParams);
   const options: Record<string, unknown> = { ...rest };
   for (const k of PARAM_KEYS) delete options[k];
-  return <SinuaView {...(options as Options)} pattern={pattern} size={size} state={state} inputs={inputs} overrides={overrides} />;
+  return <SinuaView tap {...(options as Options)} pattern={pattern} size={size} state={state} inputs={inputs} overrides={overrides} />;
 }
 
-const PARAM_KEYS = ["accessories","hue","ink","mouth","look","seed","turn","eyeAsym","eyeH","eyeR","eyeSmile","eyeTilt","eyeW","lid","mouthDots","mouthTalk","gazeX","gazeY","lean","tilt","turnBlink","turnNod","turnPitch","turnWander","turnYaw","bounceGain","breath","earGain","mouthGain","squashGain","swayGain","curlGain","flutterGain","glow","noise","pulse","gradient","color","liquid","particles","holographic"];
+const PARAM_KEYS = ["accessories","hue","ink","mouth","look","seed","turn","eyeAsym","eyeH","eyeR","eyeSmile","eyeTilt","eyeW","lid","mouthDots","mouthTalk","gazeX","gazeY","lean","tilt","turnBlink","turnNod","turnPitch","turnWander","turnYaw","bounceGain","breath","earGain","mouthGain","squashGain","swayGain","curlGain","flutterGain","arms","glow","noise","pulse","gradient","color","liquid","particles","holographic"];

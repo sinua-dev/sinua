@@ -23,9 +23,9 @@ export interface TypedElementDefinition {
 }
 
 /** Options the wrapped view takes as they are (scalars are attributes, kebab-cased). */
-const VIEW_SCALARS = ["state", "size", "speed", "theme", "paused", "reducedMotion", "maxFps", "lowPower", "pointer", "label", "voiceLevelInput", "crossFade"] as const;
+const VIEW_SCALARS = ["state", "size", "speed", "theme", "paused", "reducedMotion", "maxFps", "lowPower", "pointer", "tap", "expression", "label", "voiceLevelInput", "crossFade"] as const;
 /** Objects and handles: properties only. */
-const VIEW_OBJECTS = ["spec", "inputs", "voice"] as const;
+const VIEW_OBJECTS = ["spec", "inputs", "voice", "palette"] as const;
 
 const kebab = (name: string) => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 const num = (text: string) => (text.trim() === "" || Number.isNaN(Number(text)) ? text : Number(text));
@@ -101,6 +101,8 @@ export function defineTypedElement(tag: string, def: TypedElementDefinition): vo
         view.overrides = def.toOverrides(pattern, params);
       }
       for (const p of [...VIEW_SCALARS, ...VIEW_OBJECTS]) if (rest[p] !== undefined) view[p] = rest[p];
+      // Tap to hop (design note 15): on by default on a character, `tap="false"` turns it off.
+      if (def.object === "character" && rest.tap === undefined) view.tap = true;
     }
   }
 

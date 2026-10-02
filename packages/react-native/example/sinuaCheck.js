@@ -56,7 +56,7 @@ export async function runSinuaCheckpoints(checkpoints, frameWithOverrides) {
 // .test.mjs fails if it drifts from spec/examples/beacon-radar-glow.fxspec.json.
 // `elapsed = 0` so the comparison needs no preset speed (RN exposes none).
 export const FX_SPEC_EXAMPLE = {
-  $schema: '../fx-spec-1.schema.json',
+  $schema: 'https://sinua.dev/schema/fx-spec-1.json',
   fxSpec: '1.8',
   name: 'Glowing radar',
   object: 'beacon',

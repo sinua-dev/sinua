@@ -51,5 +51,4 @@ class TypedComponentsTest {
 private fun typedComponentsTakeAccessibilityAndEffects(trigger: SinuaEffectTrigger = SinuaEffectTrigger(SinuaEffect.SUCCESS)) {
     val labels = mapOf("listening" to "Coach is listening")
     SinuaRing(SinuaRingPattern.COMPLETING, labels = labels, announce = false, haptics = true, effect = trigger)
-    SinuaEdge(spec = "{}", labels = labels, announce = true, haptics = false, rules = false, effect = trigger)
 }

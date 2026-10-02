@@ -45,7 +45,13 @@ export interface NativeProps extends ViewProps {
   announce?: CodegenTypes.WithDefault<"auto" | "on" | "off", "auto">;
   haptics?: CodegenTypes.WithDefault<boolean, false>;
   rules?: CodegenTypes.WithDefault<boolean, true>;
-  /** A one-shot effect (`success` / `error` / `celebrate`); it plays when `effectKey` changes. */
+  /** Tap to hop (design note 15): a tap plays `hop`, glancing toward it. Characters only. */
+  tap?: CodegenTypes.WithDefault<boolean, false>;
+  /** A character's expression (design note 16); "" = the spec's. */
+  expression?: string;
+  /** A character's palette, in part (design note 19), as JSON (slot -> hex); "" = the character's own. */
+  paletteJson?: string;
+  /** A one-shot effect (`success` / `error` / `celebrate` / `hop`); it plays when `effectKey` changes. */
   effectName?: string;
   effectKey?: CodegenTypes.WithDefault<CodegenTypes.Int32, 0>;
   /** Sent at most 4 times a second (native-side throttle); only while a handler is set. */

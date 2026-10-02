@@ -53,17 +53,16 @@ class BoxLayoutTest {
     }
 
     @Test fun theEngineSaysWhichPatternsFillTheBox() {
-        assertEquals("box", patternLayout("framing"))
         assertEquals("box", patternLayout("playing"))
         assertEquals("square", patternLayout("breathing"))
     }
 
     @Test fun aBoxLayoutModelDrawsAtTheBoxRatio() {
-        val edge = FxModel(FxInput.State("framing", 64u, mapOf("idleOpacity" to 0.8), 1.0), null, null)
-        assertTrue(edge.boxLayout)
-        val wide = edge.frame(1_000_000L, running = false, reduced = true, aspect = 4.0)!!.frame
+        val bar = FxModel(FxInput.State("playing", 64u, mapOf("progress" to 0.4), 1.0), null, null)
+        assertTrue(bar.boxLayout)
+        val wide = bar.frame(1_000_000L, running = false, reduced = true, aspect = 4.0)!!.frame
         val maxX = wide.polylines.flatMap { it.points }.maxOf { it.x }
-        assertTrue("aspect 4: the rim runs to x ~ 256, got $maxX", maxX > 240 && maxX <= 256)
+        assertTrue("aspect 4: the bars run to x ~ 256, got $maxX", maxX > 240 && maxX <= 256)
         val ring = FxModel(FxInput.State("completing", 64u, mapOf("progress" to 1.0), 1.0), null, null)
         assertFalse(ring.boxLayout)
     }

@@ -10,7 +10,7 @@ const golden = JSON.parse(readFileSync(new URL("../../../../spec/sinua-golden.js
 const MATERIALS = /(fill|glow-blur|liquid|particles|holo)/;
 // A character is fills only (docs/character.md): per character, the celebrate effect
 // (blurred glows, gradients, clipped shading, sparkles) and one more everyday frame.
-const CHARACTER = /^(buzzy-64-0\.6-(celebrate|muted|turned)|(hum|wisp|chirp)-64-0\.6-(celebrate|barge-in)|chirp-64-0\.6-turned)$/;
+const CHARACTER = /^(buzzy-64-0\.6-(celebrate|muted|turned)|(hum|wisp|chirp)-64-0\.6-(celebrate|barge-in)|chirp-64-0\.6-turned|cuppa-64-0\.6-celebrate|bean-64-0\.6-turned|beep-64-0\.6-celebrate)$/;
 // Synthetic, information-only cases (not in the golden file): per-vertex strokes
 // under a blur / additive effect run at the composite -- no golden case has one.
 // compare.cjs reports keys starting "x-" without failing on them.
@@ -22,7 +22,7 @@ const out = process.argv[2] ?? "out/frames.json";
 const hasHues = (f) => !!f && f.polylines.some((p) => p.hues && p.hues.length);
 // Per-vertex colour is one paint concept, checked at the size and time every native
 // literal uses (64 / 0.6), on input cases (a key suffix): a pattern that is colourful
-// by default (edge `framing`) would otherwise bring every plain case along. Box-layout
+// by default would otherwise bring every plain case along. Box-layout
 // cases with an aspect other than 1 are left out -- the render tests paint a square.
 const hueCase = (key, c) => /-64-0\.6-/.test(key) && (c.overrides?.aspect ?? 1) === 1;
 const frames = [...golden.cases, ...SYNTHETIC]

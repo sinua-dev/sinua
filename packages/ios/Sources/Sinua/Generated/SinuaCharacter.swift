@@ -13,6 +13,9 @@ public struct SinuaCharacter: View {
         case hum = "hum"
         case wisp = "wisp"
         case chirp = "chirp"
+        case cuppa = "cuppa"
+        case bean = "bean"
+        case beep = "beep"
     }
 
     public var pattern: Pattern
@@ -23,6 +26,8 @@ public struct SinuaCharacter: View {
     public var state: String?
     /// The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots.
     public var accessories: Bool?
+    /// The character's arms (Beep): a hand to the ear while listening, to the chin while thinking, beats while speaking. Off: no arms. Patterns: beep.
+    public var arms: Bool?
     /// How far the voice lifts the body while speaking (design units). Range 0...8.
     public var bounceGain: Double?
     /// Idle breathing bob. Range 0...2.
@@ -113,6 +118,12 @@ public struct SinuaCharacter: View {
     public var haptics: Bool
     /// A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new trigger plays once.
     public var effect: SinuaEffectTrigger?
+    /// Tap to hop: a tap plays `hop`, glancing toward it (design note 15). On by default.
+    public var tap: Bool
+    /// The expression (design note 16): "happy", "surprised", "thoughtful", "sad", "sleepy" or "none"; nil = the spec's.
+    public var expression: String?
+    /// The palette, in part (design note 19): slot -> hex, e.g. ["shell": "#E63946"]; empty = the character's own.
+    public var palette: [String: String]
     private var rules = true
     private var spec: String?
     public var inputs: [String: Double] = [:]
@@ -125,6 +136,7 @@ public struct SinuaCharacter: View {
         state: String? = nil,
         inputs: [String: Double] = [:],
         accessories: Bool? = nil,
+        arms: Bool? = nil,
         bounceGain: Double? = nil,
         breath: Double? = nil,
         curlGain: Double? = nil,
@@ -178,13 +190,17 @@ public struct SinuaCharacter: View {
         labels: [String: String] = [:],
         announce: Bool? = nil,
         haptics: Bool = false,
-        effect: SinuaEffectTrigger? = nil
+        effect: SinuaEffectTrigger? = nil,
+        tap: Bool = true,
+        expression: String? = nil,
+        palette: [String: String] = [:]
     ) {
         self.pattern = pattern
         self.size = size
         self.state = state
         self.inputs = inputs
         self.accessories = accessories
+        self.arms = arms
         self.bounceGain = bounceGain
         self.breath = breath
         self.curlGain = curlGain
@@ -239,6 +255,9 @@ public struct SinuaCharacter: View {
         self.announce = announce
         self.haptics = haptics
         self.effect = effect
+        self.tap = tap
+        self.expression = expression
+        self.palette = palette
     }
 
     /// Plays an FX Spec (JSON). It must describe a character (`"object": "character"`): any other
@@ -263,11 +282,14 @@ public struct SinuaCharacter: View {
         announce: Bool? = nil,
         haptics: Bool = false,
         rules: Bool = true,
-        effect: SinuaEffectTrigger? = nil
+        effect: SinuaEffectTrigger? = nil,
+        tap: Bool = true,
+        expression: String? = nil,
+        palette: [String: String] = [:]
     ) {
         self.init(pattern: .buzzy, voice: voice, voiceOverrides: voiceOverrides, theme: theme, paused: paused,
                   reducedMotion: reducedMotion, accessibilityLabel: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-                  labels: labels, announce: announce, haptics: haptics, effect: effect)
+                  labels: labels, announce: announce, haptics: haptics, effect: effect, tap: tap, expression: expression, palette: palette)
         self.rules = rules
         self.spec = spec
         self.state = state
@@ -280,6 +302,7 @@ public struct SinuaCharacter: View {
     public func overrides() -> [String: Double] {
         var o: [String: Double] = [:]
         if let v = accessories { o["accessories"] = v ? 1 : 0 }
+        if let v = arms { o["arms"] = v ? 1 : 0 }
         if let v = bounceGain { o["bounceGain"] = v }
         if let v = breath { o["breath"] = v }
         if let v = curlGain { o["curlGain"] = v }
@@ -339,13 +362,13 @@ public struct SinuaCharacter: View {
                 SinuaView(spec: spec, voice: voice, voiceOverrides: voiceOverrides, state: state, inputs: inputs,
                        voiceLevelInput: voiceLevelInput, theme: theme, paused: paused, reducedMotion: reducedMotion,
                        accessibilityLabel: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-                       labels: labels, announce: announce, haptics: haptics, rules: rules, effect: effect)
+                       labels: labels, announce: announce, haptics: haptics, rules: rules, effect: effect, tap: tap, expression: expression, palette: palette)
             }
         } else {
             SinuaView(pattern: pattern.rawValue, size: size.rawValue, overrides: overrides(), speed: speed, state: state, inputs: inputs, voice: voice,
                    voiceOverrides: voiceOverrides, theme: theme, paused: paused, reducedMotion: reducedMotion,
                    accessibilityLabel: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-                   labels: labels, announce: announce, haptics: haptics, effect: effect)
+                   labels: labels, announce: announce, haptics: haptics, effect: effect, tap: tap, expression: expression, palette: palette)
         }
     }
 }

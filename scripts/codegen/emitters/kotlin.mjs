@@ -122,6 +122,10 @@ function emitComponent(m, naming) {
     ...m.groups.map((g) => `    ${id(g.name)}: ${g.typeName}? = null,`),
   ].join("\n");
   const passArgs = ["pattern", "size", ...flat.map((p) => id(p.name)), ...m.groups.map((g) => id(g.name))].map((n) => `${n} = ${n}`).join(", ");
+  // Tap to hop (design note 15): characters only, on by default.
+  const tapOn = m.object === "character";
+  const tapParam = tapOn ? "\n    /** Tap to hop: a tap plays `hop`, glancing toward it (design note 15). On by default. */\n    tap: Boolean = true,\n    /** The expression (design note 16): \"happy\", \"surprised\", \"thoughtful\", \"sad\", \"sleepy\" or \"none\"; null = the spec's. */\n    expression: String? = null,\n    /** The palette, in part (design note 19): slot -> hex, e.g. mapOf(\"shell\" to \"#E63946\"); empty = the character's own. */\n    palette: Map<String, String> = emptyMap()," : "";
+  const tapArg = tapOn ? " tap = tap, expression = expression, palette = palette," : "";
   const contents = `${header()}
 
 package ${PKG}
@@ -193,14 +197,14 @@ ${params}
     /** A light tap when the agent starts listening. Off by default; never under reduced motion. */
     haptics: Boolean = false,
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
-    effect: SinuaEffectTrigger? = null,
+    effect: SinuaEffectTrigger? = null,${tapParam}
 ) {
     val overrides = ${props}(${passArgs}).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,
         contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
-        labels = labels, announce = announce, haptics = haptics, effect = effect,
+        labels = labels, announce = announce, haptics = haptics, effect = effect,${tapArg}
     )
 }
 
@@ -234,7 +238,7 @@ fun ${m.typeName}(
     /** Derive the state from the spec's 1.9 \`rules\` and [inputs] (off while a voice is bound). */
     rules: Boolean = true,
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
-    effect: SinuaEffectTrigger? = null,
+    effect: SinuaEffectTrigger? = null,${tapParam}
 ) {
     val error = ${P.toLowerCase()}SpecError(spec, ${str(m.object)})
     if (error != null) {
@@ -246,7 +250,7 @@ fun ${m.typeName}(
         spec = spec, modifier = modifier, voice = voice, voiceOverrides = voiceOverrides, state = state,
         inputs = inputs, voiceLevelInput = voiceLevelInput, theme = theme, paused = paused, reducedMotion = reducedMotion,
         contentDescription = contentDescription, maxFps = maxFps, lowPower = lowPower, onFrame = onFrame,
-        labels = labels, announce = announce, haptics = haptics, rules = rules, effect = effect,
+        labels = labels, announce = announce, haptics = haptics, rules = rules, effect = effect,${tapArg}
     )
 }
 `;

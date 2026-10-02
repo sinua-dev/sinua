@@ -714,15 +714,14 @@ test("a box-layout pattern fills a wide box: the box ratio goes in as aspect, no
   const c = canvas();
   c.el.clientWidth = 400;
   c.el.clientHeight = 100;
-  // Grey ink (saturation 0): the stub has no getTransform for per-vertex colour; the
-  // geometry is what's under test.
-  const fx = mount(c.el, { pattern: "framing", overrides: { idleOpacity: 0.5, saturation: 0 }, reducedMotion: "never" });
+  // The voice-message bar: grey ink (saturation 0); the geometry is what's under test.
+  const fx = mount(c.el, { pattern: "playing", overrides: { progress: 0.4, saturation: 0 }, reducedMotion: "never" });
   step(2);
   const { maxX, maxY, n } = pathExtent(c.calls);
-  assert.ok(n > 0, "the rim was stroked");
-  // aspect 4: engine space is 256 x 64; the rim's right side sits near x = 256.
+  assert.ok(n > 0, "the bars were stroked");
+  // aspect 4: engine space is 256 x 64; the last bar sits near x = 256.
   assert.ok(maxX > 240 && maxX <= 256, `right edge at ${maxX}`);
-  assert.ok(maxY > 56 && maxY <= 64, `bottom edge at ${maxY}`);
+  assert.ok(maxY > 32 && maxY <= 64, `bottom edge at ${maxY}`);
   assert.ok(!c.calls.some((k) => k[0] === "translate"), "no centring translate");
   assert.deepEqual(c.calls.find((k) => k[0] === "scale"), ["scale", 100 / 64], "scaled by the box height");
   fx.destroy();
@@ -839,10 +838,127 @@ test("under reduced motion an effect still draws (its reduced variant) and then 
 });
 
 test("viewLayout: box for the box-layout patterns (plain or spec), square otherwise", () => {
-  assert.equal(viewLayout({ pattern: "framing" }), "box");
   assert.equal(viewLayout({ pattern: "playing" }), "box");
   assert.equal(viewLayout({ pattern: "completing" }), "square");
-  assert.equal(viewLayout({ spec: { fxSpec: "1.9", object: "edge", pattern: "framing" } }), "box");
+  assert.equal(viewLayout({ spec: { fxSpec: "1.9", object: "signal", pattern: "playing" } }), "box");
   assert.equal(viewLayout({ spec: specText }), "square");
   assert.equal(viewLayout({ pattern: "no-such-pattern" }), "square", "invalid input is square");
+});
+
+// Tap to hop (design note 15): a character's fills, compared by their path points.
+const paths = (calls) => calls.filter((c) => c[0] === "moveTo" || c[0] === "lineTo").map((c) => c.slice(1));
+
+test("tap: a tap hops a character for 0.6 s, then it draws as if untouched", async () => {
+  const { step } = env();
+  const a = canvas(100);
+  const b = canvas(100);
+  const tapped = mount(a.el, { pattern: "buzzy", tap: true });
+  const still = mount(b.el, { pattern: "buzzy", tap: true });
+  step(5);
+  a.fire("pointerdown", { clientX: 90, clientY: 20 });
+  step(10);
+  assert.notDeepEqual(paths(a.calls), paths(b.calls), "mid-hop: the tapped one moved");
+  // Effects run on the real clock (performance.now), not the frame clock: wait it out.
+  await new Promise((r) => setTimeout(r, 650));
+  step(2);
+  assert.deepEqual(paths(a.calls), paths(b.calls), "after the hop: the same frame again");
+  tapped.destroy();
+  still.destroy();
+  assert.equal(a.listening, 0, "destroy removes the tap listener");
+});
+
+test("tap: off by default; a running success isn't cut by a tap", () => {
+  const { step } = env();
+  const off = canvas(100);
+  const v = mount(off.el, { pattern: "buzzy" });
+  assert.equal(off.listening, 0, "no tap option: no listeners");
+  v.destroy();
+
+  const a = canvas(100);
+  const b = canvas(100);
+  const x = mount(a.el, { pattern: "buzzy", tap: true, announce: false });
+  const y = mount(b.el, { pattern: "buzzy", tap: true, announce: false });
+  x.trigger("success");
+  y.trigger("success");
+  step(5);
+  a.fire("pointerdown", { clientX: 10, clientY: 10 });
+  step(10);
+  assert.deepEqual(paths(a.calls), paths(b.calls), "the tap is ignored while success plays");
+  x.destroy();
+  y.destroy();
+});
+
+// Expressions (design note 16): eased in over 0.6 s, `null` eases back out.
+test("expression: shapes a character, eases in, and null takes it back out", async () => {
+  const { step } = env();
+  const a = canvas(100);
+  const b = canvas(100);
+  const sad = mount(a.el, { pattern: "bean", expression: "sad", reducedMotion: "never" });
+  const plain = mount(b.el, { pattern: "bean", reducedMotion: "never" });
+  await new Promise((r) => setTimeout(r, 650));
+  step(2);
+  assert.notDeepEqual(paths(a.calls), paths(b.calls), "the sad bean differs");
+  sad.update({ expression: null });
+  await new Promise((r) => setTimeout(r, 650));
+  step(2);
+  assert.deepEqual(paths(a.calls), paths(b.calls), "null: back to no expression");
+  sad.destroy();
+  plain.destroy();
+});
+
+test("expression: the view's wins over the spec's", async () => {
+  const { step } = env();
+  const spec = { fxSpec: "1.12", object: "character", pattern: "cuppa", expression: "sad" };
+  const a = canvas(100);
+  const b = canvas(100);
+  const own = mount(a.el, { spec, expression: "happy", reducedMotion: "never" });
+  const plainHappy = mount(b.el, { spec: { ...spec, expression: "happy" }, reducedMotion: "never" });
+  await new Promise((r) => setTimeout(r, 650));
+  step(2);
+  assert.deepEqual(paths(a.calls), paths(b.calls), "the prop's happy draws as the spec's happy");
+  own.destroy();
+  plainHappy.destroy();
+});
+
+// Palette (design note 19): a prop repaints the slots and wins over the spec's.
+test("palette: repaints a character, and the prop wins over the spec's", () => {
+  const { step } = env();
+  const a = canvas(100);
+  const b = canvas(100);
+  const red = mount(a.el, { pattern: "buzzy", palette: { shell: "#E63946" }, reducedMotion: "always" });
+  const plain = mount(b.el, { pattern: "buzzy", reducedMotion: "always" });
+  step(2);
+  const fills = (calls) => calls.filter((x) => x[0] === "fill").map((x) => JSON.stringify(x[1]));
+  assert.notDeepEqual(fills(a.calls), fills(b.calls), "the shell is another colour");
+  red.destroy();
+  plain.destroy();
+
+  const spec = { fxSpec: "1.12", object: "character", pattern: "cuppa", palette: { mug: "#E63946" } };
+  const c = canvas(100);
+  const d = canvas(100);
+  const own = mount(c.el, { spec, palette: { mug: "#2A9D8F" }, reducedMotion: "always" });
+  const file = mount(d.el, { spec: { ...spec, palette: { mug: "#2A9D8F" } }, reducedMotion: "always" });
+  step(2);
+  assert.deepEqual(fills(c.calls), fills(d.calls), "the prop's mug draws as the spec's");
+  own.destroy();
+  file.destroy();
+});
+
+test("palette: the prop on a file's own recipe draws as the file's palette", () => {
+  const { step } = env();
+  const spec = JSON.parse(readFileSync(new URL("../../../spec/examples/custom-character.fxspec.json", import.meta.url), "utf8"));
+  const slot = "belly"; // a solid fill: the stub's gradients don't show their stops
+  const fills = (calls) => calls.filter((x) => x[0] === "fill").map((x) => JSON.stringify(x[1]));
+  const a = canvas(100);
+  const b = canvas(100);
+  const c = canvas(100);
+  const errors = [];
+  const prop = mount(a.el, { spec, palette: { [slot]: "#E63946" }, reducedMotion: "always", onError: (d) => errors.push(d) });
+  const file = mount(b.el, { spec: { ...spec, fxSpec: "1.12", palette: { [slot]: "#E63946" } }, reducedMotion: "always" });
+  const plain = mount(c.el, { spec, reducedMotion: "always" });
+  step(2);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(fills(a.calls), fills(b.calls));
+  assert.notDeepEqual(fills(a.calls), fills(c.calls));
+  for (const v of [prop, file, plain]) v.destroy();
 });

@@ -175,6 +175,22 @@ test("element: an unresolvable spec dispatches fxerror with the diagnostics", as
   el.disconnect();
 });
 
+test("element: a spec carrying a character recipe (FX Spec 1.12) draws without fxerror", async () => {
+  const { readFileSync } = await import("node:fs");
+  const pip = readFileSync(new URL("../../../spec/examples/custom-character.fxspec.json", import.meta.url), "utf8");
+  const e = await defined();
+  const el = e.create();
+  const errors = [];
+  el.addEventListener("fxerror", (ev) => errors.push(ev.detail));
+  el.spec = pip;
+  el.connect();
+  await e.flush();
+  e.step(3);
+  assert.deepEqual(errors, [], "the recipe resolves and draws");
+  assert.ok(el.handle, "mounted");
+  el.disconnect();
+});
+
 test("element: defineSinuaViewElement is idempotent and takes a custom tag", async () => {
   const e = await defined();
   const { defineSinuaViewElement } = await import("../dist/element.js");

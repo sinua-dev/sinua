@@ -89,8 +89,8 @@ class SinuaViewTest {
             val f: OrbFrame = frame(s, 64u, 1.7)
                 ?: throw AssertionError("$s is in spec/parameters.json but does not render through core_engine")
             // The old painter is from before per-vertex stroke colour (golden 1.6.0,
-            // `Polyline.hues`) and can't draw a frame that uses it (edge `framing`,
-            // colourful by default). The materials cases check that paint rule instead.
+            // `Polyline.hues`) and can't draw a frame that uses it (no pattern does by default
+            // since SinuaEdge went). The materials cases check that paint rule instead.
             if (f.polylines.any { it.hues.isNotEmpty() }) {
                 perVertex++
                 continue
@@ -112,7 +112,7 @@ class SinuaViewTest {
         }
         // The denominator, exactly: two themes x two alphas for every pattern.
         assertEquals("four rasters per pattern", (states.size - perVertex - filled) * 4, compared)
-        assertTrue("only edge `framing` draws per-vertex colour by default", perVertex <= 1)
+        assertEquals("no pattern draws per-vertex colour by default", 0, perVertex)
         assertEquals("exactly the character patterns draw fills by default", characterPatterns, filled)
         println("FxPaint parity: $compared rasters identical across ${states.size} patterns")
     }
@@ -396,12 +396,6 @@ class SinuaViewTest {
                 "completing",
                 mapOf("holoStrength" to 1.0, "interruptAge" to 0.15),
             ),
-            // Edge `framing` is colourful by default: a per-vertex stroke round a square box.
-            Triple(
-                "framing-64-0.6-square-speaking",
-                "framing",
-                mapOf("audioLevel" to 0.7, "idleOpacity" to 0.45),
-            ),
             // A character is fills only (docs/character.md): celebrate and one everyday frame each.
             Triple("buzzy-64-0.6-celebrate", "buzzy", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
             Triple("buzzy-64-0.6-muted", "buzzy", mapOf("look" to 0.0, "muted" to 1.0)),
@@ -413,6 +407,9 @@ class SinuaViewTest {
             Triple("chirp-64-0.6-barge-in", "chirp", mapOf("look" to 0.0, "interruptAge" to 0.05)),
             Triple("buzzy-64-0.6-turned", "buzzy", mapOf("turnYaw" to -0.7, "turnPitch" to 0.8, "gazeX" to -8.0, "gazeY" to -4.0, "look" to 0.0)),
             Triple("chirp-64-0.6-turned", "chirp", mapOf("turnYaw" to -0.7, "turnPitch" to 0.8, "gazeX" to -8.0, "gazeY" to -4.0, "look" to 0.0)),
+            Triple("cuppa-64-0.6-celebrate", "cuppa", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
+            Triple("bean-64-0.6-turned", "bean", mapOf("turnYaw" to -0.7, "turnPitch" to 0.8, "gazeX" to -8.0, "gazeY" to -4.0, "look" to 0.0)),
+            Triple("beep-64-0.6-celebrate", "beep", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
             // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC).
             Triple(
                 "x-completing-64-0.6-holo-glowblur",
@@ -438,8 +435,7 @@ class SinuaViewTest {
             val f = uniffi.core_engine.frameWithOverrides(state, 64u, 0.6, overrides)!!
             if (!key.contains("liquid-outline") && !key.contains("liquid-dots") && !key.contains("particles") &&
                 !key.contains("holo") &&
-                !key.contains("gradient3") &&
-                !key.contains("framing")
+                !key.contains("gradient3")
             ) {
                 assertTrue(
                     "$key has materials",

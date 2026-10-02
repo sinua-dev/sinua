@@ -12,6 +12,9 @@ enum class SinuaEffect(val wire: String) {
 
     /** A burst of particles (1.4 s); spoken "Well done". */
     CELEBRATE("celebrate"),
+
+    /** A character's tap hop (0.6 s), silent; other families draw nothing for it. A `SinuaView` with `tap` plays it on a tap, glancing toward the tap. */
+    HOP("hop"),
 }
 
 /**

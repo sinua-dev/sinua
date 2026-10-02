@@ -36,8 +36,6 @@ final class MaterialsRenderTests: XCTestCase {
         ),
         ("locating-64-0.6-holo", "locating", ["holoStrength": 1]),
         ("completing-64-0.6-holo-interrupt", "completing", ["holoStrength": 1, "interruptAge": 0.15]),
-        // Edge `framing` is colourful by default: a per-vertex stroke round a square box.
-        ("framing-64-0.6-square-speaking", "framing", ["audioLevel": 0.7, "idleOpacity": 0.45]),
         // A character is fills only (docs/character.md): celebrate and one everyday frame each.
         ("buzzy-64-0.6-celebrate", "buzzy", ["effectCode": 3, "effectAge": 0.5]),
         ("buzzy-64-0.6-muted", "buzzy", ["look": 0, "muted": 1]),
@@ -49,6 +47,9 @@ final class MaterialsRenderTests: XCTestCase {
         ("chirp-64-0.6-barge-in", "chirp", ["look": 0, "interruptAge": 0.05]),
         ("buzzy-64-0.6-turned", "buzzy", ["turnYaw": -0.7, "turnPitch": 0.8, "gazeX": -8, "gazeY": -4, "look": 0]),
         ("chirp-64-0.6-turned", "chirp", ["turnYaw": -0.7, "turnPitch": 0.8, "gazeX": -8, "gazeY": -4, "look": 0]),
+        ("cuppa-64-0.6-celebrate", "cuppa", ["effectCode": 3, "effectAge": 0.5]),
+        ("bean-64-0.6-turned", "bean", ["turnYaw": -0.7, "turnPitch": 0.8, "gazeX": -8, "gazeY": -4, "look": 0]),
+        ("beep-64-0.6-celebrate", "beep", ["effectCode": 3, "effectAge": 0.5]),
         // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC):
         // per-vertex strokes under a blur / additive run at the composite.
         ("x-completing-64-0.6-holo-glowblur", "completing", ["holoStrength": 1, "glowStrength": 0.8, "glowMode": 1]),
@@ -64,7 +65,7 @@ final class MaterialsRenderTests: XCTestCase {
             let overrides = golden[c.key] ?? c.overrides
             let frame = try XCTUnwrap(frameWithOverrides(state: c.state, size: 64, t: 0.6, overrides: overrides), c.key)
             if !c.key.contains("liquid-outline") && !c.key.contains("liquid-dots") && !c.key.contains("particles")
-                && !c.key.contains("holo") && !c.key.contains("gradient3") && !c.key.contains("framing")
+                && !c.key.contains("holo") && !c.key.contains("gradient3")
             {
                 XCTAssertTrue(!frame.fills.isEmpty || !frame.effects.isEmpty, "\(c.key) has materials")
             }

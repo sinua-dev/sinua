@@ -44,8 +44,18 @@ fn lock() -> std::sync::MutexGuard<'static, Registry> {
 
 /// Reads `text` (a recipe's JSON) and keeps it; its key, or the recipe's error
 /// (`<JSON pointer>: <what>`).
+#[cfg(test)]
 pub fn register(text: &str) -> Result<&'static str, String> {
-    let recipe = Recipe::parse(text)?;
+    register_with(text, &mut Vec::new())
+}
+
+/// [`register`], moving the cosmetics that didn't fit (pointer, why) into `skipped`.
+pub fn register_with(
+    text: &str,
+    skipped: &mut Vec<(String, String)>,
+) -> Result<&'static str, String> {
+    let mut recipe = Recipe::parse(text)?;
+    *skipped = std::mem::take(&mut recipe.skipped);
     let name = format!("{PREFIX}{}:{:016x}", recipe.id, fnv64(text));
     let mut reg = lock();
     if let Some(i) = reg.live.iter().position(|(k, _)| *k == name) {

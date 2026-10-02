@@ -16,8 +16,9 @@
 //! - `body`: the rig's pose (tilt, bob, lean, squash);
 //! - `face`: the body's pose, after the head turn wraps it onto a surface.
 //!
-//! Slots (where 1.13's cosmetics will attach) are declared and resolved, never
-//! drawn, in this version.
+//! Slots are where cosmetics attach (FX Spec 1.13, design note 21): a recipe's
+//! `cosmetics` are read by `character/cosmetic.rs` into parts drawn in a slot
+//! space of their own (`Space::Slot`), which follows the slot's chain.
 
 use std::collections::HashMap;
 use std::sync::OnceLock;
@@ -46,9 +47,21 @@ pub const MAX_PARTS: usize = 48;
 pub const MAX_NUMBER: f64 = 1000.0;
 
 /// The keys a recipe may hold.
-const RECIPE_KEYS: [&str; 13] = [
-    "$schema", "$comment", "recipe", "id", "profile", "palette", "hue", "rig", "surfaces", "parts",
-    "burst", "slots", "contrast",
+const RECIPE_KEYS: [&str; 14] = [
+    "$schema",
+    "$comment",
+    "recipe",
+    "id",
+    "profile",
+    "palette",
+    "hue",
+    "rig",
+    "surfaces",
+    "parts",
+    "burst",
+    "slots",
+    "contrast",
+    "cosmetics",
 ];
 
 /// The first number outside ±[`MAX_NUMBER`], with its JSON pointer.
@@ -197,6 +210,9 @@ pub enum Space {
     Mount,
     Body,
     Face,
+    /// A cosmetic's slot (1.13, design note 21): the recipe's `slots[i]`, in
+    /// its local units, then the chain it follows.
+    Slot(u8),
 }
 
 impl Space {
@@ -213,7 +229,7 @@ impl Space {
     }
 }
 
-/// A slot: where a cosmetic will attach (1.13), following one of the chains.
+/// A slot: where a cosmetic attaches (design note 21), following one of the chains.
 #[derive(Clone, Debug, PartialEq)]
 pub struct SlotSpec {
     pub name: String,
@@ -246,9 +262,14 @@ pub struct Recipe {
     /// Inks and the colour each sits on (palette indices): a palette override
     /// keeps them readable (`character/palette.rs`).
     pub contrast: Vec<(usize, usize)>,
+    /// The whole character drawn this much smaller about its feet, making room
+    /// for a cosmetic above the head (1.13; 1 = as designed).
+    pub zoom: f64,
+    /// Cosmetics that don't fit this character: (pointer, why).
+    pub skipped: Vec<(String, String)>,
 }
 
-fn hsl_of(v: &Value, at: &str) -> Result<Hsl, String> {
+pub fn hsl_of(v: &Value, at: &str) -> Result<Hsl, String> {
     let a = v
         .as_array()
         .filter(|a| a.len() == 3)
@@ -258,6 +279,15 @@ fn hsl_of(v: &Value, at: &str) -> Result<Hsl, String> {
             .ok_or_else(|| format!("{at}: expected numbers"))
     };
     Ok(geom::hsl(n(0)?, n(1)?, n(2)?))
+}
+
+/// 1–32 of a–z, 0–9 and -.
+pub fn valid_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 32
+        && id
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
 }
 
 impl Recipe {
@@ -282,12 +312,7 @@ impl Recipe {
             ));
         }
         let id = r.s("id")?;
-        if id.is_empty()
-            || id.len() > 32
-            || !id
-                .bytes()
-                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
-        {
+        if !valid_id(&id) {
             return Err("/id: 1–32 of a–z, 0–9 and -".into());
         }
         let profile = match r.get("profile") {
@@ -398,29 +423,6 @@ impl Recipe {
                 ));
             }
         }
-        let surface_names: Vec<String> = surfaces.iter().map(|(n, _)| n.clone()).collect();
-        let names = parts::Names {
-            colours: &colour_names,
-            surfaces: &surface_names,
-        };
-        let parts = r
-            .arr("parts")?
-            .iter()
-            .enumerate()
-            .map(|(i, p)| parts::parse(p, &format!("/parts/{i}"), &names))
-            .collect::<Result<Vec<_>, _>>()?;
-        let count: usize = parts.iter().map(|p| 1 + p.inner.len()).sum();
-        if count > MAX_PARTS {
-            return Err(format!("/parts: {count} parts, at most {MAX_PARTS}"));
-        }
-        let burst = r.obj("burst")?;
-        let bc = burst.arr("colors")?;
-        let name = |i: usize| -> Result<usize, String> {
-            colour(
-                bc.get(i).ok_or("/burst/colors: expected three names")?,
-                "/burst/colors",
-            )
-        };
         let mut slots = Vec::new();
         if let Some(s) = r.get("slots").and_then(Value::as_object) {
             for (k, v) in s {
@@ -438,6 +440,45 @@ impl Recipe {
                 });
             }
         }
+        let surface_names: Vec<String> = surfaces.iter().map(|(n, _)| n.clone()).collect();
+        let slot_names: Vec<String> = slots.iter().map(|s: &SlotSpec| s.name.clone()).collect();
+        let names = parts::Names {
+            colours: &colour_names,
+            surfaces: &surface_names,
+            slots: &slot_names,
+        };
+        let mut parts = r
+            .arr("parts")?
+            .iter()
+            .enumerate()
+            .map(|(i, p)| parts::parse(p, &format!("/parts/{i}"), &names))
+            .collect::<Result<Vec<_>, _>>()?;
+        let (mut zoom, mut skipped) = (1.0, Vec::new());
+        if let Some(c) = r.get("cosmetics") {
+            crate::character::cosmetic::read(
+                c,
+                crate::character::cosmetic::Into {
+                    id: &id,
+                    palette: &mut palette,
+                    slots: &mut slots,
+                    parts: &mut parts,
+                    zoom: &mut zoom,
+                    skipped: &mut skipped,
+                },
+            )?;
+        }
+        let count: usize = parts.iter().map(|p| 1 + p.inner.len()).sum();
+        if count > MAX_PARTS {
+            return Err(format!("/parts: {count} parts, at most {MAX_PARTS}"));
+        }
+        let burst = r.obj("burst")?;
+        let bc = burst.arr("colors")?;
+        let name = |i: usize| -> Result<usize, String> {
+            colour(
+                bc.get(i).ok_or("/burst/colors: expected three names")?,
+                "/burst/colors",
+            )
+        };
         let recipe = Recipe {
             id,
             palette,
@@ -456,6 +497,8 @@ impl Recipe {
             slots,
             profile,
             contrast,
+            zoom,
+            skipped,
         };
         Ok(recipe)
     }
@@ -529,6 +572,7 @@ pub struct Ctx<'a> {
     pub float: f64,
     pal: Vec<Hsl>,
     surfaces: &'a [(String, Surface)],
+    slots: &'a [SlotSpec],
     ground: Xf,
     whole: Xf,
     mount: Xf,
@@ -560,6 +604,14 @@ impl<'a> Ctx<'a> {
                     _ => f,
                 };
                 geom::transform(f, &self.body)
+            }
+            Space::Slot(i) => {
+                let s = &self.slots[i as usize];
+                let local = Xf::scale(s.scale, s.scale)
+                    .then(Xf::rotate(s.angle))
+                    .then(Xf::translate(s.at.0, s.at.1));
+                let face = self.surfaces.iter().position(|(n, _)| n == "face");
+                self.place(geom::transform(f, &local), s.follows, face)
             }
         }
     }
@@ -600,7 +652,14 @@ fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
     let lw = tier.line;
     let tn = turn::angles(o, t, tier);
 
-    let scale = Xf::scale(size / 200.0, size / 200.0);
+    let mut scale = Xf::scale(size / 200.0, size / 200.0);
+    if r.zoom != 1.0 {
+        let (fx, fy) = crate::character::cosmetic::FEET;
+        scale = Xf::translate(-fx, -fy)
+            .then(Xf::scale(r.zoom, r.zoom))
+            .then(Xf::translate(fx, fy))
+            .then(scale);
+    }
     let whole = Xf::translate(pose.shake, 0.0).then(scale);
     let mut float = 0.0;
     let (body, mount) = match &r.rig {
@@ -675,6 +734,7 @@ fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
         float,
         pal,
         surfaces: &r.surfaces,
+        slots: &r.slots,
         ground: scale,
         whole,
         mount,
@@ -709,9 +769,10 @@ pub fn frame_recipe(r: &Recipe, size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     kit::finish(out, o)
 }
 
-/// Where a slot is this frame, in the frame's units: a cosmetic (1.13) attached
+/// Where a slot is this frame, in the frame's units: a cosmetic attached
 /// there is drawn at `(x, y)`, scaled by `scale` and turned by `angle` radians.
-// Slots are resolved and tested in 1.12; 1.13's cosmetics are their first caller.
+// Cosmetics draw through `Ctx::place`; this stays for tests and the loadout's
+// picker (1.13), which needs a slot's place without drawing.
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
 pub struct SlotAt {
@@ -741,7 +802,7 @@ pub fn slots_recipe(r: &Recipe, size: f64, t: f64, o: &ModeOpts) -> Vec<SlotAt> 
                 Space::Ground => ctx.ground,
                 Space::Whole => ctx.whole,
                 Space::Mount => ctx.mount,
-                Space::Body | Space::Face => ctx.body,
+                Space::Body | Space::Face | Space::Slot(_) => ctx.body,
             };
             let p = xf.apply(&at);
             let q = xf.apply(&geom::pt(at.x + 1.0, at.y));
@@ -877,13 +938,20 @@ mod tests {
                 ["chest", "face", "headTop", "neck"],
                 "{id}"
             );
-            // 64 px design units are size / 200: a slot sits inside the frame.
+            // 64 px design units are size / 200: a slot sits inside the frame,
+            // at its own scale (how big a cosmetic is on this character).
             for s in rest.values() {
                 assert!(
                     s.x > 0.0 && s.x < 64.0 && s.y > 0.0 && s.y < 64.0,
                     "{id}: {s:?}"
                 );
-                assert!((s.scale - 64.0 / 200.0).abs() < 0.02, "{id}: {s:?}");
+                let own = recipes()[id]
+                    .slots
+                    .iter()
+                    .find(|x| x.name == s.name)
+                    .unwrap()
+                    .scale;
+                assert!((s.scale - own * 64.0 / 200.0).abs() < 0.02, "{id}: {s:?}");
             }
             // A tilt turns and moves the head's slot; the head turn moves the face's.
             let tilted = at(&opts(&[("look", 0.0), ("tilt", 0.3)]), 64.0);

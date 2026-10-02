@@ -5,6 +5,7 @@ mod beep;
 mod buzzy;
 mod cat;
 mod chirp;
+mod cosmetics;
 mod cuppa;
 mod hum;
 mod wisp;

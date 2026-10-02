@@ -398,6 +398,7 @@ pub struct Part {
 pub struct Names<'a> {
     pub colours: &'a [String],
     pub surfaces: &'a [String],
+    pub slots: &'a [String],
 }
 
 /// Reads a part's fields back in its schema's order.
@@ -706,7 +707,7 @@ fn field(
         Inner => {
             if let Some(a) = v {
                 for (i, x) in list(a, at)?.iter().enumerate() {
-                    inner.push(parse_any(x, &format!("{at}/{i}"), names, true)?);
+                    inner.push(parse_any(x, &format!("{at}/{i}"), names, true, None)?);
                 }
             }
         }
@@ -742,7 +743,13 @@ fn check_keys(o: &Map<String, Value>, prefix: &str, k: Kind, at: &str) -> Result
     Ok(())
 }
 
-fn parse_any(v: &Value, at: &str, names: &Names, layer: bool) -> Result<Part, String> {
+fn parse_any(
+    v: &Value,
+    at: &str,
+    names: &Names,
+    layer: bool,
+    slot: Option<Space>,
+) -> Result<Part, String> {
     let o = v
         .as_object()
         .ok_or_else(|| format!("{at}: expected an object"))?;
@@ -758,11 +765,25 @@ fn parse_any(v: &Value, at: &str, names: &Names, layer: bool) -> Result<Part, St
         .ok_or_else(|| format!("{at}/part: unknown part `{name}`"))?;
     check_keys(o, "", kind, at)?;
     let space = match (o.get("space").and_then(Value::as_str), layer) {
-        (Some(s), _) => Space::parse(s).map_err(|e| format!("{at}/space: {e}"))?,
+        (Some(_), _) if slot.is_some() => {
+            return Err(format!("{at}/space: a cosmetic draws in its slot"))
+        }
+        (None, false) if slot.is_some() => slot.unwrap(),
+        (Some(s), _) => match s.strip_prefix("slot:") {
+            Some(n) => Space::Slot(
+                names
+                    .slots
+                    .iter()
+                    .position(|x| x == n)
+                    .ok_or_else(|| format!("{at}/space: no slot `{n}`"))? as u8,
+            ),
+            None => Space::parse(s).map_err(|e| format!("{at}/space: {e}"))?,
+        },
         (None, true) => Space::Body,
         (None, false) => return Err(format!("{at}/space: missing")),
     };
     let when = match o.get("when").and_then(Value::as_str) {
+        None if slot.is_some() => When::NotSmallOrAccessories,
         None => When::Always,
         Some("notSmallOrAccessories") => When::NotSmallOrAccessories,
         Some(w) => return Err(format!("{at}/when: unknown condition `{w}`")),
@@ -804,7 +825,13 @@ fn parse_any(v: &Value, at: &str, names: &Names, layer: bool) -> Result<Part, St
 
 /// A part from its recipe entry at `at` (a JSON pointer, for the errors).
 pub fn parse(v: &Value, at: &str, names: &Names) -> Result<Part, String> {
-    parse_any(v, at, names, false)
+    parse_any(v, at, names, false, None)
+}
+
+/// A cosmetic's part (design note 21): drawn in `slot`, left out at 20 px
+/// unless it says otherwise.
+pub fn parse_in(v: &Value, at: &str, names: &Names, slot: Space) -> Result<Part, String> {
+    parse_any(v, at, names, false, Some(slot))
 }
 
 /// The voice states' weights in this pose: listening = `earGain`, thinking =

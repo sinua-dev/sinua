@@ -242,6 +242,37 @@ pub fn schema() -> Value {
             defs.insert(format!("layer-{name}"), part(&d, name, *k, true));
         }
     }
+    // A cosmetic's parts: `body` and `eyes`, drawn in its slot (no `space`, no `surface`).
+    let c = |k: &str| d["cosmetic"][k].clone();
+    let mut cosmetic_parts = Vec::new();
+    for (name, k) in [("body", Kind::Body), ("eyes", Kind::Eyes)] {
+        let mut p = part(&d, name, k, true);
+        if let Some(props) = p["properties"].as_object_mut() {
+            props.remove("space");
+            props.remove("surface");
+        }
+        defs.insert(format!("cosmetic-{name}"), p);
+        cosmetic_parts.push(json!({ "$ref": format!("#/$defs/cosmetic-{name}") }));
+    }
+    defs.insert(
+        "cosmetic".into(),
+        json!({
+            "type": "object", "description": c(""), "additionalProperties": false,
+            "required": ["id", "slot", "parts"],
+            "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9-]{1,32}$", "description": c("id") },
+                "label": { "type": "string", "description": c("label") },
+                "slot": { "type": "string", "description": c("slot") },
+                "palette": { "type": "object", "description": c("palette"), "additionalProperties": nums(3) },
+                "parts": { "type": "array", "description": c("parts"), "minItems": 1, "maxItems": MAX_PARTS,
+                    "items": { "oneOf": cosmetic_parts } },
+                "fits": { "type": "array", "description": c("fits"), "items": { "type": "string" } },
+                "fit": { "type": "object", "description": c("fit"),
+                    "additionalProperties": { "type": "object", "additionalProperties": false,
+                        "properties": { "at": nums(2), "scale": num(), "angle": num() } } }
+            }
+        }),
+    );
     let p2 = nums(2);
     let rig_common = |kind: &str| json!({ "const": kind });
     let builtins: Vec<&str> = RECIPES.iter().map(|(id, _)| *id).collect();
@@ -249,7 +280,7 @@ pub fn schema() -> Value {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": SCHEMA_ID,
         "title": "Sinua character recipe, version 1",
-        "description": "A character as data (FX Spec 1.12 `recipe`; spec/characters/*.json). Generated from the engine's tables: do not edit; see docs/character-recipe.md.",
+        "description": "A character as data (FX Spec 1.12 `recipe`; spec/characters/*.json), and the cosmetics it wears (1.13 `cosmetics`). Generated from the engine's tables: do not edit; see docs/character-recipe.md.",
         "type": "object",
         "additionalProperties": false,
         "required": ["recipe", "id", "palette", "hue", "rig", "parts", "burst"],
@@ -310,6 +341,10 @@ pub fn schema() -> Value {
                 "additionalProperties": { "type": "object", "additionalProperties": false, "required": ["at", "follows"],
                     "properties": { "at": p2, "scale": num(), "angle": num(),
                         "follows": { "enum": ["head", "body", "face"] } } }
+            },
+            "cosmetics": {
+                "type": "array", "description": top("cosmetics"),
+                "items": { "$ref": "#/$defs/cosmetic" }
             }
         },
         "$defs": defs
@@ -562,11 +597,26 @@ mod tests {
             }
         }
         for k in [
-            "recipe", "id", "profile", "palette", "hue", "contrast", "rig", "surfaces", "parts",
-            "burst", "slots",
+            "recipe",
+            "id",
+            "profile",
+            "palette",
+            "hue",
+            "contrast",
+            "rig",
+            "surfaces",
+            "parts",
+            "burst",
+            "slots",
+            "cosmetics",
         ] {
             if d["top"][k].as_str().is_none() {
                 missing.push(k.to_string());
+            }
+        }
+        for k in std::iter::once("").chain(crate::character::cosmetic::KEYS) {
+            if d["cosmetic"][k].as_str().is_none() {
+                missing.push(format!("cosmetic.{k}"));
             }
         }
         assert!(

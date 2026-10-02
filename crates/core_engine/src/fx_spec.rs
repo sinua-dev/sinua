@@ -27,7 +27,7 @@ use std::collections::{BTreeMap, HashMap};
 use serde_json::{Map, Value};
 
 pub const RUNTIME_MAJOR: u64 = 1;
-pub const RUNTIME_MINOR: u64 = 12;
+pub const RUNTIME_MINOR: u64 = 13;
 /// The first minor that knows the `character` object (1.11).
 const CHARACTER_SINCE: u64 = 11;
 /// The oldest minor this runtime reads. 1.0–1.7 were never published, so their
@@ -946,13 +946,8 @@ fn use_recipe(root: &mut Map<String, Value>, r: &Value, object: Option<&str>, di
         );
         return;
     }
-    let key = match crate::character::registry::register(&r.to_string()) {
-        Ok(k) => k,
-        Err(e) => {
-            let (at, what) = e.split_once(": ").unwrap_or(("", &e));
-            diag.error(&format!("/recipe{at}"), what.to_string());
-            return;
-        }
+    let Some((key, _)) = register(r, diag) else {
+        return;
     };
     let mut used = false;
     let mut point = |b: &mut Map<String, Value>| {
@@ -985,6 +980,93 @@ fn use_recipe(root: &mut Map<String, Value>, r: &Value, object: Option<&str>, di
                 ),
             );
         }
+    }
+}
+
+/// Registers a recipe's JSON: its key and how many cosmetics didn't fit (each
+/// warns), or the error reported (a `/cosmetics` pointer as it is, the rest
+/// under `/recipe`).
+#[inline(never)]
+fn register(r: &Value, diag: &mut Diag) -> Option<(&'static str, usize)> {
+    let mut skipped = Vec::new();
+    match crate::character::registry::register_with(&r.to_string(), &mut skipped) {
+        Ok(k) => {
+            let n = skipped.len();
+            for (at, why) in skipped {
+                diag.warn(&at, why);
+            }
+            Some((k, n))
+        }
+        Err(e) => {
+            let (at, what) = e.split_once(": ").unwrap_or(("", &e));
+            let pre = if at.starts_with("/cosmetics") {
+                ""
+            } else {
+                "/recipe"
+            };
+            diag.error(&format!("{pre}{at}"), what.to_string());
+            None
+        }
+    }
+}
+
+/// 1.13: `cosmetics` (design note 21) go into the file's `recipe`, and into
+/// each built-in character a `pattern` names, which then draws that recipe.
+fn use_cosmetics(root: &mut Map<String, Value>, c: &Value, diag: &mut Diag) {
+    if root.get("object").and_then(Value::as_str) != Some("character") {
+        diag.error("/cosmetics", "`cosmetics` is for `object: character`");
+        return;
+    }
+    if let Some(Value::Object(r)) = root.get_mut("recipe") {
+        r.insert("cosmetics".into(), c.clone());
+        return;
+    }
+    let mut done: Vec<(String, Option<&'static str>)> = Vec::new();
+    wear(root, c, &mut done, diag);
+    if let Some(Value::Object(states)) = root.get_mut("states") {
+        for e in states.values_mut() {
+            if let Value::Object(e) = e {
+                wear(e, c, &mut done, diag);
+            }
+        }
+    }
+}
+
+/// Points `b`'s built-in `pattern` at that character wearing `c`.
+#[inline(never)]
+fn wear(
+    b: &mut Map<String, Value>,
+    c: &Value,
+    done: &mut Vec<(String, Option<&'static str>)>,
+    diag: &mut Diag,
+) {
+    let Some(p) = b.get("pattern").and_then(Value::as_str) else {
+        return;
+    };
+    let key = match done.iter().find(|(n, _)| n == p) {
+        Some(d) => d.1,
+        None => {
+            let mut k = None;
+            if let Some((id, text)) = crate::character::recipe::RECIPES
+                .iter()
+                .find(|(id, _)| *id == p)
+            {
+                if let Ok(Value::Object(mut r)) = serde_json::from_str(text) {
+                    r.insert("cosmetics".into(), c.clone());
+                    r.insert("profile".into(), Value::String(id.to_string()));
+                    // Nothing worn (none fits): the built-in draws as it is.
+                    let worn = c.as_array().map_or(0, Vec::len);
+                    k = register(&Value::Object(r), diag)
+                        .filter(|(_, skipped)| *skipped < worn)
+                        .map(|(k, _)| k);
+                }
+            }
+            done.push((p.to_string(), k));
+            k
+        }
+    };
+    if let Some(k) = key {
+        b.insert("pattern".into(), Value::String(k.into()));
     }
 }
 
@@ -1091,7 +1173,7 @@ fn migrate(mut doc: Value, diag: &mut Diag) -> Value {
 
 // ------------------------------------------------------------ resolving --
 
-const TOP_KEYS: [&str; 22] = [
+const TOP_KEYS: [&str; 23] = [
     "$schema",
     "fxSpec",
     "name",
@@ -1114,6 +1196,7 @@ const TOP_KEYS: [&str; 22] = [
     "recipe",
     "expression",
     "palette",
+    "cosmetics",
 ];
 /// The design keys of a block: the base (top level) and each `states` entry.
 const ENTRY_KEYS: [&str; 10] = [
@@ -1196,6 +1279,7 @@ const SINCE: &[(&str, u64)] = &[
     ("recipe", 12),
     ("expression", 12),
     ("palette", 12),
+    ("cosmetics", 13),
 ];
 
 /// A `transitions` entry's keys (1.9).
@@ -2225,6 +2309,10 @@ pub fn resolve_full(
             }
         }
     }
+    // 1.13: cosmetics, merged into the character's recipe (design note 21).
+    if let Some(c) = root.get("cosmetics").cloned() {
+        use_cosmetics(root, &c, &mut diag);
+    }
     // 1.12: a character recipe carried in the file (design note 12).
     if let Some(r) = root.get("recipe").cloned() {
         let object = root
@@ -2647,7 +2735,7 @@ mod tests {
         assert!(errors(&missing).iter().any(|d| d.path == "/pattern"));
         // A newer 1.x file: unknown keys are warnings, the rest renders.
         let newer = resolve(
-            r##"{ "fxSpec": "1.13", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
+            r##"{ "fxSpec": "1.14", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
         );
         assert!(newer.ok, "{:?}", newer.diagnostics);
         assert_eq!(warnings(&newer).len(), 2);

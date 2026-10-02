@@ -145,6 +145,8 @@ effects", families). This section covers how each renderer draws it.
 | Additive | `globalCompositeOperation = "lighter"` | `blendMode = .plusLighter` | `BlendMode.Plus` |
 | Blur σ | **canvas shadow**: `shadowBlur = 2σ·scale` (the HTML spec's σ = shadowBlur/2, device px), element drawn 10 000 units away and shifted back via `shadowOffsetX`, `shadowColor` = opaque ink. Safari has no `ctx.filter` (WebKit bug 198416) | `addFilter(.blur(radius: σ · FxPaint.blurRadiusPerSigma))`, constant **1.0** (measured, see below) | `BlurMaskFilter(radius)` on a framework `Paint`, `radius = (σ·scale − 0.5) / 0.57735` (Skia's conversion) |
 | Fallback | a **blurred gradient fill** uses `ctx.filter` where present; Safari draws it sharp | none needed | **API < 29: no blur** (BlurMaskFilter isn't reliable under HW acceleration before Android 10); additive still works |
+| Elliptical gradient (`kind` 2, FX Spec 1.13) | translate + `transform(c, s, −s·k, c·k)` to the gradient's unit circle, `createRadialGradient(0,0,0, 0,0,rx)`, the path's points mapped back by the inverse | `concatenate` the same matrix, fill `path.applying(m.inverted())` with `.radialGradient(center: .zero, endRadius: rx)` | `RadialGradient(0, 0, rx)` with `setLocalMatrix` (framework paint, and a `ShaderBrush` in Compose) |
+| Grain (`blend` 2, FX Spec 1.13) | the shape filled with a `createPattern` of the 64-px tile (`setTransform` scale dpr / scale) at `globalAlpha = a` | `.tiledImage` of `FxPaint.grainTile` (scale 1 / scale) at `opacity = a` | a REPEAT `BitmapShader` of the tile (local matrix `density`) in a `ShaderBrush`, `alpha = a` |
 
 - **Draw order:** fills → polylines → lines → dots, as before. Effect runs
   (`EffectRun`) apply blur/blend to a range of one list and never reorder.
@@ -152,6 +154,15 @@ effects", families). This section covers how each renderer draws it.
 - **Low power:** FX Spec 1.3 `performance.lowPower.disable: ["blur"]` makes
   the resolver emit no runs and σ 0, so renderers do nothing special. (The
   Web test asserts the low-power frame has no runs.)
+- **Grain tile** (design note 22): 64 × 64, one tile pixel per CSS px / pt / dp
+  however large the character is drawn (the pattern undoes the engine scale),
+  anchored at the origin; pixel (x, y) is the integer hash `grainValue(x, y)`
+  (`h = x·73856093 ^ y·19349663 ^ 0x9E3779B9`, then `h = (h ^ h>>13)·1274126177`,
+  `h ^= h>>16`, `v = h / 2³²`, all in wrapping 32-bit arithmetic): v < 0.5 is a
+  black speck, v ≥ 0.5 a white one, at alpha |v − 0.5|·2. Every platform
+  builds the same tile; the Web (`grainValue`), Swift (`FxPaint.grainValue`)
+  and Kotlin (`fxGrainValue`) tests check the same five vectors. The Studio's
+  SVG exporters embed the tile as a PNG `<pattern>`.
 - **Holographic-lite** (phase 4) only rewrites hue/saturation, and
   **Particles** (phase 3) are plain `Dot`s: neither needs a painter
   change. Low power sheds particles (`particleStrength` 0 in the host

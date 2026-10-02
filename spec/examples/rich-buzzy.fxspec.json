@@ -1,0 +1,515 @@
+{
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
+  "fxSpec": "1.13",
+  "name": "Buzzy, the rich look",
+  "description": "The richer look (FX Spec 1.13, design note 22) on Buzzy, as a remix that borrows Buzzy's voice states. Its helmet and torso are dedicated parts, so two overlay bodies (`\"light\": \"none\"`) carry the soft layers over them: a core shadow, light bounced off the torso, a specular highlight, the head's soft shadow on the torso, `rim` light on both, and film `grain`. Under low power the grain and soft layers are shed.",
+  "object": "character",
+  "pattern": "buzzy-rich",
+  "size": 64,
+  "recipe": {
+    "$schema": "https://sinua.dev/schema/character-recipe-1.json",
+    "recipe": 1,
+    "id": "buzzy-rich",
+    "palette": {
+      "shell": [
+        231.9,
+        0.566,
+        0.461
+      ],
+      "shellLight": [
+        231.3,
+        1.0,
+        0.718
+      ],
+      "shellDark": [
+        234.1,
+        0.631,
+        0.255
+      ],
+      "line": [
+        234.1,
+        0.662,
+        0.151
+      ],
+      "screen": [
+        230.5,
+        0.61,
+        0.061
+      ],
+      "amber": [
+        36.1,
+        1.0,
+        0.616
+      ],
+      "cyan": [
+        185.0,
+        1.0,
+        0.716
+      ],
+      "glass": [
+        203.0,
+        1.0,
+        0.873
+      ],
+      "glassEdge": [
+        200.0,
+        1.0,
+        0.91
+      ],
+      "white": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "rimLight": [
+        214,
+        0.9,
+        0.86
+      ],
+      "deep": [
+        228,
+        0.6,
+        0.12
+      ]
+    },
+    "hue": {
+      "base": 232.0,
+      "turns": [
+        "shell",
+        "shellLight",
+        "shellDark",
+        "line",
+        "screen"
+      ]
+    },
+    "contrast": [
+      [
+        "cyan",
+        "screen"
+      ]
+    ],
+    "rig": {
+      "kind": "upright",
+      "base": [
+        100.0,
+        184.0
+      ]
+    },
+    "surfaces": {
+      "face": {
+        "c": [
+          100.0,
+          92.0
+        ],
+        "r": 64.0,
+        "depth": 0.55
+      }
+    },
+    "parts": [
+      {
+        "part": "shadow",
+        "space": "ground",
+        "at": [
+          100.0,
+          184.0
+        ],
+        "r": [
+          46.0,
+          6.0
+        ]
+      },
+      {
+        "part": "torso",
+        "space": "body",
+        "shades": [
+          "shellLight",
+          "shell",
+          "shellDark"
+        ],
+        "outline": {
+          "width": 3.5,
+          "color": "line"
+        }
+      },
+      {
+        "part": "body",
+        "space": "body",
+        "shape": {
+          "path": "M62 186 C62 158 74 146 100 146 C126 146 138 158 138 186 Z"
+        },
+        "light": "none",
+        "outline": {
+          "width": 0,
+          "color": "line"
+        },
+        "inner": [
+          {
+            "part": "shade",
+            "shape": {
+              "ellipse": [
+                100,
+                148,
+                46,
+                16,
+                0,
+                32
+              ]
+            },
+            "light": {
+              "radial": [
+                100,
+                148,
+                46,
+                16,
+                0
+              ],
+              "stops": [
+                [
+                  0,
+                  "deep",
+                  0.75
+                ],
+                [
+                  1,
+                  "deep",
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "part": "shade",
+            "shape": {
+              "ellipse": [
+                136,
+                184,
+                40,
+                30,
+                0,
+                32
+              ]
+            },
+            "light": {
+              "radial": [
+                136,
+                184,
+                40,
+                30,
+                0
+              ],
+              "stops": [
+                [
+                  0,
+                  "deep",
+                  0.5
+                ],
+                [
+                  1,
+                  "deep",
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "part": "rim",
+            "offset": [
+              5,
+              6
+            ],
+            "color": "rimLight",
+            "alpha": 0.55,
+            "fade": 40
+          }
+        ]
+      },
+      {
+        "part": "chestCore",
+        "space": "body",
+        "at": [
+          100.0,
+          168.0
+        ],
+        "r": 11.0,
+        "bars": [
+          0.5,
+          0.85,
+          1.0,
+          0.85,
+          0.5
+        ],
+        "colors": [
+          "screen",
+          "amber",
+          "cyan"
+        ]
+      },
+      {
+        "part": "earPods",
+        "space": "body",
+        "x": 100.0,
+        "reach": 62.0,
+        "pod": "shellDark",
+        "line": "line",
+        "chevron": "amber",
+        "arcs": "cyan"
+      },
+      {
+        "part": "helmet",
+        "space": "body",
+        "shades": [
+          "shellLight",
+          "shell",
+          "shellDark"
+        ],
+        "line": "line"
+      },
+      {
+        "part": "body",
+        "space": "body",
+        "shape": {
+          "path": "M156.00 92.00 L155.94 106.19 L155.77 111.72 L155.49 115.88 L155.08 119.32 L154.56 122.29 L153.93 124.91 L153.17 127.26 L152.29 129.38 L151.29 131.31 L150.16 133.05 L148.89 134.64 L147.48 136.09 L145.93 137.40 L144.21 138.57 L142.33 139.62 L140.26 140.56 L137.97 141.37 L135.44 142.08 L132.62 142.67 L129.42 143.15 L125.72 143.52 L121.24 143.79 L115.28 143.95 L100.00 144.00 L84.72 143.95 L78.76 143.79 L74.28 143.52 L70.58 143.15 L67.38 142.67 L64.56 142.08 L62.03 141.37 L59.74 140.56 L57.67 139.62 L55.79 138.57 L54.07 137.40 L52.52 136.09 L51.11 134.64 L49.84 133.05 L48.71 131.31 L47.71 129.38 L46.83 127.26 L46.07 124.91 L45.44 122.29 L44.92 119.32 L44.51 115.88 L44.23 111.72 L44.06 106.19 L44.00 92.00 L44.06 77.81 L44.23 72.28 L44.51 68.12 L44.92 64.68 L45.44 61.71 L46.07 59.09 L46.83 56.74 L47.71 54.62 L48.71 52.69 L49.84 50.95 L51.11 49.36 L52.52 47.91 L54.07 46.60 L55.79 45.43 L57.67 44.38 L59.74 43.44 L62.03 42.63 L64.56 41.92 L67.38 41.33 L70.58 40.85 L74.28 40.48 L78.76 40.21 L84.72 40.05 L100.00 40.00 L115.28 40.05 L121.24 40.21 L125.72 40.48 L129.42 40.85 L132.62 41.33 L135.44 41.92 L137.97 42.63 L140.26 43.44 L142.33 44.38 L144.21 45.43 L145.93 46.60 L147.48 47.91 L148.89 49.36 L150.16 50.95 L151.29 52.69 L152.29 54.62 L153.17 56.74 L153.93 59.09 L154.56 61.71 L155.08 64.68 L155.49 68.12 L155.77 72.28 L155.94 77.81 Z"
+        },
+        "light": "none",
+        "outline": {
+          "width": 0,
+          "color": "line"
+        },
+        "inner": [
+          {
+            "part": "shade",
+            "shape": {
+              "ellipse": [
+                140,
+                134,
+                74,
+                54,
+                0.5,
+                32
+              ]
+            },
+            "light": {
+              "radial": [
+                140,
+                134,
+                74,
+                54,
+                0.5
+              ],
+              "stops": [
+                [
+                  0,
+                  "deep",
+                  0.6
+                ],
+                [
+                  0.6,
+                  "deep",
+                  0.25
+                ],
+                [
+                  1,
+                  "deep",
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "part": "shade",
+            "shape": {
+              "ellipse": [
+                100,
+                146,
+                44,
+                10,
+                0,
+                32
+              ]
+            },
+            "light": {
+              "radial": [
+                100,
+                146,
+                44,
+                10,
+                0
+              ],
+              "stops": [
+                [
+                  0,
+                  "shellLight",
+                  0.45
+                ],
+                [
+                  1,
+                  "shellLight",
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "part": "shade",
+            "shape": {
+              "ellipse": [
+                72,
+                54,
+                26,
+                15,
+                -0.55,
+                32
+              ]
+            },
+            "light": {
+              "radial": [
+                72,
+                54,
+                26,
+                15,
+                -0.55
+              ],
+              "stops": [
+                [
+                  0,
+                  "white",
+                  0.8
+                ],
+                [
+                  0.45,
+                  "white",
+                  0.3
+                ],
+                [
+                  1,
+                  "white",
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "part": "rim",
+            "offset": [
+              6,
+              7
+            ],
+            "color": "rimLight",
+            "alpha": 0.65,
+            "fade": 60
+          }
+        ]
+      },
+      {
+        "part": "earPods",
+        "space": "body",
+        "front": true,
+        "x": 100.0,
+        "reach": 62.0,
+        "pod": "shellDark",
+        "line": "line",
+        "chevron": "amber",
+        "arcs": "cyan"
+      },
+      {
+        "part": "fin",
+        "space": "body",
+        "color": "amber",
+        "line": "line"
+      },
+      {
+        "part": "faceScreen",
+        "space": "face",
+        "surface": "face",
+        "screen": "screen",
+        "ink": "cyan",
+        "line": "line",
+        "glass": "glass",
+        "glassEdge": "glassEdge",
+        "glint": "white"
+      }
+    ],
+    "burst": {
+      "space": "body",
+      "at": [
+        100.0,
+        96.0
+      ],
+      "r": 80.0,
+      "colors": [
+        "celebrate",
+        "amber",
+        "cyan"
+      ]
+    },
+    "slots": {
+      "headTop": {
+        "at": [
+          100.0,
+          40.0
+        ],
+        "scale": 1.0,
+        "follows": "head"
+      },
+      "face": {
+        "at": [
+          100.0,
+          92.0
+        ],
+        "follows": "face"
+      },
+      "neck": {
+        "at": [
+          100.0,
+          146.0
+        ],
+        "follows": "body"
+      },
+      "chest": {
+        "at": [
+          100.0,
+          168.0
+        ],
+        "follows": "body"
+      }
+    },
+    "profile": "buzzy",
+    "grain": {
+      "strength": 0.08
+    }
+  },
+  "params": {
+    "seed": 3
+  },
+  "bindings": {
+    "muted": {
+      "input": "micMuted"
+    }
+  },
+  "states": {
+    "initializing": {},
+    "idle": {},
+    "listening": {
+      "bindings": {
+        "audioLevel": {
+          "input": "micLevel"
+        }
+      }
+    },
+    "thinking": {},
+    "speaking": {
+      "bindings": {
+        "audioLevel": {
+          "input": "agentVolume",
+          "inputRange": [
+            0,
+            0.8
+          ]
+        }
+      }
+    }
+  },
+  "accessibility": {
+    "name": "Buzzy"
+  }
+}

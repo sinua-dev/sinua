@@ -14,7 +14,8 @@
     "parts": "What is drawn, back to front: up to 48 parts, a body's inner layers included.",
     "burst": "The celebrate burst: `at`, `r` and three `colors` (palette names), optionally a `space`.",
     "slots": "Named anchor points for cosmetics: `at`, and the chain it `follows` (`head`, `body` or `face`), with an optional `scale` and `angle` that size and turn a cosmetic for this character. `headTop`, `face`, `neck` and `chest` are the standard names cosmetics look for.",
-    "cosmetics": "Cosmetics the character always wears (FX Spec 1.13): the same objects as an FX Spec file's `cosmetics`. A file's `cosmetics` come after these."
+    "cosmetics": "Cosmetics the character always wears (FX Spec 1.13): the same objects as an FX Spec file's `cosmetics`. A file's `cosmetics` come after these.",
+    "grain": "`{ \"strength\": 0–1 }`: film grain inside every body (FX Spec 1.13, design note 22), a fine, still noise of light and dark specks; 0.08 is a good start. The `grain` option overrides it. Left out at 20 px and under low power; the face stays crisp."
   },
   "common": {
     "part": "The part's kind.",
@@ -45,10 +46,10 @@
       "floats": "Widens with the float rig's drift (a floating character's shadow breathes)."
     },
     "body": {
-      "": "A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns.",
-      "light": "`{ \"radial\": [cx, cy, r] }` (the centre stays put while the body turns under it) or `{ \"linear\": [x0, y0, x1, y1] }`.",
-      "light.stops": "The light's gradient: `[[offset 0–1, colour], …]`.",
-      "inner": "Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille` or `eyes`."
+      "": "A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns. `\"light\": \"none\"` (and no stops) draws only the layers: an overlay that adds soft layers over a part that has none (BUZZY's helmet).",
+      "light": "`{ \"radial\": [cx, cy, r] }`, or an ellipse `[cx, cy, rx, ry, angle]` (radians; the centre stays put while the body turns under it), `{ \"linear\": [x0, y0, x1, y1] }`, or `\"none\"` (an overlay: no fill).",
+      "light.stops": "The light's gradient: `[[offset 0–1, colour], …]`, each with an optional alpha `[offset, colour, alpha]`; any number of stops.",
+      "inner": "Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille`, `shade`, `rim` or `eyes`."
     },
     "eyes": {
       "": "The shared eyes: they blink, look round, follow the voice state and take the expression. A part on its own (in `face` space) or a body layer.",
@@ -239,6 +240,16 @@
       "smallSlot": "A slot at 20 px: `[width, height, height when lit]`.",
       "rise": "How it moves up `[at rest, when lit]`.",
       "step": "The slots' rounding step (at least 1)."
+    },
+    "shade": {
+      "": "A soft mass clipped to the body (FX Spec 1.13, design note 22): its own `light`, usually an ellipse whose stops fade to alpha 0, so it needs no blur. An airbrushed shadow or highlight, light bounced from below, a head's soft shadow on the body, or (on the `face` surface) a blush. Left out when `shading` is off and under low power.",
+      "light": "Its light: `{ \"radial\": [cx, cy, r] }` or `[cx, cy, rx, ry, angle]`, or `{ \"linear\": [x0, y0, x1, y1] }`. Draw the `shape` round the light's ellipse: outside it the light is transparent anyway, and a smaller shape paints less.",
+      "light.stops": "`[[offset, colour, alpha], …]`: fade the last stop to 0 for a soft edge."
+    },
+    "rim": {
+      "": "A rim of light along the edge the light reaches first (FX Spec 1.13, design note 22): the body minus itself moved by `offset`. Left out at 20 px, when `shading` is off and under low power.",
+      "offset": "`[dx, dy]`: the body moved away from the light; the rim is as wide as the move (`[6, 7]` lights the top-left edge).",
+      "fade": "How far (box units) it fades out against the offset, so it thins round the sides; 0 = even."
     }
   },
   "cosmetic": {

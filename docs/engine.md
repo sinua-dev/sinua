@@ -358,7 +358,7 @@ The user chose the vector path, with no shader tier. The paint contract gains **
   - Optional `gradient: FillGradient`:
     - `kind` 0 = **linear** (x0, y0) → (x1, y1); `kind` 1 = **radial**, centre (x0, y0), radius 0 → `r`;
     - pad beyond both ends;
-    - 2–3 `GradientStop`s, sorted by `offset` in 0..1.
+    - 2 or more `GradientStop`s (2–3 before FX Spec 1.13), sorted by `offset` in 0..1; `kind` 2 (1.13) is an elliptical radial, see below.
   - A stop's painted alpha is **`stop.a × fill.a`**. Stops carry relative alpha, and pulse, decay, mute and cross-fades only ever touch `fill.a`. The solid ink stays as the fallback.
   - **No conic gradient**: SwiftUI's `GraphicsContext` conic shading is iOS 18+ (this package targets 15), and SVG has none.
 - **Effects**:
@@ -378,6 +378,10 @@ The user chose the vector path, with no shader tier. The paint contract gains **
   - Geometry, including fills and runs, is golden-exact (four new sinua cases).
   - Pixels are "the same within tolerance" across platforms: composite over the theme's paper, then mean |ΔRGB| ≤ 2/255 and p99 ≤ 24/255. This is voice-adapters' metric, on those same four golden cases.
 - **Phase 2 (liquid, 2026-09-19): `Fill.holes: [[Point]]`.** These are inner rings, painted as **one path with the even-odd rule** together with `points`: Canvas `fill(path, "evenodd")`, SwiftUI `FillStyle(eoFill: true)`, Compose `PathFillType.EvenOdd`, SVG `fill-rule="evenodd"`.
+- **FX Spec 1.13 (design note 22): two values in existing fields, no new field.** The FFI record and the packed transport are unchanged.
+  - **`FillGradient.kind` 2 = elliptical radial**: centre `(x0, y0)`, the first radius vector from the centre to `(x1, y1)` (fields a circular radial leaves at the centre), the second radius `r`, perpendicular to it. A transform maps the three points exactly (rotation, squash). Painters draw a circle of radius `|(x1, y1) − (x0, y0)|` in the gradient's own space.
+  - **`Fill.blend` 2 = grain**: the fill's shape (a character's body) filled with the shared 64-px noise tile at `fill.a`, plain source-over, no blur. The tile and its hash are in [`fx-view.md`](fx-view.md), *Fills and effects*.
+  - **Stops:** any number (the painters always looped); the engine emits up to a recipe's stop count, with relative alphas.
   - Winding doesn't matter, and the engine doesn't guarantee any.
   - Left out of JSON when empty. Packed **v3** only when some fill has holes.
   - The liquid material is the first to produce holes ([`materials.md`](materials.md#liquid-metaball-contours-materials-phase-2-2026-09-19)).

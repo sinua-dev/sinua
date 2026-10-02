@@ -295,6 +295,17 @@ out about its feet so the hat fits. The guide is [`character-cosmetics.md`](char
 the slots of each character are in [`character-recipe.md`](character-recipe.md), *Slots and
 cosmetics*.
 
+## The richer look (FX Spec 1.13, design note 22)
+
+Airbrushed shading, rim light and film grain, with no blur: a recipe's `shade` layers are soft
+masses (elliptical lights whose stops fade to alpha 0), `rim` lights the edge the light reaches
+first, and `grain` lays a still noise inside every body; the face stays crisp. `"light": "none"`
+makes a body an overlay that only carries layers (BUZZY's helmet). The `grain` and `shading`
+options (props on every platform, or `params`) tune them; an FX Spec resolved under low power
+turns them off. The built-ins are unchanged; `spec/examples/rich-bean.fxspec.json` and
+`rich-buzzy.fxspec.json` show the look. Details: [`character-recipe.md`](character-recipe.md),
+*The richer look*.
+
 ## Remixing a built-in character
 
 A built-in's recipe is data: `characterRecipe("cuppa")` (Web) returns it as JSON. Copy it, give

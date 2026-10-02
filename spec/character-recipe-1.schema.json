@@ -90,10 +90,10 @@
     },
     "cosmetic-body": {
       "additionalProperties": false,
-      "description": "A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns.",
+      "description": "A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns. `\"light\": \"none\"` (and no stops) draws only the layers: an overlay that adds soft layers over a part that has none (BUZZY's helmet).",
       "properties": {
         "inner": {
-          "description": "Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille` or `eyes`.",
+          "description": "Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille`, `shade`, `rim` or `eyes`.",
           "items": {
             "oneOf": [
               {
@@ -113,6 +113,12 @@
               },
               {
                 "$ref": "#/$defs/layer-grille"
+              },
+              {
+                "$ref": "#/$defs/layer-shade"
+              },
+              {
+                "$ref": "#/$defs/layer-rim"
               }
             ]
           },
@@ -120,22 +126,29 @@
           "type": "array"
         },
         "light": {
-          "allOf": [
+          "oneOf": [
             {
-              "$ref": "#/$defs/light",
-              "description": "`{ \"radial\": [cx, cy, r] }` (the centre stays put while the body turns under it) or `{ \"linear\": [x0, y0, x1, y1] }`."
+              "allOf": [
+                {
+                  "$ref": "#/$defs/light",
+                  "description": "`{ \"radial\": [cx, cy, r] }`, or an ellipse `[cx, cy, rx, ry, angle]` (radians; the centre stays put while the body turns under it), `{ \"linear\": [x0, y0, x1, y1] }`, or `\"none\"` (an overlay: no fill)."
+                },
+                {
+                  "properties": {
+                    "stops": {
+                      "$ref": "#/$defs/stops",
+                      "description": "The light's gradient: `[[offset 0–1, colour], …]`, each with an optional alpha `[offset, colour, alpha]`; any number of stops."
+                    }
+                  },
+                  "required": [
+                    "stops"
+                  ],
+                  "type": "object"
+                }
+              ]
             },
             {
-              "properties": {
-                "stops": {
-                  "$ref": "#/$defs/stops",
-                  "description": "The light's gradient: `[[offset 0–1, colour], …]`."
-                }
-              },
-              "required": [
-                "stops"
-              ],
-              "type": "object"
+              "const": "none"
             }
           ]
         },
@@ -762,6 +775,182 @@
       ],
       "type": "object"
     },
+    "layer-rim": {
+      "additionalProperties": false,
+      "description": "A rim of light along the edge the light reaches first (FX Spec 1.13, design note 22): the body minus itself moved by `offset`. Left out at 20 px, when `shading` is off and under low power.",
+      "properties": {
+        "alpha": {
+          "$ref": "#/$defs/number",
+          "description": "Its opacity, 0–1."
+        },
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "fade": {
+          "$ref": "#/$defs/number",
+          "description": "How far (box units) it fades out against the offset, so it thins round the sides; 0 = even."
+        },
+        "offset": {
+          "description": "`[dx, dy]`: the body moved away from the light; the rim is as wide as the move (`[6, 7]` lights the top-left edge).",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "part": {
+          "const": "rim",
+          "description": "The part's kind."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "offset",
+        "color",
+        "alpha",
+        "fade"
+      ],
+      "type": "object"
+    },
+    "layer-shade": {
+      "additionalProperties": false,
+      "description": "A soft mass clipped to the body (FX Spec 1.13, design note 22): its own `light`, usually an ellipse whose stops fade to alpha 0, so it needs no blur. An airbrushed shadow or highlight, light bounced from below, a head's soft shadow on the body, or (on the `face` surface) a blush. Left out when `shading` is off and under low power.",
+      "properties": {
+        "light": {
+          "oneOf": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/light",
+                  "description": "Its light: `{ \"radial\": [cx, cy, r] }` or `[cx, cy, rx, ry, angle]`, or `{ \"linear\": [x0, y0, x1, y1] }`. Draw the `shape` round the light's ellipse: outside it the light is transparent anyway, and a smaller shape paints less."
+                },
+                {
+                  "properties": {
+                    "stops": {
+                      "$ref": "#/$defs/stops",
+                      "description": "`[[offset, colour, alpha], …]`: fade the last stop to 0 for a soft edge."
+                    }
+                  },
+                  "required": [
+                    "stops"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            {
+              "const": "none"
+            }
+          ]
+        },
+        "part": {
+          "const": "shade",
+          "description": "The part's kind."
+        },
+        "shape": {
+          "$ref": "#/$defs/shape",
+          "description": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes)."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "surface": {
+          "description": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
+          "type": "string"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "shape",
+        "light"
+      ],
+      "type": "object"
+    },
     "layer-stripes": {
       "additionalProperties": false,
       "description": "A body layer: thin rounded stripes across the body.",
@@ -851,38 +1040,57 @@
     "light": {
       "oneOf": [
         {
-          "required": [
-            "radial"
-          ]
+          "oneOf": [
+            {
+              "required": [
+                "radial"
+              ]
+            },
+            {
+              "required": [
+                "linear"
+              ]
+            }
+          ],
+          "properties": {
+            "linear": {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 4,
+              "minItems": 4,
+              "type": "array"
+            },
+            "radial": {
+              "oneOf": [
+                {
+                  "items": {
+                    "$ref": "#/$defs/number"
+                  },
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "type": "array"
+                },
+                {
+                  "items": {
+                    "$ref": "#/$defs/number"
+                  },
+                  "maxItems": 5,
+                  "minItems": 5,
+                  "type": "array"
+                }
+              ]
+            },
+            "stops": {
+              "$ref": "#/$defs/stops"
+            }
+          },
+          "type": "object"
         },
         {
-          "required": [
-            "linear"
-          ]
+          "const": "none"
         }
-      ],
-      "properties": {
-        "linear": {
-          "items": {
-            "$ref": "#/$defs/number"
-          },
-          "maxItems": 4,
-          "minItems": 4,
-          "type": "array"
-        },
-        "radial": {
-          "items": {
-            "$ref": "#/$defs/number"
-          },
-          "maxItems": 3,
-          "minItems": 3,
-          "type": "array"
-        },
-        "stops": {
-          "$ref": "#/$defs/stops"
-        }
-      },
-      "type": "object"
+      ]
     },
     "number": {
       "maximum": 1000.0,
@@ -1211,10 +1419,10 @@
     },
     "part-body": {
       "additionalProperties": false,
-      "description": "A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns.",
+      "description": "A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns. `\"light\": \"none\"` (and no stops) draws only the layers: an overlay that adds soft layers over a part that has none (BUZZY's helmet).",
       "properties": {
         "inner": {
-          "description": "Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille` or `eyes`.",
+          "description": "Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille`, `shade`, `rim` or `eyes`.",
           "items": {
             "oneOf": [
               {
@@ -1234,6 +1442,12 @@
               },
               {
                 "$ref": "#/$defs/layer-grille"
+              },
+              {
+                "$ref": "#/$defs/layer-shade"
+              },
+              {
+                "$ref": "#/$defs/layer-rim"
               }
             ]
           },
@@ -1241,22 +1455,29 @@
           "type": "array"
         },
         "light": {
-          "allOf": [
+          "oneOf": [
             {
-              "$ref": "#/$defs/light",
-              "description": "`{ \"radial\": [cx, cy, r] }` (the centre stays put while the body turns under it) or `{ \"linear\": [x0, y0, x1, y1] }`."
+              "allOf": [
+                {
+                  "$ref": "#/$defs/light",
+                  "description": "`{ \"radial\": [cx, cy, r] }`, or an ellipse `[cx, cy, rx, ry, angle]` (radians; the centre stays put while the body turns under it), `{ \"linear\": [x0, y0, x1, y1] }`, or `\"none\"` (an overlay: no fill)."
+                },
+                {
+                  "properties": {
+                    "stops": {
+                      "$ref": "#/$defs/stops",
+                      "description": "The light's gradient: `[[offset 0–1, colour], …]`, each with an optional alpha `[offset, colour, alpha]`; any number of stops."
+                    }
+                  },
+                  "required": [
+                    "stops"
+                  ],
+                  "type": "object"
+                }
+              ]
             },
             {
-              "properties": {
-                "stops": {
-                  "$ref": "#/$defs/stops",
-                  "description": "The light's gradient: `[[offset 0–1, colour], …]`."
-                }
-              },
-              "required": [
-                "stops"
-              ],
-              "type": "object"
+              "const": "none"
             }
           ]
         },
@@ -3544,7 +3765,7 @@
     },
     "stops": {
       "items": {
-        "maxItems": 2,
+        "maxItems": 3,
         "minItems": 2,
         "prefixItems": [
           {
@@ -3552,6 +3773,11 @@
           },
           {
             "$ref": "#/$defs/colour"
+          },
+          {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
           }
         ],
         "type": "array"
@@ -3631,6 +3857,21 @@
         "$ref": "#/$defs/cosmetic"
       },
       "type": "array"
+    },
+    "grain": {
+      "additionalProperties": false,
+      "description": "`{ \"strength\": 0–1 }`: film grain inside every body (FX Spec 1.13, design note 22), a fine, still noise of light and dark specks; 0.08 is a good start. The `grain` option overrides it. Left out at 20 px and under low power; the face stays crisp.",
+      "properties": {
+        "strength": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "strength"
+      ],
+      "type": "object"
     },
     "hue": {
       "additionalProperties": false,

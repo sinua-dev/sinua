@@ -1950,6 +1950,29 @@
       "uiMin": 0,
       "unit": "fraction"
     },
+    "grain@character": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Film grain inside the character's bodies (FX Spec 1.13, design note 22): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off.",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "grain",
+      "label": "Grain",
+      "max": 1,
+      "min": 0,
+      "path": "grain",
+      "scope": "character",
+      "specPath": "/params/grain",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 0.2,
+      "uiMin": 0,
+      "unit": null
+    },
     "haloOpacity@halo": {
       "aliases": [],
       "category": "appearance",
@@ -6697,6 +6720,29 @@
       "specPath": "/params/segs",
       "tier": "advanced",
       "type": "integer",
+      "unit": null
+    },
+    "shading@character": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13, design note 22). An FX Spec resolved under low power turns them off.",
+      "fallback": 1,
+      "group": "style",
+      "if": null,
+      "key": "shading",
+      "label": "Soft shading",
+      "max": 1,
+      "min": 0,
+      "path": "shading",
+      "scope": "character",
+      "specPath": "/params/shading",
+      "step": 1,
+      "tier": "basic",
+      "type": "boolean",
+      "uiMax": 1,
+      "uiMin": 0,
       "unit": null
     },
     "shimmer@speaker": {
@@ -11593,6 +11639,14 @@
             },
             {
               "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "grain@character"
+            },
+            {
+              "default": {
                 "20": 232,
                 "32": 232,
                 "64": 232
@@ -11614,6 +11668,14 @@
                 "64": 1
               },
               "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "shading@character"
             },
             {
               "default": {
@@ -11859,6 +11921,14 @@
             },
             {
               "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "grain@character"
+            },
+            {
+              "default": {
                 "20": 9,
                 "32": 9,
                 "64": 9
@@ -11880,6 +11950,14 @@
                 "64": 1
               },
               "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "shading@character"
             },
             {
               "default": {
@@ -12133,6 +12211,14 @@
             },
             {
               "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "grain@character"
+            },
+            {
+              "default": {
                 "20": 253,
                 "32": 253,
                 "64": 253
@@ -12154,6 +12240,14 @@
                 "64": 1
               },
               "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "shading@character"
             },
             {
               "default": {
@@ -12407,6 +12501,14 @@
             },
             {
               "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "grain@character"
+            },
+            {
+              "default": {
                 "20": 12,
                 "32": 12,
                 "64": 12
@@ -12428,6 +12530,14 @@
                 "64": 1
               },
               "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "shading@character"
             },
             {
               "default": {
@@ -12681,6 +12791,14 @@
             },
             {
               "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "grain@character"
+            },
+            {
+              "default": {
                 "20": 12,
                 "32": 12,
                 "64": 12
@@ -12702,6 +12820,14 @@
                 "64": 1
               },
               "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "shading@character"
             },
             {
               "default": {
@@ -12947,6 +13073,14 @@
             },
             {
               "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "grain@character"
+            },
+            {
+              "default": {
                 "20": 24,
                 "32": 24,
                 "64": 24
@@ -12968,6 +13102,14 @@
                 "64": 1
               },
               "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "shading@character"
             },
             {
               "default": {
@@ -13221,6 +13363,14 @@
             },
             {
               "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "grain@character"
+            },
+            {
+              "default": {
                 "20": 200,
                 "32": 200,
                 "64": 200
@@ -13242,6 +13392,14 @@
                 "64": 1
               },
               "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "shading@character"
             },
             {
               "default": {

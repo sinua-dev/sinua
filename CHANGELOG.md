@@ -89,6 +89,21 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   cosmetics*). Example: `spec/examples/party-hat.fxspec.json`. 1.8–1.12 files resolve
   exactly as before (`spec/fx-spec-1.13-resolved.json`).
 
+- FX Spec 1.13: the richer look (`docs/character-recipe.md`, *The richer look*). Characters
+  can be airbrushed, rim-lit and grained on today's painter, with no blur:
+  - `shade` layers (soft masses clipped to the body: core shadows, bounce light, highlights, a
+    head's shadow on the body, a blush that turns with the face), `rim` light, and `grain`;
+  - elliptical radial lights (`[cx, cy, rx, ry, angle]`), stops with alpha, any number of stops,
+    and `"light": "none"` overlay bodies;
+  - new `grain` and `shading` props on `SinuaCharacter` (every platform) and FX Spec `params`;
+    under low power an FX Spec sheds them for characters that have them;
+  - the paint contract gains two values in existing fields: `FillGradient.kind` 2 (elliptical)
+    and `Fill.blend` 2 (grain, a shared noise tile); the Web, iOS, Android and React Native
+    painters and the Studio's SVG export draw them. The FFI record and the packed transport
+    are unchanged.
+  - Examples: `spec/examples/rich-bean.fxspec.json`, `rich-buzzy.fxspec.json`. The built-ins
+    are unchanged.
+
 ### Changed
 
 - `parameterCatalog()` / `parameterCatalogJson()` no longer carry `description` texts: they are

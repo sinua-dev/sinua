@@ -99,6 +99,7 @@ impl Xf {
 }
 
 /// An ellipse, `n` points, counter-clockwise from +x, rotated by `rot`.
+#[inline(never)]
 pub fn ellipse(cx: f64, cy: f64, rx: f64, ry: f64, rot: f64, n: usize) -> Vec<Point> {
     let (s, c) = rot.sin_cos();
     (0..n)
@@ -457,6 +458,7 @@ pub fn linear(points: Vec<Point>, p0: (f64, f64), p1: (f64, f64), s: &[(f64, Hsl
 }
 
 /// A fill with a radial gradient centred on `c`, radius `r` (2-3 stops).
+#[inline(never)]
 pub fn radial(points: Vec<Point>, c: (f64, f64), r: f64, s: &[(f64, Hsl)]) -> Fill {
     Fill {
         gradient: Some(FillGradient {

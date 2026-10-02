@@ -276,6 +276,7 @@ pub fn eyes(
     let ink = r.col();
     let (glow, small_glow) = r.p2();
     let surface = r.surf();
+    let (style, iris, sclera) = ctx.eye_look(r);
     let small = ctx.tier.small;
     let f = Face {
         cx: x,
@@ -288,6 +289,10 @@ pub fn eyes(
             .flatten()
             .filter(|r| !r.general)
             .map(|r| r.polys[0].as_slice()),
+        style,
+        iris,
+        sclera,
+        small,
     };
     let mut fills = face::eye_fills(&f, &ctx.pose.eyes);
     if let Some(Some(r)) = layer.filter(|l| l.is_some_and(|r| r.general)) {

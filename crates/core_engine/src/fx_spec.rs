@@ -416,6 +416,7 @@ const CHARACTER_PARAMS: &[&str] = &[
     "breath",
     "earGain",
     "eyeAsym",
+    "eyeStyle",
     "eyeH",
     "eyeR",
     "eyeSmile",
@@ -445,13 +446,14 @@ const CHARACTER_PARAMS: &[&str] = &[
 ];
 
 /// BEEP: the shared character keys plus `arms` (design note 17).
-const BEEP_PARAMS: [&str; 32] = [
+const BEEP_PARAMS: [&str; 33] = [
     "accessories",
     "arms",
     "bounceGain",
     "breath",
     "earGain",
     "eyeAsym",
+    "eyeStyle",
     "eyeH",
     "eyeR",
     "eyeSmile",
@@ -481,12 +483,13 @@ const BEEP_PARAMS: [&str; 32] = [
 ];
 
 /// HUM: the shared character keys plus its speaking sway.
-const HUM_PARAMS: [&str; 32] = [
+const HUM_PARAMS: [&str; 33] = [
     "accessories",
     "bounceGain",
     "breath",
     "earGain",
     "eyeAsym",
+    "eyeStyle",
     "eyeH",
     "eyeR",
     "eyeSmile",
@@ -517,13 +520,14 @@ const HUM_PARAMS: [&str; 32] = [
 ];
 
 /// WISP: the shared character keys plus its tail curl.
-const WISP_PARAMS: [&str; 32] = [
+const WISP_PARAMS: [&str; 33] = [
     "accessories",
     "bounceGain",
     "breath",
     "curlGain",
     "earGain",
     "eyeAsym",
+    "eyeStyle",
     "eyeH",
     "eyeR",
     "eyeSmile",
@@ -553,12 +557,13 @@ const WISP_PARAMS: [&str; 32] = [
 ];
 
 /// CHIRP: the shared character keys plus its wing flutter.
-const CHIRP_PARAMS: [&str; 32] = [
+const CHIRP_PARAMS: [&str; 33] = [
     "accessories",
     "bounceGain",
     "breath",
     "earGain",
     "eyeAsym",
+    "eyeStyle",
     "eyeH",
     "eyeR",
     "eyeSmile",
@@ -1419,6 +1424,9 @@ const SINCE: &[(&str, u64)] = &[
     ("cosmetics", 13),
 ];
 
+/// `params.eyeStyle`'s names, in the opt's order (0 = the recipe's own).
+const EYE_STYLE_NAMES: [&str; 5] = ["auto", "shape", "glossy", "pixel", "dot"];
+
 /// A `transitions` entry's keys (1.9).
 const TRANSITION_KEYS: [&str; 2] = ["duration", "curve"];
 
@@ -2067,6 +2075,22 @@ fn resolve_block(
                 }
                 if family.is_some() && !allowed.contains(&key) && !indexed_param(&mode, key) {
                     diag.unknown(strict, &path, key, &allowed);
+                    continue;
+                }
+                // A character's eye style may be named (design note 24).
+                if let (true, Some(name)) = (key == "eyeStyle", v.as_str()) {
+                    match EYE_STYLE_NAMES.iter().position(|n| *n == name) {
+                        Some(i) => {
+                            out.insert(key.into(), i as f64);
+                        }
+                        None => diag.error(
+                            &path,
+                            format!(
+                                "unknown eye style `{name}`: one of {}",
+                                EYE_STYLE_NAMES.join(", ")
+                            ),
+                        ),
+                    }
                     continue;
                 }
                 if let Some(x) = number(v, &path, -1e9, 1e9, diag) {

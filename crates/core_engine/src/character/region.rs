@@ -93,6 +93,7 @@ impl Region {
 }
 
 /// Even-odd point in polygon.
+#[inline(never)]
 pub fn inside(p: &Point, poly: &[Point]) -> bool {
     let n = poly.len();
     let mut c = false;

@@ -590,6 +590,9 @@ pub fn recipes() -> &'static HashMap<String, Recipe> {
     })
 }
 
+/// The glossy eye's iris when the recipe names none (design note 24).
+const DEFAULT_IRIS: Hsl = geom::hsl(188.0, 0.75, 0.45);
+
 /// What a part needs to draw this frame.
 pub struct Ctx<'a> {
     pub o: &'a ModeOpts,
@@ -608,6 +611,8 @@ pub struct Ctx<'a> {
     pub w: (f64, f64, f64, f64, f64),
     /// The float rig's drift this frame (0 for the others).
     pub float: f64,
+    /// The `eyeStyle` opt (design note 24): 0 = the recipe's, else 1 + `face::Face::style`.
+    pub eye_style: u8,
     pal: Vec<Hsl>,
     surfaces: &'a [(String, Surface)],
     slots: &'a [SlotSpec],
@@ -618,6 +623,20 @@ pub struct Ctx<'a> {
 }
 
 impl<'a> Ctx<'a> {
+    /// An eyes field group (`style`, `iris`, `sclera`; design note 24): the style
+    /// (the `eyeStyle` opt over the recipe's), the iris colour (teal when not given)
+    /// and whether the glossy eye has a white sclera.
+    pub fn eye_look(&self, r: &mut parts::Reader) -> (u8, Hsl, bool) {
+        let style = r.n() as u8;
+        let iris = r.opt_col().map_or(DEFAULT_IRIS, |i| self.colour(i));
+        let sclera = r.n() >= 0.5;
+        let style = match self.eye_style {
+            0 => style,
+            s => s - 1,
+        };
+        (style, iris, sclera)
+    }
+
     /// A palette colour (after `hue` turned it).
     pub fn colour(&self, i: usize) -> Hsl {
         self.pal[i]
@@ -783,6 +802,7 @@ fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
         lw,
         w,
         float,
+        eye_style: get(o, "eyeStyle", 0.0).round().clamp(0.0, 4.0) as u8,
         pal,
         surfaces: &r.surfaces,
         slots: &r.slots,

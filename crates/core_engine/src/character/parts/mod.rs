@@ -58,6 +58,10 @@ pub enum Ty {
     Surf,
     /// A flag, false when absent.
     B,
+    /// An eye style ([`EYE_STYLES`], design note 24), `shape` when absent.
+    Eye,
+    /// A palette colour name, or none.
+    OptC,
     /// A number or `[at 32/64, at 20]`.
     NumOrPair,
     /// A shape: `{ ellipse: [cx, cy, rx, ry, rot, n] }`, `{ roundRect: [x, y, w, h, r, step] }`
@@ -176,6 +180,9 @@ pub fn schema(k: Kind) -> &'static [(&'static str, Ty)] {
             ("ink", C),
             ("glow", NumOrPair),
             ("surface", Surf),
+            ("style", Eye),
+            ("iris", OptC),
+            ("sclera", B),
         ],
         Kind::Feet => &[
             ("x", N),
@@ -328,6 +335,9 @@ pub fn schema(k: Kind) -> &'static [(&'static str, Ty)] {
             ("glassEdge", C),
             ("glint", C),
             ("surface", Surf),
+            ("style", Eye),
+            ("iris", OptC),
+            ("sclera", B),
         ],
         Kind::Steam => &[
             ("at", V(2)),
@@ -476,6 +486,10 @@ impl<'a> Reader<'a> {
         &self.p.names[self.s - 1]
     }
     /// A surface index, or none.
+    /// An optional colour (`OptC`): `None` when absent.
+    pub fn opt_col(&mut self) -> Option<usize> {
+        Some(self.col()).filter(|i| *i != usize::MAX)
+    }
     pub fn surf(&mut self) -> Option<usize> {
         let i = self.n();
         (i >= 0.0).then_some(i as usize)
@@ -553,6 +567,9 @@ fn index_of(names: &[String], v: &Value, at: &str, what: &str) -> Result<usize, 
         .position(|n| n == s)
         .ok_or_else(|| format!("{at}: unknown {what} `{s}`"))
 }
+
+/// The eye styles (design note 24), in `face::Face::style` order.
+pub const EYE_STYLES: [&str; 4] = ["shape", "glossy", "pixel", "dot"];
 
 /// The most entries a list field (feathers, bars, stripes, glints, stops) may hold.
 pub const MAX_LIST: usize = 32;
@@ -650,6 +667,18 @@ fn field(
         Surf => p.nums.push(match v {
             None => -1.0,
             Some(x) => index_of(names.surfaces, x, at, "surface")? as f64,
+        }),
+        Eye => p.nums.push(match v {
+            None => 0.0,
+            Some(x) => x
+                .as_str()
+                .and_then(|s| EYE_STYLES.iter().position(|n| *n == s))
+                .ok_or_else(|| format!("{at}: expected one of {}", EYE_STYLES.join(", ")))?
+                as f64,
+        }),
+        OptC => p.cols.push(match v {
+            None => usize::MAX,
+            Some(x) => index_of(names.colours, x, at, "colour")?,
         }),
         B => p.nums.push(match v.map(Value::as_bool) {
             None => 0.0,

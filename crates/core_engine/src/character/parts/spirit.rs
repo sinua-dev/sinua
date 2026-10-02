@@ -153,6 +153,10 @@ pub fn oval_mouth(r: &mut Reader, space: Space, ctx: &Ctx, out: &mut Vec<Fill>) 
         ink,
         glow: 0.0,
         clip: None,
+        style: 0,
+        iris: ink,
+        sclera: false,
+        small: false,
     };
     let mut fills = Vec::new();
     if pose.effect != 0 {

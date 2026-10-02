@@ -7,6 +7,7 @@ mod cat;
 mod chirp;
 mod cosmetics;
 mod cuppa;
+mod eyes;
 mod hum;
 mod palettes;
 mod rich;

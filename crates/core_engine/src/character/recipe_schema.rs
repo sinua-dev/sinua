@@ -61,6 +61,8 @@ fn ty(t: Ty) -> Value {
         Ty::Cs(k) => json!({ "type": "array", "items": colour(), "minItems": k, "maxItems": k }),
         Ty::S | Ty::Surf => json!({ "type": "string" }),
         Ty::B => json!({ "type": "boolean" }),
+        Ty::Eye => json!({ "enum": parts::EYE_STYLES }),
+        Ty::OptC => colour(),
         Ty::NumOrPair => json!({ "oneOf": [num(), nums(2)] }),
         Ty::Shape => json!({ "$ref": "#/$defs/shape" }),
         Ty::Stops => json!({ "$ref": "#/$defs/stops" }),
@@ -86,6 +88,8 @@ fn ty_text(t: Ty) -> String {
         Ty::S => "name".into(),
         Ty::Surf => "surface".into(),
         Ty::B => "true / false".into(),
+        Ty::Eye => EYE_DOC.into(),
+        Ty::OptC => "colour".into(),
         Ty::NumOrPair => "number or [2 numbers]".into(),
         Ty::Shape => "shape".into(),
         Ty::Stops => "[[offset, colour, alpha?], …]".into(),
@@ -94,9 +98,11 @@ fn ty_text(t: Ty) -> String {
     }
 }
 
-/// Absent is fine: false, flat, no layers.
+const EYE_DOC: &str = "shape / glossy / pixel / dot";
+
+/// Absent is fine: false, flat, no layers, the shape eye, no colour.
 fn optional(t: Ty) -> bool {
-    matches!(t, Ty::Surf | Ty::B | Ty::Inner)
+    matches!(t, Ty::Surf | Ty::B | Ty::Inner | Ty::Eye | Ty::OptC)
 }
 
 fn layer_refs() -> Vec<Value> {

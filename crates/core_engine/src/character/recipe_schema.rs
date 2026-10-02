@@ -88,7 +88,7 @@ fn ty_text(t: Ty) -> String {
         Ty::B => "true / false".into(),
         Ty::NumOrPair => "number or [2 numbers]".into(),
         Ty::Shape => "shape".into(),
-        Ty::Stops => "[[offset, colour], …]".into(),
+        Ty::Stops => "[[offset, colour, alpha?], …]".into(),
         Ty::Light => "light".into(),
         Ty::Inner => "[layers]".into(),
     }
@@ -175,8 +175,14 @@ fn part(d: &Value, name: &str, k: Kind, layer: bool) -> Value {
         // `light` is both a field (the light) and the home of `light.stops`.
         if let Some(existing) = props.get_mut(&outer) {
             let base = existing.take();
-            *existing =
+            let lit =
                 json!({ "allOf": [base, { "type": "object", "properties": p, "required": req }] });
+            // A body's `"light": "none"` (an overlay) has no stops.
+            *existing = if outer == "light" {
+                json!({ "oneOf": [lit, { "const": "none" }] })
+            } else {
+                lit
+            };
         } else {
             props.insert(
                 outer.clone(),
@@ -222,14 +228,23 @@ pub fn schema() -> Value {
     );
     defs.insert(
         "stops".into(),
-        list(json!({ "type": "array", "prefixItems": [num(), colour()], "minItems": 2, "maxItems": 2 })),
+        list(json!({ "type": "array", "prefixItems": [num(), colour(), { "type": "number", "minimum": 0, "maximum": 1 }], "minItems": 2, "maxItems": 3 })),
     );
     defs.insert(
         "light".into(),
         json!({
-            "type": "object",
-            "properties": { "radial": nums(3), "linear": nums(4), "stops": { "$ref": "#/$defs/stops" } },
-            "oneOf": [{ "required": ["radial"] }, { "required": ["linear"] }]
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "radial": { "oneOf": [nums(3), nums(5)] },
+                        "linear": nums(4),
+                        "stops": { "$ref": "#/$defs/stops" }
+                    },
+                    "oneOf": [{ "required": ["radial"] }, { "required": ["linear"] }]
+                },
+                { "const": "none" }
+            ]
         }),
     );
     let mut part_refs = Vec::new();
@@ -345,6 +360,11 @@ pub fn schema() -> Value {
             "cosmetics": {
                 "type": "array", "description": top("cosmetics"),
                 "items": { "$ref": "#/$defs/cosmetic" }
+            },
+            "grain": {
+                "type": "object", "description": top("grain"), "additionalProperties": false,
+                "required": ["strength"],
+                "properties": { "strength": { "type": "number", "minimum": 0, "maximum": 1 } }
             }
         },
         "$defs": defs

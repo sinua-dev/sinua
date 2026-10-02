@@ -81,7 +81,7 @@ pub fn spirit(r: &mut Reader, space: Space, ctx: &Ctx, out: &mut Vec<Fill>) {
     let stops: Vec<(f64, Hsl)> = r
         .stops()
         .into_iter()
-        .map(|(o, c)| (o, ctx.colour(c)))
+        .map(|(o, c, _)| (o, ctx.colour(c)))
         .collect();
     let line = ctx.colour(r.col());
     let smoke = ctx.colour(r.col());

@@ -63,9 +63,11 @@ pub enum Ty {
     /// A shape: `{ ellipse: [cx, cy, rx, ry, rot, n] }`, `{ roundRect: [x, y, w, h, r, step] }`
     /// or `{ path: "M… Z" }` (an SVG path; later subpaths are holes).
     Shape,
-    /// Gradient stops: `[[offset, colour], …]`.
+    /// Gradient stops: `[[offset, colour], …]`, each with an optional alpha
+    /// (`[offset, colour, alpha]`, 0–1; a soft mass fades to 0).
     Stops,
-    /// A body's light: `{ radial: [cx, cy, r] }` (+ the part's `turnLight`) or `{ linear: [x0, y0, x1, y1] }`.
+    /// A body's light: `{ radial: [cx, cy, r] }` or `[cx, cy, rx, ry, angle]` (an
+    /// ellipse; + the part's `turnLight`), or `{ linear: [x0, y0, x1, y1] }`.
     Light,
     /// A body's inner layers (parts of the layer kinds).
     Inner,
@@ -103,9 +105,11 @@ pub enum Kind {
     Stripes,
     Glints,
     Grille,
+    Shade,
+    Rim,
 }
 
-pub(crate) const KINDS: [(&str, Kind); 28] = [
+pub(crate) const KINDS: [(&str, Kind); 30] = [
     ("shadow", Kind::Shadow),
     ("body", Kind::Body),
     ("eyes", Kind::Eyes),
@@ -134,13 +138,21 @@ pub(crate) const KINDS: [(&str, Kind); 28] = [
     ("stripes", Kind::Stripes),
     ("glints", Kind::Glints),
     ("grille", Kind::Grille),
+    ("shade", Kind::Shade),
+    ("rim", Kind::Rim),
 ];
 
 /// Is `k` a body layer (only inside a body's `inner`)? The eyes may be either.
 pub(crate) fn is_layer(k: Kind) -> bool {
     matches!(
         k,
-        Kind::Patch | Kind::Band | Kind::Stripes | Kind::Glints | Kind::Grille
+        Kind::Patch
+            | Kind::Band
+            | Kind::Stripes
+            | Kind::Glints
+            | Kind::Grille
+            | Kind::Shade
+            | Kind::Rim
     )
 }
 
@@ -345,6 +357,13 @@ pub fn schema(k: Kind) -> &'static [(&'static str, Ty)] {
         ],
         Kind::Patch => &[("shape", Shape), ("surface", Surf), ("color", C)],
         Kind::Band => &[("shape", Shape), ("color", C)],
+        Kind::Shade => &[
+            ("shape", Shape),
+            ("surface", Surf),
+            ("light", Light),
+            ("light.stops", Stops),
+        ],
+        Kind::Rim => &[("offset", V(2)), ("color", C), ("alpha", N), ("fade", N)],
         Kind::Stripes => &[("at", L), ("rect", V(5)), ("color", C), ("alpha", N)],
         Kind::Glints => &[("at", Pairs), ("rect", V(4)), ("color", C), ("alpha", N)],
         Kind::Grille => &[
@@ -473,10 +492,13 @@ impl<'a> Reader<'a> {
             geom::round_rect(a, b, c, d, e, f)
         })
     }
-    /// Gradient stops as (offset, palette index).
-    pub fn stops(&mut self) -> Vec<(f64, usize)> {
+    /// Gradient stops as (offset, palette index, alpha).
+    pub fn stops(&mut self) -> Vec<(f64, usize, f64)> {
         let len = self.u();
-        (0..len).map(|_| (self.n(), self.col())).collect()
+        (0..len)
+            .map(|_| (self.n(), self.n(), self.col()))
+            .map(|(o, a, c)| (o, c, a))
+            .collect()
     }
 }
 
@@ -675,20 +697,45 @@ fn field(
             }
         }
         Stops => {
+            // A body with `"light": "none"` (an overlay of layers) has no stops.
+            if v.is_none() && o.get("light").and_then(Value::as_str) == Some("none") {
+                p.nums.push(0.0);
+                return Ok(());
+            }
             let a = list(need()?, at)?;
             p.nums.push(a.len() as f64);
             for x in a {
-                let s = arr(x, at, Some(2))?;
+                let s = arr(x, at, None)?;
+                if s.len() != 2 && s.len() != 3 {
+                    return Err(format!(
+                        "{at}: expected [offset, colour] or [offset, colour, alpha]"
+                    ));
+                }
                 p.nums.push(num(&s[0], at)?);
+                p.nums.push(s.get(2).map_or(Ok(1.0), |x| num(x, at))?);
                 p.cols.push(index_of(names.colours, &s[1], at, "colour")?);
             }
         }
         Light => {
             let l = need()?;
+            if l.as_str() == Some("none") {
+                p.nums.push(2.0);
+                return Ok(());
+            }
             match (l.get("radial"), l.get("linear")) {
                 (Some(r), _) => {
                     p.nums.push(0.0);
-                    nums(r, at, Some(3), &mut p.nums)?;
+                    let from = p.nums.len();
+                    nums(r, at, None, &mut p.nums)?;
+                    match p.nums.len() - from {
+                        3 => p.nums.extend([p.nums[from + 2], 0.0]),
+                        5 => {}
+                        _ => {
+                            return Err(format!(
+                                "{at}/radial: expected [cx, cy, r] or [cx, cy, rx, ry, angle]"
+                            ))
+                        }
+                    }
                     match o.get("turnLight") {
                         None => p.nums.extend([0.0, 0.0, 0.0]),
                         Some(t) => {
@@ -885,7 +932,13 @@ pub fn draw(p: &Part, ctx: &Ctx, out: &mut Vec<Fill>) {
         Kind::Steam => steam::steam(r, sp, ctx, out),
         Kind::Arms => arms::arms(r, sp, ctx, out),
         // Layers draw inside their body.
-        Kind::Patch | Kind::Band | Kind::Stripes | Kind::Glints | Kind::Grille => {}
+        Kind::Patch
+        | Kind::Band
+        | Kind::Stripes
+        | Kind::Glints
+        | Kind::Grille
+        | Kind::Shade
+        | Kind::Rim => {}
     }
     if let Some(v) = vis {
         for f in &mut out[from..] {

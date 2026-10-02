@@ -472,6 +472,42 @@ pub fn radial(points: Vec<Point>, c: (f64, f64), r: f64, s: &[(f64, Hsl)]) -> Fi
     }
 }
 
+/// A fill with an elliptical radial gradient (`kind` 2, design note 22): centre
+/// `c`, radii `rx` along `angle` (radians) and `ry` across it. The first axis's
+/// end rides in `x1, y1` and `ry` in `r`, so the record and the transports are
+/// unchanged; a transform maps all three exactly (rotation, squash).
+pub fn elliptical(
+    points: Vec<Point>,
+    c: (f64, f64),
+    (rx, ry): (f64, f64),
+    angle: f64,
+    s: &[(f64, Hsl)],
+) -> Fill {
+    let (sin, cos) = angle.sin_cos();
+    Fill {
+        gradient: Some(FillGradient {
+            kind: 2,
+            x0: c.0,
+            y0: c.1,
+            x1: c.0 + rx * cos,
+            y1: c.1 + rx * sin,
+            r: ry,
+            stops: stops(s),
+        }),
+        ..solid(points, s[s.len() / 2].1, 1.0)
+    }
+}
+
+/// Sets each stop's relative alpha (`stop.a`, painted × `fill.a`).
+pub fn stop_alphas(mut f: Fill, a: &[f64]) -> Fill {
+    if let Some(g) = f.gradient.as_mut() {
+        for (st, a) in g.stops.iter_mut().zip(a) {
+            st.a = *a;
+        }
+    }
+    f
+}
+
 /// [`ring`] with mitred corners for a path's sharp ones (an ear's tip): each
 /// point moves by `w / 2 / cos(half the turn)`, at most `w` (a 2× miter), so the
 /// line keeps its width round a corner instead of thinning (design note 13).

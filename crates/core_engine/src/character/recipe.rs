@@ -47,7 +47,7 @@ pub const MAX_PARTS: usize = 48;
 pub const MAX_NUMBER: f64 = 1000.0;
 
 /// The keys a recipe may hold.
-const RECIPE_KEYS: [&str; 14] = [
+const RECIPE_KEYS: [&str; 15] = [
     "$schema",
     "$comment",
     "recipe",
@@ -62,6 +62,7 @@ const RECIPE_KEYS: [&str; 14] = [
     "slots",
     "contrast",
     "cosmetics",
+    "grain",
 ];
 
 /// The first number outside ±[`MAX_NUMBER`], with its JSON pointer.
@@ -267,6 +268,8 @@ pub struct Recipe {
     pub zoom: f64,
     /// Cosmetics that don't fit this character: (pointer, why).
     pub skipped: Vec<(String, String)>,
+    /// Film grain over the character (design note 22), 0–1; the `grain` opt overrides.
+    pub grain: f64,
 }
 
 pub fn hsl_of(v: &Value, at: &str) -> Result<Hsl, String> {
@@ -499,6 +502,10 @@ impl Recipe {
             contrast,
             zoom,
             skipped,
+            grain: match r.get("grain") {
+                None => 0.0,
+                Some(_) => r.obj("grain")?.f("strength")?.clamp(0.0, 1.0),
+            },
         };
         Ok(recipe)
     }
@@ -529,6 +536,17 @@ impl Recipe {
             }
         }
         g
+    }
+
+    /// Drawn with grain or soft layers (`shade`, `rim`; design note 22): low
+    /// power sheds them.
+    pub fn rich(&self) -> bool {
+        self.grain > 0.0
+            || self
+                .parts
+                .iter()
+                .flat_map(|p| &p.inner)
+                .any(|l| matches!(l.kind, parts::Kind::Shade | parts::Kind::Rim))
     }
 
     /// A palette colour by name (the recipe's own, after no `hue`).
@@ -564,6 +582,10 @@ pub struct Ctx<'a> {
     pub tier: Tier,
     pub tn: Turn,
     pub accessories: bool,
+    /// Film grain inside each body (design note 22): 0 = none; 0 at 20 px.
+    pub grain: f64,
+    /// `shade` and `rim` layers draw (the `shading` opt; low power turns it off).
+    pub shading: bool,
     pub mouth_off: bool,
     pub lw: f64,
     /// `face::mouth_weights`: (rest, dots, talk, level, phase).
@@ -728,6 +750,12 @@ fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
         tier,
         tn,
         accessories,
+        grain: if tier.small {
+            0.0
+        } else {
+            get(o, "grain", r.grain).clamp(0.0, 1.0)
+        },
+        shading: get(o, "shading", 1.0) >= 0.5,
         mouth_off,
         lw,
         w,

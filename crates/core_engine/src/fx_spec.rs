@@ -423,6 +423,7 @@ const CHARACTER_PARAMS: &[&str] = &[
     "eyeW",
     "gazeX",
     "gazeY",
+    "grain",
     "hue",
     "lean",
     "lid",
@@ -432,6 +433,7 @@ const CHARACTER_PARAMS: &[&str] = &[
     "mouthGain",
     "mouthTalk",
     "seed",
+    "shading",
     "squashGain",
     "tilt",
     "turn",
@@ -443,7 +445,7 @@ const CHARACTER_PARAMS: &[&str] = &[
 ];
 
 /// BEEP: the shared character keys plus `arms` (design note 17).
-const BEEP_PARAMS: [&str; 30] = [
+const BEEP_PARAMS: [&str; 32] = [
     "accessories",
     "arms",
     "bounceGain",
@@ -457,6 +459,7 @@ const BEEP_PARAMS: [&str; 30] = [
     "eyeW",
     "gazeX",
     "gazeY",
+    "grain",
     "hue",
     "lean",
     "lid",
@@ -466,6 +469,7 @@ const BEEP_PARAMS: [&str; 30] = [
     "mouthGain",
     "mouthTalk",
     "seed",
+    "shading",
     "squashGain",
     "tilt",
     "turn",
@@ -477,7 +481,7 @@ const BEEP_PARAMS: [&str; 30] = [
 ];
 
 /// HUM: the shared character keys plus its speaking sway.
-const HUM_PARAMS: [&str; 30] = [
+const HUM_PARAMS: [&str; 32] = [
     "accessories",
     "bounceGain",
     "breath",
@@ -490,6 +494,7 @@ const HUM_PARAMS: [&str; 30] = [
     "eyeW",
     "gazeX",
     "gazeY",
+    "grain",
     "hue",
     "lean",
     "lid",
@@ -499,6 +504,7 @@ const HUM_PARAMS: [&str; 30] = [
     "mouthGain",
     "mouthTalk",
     "seed",
+    "shading",
     "squashGain",
     "swayGain",
     "tilt",
@@ -511,7 +517,7 @@ const HUM_PARAMS: [&str; 30] = [
 ];
 
 /// WISP: the shared character keys plus its tail curl.
-const WISP_PARAMS: [&str; 30] = [
+const WISP_PARAMS: [&str; 32] = [
     "accessories",
     "bounceGain",
     "breath",
@@ -525,6 +531,7 @@ const WISP_PARAMS: [&str; 30] = [
     "eyeW",
     "gazeX",
     "gazeY",
+    "grain",
     "hue",
     "lean",
     "lid",
@@ -534,6 +541,7 @@ const WISP_PARAMS: [&str; 30] = [
     "mouthGain",
     "mouthTalk",
     "seed",
+    "shading",
     "squashGain",
     "tilt",
     "turn",
@@ -545,7 +553,7 @@ const WISP_PARAMS: [&str; 30] = [
 ];
 
 /// CHIRP: the shared character keys plus its wing flutter.
-const CHIRP_PARAMS: [&str; 30] = [
+const CHIRP_PARAMS: [&str; 32] = [
     "accessories",
     "bounceGain",
     "breath",
@@ -559,6 +567,7 @@ const CHIRP_PARAMS: [&str; 30] = [
     "flutterGain",
     "gazeX",
     "gazeY",
+    "grain",
     "hue",
     "lean",
     "lid",
@@ -568,6 +577,7 @@ const CHIRP_PARAMS: [&str; 30] = [
     "mouthGain",
     "mouthTalk",
     "seed",
+    "shading",
     "squashGain",
     "tilt",
     "turn",
@@ -2518,6 +2528,17 @@ pub fn resolve_full(
             res.inactive_bindings.retain(|t| *t != key);
         }
         res.disabled_materials = perf.disable;
+        // A character drawn with grain or soft layers (design note 22) sheds them
+        // under low power, whatever the file says; plain characters are untouched.
+        let rich =
+            crate::character::palette::with_recipe(&block.state, |r| r.rich()).unwrap_or(false);
+        if rich {
+            out.insert("grain".into(), 0.0);
+            out.insert("shading".into(), 0.0);
+            for m in ["grain", "shading"] {
+                res.disabled_materials.push(m.to_string());
+            }
+        }
     }
 
     // Transitions (1.9): validated here; views read them per state change

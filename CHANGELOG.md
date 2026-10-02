@@ -113,6 +113,16 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   - the `palette` prop on every view takes the same keys;
   - the Studio's character panel has a palette picker.
 
+- FX Spec 1.13: eye styles (`docs/character.md`, *Eye styles*). Besides the shape eye:
+  - `glossy`: a lens or white sclera, an iris and pupil that follow the gaze, highlights that
+    stay with the light, a lid line;
+  - `pixel`: the eye lit as a grid of glowing cells;
+  - `dot`: a soft glowing point.
+  - A recipe sets its own on its `eyes` / `faceScreen` part (`style`, `iris`, `sclera`); the
+    new `eyeStyle` prop on `SinuaCharacter` (every platform) and `params.eyeStyle` override
+    it. Blinks, the gaze and every expression work in each style; the built-ins keep the
+    shape eye. The Studios have an Eye style picker.
+
 ### Changed
 
 - `parameterCatalog()` / `parameterCatalogJson()` no longer carry `description` texts: they are

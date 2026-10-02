@@ -202,6 +202,9 @@ The shared eyes: they blink, look round, follow the voice state and take the exp
 | `ink` | colour | required | The ink colour (a palette name); effects tint it. |
 | `glow` | number or [2 numbers] | required | A glow round the eyes, 0–1: one number, or `[at 64 and 32 px, at 20 px]`. |
 | `surface` | surface | optional | The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat. |
+| `style` | shape / glossy / pixel / dot | optional | The eye style (design note 24): `shape` (the default, a solid shape), `glossy` (a lens, an iris and pupil that follow the gaze, highlights and a lid line), `pixel` (a grid of glowing cells; on a `faceScreen` the mouth too) or `dot` (a soft point). The `eyeStyle` option overrides it. |
+| `iris` | colour | optional | The glossy eye's iris colour (a palette name). Absent: teal. |
+| `sclera` | true / false | optional | The glossy eye has a white sclera and a dark lid line instead of a dark lens. |
 
 ### `feet`
 
@@ -459,6 +462,9 @@ A face screen: the eyes and mouth on it (clipped to it), its rim, and a glass vi
 | `glassEdge` | colour | required | The visor rim's colour. |
 | `glint` | colour | required | The reflection's colour. |
 | `surface` | surface | optional | The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat. |
+| `style` | shape / glossy / pixel / dot | optional | The eye style (design note 24): `shape` (the default, a solid shape), `glossy` (a lens, an iris and pupil that follow the gaze, highlights and a lid line), `pixel` (a grid of glowing cells; on a `faceScreen` the mouth too) or `dot` (a soft point). The `eyeStyle` option overrides it. |
+| `iris` | colour | optional | The glossy eye's iris colour (a palette name). Absent: teal. |
+| `sclera` | true / false | optional | The glossy eye has a white sclera and a dark lid line instead of a dark lens. |
 
 ### `steam`
 

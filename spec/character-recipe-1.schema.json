@@ -266,6 +266,10 @@
           "$ref": "#/$defs/colour",
           "description": "The ink colour (a palette name); effects tint it."
         },
+        "iris": {
+          "$ref": "#/$defs/colour",
+          "description": "The glossy eye's iris colour (a palette name). Absent: teal."
+        },
         "part": {
           "const": "eyes",
           "description": "The part's kind."
@@ -278,6 +282,10 @@
           "maxItems": 2,
           "minItems": 2,
           "type": "array"
+        },
+        "sclera": {
+          "description": "The glossy eye has a white sclera and a dark lid line instead of a dark lens.",
+          "type": "boolean"
         },
         "show": {
           "additionalProperties": false,
@@ -305,6 +313,15 @@
             }
           },
           "type": "object"
+        },
+        "style": {
+          "description": "The eye style (design note 24): `shape` (the default, a solid shape), `glossy` (a lens, an iris and pupil that follow the gaze, highlights and a lid line), `pixel` (a grid of glowing cells; on a `faceScreen` the mouth too) or `dot` (a soft point). The `eyeStyle` option overrides it.",
+          "enum": [
+            "shape",
+            "glossy",
+            "pixel",
+            "dot"
+          ]
         },
         "when": {
           "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
@@ -422,6 +439,10 @@
           "$ref": "#/$defs/colour",
           "description": "The ink colour (a palette name); effects tint it."
         },
+        "iris": {
+          "$ref": "#/$defs/colour",
+          "description": "The glossy eye's iris colour (a palette name). Absent: teal."
+        },
         "part": {
           "const": "eyes",
           "description": "The part's kind."
@@ -434,6 +455,10 @@
           "maxItems": 2,
           "minItems": 2,
           "type": "array"
+        },
+        "sclera": {
+          "description": "The glossy eye has a white sclera and a dark lid line instead of a dark lens.",
+          "type": "boolean"
         },
         "show": {
           "additionalProperties": false,
@@ -470,6 +495,15 @@
             "mount",
             "ground",
             "whole"
+          ]
+        },
+        "style": {
+          "description": "The eye style (design note 24): `shape` (the default, a solid shape), `glossy` (a lens, an iris and pupil that follow the gaze, highlights and a lid line), `pixel` (a grid of glowing cells; on a `faceScreen` the mouth too) or `dot` (a soft point). The `eyeStyle` option overrides it.",
+          "enum": [
+            "shape",
+            "glossy",
+            "pixel",
+            "dot"
           ]
         },
         "surface": {
@@ -1951,6 +1985,10 @@
           "$ref": "#/$defs/colour",
           "description": "The ink colour (a palette name); effects tint it."
         },
+        "iris": {
+          "$ref": "#/$defs/colour",
+          "description": "The glossy eye's iris colour (a palette name). Absent: teal."
+        },
         "part": {
           "const": "eyes",
           "description": "The part's kind."
@@ -1963,6 +2001,10 @@
           "maxItems": 2,
           "minItems": 2,
           "type": "array"
+        },
+        "sclera": {
+          "description": "The glossy eye has a white sclera and a dark lid line instead of a dark lens.",
+          "type": "boolean"
         },
         "show": {
           "additionalProperties": false,
@@ -1999,6 +2041,15 @@
             "mount",
             "ground",
             "whole"
+          ]
+        },
+        "style": {
+          "description": "The eye style (design note 24): `shape` (the default, a solid shape), `glossy` (a lens, an iris and pupil that follow the gaze, highlights and a lid line), `pixel` (a grid of glowing cells; on a `faceScreen` the mouth too) or `dot` (a soft point). The `eyeStyle` option overrides it.",
+          "enum": [
+            "shape",
+            "glossy",
+            "pixel",
+            "dot"
           ]
         },
         "surface": {
@@ -2042,6 +2093,10 @@
           "$ref": "#/$defs/colour",
           "description": "The eyes' and mouth's colour."
         },
+        "iris": {
+          "$ref": "#/$defs/colour",
+          "description": "The glossy eye's iris colour (a palette name). Absent: teal."
+        },
         "line": {
           "$ref": "#/$defs/colour",
           "description": "The outline colour (a palette name)."
@@ -2049,6 +2104,10 @@
         "part": {
           "const": "faceScreen",
           "description": "The part's kind."
+        },
+        "sclera": {
+          "description": "The glossy eye has a white sclera and a dark lid line instead of a dark lens.",
+          "type": "boolean"
         },
         "screen": {
           "$ref": "#/$defs/colour",
@@ -2089,6 +2148,15 @@
             "mount",
             "ground",
             "whole"
+          ]
+        },
+        "style": {
+          "description": "The eye style (design note 24): `shape` (the default, a solid shape), `glossy` (a lens, an iris and pupil that follow the gaze, highlights and a lid line), `pixel` (a grid of glowing cells; on a `faceScreen` the mouth too) or `dot` (a soft point). The `eyeStyle` option overrides it.",
+          "enum": [
+            "shape",
+            "glossy",
+            "pixel",
+            "dot"
           ]
         },
         "surface": {

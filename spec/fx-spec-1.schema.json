@@ -120,6 +120,19 @@
     "params": {
       "type": "object",
       "description": "Per-state engine opts (docs/parameters.md). Runtime inputs (pointer*, audio*, history*, interrupt*, muted*, voiceStateCode, peakN) and section-owned keys (color*, gradient*, glow*, noise*, pulse*) are rejected here. FX Spec 1.7: `progress` / `segment` may be arrays.",
+      "properties": {
+        "eyeStyle": {
+          "description": "A character's eye style (FX Spec 1.13, design note 24): a name, or its number (0-4).",
+          "anyOf": [
+            {
+              "enum": ["auto", "shape", "glossy", "pixel", "dot"]
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      },
       "additionalProperties": {
         "anyOf": [
           {

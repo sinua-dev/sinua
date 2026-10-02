@@ -157,6 +157,25 @@ stars with a burst.
 The face is independent of any body: a character gives it an anchor, a scale, a colour
 and an optional clip (BUZZY's screen), and gets fills back.
 
+### Eye styles (FX Spec 1.13, design note 24)
+
+The shape eye is the default. Three more styles draw inside or over the same eye shape, so
+blinks, the gaze, the turn blink, the startle and every expression work unchanged; the
+effect eyes (stars, the X) stay as they are.
+
+| Style | Looks like | At 20 px |
+|---|---|---|
+| `glossy` | a dark lens (or a white `sclera`), a radial-gradient iris and a pupil that slide inside the eye with the gaze, one big and two small highlights that stay with the light, a lid line | the lens, the iris and one highlight |
+| `pixel` | the eye lit as a grid of rounded cells, glowing on a screen; a shut eye is a row of cells; on a `faceScreen` the mouth goes pixel too | the same, fewer cells |
+| `dot` | a soft glowing point on a screen, a crisp dot on a body; blinks squash it | the dot without its halo |
+
+A recipe sets its own on its `eyes` part (or `faceScreen`): `"style"`, `"iris"` (a palette
+name; teal when absent) and `"sclera"`. The `eyeStyle` option (a prop on every platform, or
+`params.eyeStyle` by name or number) overrides it on any character: `auto` (0) keeps the
+recipe's. The built-ins keep the shape eye; `spec/examples/glossy-bean.fxspec.json`,
+`pixel-beep.fxspec.json` and `dot-hum.fxspec.json` show the others. Every style stays a
+`light` frame.
+
 ## The rig (`character/rig.rs`)
 
 The pose is plain numbers (`eyeW`, `eyeH`, `lid`, `gazeX`, `gazeY`, `lean`, `tilt`,
@@ -250,6 +269,7 @@ and mouth, with heavier lines.
 | `turn` | 0.71 | how far the head turns (see *The head turn*; 0 = flat) |
 | `seed` | 0 | when it blinks and glances |
 | `arms` | 1 | 0 takes the arms off (a character with an `arms` part: Beep) |
+| `eyeStyle` | 0 | the eye style: 0 = the recipe's, 1 shape, 2 glossy, 3 pixel, 4 dot (see *Eye styles*) |
 
 ## Palette (FX Spec 1.12, design note 19)
 
@@ -370,6 +390,10 @@ drawing tool into a body.
 - `turn`: every character in its box and "light" at every corner of the turn, `turn: 0`
   equal to the flat frame, 20 px never turning, no part popping across yaw 0, Wisp's tail
   lag; `cost_table` and `bench_turn_all` (ignored) measure it.
+- Eye styles (`character/recipe_tests/eyes.rs`): every style inside the eye's bounds, a blink
+  shuts each one, the glossy iris follows the gaze while the highlights stay, the 20 px
+  collapse, expressions reshape each style, effect eyes ignore it, `eyeStyle` over a recipe's
+  `style` / `iris` / `sclera`, unknown names, the three showcases light and frozen.
 - FX Spec: the 1.11 gate, `color` rejected, `hue` and rig params accepted, `stateAge`
   rejected in `params`, and `spec/examples/buzzy-assistant.fxspec.json` on every platform.
 - `packages/core/test/character.test.mjs`: through wasm, and `StateTransition.stateAge`.

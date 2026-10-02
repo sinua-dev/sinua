@@ -1159,6 +1159,55 @@
       "uiMin": 0,
       "unit": null
     },
+    "eyeStyle@character": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": [
+        {
+          "label": "Auto",
+          "spec": "auto",
+          "value": 0
+        },
+        {
+          "label": "Shape",
+          "spec": "shape",
+          "value": 1
+        },
+        {
+          "label": "Glossy",
+          "spec": "glossy",
+          "value": 2
+        },
+        {
+          "label": "Pixel",
+          "spec": "pixel",
+          "value": 3
+        },
+        {
+          "label": "Dot",
+          "spec": "dot",
+          "value": 4
+        }
+      ],
+      "deprecated": null,
+      "description": "How the eyes are drawn (FX Spec 1.13, design note 24): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style.",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "eyeStyle",
+      "label": "Eye style",
+      "max": 4,
+      "min": 0,
+      "path": "eyeStyle",
+      "scope": "character",
+      "specPath": "/params/eyeStyle",
+      "step": 1,
+      "tier": "basic",
+      "type": "choice",
+      "uiMax": 4,
+      "uiMin": 0,
+      "unit": null
+    },
     "eyeTilt@character": {
       "aliases": [],
       "category": "appearance",
@@ -11643,6 +11692,14 @@
                 "32": 0,
                 "64": 0
               },
+              "ref": "eyeStyle@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
               "ref": "grain@character"
             },
             {
@@ -11918,6 +11975,14 @@
                 "64": 1
               },
               "ref": "accessories@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeStyle@character"
             },
             {
               "default": {
@@ -12215,6 +12280,14 @@
                 "32": 0,
                 "64": 0
               },
+              "ref": "eyeStyle@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
               "ref": "grain@character"
             },
             {
@@ -12498,6 +12571,14 @@
                 "64": 1
               },
               "ref": "accessories@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeStyle@character"
             },
             {
               "default": {
@@ -12795,6 +12876,14 @@
                 "32": 0,
                 "64": 0
               },
+              "ref": "eyeStyle@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
               "ref": "grain@character"
             },
             {
@@ -13070,6 +13159,14 @@
                 "64": 1
               },
               "ref": "accessories@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeStyle@character"
             },
             {
               "default": {
@@ -13360,6 +13457,14 @@
                 "64": 1
               },
               "ref": "arms@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeStyle@character"
             },
             {
               "default": {

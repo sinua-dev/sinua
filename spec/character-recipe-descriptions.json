@@ -38,7 +38,10 @@
     "surface": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
     "alpha": "Its opacity, 0–1.",
     "shape": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes).",
-    "scale": "Its size: `[at 64 and 32 px, at 20 px]`."
+    "scale": "Its size: `[at 64 and 32 px, at 20 px]`.",
+    "style": "The eye style (design note 24): `shape` (the default, a solid shape), `glossy` (a lens, an iris and pupil that follow the gaze, highlights and a lid line), `pixel` (a grid of glowing cells; on a `faceScreen` the mouth too) or `dot` (a soft point). The `eyeStyle` option overrides it.",
+    "iris": "The glossy eye's iris colour (a palette name). Absent: teal.",
+    "sclera": "The glossy eye has a white sclera and a dark lid line instead of a dark lens."
   },
   "parts": {
     "shadow": {

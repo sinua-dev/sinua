@@ -84,6 +84,10 @@ pub enum Mouth {
     Dots(f64),
     /// A wide open smile (success / celebrate).
     Grin,
+    /// A small round "O" (the `surprised` expression, design note 16).
+    O,
+    /// A downturned line (the `sad` expression).
+    Frown,
     /// Mid-transition: the smile, the thinking dots and the voice line drawn
     /// together, each at its weight (0..1), so the mouth fades from one to the
     /// next instead of switching at the halfway point.
@@ -95,6 +99,10 @@ pub enum Mouth {
         level: f64,
         /// The dots' phase (as `Dots`).
         phase: f64,
+        /// The expression's resting mouths (design note 16): an "O" and a frown,
+        /// each at its weight; 0 without an expression.
+        o: f64,
+        frown: f64,
     },
 }
 
@@ -108,13 +116,25 @@ pub fn mouth_weights(m: Mouth) -> (f64, f64, f64, f64, f64) {
         Mouth::Dots(p) => (0.0, 1.0, 0.0, 0.0, p),
         Mouth::Wave(l, p) => (0.0, 0.0, 1.0, l, p),
         Mouth::Grin => (0.0, 0.0, 1.0, 0.6, 0.0),
+        Mouth::O | Mouth::Frown => (1.0, 0.0, 0.0, 0.0, 0.0),
         Mouth::Blend {
             smile,
             dots,
             talk,
             level,
             phase,
+            ..
         } => (smile, dots, talk, level, phase),
+    }
+}
+
+/// The expression's resting mouths in `m`: (o, frown), 0 when it has none.
+pub fn rest_mouths(m: Mouth) -> (f64, f64) {
+    match m {
+        Mouth::O => (1.0, 0.0),
+        Mouth::Frown => (0.0, 1.0),
+        Mouth::Blend { o, frown, .. } => (o, frown),
+        _ => (0.0, 0.0),
     }
 }
 
@@ -269,12 +289,16 @@ fn mouth_shapes(
             talk,
             level,
             phase,
+            o,
+            frown,
         } => {
             let mut out = Vec::new();
             for (w, m) in [
                 (smile, Mouth::Smile),
                 (dots, Mouth::Dots(phase)),
                 (talk, Mouth::Wave(level, phase)),
+                (o, Mouth::O),
+                (frown, Mouth::Frown),
             ] {
                 if w > 0.0 {
                     out.extend(
@@ -295,6 +319,24 @@ fn mouth_shapes(
                     6.0 * s,
                     0.25 * std::f64::consts::PI,
                     0.75 * std::f64::consts::PI,
+                    10,
+                ),
+                line_w * 0.95,
+            ),
+            1.0,
+        )],
+        Mouth::O => vec![(
+            geom::ellipse(mx, my - 2.0 * s, 4.0 * s, 5.0 * s, 0.0, 20),
+            1.0,
+        )],
+        Mouth::Frown => vec![(
+            geom::stroke(
+                &geom::arc(
+                    mx,
+                    my + 3.0 * s,
+                    6.0 * s,
+                    1.25 * std::f64::consts::PI,
+                    1.75 * std::f64::consts::PI,
                     10,
                 ),
                 line_w * 0.95,
@@ -478,6 +520,8 @@ mod tests {
                 talk: 0.0,
                 level: 0.0,
                 phase: 0.0,
+                o: 0.0,
+                frown: 0.0,
             },
             15.0,
         );

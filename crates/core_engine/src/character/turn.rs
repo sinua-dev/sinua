@@ -90,7 +90,11 @@ pub fn angles_lagged(o: &ModeOpts, t: f64, tier: Tier, lag: f64) -> Turn {
 /// The turn at time `t`. Off at 20 px (too small to read) and when `turn` is 0;
 /// under reduced motion only the state's own facing stays.
 pub fn angles(o: &ModeOpts, t: f64, tier: Tier) -> Turn {
-    let amount = o.get("turn").copied().unwrap_or(TURN_DEFAULT).clamp(0.0, 1.0);
+    let amount = o
+        .get("turn")
+        .copied()
+        .unwrap_or(TURN_DEFAULT)
+        .clamp(0.0, 1.0);
     if amount == 0.0 || tier.small {
         return Turn::default();
     }
@@ -236,7 +240,11 @@ mod tests {
         assert!(angles(&o, 2.0, kit::tier(64.0)).is_zero());
         // Absent, `turn` is the default ±25°.
         let d = angles(&opts(&[("turnYaw", 1.0)]), 2.0, kit::tier(64.0));
-        assert!((d.yaw.to_degrees() - 24.85).abs() < 0.01, "{}", d.yaw.to_degrees());
+        assert!(
+            (d.yaw.to_degrees() - 24.85).abs() < 0.01,
+            "{}",
+            d.yaw.to_degrees()
+        );
     }
 
     #[test]
@@ -386,7 +394,12 @@ mod tests {
     fn every_character_turn_0_is_the_flat_one_and_20_px_never_turns() {
         for pattern in crate::character::presets::STATES {
             let flat = frame(pattern, 64, 1.7, &opts(&[]));
-            let off = frame(pattern, 64, 1.7, &opts(&[("turn", 0.0), ("turnYaw", 1.0), ("turnWander", 1.0)]));
+            let off = frame(
+                pattern,
+                64,
+                1.7,
+                &opts(&[("turn", 0.0), ("turnYaw", 1.0), ("turnWander", 1.0)]),
+            );
             assert_eq!(flat, off, "{pattern}");
             let turned = frame(pattern, 64, 1.7, &opts(&[("turnYaw", 1.0)]));
             assert_ne!(flat, turned, "{pattern}: the default turn shows");
@@ -403,7 +416,12 @@ mod tests {
         for pattern in crate::character::presets::STATES {
             let flat = frame(pattern, 64, 1.0, &opts(&[("look", 0.0)]));
             for y in [-0.004, 0.004] {
-                let f = frame(pattern, 64, 1.0, &opts(&[("look", 0.0), ("turn", 1.0), ("turnYaw", y)]));
+                let f = frame(
+                    pattern,
+                    64,
+                    1.0,
+                    &opts(&[("look", 0.0), ("turn", 1.0), ("turnYaw", y)]),
+                );
                 let vis = |f: &crate::primitives::OrbFrame| -> Vec<(f64, f64, f64)> {
                     f.fills
                         .iter()
@@ -412,7 +430,11 @@ mod tests {
                         .collect()
                 };
                 let (a, b) = (vis(&flat), vis(&f));
-                assert_eq!(a.len(), b.len(), "{pattern} yaw {y}: a part popped in or out");
+                assert_eq!(
+                    a.len(),
+                    b.len(),
+                    "{pattern} yaw {y}: a part popped in or out"
+                );
                 let worst = a
                     .iter()
                     .zip(&b)
@@ -457,7 +479,10 @@ mod tests {
                 };
                 let (a, b) = (time(&off), time(&on));
                 let (fa, fb) = (frame(pattern, 64, 7.3, &off), frame(pattern, 64, 7.3, &on));
-                let (ca, cb) = (crate::cost::frame_cost(&fa, 64), crate::cost::frame_cost(&fb, 64));
+                let (ca, cb) = (
+                    crate::cost::frame_cost(&fa, 64),
+                    crate::cost::frame_cost(&fb, 64),
+                );
                 let pts = |f: &crate::primitives::OrbFrame| -> usize {
                     f.fills.iter().map(|x| x.points.len()).sum()
                 };
@@ -503,7 +528,11 @@ mod tests {
                 }
                 println!(
                     "{pattern:<6} {size:>2}px  {}  coverage {:.2} of medium  elements {} / {me}",
-                    if worst.2.is_empty() { "light" } else { &worst.2 },
+                    if worst.2.is_empty() {
+                        "light"
+                    } else {
+                        &worst.2
+                    },
                     worst.1,
                     worst.0
                 );

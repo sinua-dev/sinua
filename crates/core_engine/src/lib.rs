@@ -15,11 +15,13 @@
 pub mod a11y;
 mod beacon;
 mod catalog;
+/// For the test that writes spec/parameters.json (the catalog with its words).
+#[doc(hidden)]
+pub use catalog::catalog_json_from_source;
 mod character;
 mod conversation;
 mod core_fx;
 mod cost;
-mod edge;
 pub mod effects;
 mod fx_spec;
 mod liquid;
@@ -133,14 +135,28 @@ fn render(
         // The `core` family (module `core_fx`, see its header for the name).
         "shimmer" => core_fx::modes::shimmer::frame_shimmer(size as f64, t, opts),
         "dots" => core_fx::modes::dots::frame_dots(size as f64, t, opts),
-        // The `edge` family (a box-layout screen-edge glow), see `edge/mod.rs`.
-        "rim" => edge::modes::rim::frame_rim(size as f64, t, opts),
-        // The  family (faces with voice states), see .
-        "buzzy" => character::modes::buzzy::frame_buzzy(size as f64, t, opts),
-        "hum" => character::modes::hum::frame_hum(size as f64, t, opts),
-        "wisp" => character::modes::wisp::frame_wisp(size as f64, t, opts),
-        "chirp" => character::modes::chirp::frame_chirp(size as f64, t, opts),
-        _ => return None,
+        // The `character` family (faces with voice states), see `character/mod.rs`.
+        "buzzy" => {
+            character::recipe::frame("buzzy", size as f64, t, opts).expect("a built-in recipe")
+        }
+        "hum" => character::recipe::frame("hum", size as f64, t, opts).expect("a built-in recipe"),
+        "wisp" => {
+            character::recipe::frame("wisp", size as f64, t, opts).expect("a built-in recipe")
+        }
+        "chirp" => {
+            character::recipe::frame("chirp", size as f64, t, opts).expect("a built-in recipe")
+        }
+        "cuppa" => {
+            character::recipe::frame("cuppa", size as f64, t, opts).expect("a built-in recipe")
+        }
+        "bean" => {
+            character::recipe::frame("bean", size as f64, t, opts).expect("a built-in recipe")
+        }
+        "beep" => {
+            character::recipe::frame("beep", size as f64, t, opts).expect("a built-in recipe")
+        }
+        // A recipe from an FX Spec (FX Spec 1.12): its registry key.
+        k => character::registry::frame(k, size as f64, t, opts)?,
     };
     Some(post(frame, mode, size, wall, opts))
 }
@@ -274,13 +290,6 @@ fn resolve_any(state: &str, size: u32) -> Option<AnyResolved> {
         });
     }
     if let Some(r) = beacon::presets::resolve_preset(state, size) {
-        return Some(AnyResolved {
-            mode: r.mode,
-            speed: r.speed,
-            opts: r.opts,
-        });
-    }
-    if let Some(r) = edge::presets::resolve_preset(state, size) {
         return Some(AnyResolved {
             mode: r.mode,
             speed: r.speed,
@@ -576,6 +585,64 @@ pub fn conversation_sample(name: String) -> Option<String> {
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn voice_state_profile(pattern: String, state: String) -> Option<VoiceStateProfile> {
     voice_state::profile(&pattern, &state)
+}
+
+/// A character's palette override (design note 19), resolved for a view: the
+/// engine opts (`palette.<slot>.h/.s/.l/.w`) and what went wrong or reads badly.
+#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]
+#[derive(Clone, Debug, PartialEq)]
+pub struct FxPaletteResult {
+    pub overrides: HashMap<String, f64>,
+    pub diagnostics: Vec<fx_spec::FxDiagnostic>,
+}
+
+/// `palette` (a JSON object, slot -> hex or DTCG colour) on `pattern`, through
+/// the FX Spec's own `palette` rules, so a view and a file paint alike.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn palette_overrides(pattern: String, palette_json: String) -> FxPaletteResult {
+    let palette: serde_json::Value =
+        serde_json::from_str(&palette_json).unwrap_or(serde_json::Value::Null);
+    let doc = serde_json::json!({
+        "fxSpec": "1.12", "object": "character", "pattern": pattern, "palette": palette,
+    });
+    let r = fx_spec::resolve(&doc.to_string());
+    FxPaletteResult {
+        overrides: r
+            .overrides
+            .into_iter()
+            .filter(|(k, _)| k.starts_with("palette."))
+            .collect(),
+        diagnostics: r
+            .diagnostics
+            .into_iter()
+            .filter(|d| d.path.starts_with("/palette"))
+            .collect(),
+    }
+}
+
+/// A built-in character's recipe (design note 18), its JSON as the engine
+/// carries it (minified, without `$comment`); `None` for another id. The
+/// Studio's editor starts from it ("Customize").
+pub fn character_recipe(id: &str) -> Option<&'static str> {
+    character::recipe::RECIPES
+        .iter()
+        .find(|(k, _)| *k == id)
+        .map(|(_, json)| *json)
+}
+
+/// A character's expression (design note 16) as the engine opts that weigh
+/// it: the named one 1, the others 0; `"none"` all 0. `None` for an unknown
+/// name. A view sets these (eased over a change) to draw `expression`.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn expression_overrides(name: String) -> Option<HashMap<String, f64>> {
+    let known = name == "none" || character::rig::EXPRESSIONS.iter().any(|(n, _)| *n == name);
+    known.then(|| {
+        character::rig::EXPRESSIONS
+            .iter()
+            .map(|(n, k)| (k.to_string(), if *n == name { 1.0 } else { 0.0 }))
+            .collect()
+    })
 }
 
 /// How a pattern lays out in a view's box: `"box"` -- engine space follows
@@ -1034,6 +1101,21 @@ mod wasm {
         }
     }
 
+    /// `character_recipe` (`""` for an id that isn't a built-in character).
+    #[wasm_bindgen]
+    pub fn character_recipe_json(id: String) -> String {
+        crate::character_recipe(&id).unwrap_or("").to_string()
+    }
+
+    /// `expression_overrides` as JSON (`null` for an unknown name).
+    #[wasm_bindgen]
+    pub fn expression_overrides_json(name: String) -> String {
+        match crate::expression_overrides(name) {
+            Some(m) => serde_json::to_string(&m).unwrap_or_else(|_| "null".to_string()),
+            None => "null".to_string(),
+        }
+    }
+
     #[wasm_bindgen]
     pub fn pattern_layout_json(pattern: String) -> String {
         crate::pattern_layout(pattern)
@@ -1108,7 +1190,6 @@ pub(crate) fn all_states() -> Vec<&'static str> {
         crate::ring::presets::STATES,
         crate::beacon::presets::STATES,
         crate::core_fx::presets::STATES,
-        crate::edge::presets::STATES,
         crate::character::presets::STATES,
     ]
     .concat()

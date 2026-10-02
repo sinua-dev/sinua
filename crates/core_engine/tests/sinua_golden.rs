@@ -65,7 +65,7 @@ const MATERIAL_KEYS: [&str; 3] = ["colorMix", "colorMode", "gradientStrength"];
 /// Every state this set freezes -- the complement of `PORTED` across all
 /// five families. `every_non_ported_state_is_frozen` checks each one
 /// resolves; adding a state means adding it here (docs/testing.md).
-const STATES: [&str; 32] = [
+const STATES: [&str; 34] = [
     // orbs, additive
     "glowing",
     "drifting",
@@ -98,13 +98,14 @@ const STATES: [&str; 32] = [
     // core
     "generating",
     "typing",
-    // edge
-    "framing",
     // character
     "buzzy",
     "hum",
     "wisp",
     "chirp",
+    "cuppa",
+    "bean",
+    "beep",
 ];
 
 /// (state, key tag, overrides) for an input-driven extra case.
@@ -158,6 +159,17 @@ fn cases() -> Vec<Case> {
             .map(|(k, x)| (k.to_string(), *x))
             .collect::<Vec<_>>()
     };
+    // A palette override's opts (`palette_overrides`) plus `extra`, in a fixed order.
+    let pal = |pattern: &str, palette: &str, extra: &[(&str, f64)]| {
+        let mut v: Vec<(String, f64)> =
+            core_engine::palette_overrides(pattern.into(), palette.into())
+                .overrides
+                .into_iter()
+                .collect();
+        v.extend(extra.iter().map(|(k, x)| (k.to_string(), *x)));
+        v.sort_by(|a, b| a.0.cmp(&b.0));
+        v
+    };
     let history: Vec<(String, f64)> = {
         let mut h = vec![
             ("historyCount".to_string(), 24.0),
@@ -183,26 +195,6 @@ fn cases() -> Vec<Case> {
         ("waveform", "speaking-bands", speaking_bands()),
         ("metering", "speaking-bands", speaking_bands()),
         ("scrolling", "history", history),
-        (
-            "framing",
-            "square-speaking",
-            s(&[("audioLevel", 0.7), ("idleOpacity", 0.45)]),
-        ),
-        (
-            "framing",
-            "portrait-speaking",
-            s(&[
-                ("aspect", 0.46),
-                ("audioLevel", 0.7),
-                ("idleOpacity", 0.45),
-                ("glowStrength", 0.6),
-            ]),
-        ),
-        (
-            "framing",
-            "landscape-thinking",
-            s(&[("aspect", 2.0), ("shimmer", 1.0), ("idleOpacity", 0.3)]),
-        ),
         ("playing", "envelope-progress40", {
             let mut e = s(&[("progress", 0.4), ("playhead", 1.0), ("aspect", 4.0)]);
             e.extend((0..24).map(|i| (format!("envelope{i}"), (i as f64 * 0.9).sin() * 0.5 + 0.5)));
@@ -299,7 +291,12 @@ fn cases() -> Vec<Case> {
         (
             "buzzy",
             "turn-off",
-            s(&[("turn", 0.0), ("turnYaw", -0.7), ("turnPitch", 0.8), ("look", 0.0)]),
+            s(&[
+                ("turn", 0.0),
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("look", 0.0),
+            ]),
         ),
         (
             "hum",
@@ -373,7 +370,12 @@ fn cases() -> Vec<Case> {
         (
             "hum",
             "turn-off",
-            s(&[("turn", 0.0), ("turnYaw", -0.7), ("turnPitch", 0.8), ("look", 0.0)]),
+            s(&[
+                ("turn", 0.0),
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("look", 0.0),
+            ]),
         ),
         (
             "wisp",
@@ -449,7 +451,12 @@ fn cases() -> Vec<Case> {
         (
             "wisp",
             "turn-off",
-            s(&[("turn", 0.0), ("turnYaw", -0.7), ("turnPitch", 0.8), ("look", 0.0)]),
+            s(&[
+                ("turn", 0.0),
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("look", 0.0),
+            ]),
         ),
         (
             "chirp",
@@ -522,7 +529,311 @@ fn cases() -> Vec<Case> {
         (
             "chirp",
             "turn-off",
-            s(&[("turn", 0.0), ("turnYaw", -0.7), ("turnPitch", 0.8), ("look", 0.0)]),
+            s(&[
+                ("turn", 0.0),
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("look", 0.0),
+            ]),
+        ),
+        // Cuppa (a path with a hole: the handle) and Bean (path patches), design note 14.
+        (
+            "cuppa",
+            "listening-level70",
+            s(&[
+                ("tilt", -0.05),
+                ("eyeW", 22.0),
+                ("eyeH", 30.0),
+                ("eyeR", 9.0),
+                ("gazeY", 2.0),
+                ("earGain", 1.0),
+                ("look", 0.0),
+                ("audioLevel", 0.7),
+            ]),
+        ),
+        (
+            "cuppa",
+            "thinking-turn-blink",
+            s(&[
+                ("tilt", 0.02),
+                ("eyeH", 24.0),
+                ("lid", 0.28),
+                ("eyeTilt", 0.22),
+                ("eyeAsym", 0.17),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("mouthDots", 1.0),
+                ("turnBlink", 1.0),
+                ("look", 0.0),
+                ("stateAge", 0.09),
+            ]),
+        ),
+        (
+            "cuppa",
+            "speaking-level80-hue",
+            s(&[
+                ("eyeW", 21.0),
+                ("eyeSmile", 0.45),
+                ("mouthTalk", 1.0),
+                ("mouthGain", 1.0),
+                ("squashGain", 0.04),
+                ("bounceGain", 2.0),
+                ("audioLevel", 0.8),
+                ("hue", 200.0),
+            ]),
+        ),
+        (
+            "cuppa",
+            "barge-in",
+            s(&[("look", 0.0), ("interruptAge", 0.05)]),
+        ),
+        (
+            "cuppa",
+            "celebrate",
+            s(&[("effectCode", 3.0), ("effectAge", 0.5)]),
+        ),
+        ("cuppa", "muted", s(&[("look", 0.0), ("muted", 1.0)])),
+        (
+            "cuppa",
+            "turned",
+            s(&[
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("look", 0.0),
+            ]),
+        ),
+        (
+            "cuppa",
+            "turn-off",
+            s(&[
+                ("turn", 0.0),
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("look", 0.0),
+            ]),
+        ),
+        (
+            "bean",
+            "listening-level70",
+            s(&[
+                ("tilt", -0.1),
+                ("eyeW", 22.0),
+                ("eyeH", 30.0),
+                ("eyeR", 9.0),
+                ("gazeY", 2.0),
+                ("earGain", 1.0),
+                ("look", 0.0),
+                ("audioLevel", 0.7),
+            ]),
+        ),
+        (
+            "bean",
+            "thinking-turn-blink",
+            s(&[
+                ("tilt", 0.04),
+                ("eyeH", 24.0),
+                ("lid", 0.28),
+                ("eyeTilt", 0.22),
+                ("eyeAsym", 0.17),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("mouthDots", 1.0),
+                ("turnBlink", 1.0),
+                ("look", 0.0),
+                ("stateAge", 0.09),
+            ]),
+        ),
+        (
+            "bean",
+            "speaking-level80-hue",
+            s(&[
+                ("eyeW", 21.0),
+                ("eyeSmile", 0.45),
+                ("mouthTalk", 1.0),
+                ("mouthGain", 1.0),
+                ("squashGain", 0.05),
+                ("bounceGain", 4.0),
+                ("audioLevel", 0.8),
+                ("hue", 350.0),
+            ]),
+        ),
+        (
+            "bean",
+            "barge-in",
+            s(&[("look", 0.0), ("interruptAge", 0.05)]),
+        ),
+        (
+            "bean",
+            "celebrate",
+            s(&[("effectCode", 3.0), ("effectAge", 0.5)]),
+        ),
+        ("bean", "muted", s(&[("look", 0.0), ("muted", 1.0)])),
+        (
+            "bean",
+            "turned",
+            s(&[
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("look", 0.0),
+            ]),
+        ),
+        (
+            "bean",
+            "turn-off",
+            s(&[
+                ("turn", 0.0),
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("look", 0.0),
+            ]),
+        ),
+        // The tap hop (design note 15): mid-hop, and with the glance toward the tap.
+        (
+            "buzzy",
+            "hop",
+            s(&[("effectCode", 4.0), ("effectAge", 0.3)]),
+        ),
+        (
+            "cuppa",
+            "hop-glance",
+            s(&[
+                ("effectCode", 4.0),
+                ("effectAge", 0.2),
+                ("tapX", 0.8),
+                ("tapY", -0.5),
+                ("look", 0.0),
+            ]),
+        ),
+        // Expressions (design note 16): each one, and one under the voice.
+        (
+            "buzzy",
+            "happy",
+            s(&[("expressionHappy", 1.0), ("look", 0.0)]),
+        ),
+        (
+            "cuppa",
+            "surprised",
+            s(&[("expressionSurprised", 1.0), ("look", 0.0)]),
+        ),
+        ("bean", "sad", s(&[("expressionSad", 1.0), ("look", 0.0)])),
+        (
+            "wisp",
+            "sleepy",
+            s(&[("expressionSleepy", 1.0), ("look", 0.0)]),
+        ),
+        (
+            "buzzy",
+            "thoughtful-speaking",
+            s(&[
+                ("expressionThoughtful", 1.0),
+                ("mouthTalk", 1.0),
+                ("mouthGain", 1.0),
+                ("audioLevel", 0.7),
+                ("look", 0.0),
+            ]),
+        ),
+        // Beep (design note 17): a robot with arms; and with `arms` off.
+        (
+            "beep",
+            "listening-level70",
+            s(&[
+                ("tilt", -0.1),
+                ("eyeW", 22.0),
+                ("eyeH", 30.0),
+                ("eyeR", 9.0),
+                ("gazeY", 2.0),
+                ("earGain", 1.0),
+                ("look", 0.0),
+                ("audioLevel", 0.7),
+            ]),
+        ),
+        (
+            "beep",
+            "thinking-turn-blink",
+            s(&[
+                ("tilt", 0.04),
+                ("eyeH", 24.0),
+                ("lid", 0.28),
+                ("eyeTilt", 0.22),
+                ("eyeAsym", 0.17),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("mouthDots", 1.0),
+                ("turnBlink", 1.0),
+                ("look", 0.0),
+                ("stateAge", 0.09),
+            ]),
+        ),
+        (
+            "beep",
+            "speaking-level80-hue",
+            s(&[
+                ("eyeW", 21.0),
+                ("eyeSmile", 0.45),
+                ("mouthTalk", 1.0),
+                ("mouthGain", 1.0),
+                ("squashGain", 0.045),
+                ("bounceGain", 4.0),
+                ("audioLevel", 0.8),
+                ("hue", 30.0),
+            ]),
+        ),
+        (
+            "beep",
+            "barge-in",
+            s(&[("look", 0.0), ("interruptAge", 0.05)]),
+        ),
+        (
+            "beep",
+            "celebrate",
+            s(&[("effectCode", 3.0), ("effectAge", 0.5)]),
+        ),
+        ("beep", "muted", s(&[("look", 0.0), ("muted", 1.0)])),
+        (
+            "beep",
+            "turned",
+            s(&[
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("gazeX", -8.0),
+                ("gazeY", -4.0),
+                ("look", 0.0),
+            ]),
+        ),
+        (
+            "beep",
+            "turn-off",
+            s(&[
+                ("turn", 0.0),
+                ("turnYaw", -0.7),
+                ("turnPitch", 0.8),
+                ("look", 0.0),
+            ]),
+        ),
+        ("beep", "arms-off", s(&[("arms", 0.0), ("look", 0.0)])),
+        // Palette overrides (design note 19), through the engine's own resolution.
+        (
+            "buzzy",
+            "palette",
+            pal(
+                "buzzy",
+                r##"{ "shell": "#E63946", "amber": "#FFFFFF" }"##,
+                &[],
+            ),
+        ),
+        (
+            "bean",
+            "palette-dark",
+            pal("bean", r##"{ "bean": "#2B1A12" }"##, &[("look", 0.0)]),
+        ),
+        (
+            "cuppa",
+            "palette-hue",
+            pal("cuppa", r##"{ "heart": "#2A9D8F" }"##, &[("hue", 200.0)]),
         ),
         ("reconnecting", "quality66", s(&[("quality", 0.66)])),
         ("broadcasting", "level50", s(&[("level", 0.5)])),
@@ -763,7 +1074,7 @@ fn regenerate_sinua_golden() {
         })
         .collect();
     let doc = json!({
-        "specVersion": "1.8.0",
+        "specVersion": "2.5.0",
         "note": "Sinua's own regression / cross-platform lock for every state spec/orbs-golden.json does not cover. \
     Generated by this engine, so it proves 'unchanged since baseline', NOT correctness -- upstream's set remains the only external oracle. \
     Dot stride 8: x, y, z, r, white, a, saturation, hue (dots in draw order). Line stride 9: x1, y1, x2, y2, white, a, w, saturation, hue (1.1.0; was 7). \
@@ -774,7 +1085,7 @@ fn regenerate_sinua_golden() {
     1.3.0 (materials phase 2, liquid): a fill with inner rings carries `holes` [[x, y, ...], ...] (even-odd with `points`); absent when none. \
     1.4.0 (materials phase 3): particle cases -- no new fields (particles are dots). \
     1.5.0 (materials phase 4): holographic-lite cases -- no new fields (it recolours saturation/hue); the 4 particle cases re-baselined deliberately (particles on wall-clock time, per-state defaults, calmer motion, position-picked emitters). \
-    1.6.0 (per-vertex stroke colour): a polyline whose vertex hues differ (holo / gradient on strokes) carries `hues` [h, ...], one per vertex; absent when none. 1.7.0 (size 32): the plain frame() cases at every shipped size, 64 / 32 / 20; every earlier case unchanged. Size 32 of the ported orbs is also held to upstream's own engine (spec/orbs-golden-32.json). 1.8.0 (character family, FX Spec 1.11): the four characters (buzzy, hum, wisp, chirp) at every size and time, each with six input-driven cases (listening, the turn blink, speaking with a hue, barge-in, celebrate, muted); a character is fills only; every earlier case unchanged. Re-baseline only deliberately, with a LOG entry (docs/testing.md).",
+    1.6.0 (per-vertex stroke colour): a polyline whose vertex hues differ (holo / gradient on strokes) carries `hues` [h, ...], one per vertex; absent when none. 1.7.0 (size 32): the plain frame() cases at every shipped size, 64 / 32 / 20; every earlier case unchanged. Size 32 of the ported orbs is also held to upstream's own engine (spec/orbs-golden-32.json). 1.8.0 (character family, FX Spec 1.11): the four characters (buzzy, hum, wisp, chirp) at every size and time, each with eight input-driven cases (listening, the turn blink, speaking with a hue, barge-in, celebrate, muted, the head turn and `turn` 0); a character is fills only; every earlier case unchanged. 2.0.0 (SinuaEdge removed, design note 9): the `framing` cases are gone, the first removal, hence the major; every other case unchanged. 2.1.0 (design note 14): two more characters, cuppa (an SVG-path body with a hole: the mug's handle; the `steam` part) and bean (path patches), the same cases as the others; every earlier case unchanged. 2.2.0 (design note 15): the tap hop, `buzzy-64-0.6-hop` mid-hop and `cuppa-64-0.6-hop-glance` with the glance toward the tap (`tapX` / `tapY`); every earlier case unchanged. 2.3.0 (design note 16): the expressions, buzzy happy, cuppa surprised (the O mouth), bean sad (the frown), wisp sleepy and buzzy thoughtful while speaking (the voice keeps the mouth); every earlier case unchanged. 2.4.0 (design note 17): beep, a robot with the `arms` part, the same cases as the other characters plus `beep-64-0.6-arms-off`; every earlier case unchanged. 2.5.0 (design note 19): palette overrides, buzzy (shell and amber), bean on a dark ground (the ink lifted) and cuppa with `hue` too (the given colour isn't turned); every earlier case unchanged. Re-baseline only deliberately, with a LOG entry (docs/testing.md).",
         "tolerance": TOLERANCE,
         "sizes": SIZES,
         "times": TIMES,

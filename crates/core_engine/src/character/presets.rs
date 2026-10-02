@@ -7,7 +7,7 @@ use crate::primitives::ModeOpts;
 // Reserved for a future uniffi-bindgen/enum-export pass, same as the
 // other families' `STATES`.
 #[allow(dead_code)]
-pub const STATES: &[&str] = &["buzzy", "hum", "wisp", "chirp"];
+pub const STATES: &[&str] = &["buzzy", "hum", "wisp", "chirp", "cuppa", "bean", "beep"];
 
 fn state_to_mode(state: &str) -> Option<&'static str> {
     match state {
@@ -15,15 +15,20 @@ fn state_to_mode(state: &str) -> Option<&'static str> {
         "hum" => Some("hum"),
         "wisp" => Some("wisp"),
         "chirp" => Some("chirp"),
-        _ => None,
+        "cuppa" => Some("cuppa"),
+        "bean" => Some("bean"),
+        "beep" => Some("beep"),
+        // A recipe that came with an FX Spec (`character/registry.rs`).
+        k => crate::character::registry::key(k),
     }
 }
 
-/// True for a character's mode (each character's mode is named like its pattern).
+/// True for a character's mode (each character's mode is named like its
+/// pattern; a recipe from an FX Spec is its registry key).
 /// The engine skips the generic post-processes a character does itself
 /// (`effects::draws_own`), and the other per-mode tables key off this.
 pub fn is_character_mode(mode: &str) -> bool {
-    STATES.contains(&mode)
+    STATES.contains(&mode) || mode.starts_with(crate::character::registry::PREFIX)
 }
 
 pub struct Resolved {

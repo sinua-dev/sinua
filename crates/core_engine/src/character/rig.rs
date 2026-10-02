@@ -91,6 +91,97 @@ pub fn glance(t: f64, seed: f64) -> (f64, f64) {
     (a.cos() * 7.0 * k, a.sin() * 3.5 * k)
 }
 
+/// The tap hop (design note 15): a crouch, a hop of `HOP_LIFT` design units and
+/// a squash on landing, with a smile; for the first two thirds the eyes glance
+/// toward the tap (`tapX` / `tapY`, -1..1 from the view's centre) and come back.
+/// The voice state goes on underneath: the mouth, the ears and the lids stay
+/// its own, and nothing lasts past the hop. Reduced motion: only the smile.
+fn hop(pose: &mut Pose, o: &ModeOpts, age: f64, reduced: bool) {
+    let Some(dur) = crate::effects::duration_of(crate::effects::HOP) else {
+        return;
+    };
+    if !(0.0..dur).contains(&age) {
+        return;
+    }
+    let u = age / dur;
+    let arc = ((u - 0.1) / 0.75).clamp(0.0, 1.0);
+    let lift = (std::f64::consts::PI * arc).sin();
+    pose.eyes.smile = pose.eyes.smile.max(0.7 * (std::f64::consts::PI * u).sin());
+    if reduced {
+        return;
+    }
+    pose.bob -= HOP_LIFT * lift;
+    pose.squash += if u < 0.1 {
+        0.05 * u / 0.1
+    } else if u > 0.85 {
+        0.07 * (1.0 - (u - 0.85) / 0.15)
+    } else {
+        0.0
+    };
+    if let (Some(&x), Some(&y)) = (o.get("tapX"), o.get("tapY")) {
+        let g = if u < 0.67 {
+            (std::f64::consts::PI * u / 0.67).sin()
+        } else {
+            0.0
+        };
+        pose.eyes.gx += (x.clamp(-1.0, 1.0) * 9.0 - pose.eyes.gx) * g;
+        pose.eyes.gy += (y.clamp(-1.0, 1.0) * 5.0 - pose.eyes.gy) * g;
+    }
+}
+
+/// The expressions (design note 16), as the opts that weigh them (0..1).
+pub const EXPRESSIONS: [(&str, &str); 5] = [
+    ("happy", "expressionHappy"),
+    ("surprised", "expressionSurprised"),
+    ("thoughtful", "expressionThoughtful"),
+    ("sad", "expressionSad"),
+    ("sleepy", "expressionSleepy"),
+];
+
+/// The expressions' weights in `o`, in [`EXPRESSIONS`] order; scaled down
+/// together when they add up to more than 1.
+fn expression_weights(o: &ModeOpts) -> [f64; 5] {
+    let mut w = EXPRESSIONS.map(|(_, k)| get(o, k, 0.0).clamp(0.0, 1.0));
+    let sum: f64 = w.iter().sum();
+    if sum > 1.0 {
+        w.iter_mut().for_each(|x| *x /= sum);
+    }
+    w
+}
+
+/// An expression owns the eyes' shape (design note 16): each weight pulls the
+/// voice state's eyes toward its own. The gaze, the turn and the blinks stay
+/// the voice state's.
+fn express_eyes(e: &mut Eyes, w: [f64; 5]) {
+    let (w0, h0, r0) = (e.w, e.h, e.r);
+    let mut to = |w: f64, f: &dyn Fn(&mut Eyes)| {
+        if w > 0.0 {
+            let mut t = *e;
+            f(&mut t);
+            e.smile += (t.smile - e.smile) * w;
+            e.lid += (t.lid - e.lid) * w;
+            e.tilt += (t.tilt - e.tilt) * w;
+            e.asym += (t.asym - e.asym) * w;
+            e.w += (t.w - e.w) * w;
+            e.h += (t.h - e.h) * w;
+            e.r += (t.r - e.r) * w;
+        }
+    };
+    to(w[0], &|t| t.smile = 0.8);
+    to(w[1], &|t| {
+        (t.w, t.h, t.r) = (w0 * 1.2, h0 * 1.3, r0 + 3.0);
+        (t.lid, t.tilt, t.smile) = (0.0, 0.0, 0.0);
+    });
+    to(w[2], &|t| (t.lid, t.asym, t.tilt) = (0.25, 0.17, 0.2));
+    to(w[3], &|t| {
+        (t.lid, t.tilt, t.h, t.smile) = (0.3, 0.6, h0 * 0.85, 0.0);
+    });
+    to(w[4], &|t| (t.lid, t.tilt, t.smile) = (0.62, 0.1, 0.0));
+}
+
+/// How high the tap hop lifts the body, in design units (of 200).
+const HOP_LIFT: f64 = 9.0;
+
 pub fn pose(o: &ModeOpts, t: f64) -> Pose {
     let seed = get(o, "seed", 0.0);
     let level = get(o, "audioLevel", 0.0).clamp(0.0, 1.0);
@@ -109,6 +200,8 @@ pub fn pose(o: &ModeOpts, t: f64) -> Pose {
         kind: EyeKind::Shape,
     };
     let reduced = o.get("effectReduced").is_some_and(|v| *v >= 0.5);
+    let ex = expression_weights(o);
+    express_eyes(&mut eyes, ex);
     // Living motion: glances, blinks, breathing.
     let look = get(o, "look", 1.0).clamp(0.0, 2.0);
     if look > 0.0 && !reduced {
@@ -122,7 +215,8 @@ pub fn pose(o: &ModeOpts, t: f64) -> Pose {
     if let Some(&age) = o.get("stateAge") {
         shut = shut.max(turn * bump(age, TURN_BLINK_S));
     }
-    let breath = get(o, "breath", 0.0);
+    // Sleepy breathes slowly and deep.
+    let breath = get(o, "breath", 0.0).max(ex[4]);
     let mut bob = -(t * 1.6).sin().abs() * 1.5 * breath;
     // Mute / connection lost: a heavy-lidded rest.
     let muted = get(o, "muted", 0.0).clamp(0.0, 1.0);
@@ -146,10 +240,23 @@ pub fn pose(o: &ModeOpts, t: f64) -> Pose {
     // (the pose interpolates `mouthTalk` / `mouthDots` like every other number).
     let talk = get(o, "mouthTalk", 0.0).clamp(0.0, 1.0);
     let dots = get(o, "mouthDots", 0.0).clamp(0.0, 1.0);
-    let smile = (1.0 - talk - dots).clamp(0.0, 1.0);
+    let rest = (1.0 - talk - dots).clamp(0.0, 1.0);
+    // The expression's resting mouth takes the rest share; talk and dots stay the voice's.
+    let (mo, mf) = (rest * ex[1], rest * ex[3]);
+    let smile = rest - mo - mf;
     let line_level = voice.clamp(0.0, 1.0);
     let mouth = if get(o, "mouth", 1.0) < 0.5 {
         Mouth::None
+    } else if mo > 0.0 || mf > 0.0 {
+        Mouth::Blend {
+            smile,
+            dots,
+            talk,
+            level: line_level,
+            phase: t,
+            o: mo,
+            frown: mf,
+        }
     } else if dots >= 1.0 && talk == 0.0 {
         Mouth::Dots(t)
     } else if talk >= 1.0 && dots == 0.0 {
@@ -163,6 +270,8 @@ pub fn pose(o: &ModeOpts, t: f64) -> Pose {
             talk,
             level: line_level,
             phase: t,
+            o: 0.0,
+            frown: 0.0,
         }
     };
     let mut pose = Pose {
@@ -182,6 +291,10 @@ pub fn pose(o: &ModeOpts, t: f64) -> Pose {
     // ring / tick / burst for other families; a character's face *is* the effect.
     if let (Some(&age), Some(&code)) = (o.get("effectAge"), o.get("effectCode")) {
         let code = code as u32;
+        if code == crate::effects::HOP {
+            hop(&mut pose, o, age, reduced);
+            return pose;
+        }
         if let Some(dur) = crate::effects::duration_of(code) {
             if (0.0..dur).contains(&age) {
                 pose.effect = code;
@@ -324,6 +437,100 @@ mod tests {
         assert!(hit.eyes.h > base.eyes.h * 1.25 && hit.bob < base.bob);
         let over = pose(&opts(&[("interruptAge", 0.6), ("look", 0.0)]), 0.1);
         assert_eq!(over.eyes.h, base.eyes.h);
+    }
+
+    #[test]
+    fn expressions_own_the_eyes_and_the_resting_mouth_not_the_voice() {
+        let p = |kv: &[(&str, f64)]| pose(&opts(kv), 1.0);
+        let plain = p(&[("look", 0.0)]);
+        assert!(p(&[("look", 0.0), ("expressionHappy", 1.0)]).eyes.smile > 0.79);
+        let s = p(&[("look", 0.0), ("expressionSurprised", 1.0)]);
+        assert!(s.eyes.h > plain.eyes.h * 1.29 && s.eyes.lid == 0.0);
+        assert!(
+            matches!(s.mouth, Mouth::Blend { o, .. } if (o - 1.0).abs() < 1e-12),
+            "an O at rest"
+        );
+        let sad = p(&[("look", 0.0), ("expressionSad", 1.0)]);
+        assert!((sad.eyes.tilt - 0.6).abs() < 1e-12);
+        assert!(matches!(sad.mouth, Mouth::Blend { frown, .. } if (frown - 1.0).abs() < 1e-12));
+        assert!((p(&[("look", 0.0), ("expressionSleepy", 1.0)]).eyes.lid - 0.62).abs() < 1e-12);
+        let t = p(&[("look", 0.0), ("expressionThoughtful", 1.0)]);
+        assert!((t.eyes.asym - 0.17).abs() < 1e-12);
+        // Half weight: half way.
+        let half = p(&[("look", 0.0), ("expressionSleepy", 0.5)]);
+        assert!((half.eyes.lid - 0.31).abs() < 1e-12);
+        // Speaking: the voice's mouth stays; the expression keeps only its share of the rest.
+        let talk = [
+            ("look", 0.0),
+            ("mouthTalk", 1.0),
+            ("audioLevel", 0.7),
+            ("mouthGain", 1.0),
+        ];
+        let mut sad_talk = talk.to_vec();
+        sad_talk.push(("expressionSad", 1.0));
+        assert_eq!(
+            format!("{:?}", p(&sad_talk).mouth),
+            format!("{:?}", p(&talk).mouth)
+        );
+        assert!(
+            (p(&sad_talk).eyes.tilt - 0.6).abs() < 1e-12,
+            "and the eyes are still sad"
+        );
+        // The gaze stays the voice state's.
+        let gaze = [("look", 0.0), ("gazeX", -8.0), ("expressionHappy", 1.0)];
+        assert_eq!(p(&gaze).eyes.gx, -8.0);
+        // No expression: the old pose, exactly.
+        assert_eq!(
+            format!("{:?}", p(&[("look", 0.0), ("expressionHappy", 0.0)])),
+            format!("{plain:?}")
+        );
+    }
+
+    #[test]
+    fn the_tap_hop_lifts_lands_and_leaves_the_voice_state_alone() {
+        let speaking = [
+            ("mouthTalk", 1.0),
+            ("audioLevel", 0.6),
+            ("mouthGain", 1.0),
+            ("earGain", 0.0),
+            ("look", 0.0),
+        ];
+        let at = |age: f64, extra: &[(&str, f64)]| {
+            let mut kv: Vec<(&str, f64)> = speaking.to_vec();
+            kv.extend_from_slice(&[("effectCode", 4.0), ("effectAge", age)]);
+            kv.extend_from_slice(extra);
+            pose(&opts(&kv), 1.0)
+        };
+        let plain = pose(&opts(&speaking), 1.0);
+        // Up in the middle, down at both ends; the voice's mouth goes on.
+        assert!(at(0.3, &[]).bob < plain.bob - 8.0);
+        assert!((at(0.0, &[]).bob - plain.bob).abs() < 1e-9);
+        assert!(at(0.03, &[]).squash > plain.squash, "a crouch first");
+        assert!(at(0.55, &[]).squash > plain.squash, "a squash on landing");
+        assert_eq!(
+            format!("{:?}", at(0.3, &[]).mouth),
+            format!("{:?}", plain.mouth)
+        );
+        assert!(at(0.3, &[]).eyes.smile > 0.5);
+        // Over: nothing lasts.
+        assert_eq!(format!("{:?}", at(0.6, &[])), format!("{plain:?}"));
+        // The glance: toward the tap, then back.
+        assert!(at(0.2, &[("tapX", 1.0), ("tapY", -1.0)]).eyes.gx > 6.0);
+        assert!(at(0.2, &[("tapX", 1.0), ("tapY", -1.0)]).eyes.gy < -3.0);
+        assert!((at(0.5, &[("tapX", 1.0), ("tapY", 0.0)]).eyes.gx - plain.eyes.gx).abs() < 1e-9);
+        // Reduced motion: only the smile.
+        let r = at(0.3, &[("effectReduced", 1.0), ("tapX", 1.0), ("tapY", 0.0)]);
+        assert!((r.bob - plain.bob).abs() < 1e-9 && (r.eyes.gx - plain.eyes.gx).abs() < 1e-9);
+        assert!(r.eyes.smile > 0.5);
+    }
+
+    #[test]
+    fn other_families_draw_nothing_for_the_hop() {
+        let mut o: ModeOpts = opts(&[("effectCode", 4.0), ("effectAge", 0.3)]);
+        let hopped = crate::frame_with_overrides("breathing".into(), 64, 1.0, o.clone()).unwrap();
+        o.clear();
+        let plain = crate::frame_with_overrides("breathing".into(), 64, 1.0, o).unwrap();
+        assert_eq!(format!("{hopped:?}"), format!("{plain:?}"));
     }
 
     #[test]

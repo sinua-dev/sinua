@@ -31,11 +31,18 @@ use crate::fx_spec::{self, FxDiagnostic};
 
 pub const CATALOG_VERSION: u64 = 1;
 
+/// The catalog the runtime carries: `catalog_source.json` without its prose
+/// (`description`, `note`), minified by build.rs (design note 10). The words are
+/// for tools: the components' doc comments and sinua.dev come from
+/// `spec/parameters.json`, which a test writes from the full source.
 fn source() -> &'static Value {
     static SRC: OnceLock<Value> = OnceLock::new();
     SRC.get_or_init(|| {
-        serde_json::from_str(include_str!("catalog_source.json"))
-            .expect("catalog_source.json is valid JSON")
+        serde_json::from_str(include_str!(concat!(
+            env!("OUT_DIR"),
+            "/catalog_runtime.json"
+        )))
+        .expect("catalog_source.json is valid JSON")
     })
 }
 
@@ -200,9 +207,24 @@ fn num(v: f64) -> Value {
     }
 }
 
-/// The whole catalog as a JSON value (see the module doc for the shape).
+/// The whole catalog as a JSON value (see the module doc for the shape), as the
+/// runtime carries it: no descriptions.
 pub fn catalog() -> Value {
-    let src = source();
+    catalog_with(source())
+}
+
+/// The catalog built from a full `catalog_source.json` text, descriptions and all:
+/// what `spec/parameters.json` holds. Only the test that writes that file calls it,
+/// so the full source is never embedded in the library.
+#[doc(hidden)]
+pub fn catalog_json_from_source(text: &str) -> String {
+    let src: Value = serde_json::from_str(text).expect("catalog_source.json is valid JSON");
+    let mut s = serde_json::to_string_pretty(&catalog_with(&src)).expect("catalog serializes");
+    s.push('\n');
+    s
+}
+
+fn catalog_with(src: &Value) -> Value {
     let defs = src["definitions"].as_object().cloned().unwrap_or_default();
     let mut objects = Vec::new();
     for obj in src["objects"].as_array().into_iter().flatten() {
@@ -264,13 +286,16 @@ pub fn catalog() -> Value {
             let mut pattern = json!({
                 "id": id,
                 "label": p["label"],
-                "description": p["description"],
                 "mode": mode,
                 "speed": num(first.speed),
                 "sizes": resolved.iter().map(|(z, _)| *z).collect::<Vec<_>>(),
                 "params": params,
                 "materialDefaults": material_defaults,
             });
+            // The words only when the source has them (the full one, for spec/parameters.json).
+            if let Some(d) = p.get("description") {
+                pattern["description"] = d.clone();
+            }
             // `layout: "box"`: the pattern lays out in `size * aspect` by
             // `size` (the `aspect` runtime input), so a view gives it its
             // box's ratio and fills the box instead of centring a square.
@@ -479,7 +504,6 @@ mod tests {
     #[test]
     fn layout_is_box_only_where_the_catalog_says_so() {
         assert_eq!(layout_of("playing"), "box");
-        assert_eq!(layout_of("framing"), "box");
         assert_eq!(layout_of("breathing"), "square");
         assert_eq!(layout_of("talking"), "square");
         assert_eq!(layout_of("no-such-pattern"), "square");
@@ -696,9 +720,32 @@ mod tests {
         );
     }
 
+    /// The full source, words and all (what spec/parameters.json is built from).
+    fn full_source() -> Value {
+        serde_json::from_str(include_str!("catalog_source.json")).unwrap()
+    }
+
+    #[test]
+    fn the_runtime_catalog_is_the_full_one_without_its_words() {
+        fn strip(v: &mut Value) {
+            match v {
+                Value::Object(o) => {
+                    o.remove("description");
+                    o.values_mut().for_each(strip);
+                }
+                Value::Array(a) => a.iter_mut().for_each(strip),
+                _ => {}
+            }
+        }
+        let mut full = catalog_with(&full_source());
+        assert_ne!(full, catalog(), "the full catalog has words");
+        strip(&mut full);
+        assert_eq!(full, catalog());
+    }
+
     #[test]
     fn every_pattern_says_what_it_is_for() {
-        for obj in source()["objects"].as_array().unwrap() {
+        for obj in full_source()["objects"].as_array().unwrap() {
             for p in obj["patterns"].as_array().unwrap() {
                 assert!(
                     p["description"].as_str().is_some_and(|s| s.len() > 8),
@@ -711,7 +758,8 @@ mod tests {
 
     #[test]
     fn names_ranges_and_choices_are_consistent() {
-        let defs = source()["definitions"].as_object().unwrap();
+        let full = full_source();
+        let defs = full["definitions"].as_object().unwrap();
         for (id, d) in defs {
             let key = d["key"].as_str().unwrap();
             assert!(

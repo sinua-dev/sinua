@@ -128,7 +128,8 @@ pub fn superellipse(cx: f64, cy: f64, ax: f64, ay: f64, e: f64, n: usize) -> Vec
 /// edges are subdivided every ~`step` so later per-point edits (the happy
 /// eye's arc) have points to move.
 pub fn round_rect(x: f64, y: f64, w: f64, h: f64, r: f64, step: f64) -> Vec<Point> {
-    let r = r.clamp(0.0, (w.min(h)) / 2.0);
+    // `max(0)`: a recipe's negative size must not panic the clamp.
+    let r = r.clamp(0.0, (w.min(h) / 2.0).max(0.0));
     let mut out = Vec::new();
     let corner = |out: &mut Vec<Point>, cx: f64, cy: f64, a0: f64| {
         for k in 0..=6 {
@@ -468,6 +469,43 @@ pub fn radial(points: Vec<Point>, c: (f64, f64), r: f64, s: &[(f64, Hsl)]) -> Fi
             stops: stops(s),
         }),
         ..solid(points, s[s.len() / 2].1, 1.0)
+    }
+}
+
+/// [`ring`] with mitred corners for a path's sharp ones (an ear's tip): each
+/// point moves by `w / 2 / cos(half the turn)`, at most `w` (a 2× miter), so the
+/// line keeps its width round a corner instead of thinning (design note 13).
+pub fn ring_miter(p: &[Point], w: f64) -> (Vec<Point>, Vec<Point>) {
+    let n = p.len();
+    let nm = normals(p, true);
+    let side = if signed_area(p) > 0.0 { -1.0 } else { 1.0 };
+    let k: Vec<f64> = (0..n)
+        .map(|i| {
+            let (a, b) = (&p[(i + n - 1) % n], &p[i]);
+            let l = (b.x - a.x).hypot(b.y - a.y).max(1e-9);
+            let c = nm[i].0 * -(b.y - a.y) / l + nm[i].1 * (b.x - a.x) / l;
+            1.0 / c.max(0.5)
+        })
+        .collect();
+    let off = |d: f64| -> Vec<Point> {
+        (0..n)
+            .map(|i| {
+                pt(
+                    p[i].x + nm[i].0 * d * k[i] * side,
+                    p[i].y + nm[i].1 * d * k[i] * side,
+                )
+            })
+            .collect()
+    };
+    (off(w / 2.0), off(-w / 2.0))
+}
+
+/// The outline of a path shape: its outer edge and every hole's, mitred.
+pub fn outline_miter(p: &[Point], w: f64, c: Hsl, a: f64) -> Fill {
+    let (outer, inner) = ring_miter(p, w);
+    Fill {
+        holes: vec![inner],
+        ..solid(outer, c, a)
     }
 }
 

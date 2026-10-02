@@ -38,8 +38,12 @@ pub fn profile_version() -> u64 {
 fn source() -> &'static Value {
     static SRC: OnceLock<Value> = OnceLock::new();
     SRC.get_or_init(|| {
-        serde_json::from_str(include_str!("../../../spec/voice-state-profile.json"))
-            .expect("spec/voice-state-profile.json parses")
+        // spec/voice-state-profile.json without its `$comment`s, minified (build.rs).
+        serde_json::from_str(include_str!(concat!(
+            env!("OUT_DIR"),
+            "/voice_state_profile.json"
+        )))
+        .expect("spec/voice-state-profile.json parses")
     })
 }
 
@@ -87,6 +91,16 @@ pub const PARTICLE_FREE_FROM_MINOR: u64 = 10;
 /// Order: the generic state, the old generic values, the pattern's own entry, its
 /// old entry -- so a pattern that turned particles off keeps them off.
 pub fn profile_for_minor(pattern: &str, state: &str, minor: u64) -> Option<VoiceStateProfile> {
+    // A recipe from the file (1.12): the built-in character it names, else the
+    // shared `character` language.
+    let inherited;
+    let pattern = match crate::character::registry::get(pattern) {
+        Some(r) => {
+            inherited = r.profile.clone().unwrap_or_else(|| "character".into());
+            inherited.as_str()
+        }
+        None => pattern,
+    };
     let src = source();
     let generic = src["states"].get(state)?;
     let own = src["patterns"]
@@ -198,6 +212,12 @@ mod tests {
     fn every_pattern_and_state_named_in_the_file_exists_in_the_engine() {
         let src = source();
         for (pattern, entry) in src["patterns"].as_object().unwrap() {
+            // `character`: every recipe from a file (1.12), drawn like buzzy.
+            let pattern = &if pattern == "character" {
+                "buzzy".to_string()
+            } else {
+                pattern.clone()
+            };
             assert!(
                 crate::resolved_opts(pattern.clone(), 64).is_some(),
                 "`patterns.{pattern}` is not a pattern this engine has"

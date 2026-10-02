@@ -159,16 +159,26 @@ pub fn mix(
     keys.sort();
     keys.dedup();
     for key in keys {
+        // A palette colour (design note 19) missing on one side takes the other
+        // side's: only its weight `.w` blends, so the hue never sweeps from 0.
+        let colour = key.starts_with("palette.") && !key.ends_with(".w");
+        let other = |o: &HashMap<String, f64>| if colour { o.get(key).copied() } else { None };
         let a = from
             .overrides
             .get(key)
             .copied()
+            .or_else(|| other(&to.overrides))
             .unwrap_or_else(|| effective(&preset, mode, key));
         let b = to
             .overrides
             .get(key)
             .copied()
+            .or_else(|| other(&from.overrides))
             .unwrap_or_else(|| effective(&preset, mode, key));
+        if colour && key.ends_with(".h") {
+            out.overrides.insert(key.clone(), lerp_hue(a, b, w));
+            continue;
+        }
         if catalog::arrives_at_once(mode, key) {
             // An arrival value (a character's `turnBlink`): the new state's, at once.
             out.overrides.insert(key.clone(), b);
@@ -384,6 +394,12 @@ mod tests {
             keys.extend(s["overrides"].as_object().unwrap().keys().cloned());
         }
         for (pattern, p) in src["patterns"].as_object().unwrap() {
+            // `character`: every recipe from a file (1.12), which reads buzzy's keys.
+            let pattern = if pattern == "character" {
+                "buzzy"
+            } else {
+                pattern
+            };
             let (mode, _) = crate::resolve_state(pattern, 64).unwrap();
             for s in p["states"].as_object().unwrap().values() {
                 for k in s["overrides"]

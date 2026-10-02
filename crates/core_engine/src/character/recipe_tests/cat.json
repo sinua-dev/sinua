@@ -1,0 +1,33 @@
+{
+  "$comment": "A test recipe (design note 13): a cat head drawn from an SVG path. The ears make the body concave, so the forehead band must clip into two pieces, one per ear; the muzzle is a path patch. Not a shipped character.",
+  "recipe": 1,
+  "id": "cat",
+  "palette": {
+    "fur": [36.0, 0.87, 0.6],
+    "furLight": [38.0, 0.95, 0.74],
+    "furDark": [30.0, 0.8, 0.46],
+    "muzzle": [36.0, 1.0, 0.93],
+    "stripe": [280.0, 0.6, 0.5],
+    "line": [200.0, 0.25, 0.18],
+    "eyes": [200.0, 0.25, 0.12]
+  },
+  "hue": { "base": 36.0, "turns": ["fur", "furLight", "furDark"] },
+  "rig": { "kind": "pivot", "pivot": [100.0, 166.0], "lean": 0.5 },
+  "surfaces": { "face": { "c": [100.0, 110.0], "r": 60.0, "depth": 0.8 } },
+  "parts": [
+    { "part": "shadow", "space": "ground", "at": [100.0, 180.0], "r": [44.0, 5.2] },
+    {
+      "part": "body", "space": "body",
+      "shape": { "path": "M50 74 L56 22 L90 54 C97 52 103 52 110 54 L144 22 L150 74 C166 100 160 152 100 166 C40 152 34 100 50 74 Z" },
+      "light": { "radial": [80.0, 70.0, 100.0], "stops": [[0.0, "furLight"], [0.55, "fur"], [1.0, "furDark"]] },
+      "turnLight": [-14.0, 10.0],
+      "inner": [
+        { "part": "band", "shape": { "roundRect": [20.0, 30.0, 160.0, 22.0, 0.0, 4.0] }, "color": "stripe" },
+        { "part": "patch", "shape": { "path": "M70 128 C70 108 130 108 130 128 C130 150 70 150 70 128 Z" }, "surface": "face", "color": "muzzle" }
+      ],
+      "outline": { "width": 3.5, "color": "line" }
+    },
+    { "part": "eyes", "space": "face", "surface": "face", "at": [100.0, 98.0], "scale": [0.8, 0.95], "ink": "eyes", "glow": 0.0 }
+  ],
+  "burst": { "at": [100.0, 100.0], "r": 82.0, "colors": ["celebrate", "fur", "stripe"] }
+}

@@ -623,10 +623,6 @@ pub fn suitability(mode: &str) -> LiquidSuitability {
             "a single dot plus strokes; liquid only rounds the dot",
         ),
         "shimmer" => ("notRecommended", "drawn with a stroke or fill, no dots"),
-        "rim" => (
-            "notRecommended",
-            "a stroked frame round the box, no dots to melt",
-        ),
         m if crate::character::presets::is_character_mode(m) => (
             "notRecommended",
             "a character drawn with fills, no dots to melt",

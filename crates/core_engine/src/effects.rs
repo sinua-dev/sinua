@@ -12,12 +12,10 @@
 //! - `effectReduced`: 1 = the reduced-motion variant: no shake, no burst, no
 //!   moving ring; only the tint pulse (and the tick, in place).
 //!
-//! Box-layout patterns (`framing`'s screen-edge rim, `playing`'s voice-message bar)
-//! play every effect *in place*: the tint pulse (and celebrate's lift) only. Their
-//! centroid is the middle of the screen or the bar, so a ring, a tick or a burst
-//! would land on the app's content or spill out of the bar, and a shake would slide
-//! the rim off the screen. The rim turns green, red or gold where it is, and its
-//! opacity lifts with the tint so an idle (faint) rim flashes too.
+//! Box-layout patterns (`playing`'s voice-message bar) play every effect *in place*:
+//! the tint pulse (and celebrate's lift) only. Their centroid is the middle of the
+//! bar, so a ring, a tick or a burst would spill out of it and a shake would slide
+//! it about. The bar turns green, red or gold where it is.
 
 use crate::primitives::{decay_envelope, Dot, ModeOpts, OrbFrame, Point, Polyline, DECAY_QUAD};
 
@@ -35,10 +33,14 @@ pub struct EffectInfo {
 pub const SUCCESS: u32 = 1;
 pub const ERROR: u32 = 2;
 pub const CELEBRATE: u32 = 3;
+/// A tap on a character: a short hop (design note 15). Characters only; other
+/// families draw nothing for it, and it has no words (nothing is announced).
+pub const HOP: u32 = 4;
 
 const SUCCESS_S: f64 = 0.9;
 const ERROR_S: f64 = 0.5;
 const CELEBRATE_S: f64 = 1.4;
+const HOP_S: f64 = 0.6;
 
 /// The effect called `name`, or `None` for an unknown one.
 pub fn info(name: &str) -> Option<EffectInfo> {
@@ -46,6 +48,7 @@ pub fn info(name: &str) -> Option<EffectInfo> {
         "success" => (SUCCESS, SUCCESS_S, "Done"),
         "error" => (ERROR, ERROR_S, "Something went wrong"),
         "celebrate" => (CELEBRATE, CELEBRATE_S, "Well done"),
+        "hop" => (HOP, HOP_S, ""),
         _ => return None,
     };
     Some(EffectInfo {
@@ -60,6 +63,7 @@ fn duration(code: u32) -> Option<f64> {
         SUCCESS => Some(SUCCESS_S),
         ERROR => Some(ERROR_S),
         CELEBRATE => Some(CELEBRATE_S),
+        HOP => Some(HOP_S),
         _ => None,
     }
 }
@@ -232,7 +236,7 @@ fn hash01(i: u32, salt: u32) -> f64 {
 }
 
 /// Modes whose patterns fill a box (the catalog's `layout: "box"`): effects play in place there.
-const IN_PLACE_MODES: [&str; 2] = ["rim", "playback"];
+const IN_PLACE_MODES: [&str; 1] = ["playback"];
 
 /// True when `mode` draws the effect itself: a character's face *is* the effect
 /// (a happy face, an X, star eyes), so the generic ring / tick / burst isn't added.
@@ -257,6 +261,10 @@ pub fn apply_effect(mut frame: OrbFrame, size: f64, opts: &ModeOpts, in_place: b
         return frame;
     };
     let code = opts.get("effectCode").copied().unwrap_or(0.0) as u32;
+    // The hop is a character's own (rig.rs); other families draw nothing for it.
+    if code == HOP {
+        return frame;
+    }
     let Some(dur) = duration(code) else {
         return frame;
     };

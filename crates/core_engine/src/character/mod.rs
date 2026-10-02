@@ -18,7 +18,16 @@
 pub mod face;
 pub mod geom;
 pub mod kit;
-pub mod modes;
+pub mod palette;
+pub mod parts;
+pub mod path;
 pub mod presets;
+pub mod recipe;
+#[cfg(test)]
+mod recipe_schema;
+#[cfg(test)]
+mod recipe_tests;
+pub mod region;
+pub mod registry;
 pub mod rig;
 pub mod turn;

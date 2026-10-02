@@ -1,41 +1,22 @@
-//! Character / BUZZY: a small space-hero assistant (`buzzy`).
-//!
-//! Design (design-07, the user's pick from the prototype sheets,
-//! sinua-studio/docs/agents/families/assets/prototype-buzz-*.png): a
-//! rounded-square indigo helmet (a square reads dependable) with an amber
-//! crest and chevron ear pods (triangles read energetic), a glass bubble
-//! visor over a face screen, and a "voice core" in the chest. Inspired by
-//! the space-ranger archetype, deliberately none of Buzz Lightyear's marks:
-//! no wings, no white-green-purple suit, no human face.
-//!
-//! Voice: the mouth is a voice line whose swing follows the level (amplitude
-//! only, no visemes), the chest bars follow it too, and while listening
-//! sound arcs light up at the ear pods with the user's level.
-//!
-//! Drawn entirely as fills, in order (see `character/geom.rs` for why), in a
-//! 200-unit design box scaled to `size`. The frame is `Fixed`: the screen
-//! stays dark and the eyes stay cyan in both themes. `hue` turns the shell
-//! (and its line and screen tints); amber and cyan stay.
-//!
-//! Sizes: 64 draws everything; 32 drops the visor; 20 keeps the helmet,
-//! screen, pods, eyes and mouth with heavier lines.
+//! BUZZY's tests from before recipes (they were in `character/modes/buzzy.rs`),
+//! now held against its recipe (`spec/characters/buzzy.json`): the same claims,
+//! the recipe's frame. The constants are the recipe's own values, for the checks.
+#![allow(dead_code, unused_imports)]
 
-use std::f64::consts::PI;
+use std::f64::consts::{PI, TAU};
 
-use crate::character::face::{self, Face, CELEBRATE_INK};
-use crate::character::geom::{self, blurred, hsl, linear, outline, pt, radial, solid, Hsl, Xf};
+use crate::character::face::{self, Face, Mouth, CELEBRATE_INK};
+use crate::character::geom::{self, hsl, Hsl, Xf};
 use crate::character::kit;
 use crate::character::rig;
 use crate::character::turn;
-use crate::primitives::{Fill, ModeOpts, OrbFrame};
+use crate::primitives::{Fill, ModeOpts, OrbFrame, Point};
 
-fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
-    *o.get(key).unwrap_or(&default)
+fn frame_buzzy(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
+    crate::character::recipe::frame("buzzy", size, t, o).expect("a built-in recipe")
 }
 
-/// The shell's own hue; `hue` rotates the shell family by `hue - SHELL_HUE`.
 pub const SHELL_HUE: f64 = 232.0;
-
 const SHELL: Hsl = hsl(231.9, 0.566, 0.461);
 const SHELL_L: Hsl = hsl(231.3, 1.0, 0.718);
 const SHELL_D: Hsl = hsl(234.1, 0.631, 0.255);
@@ -46,8 +27,6 @@ const CYAN: Hsl = hsl(185.0, 1.0, 0.716);
 const GLASS: Hsl = hsl(203.0, 1.0, 0.873);
 const GLASS_EDGE: Hsl = hsl(200.0, 1.0, 0.91);
 const WHITE: Hsl = hsl(0.0, 0.0, 1.0);
-/// What the face turns on: a flattened sphere a little larger than the
-/// helmet, so the face turns without wrapping round its edge.
 const FACE: turn::Surface = turn::Surface {
     c: (100.0, 92.0),
     r: 64.0,
@@ -55,270 +34,6 @@ const FACE: turn::Surface = turn::Surface {
     cylinder: false,
 };
 
-pub fn frame_buzzy(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
-    let pose = rig::pose(o, t);
-    let tier = kit::tier(size);
-    let (small, full) = (tier.small, tier.full);
-    let accessories = get(o, "accessories", 1.0) >= 0.5;
-    let dh = get(o, "hue", SHELL_HUE) - SHELL_HUE;
-    let (shell, shell_l, shell_d, line, screen) = (
-        SHELL.rotate(dh),
-        SHELL_L.rotate(dh),
-        SHELL_D.rotate(dh),
-        LINE.rotate(dh),
-        SCREEN.rotate(dh),
-    );
-    // Heavier lines when the whole character is 20 px.
-    let lw = tier.line;
-    // The head turn (0 unless `turn` is set): the face rides a sphere, the
-    // light and the parts shift with it, the torso follows at 40 %.
-    let tn = turn::angles(o, t, tier);
-    let (sy, cy) = (tn.yaw.sin(), tn.yaw.cos());
-    let core_dx = 30.0 * (0.4 * tn.yaw).sin();
-
-    let scale = Xf::scale(size / 200.0, size / 200.0);
-    let body = Xf::translate(pose.shake, pose.lean)
-        .then(Xf::translate(-100.0, -184.0 + pose.bob))
-        .then(Xf::scale(1.0 + pose.squash, 1.0 - pose.squash))
-        .then(Xf::rotate(pose.tilt))
-        .then(Xf::translate(100.0, 184.0))
-        .then(scale);
-
-    let mut ground: Vec<Fill> = Vec::new();
-    let mut fills: Vec<Fill> = Vec::new();
-
-    // Ground shadow (stays on the floor: no body transform).
-    ground.push(kit::ground_shadow(100.0, 184.0, 46.0, 6.0));
-
-    // Torso.
-    let torso = geom::join(&[
-        geom::cubic(
-            (62.0, 186.0),
-            (62.0, 158.0),
-            (74.0, 146.0),
-            (100.0, 146.0),
-            16,
-        ),
-        geom::cubic(
-            (100.0, 146.0),
-            (126.0, 146.0),
-            (138.0, 158.0),
-            (138.0, 186.0),
-            16,
-        ),
-    ]);
-    fills.push(linear(
-        torso.clone(),
-        (0.0, 146.0),
-        (0.0, 186.0),
-        &[(0.0, shell_l), (0.35, shell), (1.0, shell_d)],
-    ));
-    fills.push(outline(&torso, 3.5 * lw, line, 1.0));
-
-    // Chest voice core: a dark disc, an amber ring, bars with the voice.
-    let core_on = 0.3 + 0.6 * pose.drive;
-    let core = geom::ellipse(100.0 + core_dx, 168.0, 11.0, 11.0, 0.0, 32);
-    fills.push(solid(core.clone(), screen, 1.0));
-    fills.push(outline(&core, 2.5 * lw, AMBER, 0.5 + 0.5 * core_on));
-    if !small {
-        for (i, b) in [0.5, 0.85, 1.0, 0.85, 0.5].iter().enumerate() {
-            let idle = 0.1 + 0.05 * (t * 2.0 + i as f64).sin();
-            let h = 2.0 + b * pose.drive.max(idle) * 12.0;
-            let bar = geom::round_rect(
-                100.0 - 8.0 + i as f64 * 4.0 - 1.2 + core_dx,
-                168.0 - h / 2.0,
-                2.4,
-                h,
-                1.2,
-                2.0,
-            );
-            let bar = geom::clip_convex(&bar, &core);
-            if bar.len() >= 3 {
-                fills.push(solid(bar, CYAN, 0.55 + 0.45 * core_on));
-            }
-        }
-    }
-
-    // Ear pods, their chevrons, and the listening arcs. Turned, the pods
-    // swing round the head: the far one narrows, the near one widens.
-    let pod_at = |s: f64| {
-        let w = 16.0 * (1.0 - 0.5 * s * sy);
-        let x = 100.0 + s * 62.0 * cy;
-        (
-            x - (100.0 + s * 62.0),
-            geom::round_rect(x - w / 2.0, 76.0, w, 34.0, 7.0, 3.0),
-        )
-    };
-    for s in [-1.0, 1.0] {
-        let (dx, pod) = pod_at(s);
-        fills.push(solid(pod.clone(), shell_d, 1.0));
-        fills.push(outline(&pod, 3.0 * lw, line, 1.0));
-        if !small && accessories {
-            let chev = [
-                pt(100.0 + s * 64.0 + dx, 87.0),
-                pt(100.0 + s * 60.0 + dx, 93.0),
-                pt(100.0 + s * 64.0 + dx, 99.0),
-            ];
-            fills.push(solid(geom::stroke(&chev, 3.0), AMBER, 1.0));
-            // Turned, the far pod's arcs go behind the helmet with it.
-            let far = if s == -tn.near_side() {
-                1.0 - tn.fade_in()
-            } else {
-                1.0
-            };
-            for k in 0..2 {
-                let a = (pose.ears * (pose.drive * 1.6 - k as f64 * 0.5)).min(1.0) * far;
-                if a <= 0.02 {
-                    continue;
-                }
-                let (a0, a1) = if s > 0.0 {
-                    (-0.7, 0.7)
-                } else {
-                    (PI - 0.7, PI + 0.7)
-                };
-                let arc = geom::arc(
-                    100.0 + s * 70.0 + dx,
-                    93.0,
-                    9.0 + k as f64 * 7.0,
-                    a0,
-                    a1,
-                    12,
-                );
-                let stroke = geom::stroke(&arc, 2.6);
-                fills.push(blurred(stroke.clone(), CYAN, 0.5 * a, 2.0));
-                fills.push(solid(stroke, CYAN, a));
-            }
-        }
-    }
-
-    // Helmet: a rounded square, lit from the top left, shaded bottom right.
-    let head = geom::superellipse(100.0, 92.0, 56.0, 52.0, 4.2, 96);
-    if !tn.is_zero() {
-        // The side band: the helmet's back edge, showing on the side it
-        // turns away from (and below when it looks up).
-        if let Some((band, rim)) = turn::Turn::side_band(&head, (-16.0 * sy, 16.0 * tn.pitch.sin()))
-        {
-            fills.push(solid(band, shell_d, 1.0));
-            fills.push(solid(geom::stroke(&rim, 3.5 * lw), line, 1.0));
-        }
-    }
-    // The light stays put while the helmet turns under it.
-    let (lx, ly) = (-14.0 * sy, 10.0 * tn.pitch.sin());
-    fills.push(radial(
-        head.clone(),
-        (78.0 + lx, 60.0 + ly),
-        78.0,
-        &[(0.0, shell_l), (0.55, shell), (1.0, shell_d)],
-    ));
-    let shade = geom::clip_convex(
-        &geom::ellipse(126.0 + lx, 138.0 + ly, 60.0, 34.0, -0.4, 48),
-        &head,
-    );
-    if shade.len() >= 3 {
-        fills.push(solid(shade, shell_d, 0.35));
-    }
-    fills.push(outline(&head, 3.5 * lw, line, 1.0));
-    // The near pod comes round in front of the helmet, fading in as it
-    // turns so nothing jumps at the switch.
-    let near = tn.near_side();
-    let front = tn.fade_in();
-    if front > 0.0 {
-        let (dx, pod) = pod_at(near);
-        fills.push(solid(pod.clone(), shell_d, front));
-        fills.push(outline(&pod, 3.0 * lw, line, front));
-        if !small && accessories {
-            let s = near;
-            let chev = [
-                pt(100.0 + s * 64.0 + dx, 87.0),
-                pt(100.0 + s * 60.0 + dx, 93.0),
-                pt(100.0 + s * 64.0 + dx, 99.0),
-            ];
-            fills.push(solid(geom::stroke(&chev, 3.0), AMBER, front));
-        }
-    }
-    if !small && accessories {
-        let crest = geom::join(&[
-            geom::quad((86.0, 44.0), (100.0, 22.0), (114.0, 44.0), 12),
-            geom::quad((114.0, 44.0), (100.0, 38.0), (86.0, 44.0), 8),
-        ]);
-        let crest = if tn.is_zero() {
-            crest
-        } else {
-            Xf::translate(22.0 * sy, 0.0).map(&crest)
-        };
-        fills.push(solid(crest.clone(), AMBER, 1.0));
-        fills.push(outline(&crest, 2.5, line, 1.0));
-    }
-
-    // Face screen, the face on it (clipped to it), its rim. Everything from
-    // here to the visor rides the face sphere when the head turns.
-    let face_from = fills.len();
-    let scr = geom::round_rect(58.0, 62.0, 84.0, 62.0, 22.0, 2.0);
-    fills.push(solid(scr.clone(), screen, 1.0));
-    let ink = kit::effect_ink(&pose, CYAN);
-    let f = Face {
-        cx: 100.0,
-        cy: 90.0,
-        scale: if small { 1.08 } else { 0.92 },
-        ink,
-        glow: if small { 2.0 } else { 4.0 },
-        clip: Some(&scr),
-    };
-    fills.extend(face::eye_fills(&f, &pose.eyes));
-    fills.extend(face::mouth_fills(
-        &f,
-        &pose.eyes,
-        pose.mouth,
-        if small { 11.0 } else { 18.0 },
-    ));
-    fills.push(outline(&scr, 2.5 * lw, line, 1.0));
-
-    // Glass bubble visor with a slowly drifting reflection (64 only).
-    if full {
-        let visor = geom::ellipse(100.0, 88.0, 50.0, 44.0, 0.0, 64);
-        fills.push(solid(visor.clone(), GLASS, 0.16));
-        fills.push(outline(&visor, 1.6, GLASS_EDGE, 0.55));
-        let sw = 0.15 + 0.1 * (t * 0.5).sin();
-        let glint = geom::arc(
-            100.0,
-            88.0,
-            40.0,
-            PI * (1.12 + sw * 0.5),
-            PI * (1.32 + sw * 0.5),
-            12,
-        );
-        let glint = geom::clip_convex(&geom::stroke(&glint, 4.0), &visor);
-        if glint.len() >= 3 {
-            fills.push(solid(glint, WHITE, 0.55));
-        }
-    }
-    if !tn.is_zero() {
-        let turned: Vec<Fill> = fills
-            .drain(face_from..)
-            .map(|f| tn.map_fill(f, &FACE))
-            .collect();
-        fills.extend(turned);
-    }
-
-    // Celebrate: the shared ring of sparkles, in Buzzy's colours.
-    fills.extend(kit::celebrate_burst(
-        &pose,
-        o,
-        tier,
-        (100.0, 96.0),
-        80.0,
-        [CELEBRATE_INK, AMBER, CYAN],
-    ));
-
-    let mut out: Vec<Fill> = ground
-        .into_iter()
-        .map(|f| geom::transform(f, &scale))
-        .collect();
-    out.extend(fills.into_iter().map(|f| geom::transform(f, &body)));
-    kit::finish(out, o)
-}
-
-#[cfg(test)]
 mod tests {
     use super::*;
     use crate::primitives::{ColorMode, Point};
@@ -618,9 +333,18 @@ mod tests {
     fn bench_turn() {
         let states: [(&str, &[(&str, f64)]); 4] = [
             ("idle", &[("breath", 1.0), ("look", 1.0)]),
-            ("listening", &[("earGain", 1.0), ("audioLevel", 0.7), ("lean", 4.0)]),
-            ("thinking", &[("mouthDots", 1.0), ("gazeX", -8.0), ("gazeY", -4.0)]),
-            ("speaking", &[("mouthTalk", 1.0), ("mouthGain", 1.0), ("audioLevel", 0.8)]),
+            (
+                "listening",
+                &[("earGain", 1.0), ("audioLevel", 0.7), ("lean", 4.0)],
+            ),
+            (
+                "thinking",
+                &[("mouthDots", 1.0), ("gazeX", -8.0), ("gazeY", -4.0)],
+            ),
+            (
+                "speaking",
+                &[("mouthTalk", 1.0), ("mouthGain", 1.0), ("audioLevel", 0.8)],
+            ),
         ];
         let turn_of = |st: &str| -> Vec<(&'static str, f64)> {
             match st {
@@ -651,7 +375,11 @@ mod tests {
                     crate::cost::frame_cost(&frame_buzzy(size, 7.3, &on), size as u32),
                 );
                 let pts = |o: &ModeOpts| -> usize {
-                    frame_buzzy(size, 7.3, o).fills.iter().map(|f| f.points.len()).sum()
+                    frame_buzzy(size, 7.3, o)
+                        .fills
+                        .iter()
+                        .map(|f| f.points.len())
+                        .sum()
                 };
                 println!(
                     "{size:>3} {st:<10} engine {a:6.2} -> {b:6.2} us/frame | fills {} -> {} | fill points {} -> {} | coverage {:.3} -> {:.3} | {} -> {}",

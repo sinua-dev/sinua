@@ -1,0 +1,68 @@
+{
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
+  "fxSpec": "1.13",
+  "name": "Bean's party hat",
+  "description": "A cosmetic (FX Spec 1.13): Bean wears a party hat. The hat is data in this file: two `body` parts on Bean's `headTop` slot, in the slot's units (the slot point is (0, 0), a hat has 40 units of height). It tilts, hops and turns with the head; Bean zooms out a little so the hat fits. Its colours are `party-hat.felt` and so on in Bean's palette, so `palette` can repaint it.",
+  "object": "character",
+  "pattern": "bean",
+  "size": 64,
+  "cosmetics": [
+    {
+      "id": "party-hat",
+      "label": "party hat",
+      "slot": "headTop",
+      "palette": {
+        "felt": [330, 0.72, 0.62],
+        "feltDark": [326, 0.62, 0.48],
+        "trim": [48, 0.95, 0.62],
+        "line": [330, 0.5, 0.2]
+      },
+      "parts": [
+        {
+          "part": "body",
+          "shape": { "path": "M-20 2 L0 -33 L20 2 Q0 8 -20 2 Z" },
+          "light": { "linear": [-20, 0, 20, 0], "stops": [[0, "felt"], [1, "feltDark"]] },
+          "inner": [{ "part": "band", "shape": { "roundRect": [-24, -6, 48, 6, 0, 4] }, "color": "trim" }],
+          "outline": { "width": 2.5, "color": "line" }
+        },
+        {
+          "part": "body",
+          "shape": { "ellipse": [0, -35, 5, 5, 0, 20] },
+          "light": { "radial": [-1.5, -36.5, 7], "stops": [[0, "trim"], [1, "trim"]] },
+          "outline": { "width": 2, "color": "line" }
+        }
+      ]
+    }
+  ],
+  "params": {
+    "seed": 3
+  },
+  "bindings": {
+    "muted": {
+      "input": "micMuted"
+    }
+  },
+  "states": {
+    "initializing": {},
+    "idle": {},
+    "listening": {
+      "bindings": {
+        "audioLevel": {
+          "input": "micLevel"
+        }
+      }
+    },
+    "thinking": {},
+    "speaking": {
+      "bindings": {
+        "audioLevel": {
+          "input": "agentVolume",
+          "inputRange": [0, 0.8]
+        }
+      }
+    }
+  },
+  "accessibility": {
+    "name": "Bean"
+  }
+}

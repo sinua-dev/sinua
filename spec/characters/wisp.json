@@ -36,7 +36,7 @@
   ],
   "burst": { "at": [100.0, 88.0], "r": 80.0, "colors": ["celebrate", "gold", "ice"] },
   "slots": {
-    "headTop": { "at": [100.0, 38.0], "follows": "head" },
+    "headTop": { "at": [100.0, 38.0], "scale": 0.9, "follows": "head" },
     "face": { "at": [100.0, 88.0], "follows": "face" },
     "neck": { "at": [100.0, 128.0], "follows": "body" },
     "chest": { "at": [100.0, 140.0], "follows": "body" }

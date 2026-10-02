@@ -2,7 +2,7 @@
 
 A character is data: a **recipe**, a JSON object the engine reads and draws. The seven
 built-ins are recipes (`spec/characters/*.json`). Your own goes into an FX Spec 1.12 file's
-`recipe`, and the file's `pattern` names its `id`. The [remix guide](character-remix.md)
+`recipe`, and the file's `pattern` names its `id`. Cosmetics (1.13) are recipe parts on a slot. The [remix guide](character-remix.md)
 walks through making one; this page lists everything a recipe may hold.
 
 - **Schema:** [`spec/character-recipe-1.schema.json`](../spec/character-recipe-1.schema.json)
@@ -47,7 +47,8 @@ parts sit on, so they wrap round when the head turns. A shallower `depth` turns 
 | `surfaces` | optional | Named surfaces for face parts. |
 | `parts` | required | What is drawn, back to front. |
 | `burst` | required | The celebrate burst: `at`, `r`, three `colors`, optional `space`. |
-| `slots` | optional | Anchor points for cosmetics (1.13): `at`, `follows` (`head` / `body` / `face`), `scale`, `angle`. |
+| `slots` | optional | Anchor points for cosmetics: `at`, `follows` (`head` / `body` / `face`), `scale`, `angle`. See *Slots and cosmetics*. |
+| `cosmetics` | optional | Cosmetics the character always wears (FX Spec 1.13): the same objects as a file's `cosmetics`. See *Slots and cosmetics*. |
 
 Every part has `part` (its kind) and `space` (a body layer inside `inner` may leave it out), and
 may have `when` (`notSmallOrAccessories`: left out at 20 px with `accessories` off) and `show`
@@ -75,6 +76,54 @@ A `shape` is one of:
 
 A body's `light` is `{ "radial": [cx, cy, r] }` or `{ "linear": [x0, y0, x1, y1] }`, with
 `stops` `[[offset 0–1, colour], …]`.
+
+## Slots and cosmetics
+
+A **slot** is where a cosmetic (FX Spec 1.13) sits. Four names are standard, and cosmetics look
+for them:
+
+| Slot | Where | Follows |
+|---|---|---|
+| `headTop` | the top of the head, at its middle | `head`: the pose, the hop |
+| `face` | between the eyes | `face`: the pose and the head turn (wrapped on the `face` surface) |
+| `neck` | where the head meets the body | `body` |
+| `chest` | the middle of the chest | `body` |
+
+`at` is the slot point in the 200-unit box; `scale` and `angle` (radians) size and turn every
+cosmetic on it. A character without a slot simply doesn't wear cosmetics made for it. The
+built-ins:
+
+| id | `headTop` | `face` | `neck` | `chest` |
+|---|---|---|---|---|
+| `buzzy` | (100, 40) × 1.0 | (100, 92) | (100, 146) | (100, 168) |
+| `hum` | (100, 22) × 0.9 | (100, 96) | (100, 150) | (100, 130) |
+| `wisp` | (100, 38) × 0.9 | (100, 88) | (100, 128) | (100, 140) |
+| `chirp` | (100, 52) × 1.0 | (100, 100) | (100, 150) | (100, 140) |
+| `cuppa` | (90, 40) × 0.95 | (90, 100) | — | (90, 140) |
+| `bean` | (100, 34) × 0.85 | (100, 114) | — | (100, 150) |
+| `beep` | (100, 30) × 0.85 | (100, 72) | — | (100, 140) |
+
+**A cosmetic's units:** its parts are drawn in the slot's local units. The slot point is
+(0, 0) and up is −y. One unit is one box unit times the slot's `scale`. On `headTop` a hat is
+drawn for a head about 80 units wide and has **40 units of height**; each character's
+`headTop.scale` makes that fit its head. A cosmetic on `headTop` zooms the whole character
+out about its feet, just enough that the hat and the tap hop fit in the box. The other slots
+have scale 1 in this version.
+
+A cosmetic is an object:
+
+| Key | | Meaning |
+|---|---|---|
+| `id` | required | 1–32 of a–z, 0–9 and -, unique in the list. |
+| `label` | optional | What it is, for people ("party hat"). |
+| `slot` | required | The slot it sits on. |
+| `palette` | optional | Its own colours; in the character's palette they are `<id>.<name>`, so `palette` repaints them. |
+| `parts` | required | `body` (with its layers) and `eyes`, without `space` or `surface`; drawn on top of the character. |
+| `fits` | optional | The characters it is made for. |
+| `fit` | optional | Per character: `at` (local units), `scale`, `angle` on top of the slot. |
+
+Its parts are left out at 20 px unless `accessories` is on, like `when: notSmallOrAccessories`.
+The guide with a worked hat is `docs/character-cosmetics.md`.
 
 ## The built-in characters
 

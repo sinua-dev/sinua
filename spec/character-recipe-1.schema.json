@@ -4,6 +4,311 @@
       "description": "A colour: a name in this recipe's `palette`.",
       "type": "string"
     },
+    "cosmetic": {
+      "additionalProperties": false,
+      "description": "A cosmetic: `body` and `eyes` parts drawn on one of the character's slots, in the slot's local units (the slot point is (0, 0), up is −y; on `headTop` a hat has 40 units of height). It moves with the slot: the pose, the head turn, the hop.",
+      "properties": {
+        "fit": {
+          "additionalProperties": {
+            "additionalProperties": false,
+            "properties": {
+              "angle": {
+                "$ref": "#/$defs/number"
+              },
+              "at": {
+                "items": {
+                  "$ref": "#/$defs/number"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "scale": {
+                "$ref": "#/$defs/number"
+              }
+            },
+            "type": "object"
+          },
+          "description": "Per character, a nudge: `at` (local units), `scale` and `angle` on top of the character's slot.",
+          "type": "object"
+        },
+        "fits": {
+          "description": "The characters it is made for; any other doesn't wear it. Without it, every character with the slot wears it.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "description": "Its name: 1–32 of a–z, 0–9 and -, unique in the list. Its colours are `<id>.<name>` in the palette, so `palette` repaints them.",
+          "pattern": "^[a-z0-9-]{1,32}$",
+          "type": "string"
+        },
+        "label": {
+          "description": "What it is, for people (\"party hat\").",
+          "type": "string"
+        },
+        "palette": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/number"
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "type": "array"
+          },
+          "description": "Its own colours, by name, `[hue, saturation, lightness]`. Its parts name them; they hide the character's colour of the same name. Its parts may also name the character's colours.",
+          "type": "object"
+        },
+        "parts": {
+          "description": "What it draws, back to front, on top of the character: `body` (with its layers) and `eyes`, without `space` or `surface`. Left out at 20 px unless `accessories` is on, or a part says `when`.",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/cosmetic-body"
+              },
+              {
+                "$ref": "#/$defs/cosmetic-eyes"
+              }
+            ]
+          },
+          "maxItems": 48,
+          "minItems": 1,
+          "type": "array"
+        },
+        "slot": {
+          "description": "The slot it sits on: `headTop`, `face`, `neck` or `chest` (or a slot a custom recipe names). A character without that slot doesn't wear it.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "slot",
+        "parts"
+      ],
+      "type": "object"
+    },
+    "cosmetic-body": {
+      "additionalProperties": false,
+      "description": "A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns.",
+      "properties": {
+        "inner": {
+          "description": "Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille` or `eyes`.",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/layer-eyes"
+              },
+              {
+                "$ref": "#/$defs/layer-patch"
+              },
+              {
+                "$ref": "#/$defs/layer-band"
+              },
+              {
+                "$ref": "#/$defs/layer-stripes"
+              },
+              {
+                "$ref": "#/$defs/layer-glints"
+              },
+              {
+                "$ref": "#/$defs/layer-grille"
+              }
+            ]
+          },
+          "maxItems": 32,
+          "type": "array"
+        },
+        "light": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/light",
+              "description": "`{ \"radial\": [cx, cy, r] }` (the centre stays put while the body turns under it) or `{ \"linear\": [x0, y0, x1, y1] }`."
+            },
+            {
+              "properties": {
+                "stops": {
+                  "$ref": "#/$defs/stops",
+                  "description": "The light's gradient: `[[offset 0–1, colour], …]`."
+                }
+              },
+              "required": [
+                "stops"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "outline": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/colour",
+              "description": "The outline colour (a palette name)."
+            },
+            "width": {
+              "$ref": "#/$defs/number",
+              "description": "The outline width (scaled with the character's line weight)."
+            }
+          },
+          "required": [
+            "width",
+            "color"
+          ],
+          "type": "object"
+        },
+        "part": {
+          "const": "body",
+          "description": "The part's kind."
+        },
+        "shape": {
+          "$ref": "#/$defs/shape",
+          "description": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes)."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "turnLight": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            }
+          ],
+          "description": "How the radial light moves as the body turns: `[dx, k]`."
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "shape",
+        "light",
+        "outline"
+      ],
+      "type": "object"
+    },
+    "cosmetic-eyes": {
+      "additionalProperties": false,
+      "description": "The shared eyes: they blink, look round, follow the voice state and take the expression. A part on its own (in `face` space) or a body layer.",
+      "properties": {
+        "at": {
+          "description": "The point between the eyes.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "glow": {
+          "description": "A glow round the eyes, 0–1: one number, or `[at 64 and 32 px, at 20 px]`.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/number"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            }
+          ]
+        },
+        "ink": {
+          "$ref": "#/$defs/colour",
+          "description": "The ink colour (a palette name); effects tint it."
+        },
+        "part": {
+          "const": "eyes",
+          "description": "The part's kind."
+        },
+        "scale": {
+          "description": "Its size: `[at 64 and 32 px, at 20 px]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "at",
+        "scale",
+        "ink",
+        "glow"
+      ],
+      "type": "object"
+    },
     "layer-band": {
       "additionalProperties": false,
       "description": "A body layer: a shape in one colour clipped to the body, flat (a sleeve, a belt).",
@@ -3258,7 +3563,7 @@
   "$id": "https://sinua.dev/schema/character-recipe-1.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "A character as data (FX Spec 1.12 `recipe`; spec/characters/*.json). Generated from the engine's tables: do not edit; see docs/character-recipe.md.",
+  "description": "A character as data (FX Spec 1.12 `recipe`; spec/characters/*.json), and the cosmetics it wears (1.13 `cosmetics`). Generated from the engine's tables: do not edit; see docs/character-recipe.md.",
   "properties": {
     "$comment": {
       "description": "A note for people. Ignored by the engine.",
@@ -3317,6 +3622,13 @@
         "maxItems": 2,
         "minItems": 2,
         "type": "array"
+      },
+      "type": "array"
+    },
+    "cosmetics": {
+      "description": "Cosmetics the character always wears (FX Spec 1.13): the same objects as an FX Spec file's `cosmetics`. A file's `cosmetics` come after these.",
+      "items": {
+        "$ref": "#/$defs/cosmetic"
       },
       "type": "array"
     },
@@ -3611,7 +3923,7 @@
         ],
         "type": "object"
       },
-      "description": "Named anchor points for cosmetics (1.13): `at`, and the chain it `follows` (`head`, `body` or `face`), with an optional `scale` and `angle`.",
+      "description": "Named anchor points for cosmetics: `at`, and the chain it `follows` (`head`, `body` or `face`), with an optional `scale` and `angle` that size and turn a cosmetic for this character. `headTop`, `face`, `neck` and `chest` are the standard names cosmetics look for.",
       "type": "object"
     },
     "surfaces": {

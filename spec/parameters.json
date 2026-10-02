@@ -7859,7 +7859,7 @@
       "unit": null
     }
   },
-  "fxSpec": "1.12",
+  "fxSpec": "1.13",
   "internalKeys": [
     "rSizeMul",
     "historyCount",

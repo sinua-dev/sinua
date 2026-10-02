@@ -38,5 +38,5 @@
     {"part": "arms", "space": "body", "shoulder": [58, 126], "mirror": 100, "length": [22, 22], "width": 7, "hand": 8, "ear": [166, 70], "chin": [118, 112], "color": "panel", "handColor": "accent", "outline": {"width": 2.5, "color": "line"}}
   ],
   "burst": {"at": [100, 80], "r": 86, "colors": ["celebrate", "accent", "glow"]},
-  "slots": {"headTop": {"at": [100, 30], "follows": "head"}, "face": {"at": [100, 72], "follows": "face"}, "chest": {"at": [100, 140], "follows": "body"}}
+  "slots": {"headTop": {"at": [100, 30], "scale": 0.85, "follows": "head"}, "face": {"at": [100, 72], "follows": "face"}, "chest": {"at": [100, 140], "follows": "body"}}
 }

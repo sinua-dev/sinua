@@ -78,6 +78,17 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   (`"transition": "arrive"`). A state change then takes the new state's value at once
   instead of interpolating it (a character's turn blink).
 
+- FX Spec 1.13: `cosmetics`. A character can wear a hat, glasses or a badge, as data in the
+  file: `body` and `eyes` parts on one of its slots (`headTop`, `face`, `neck`, `chest`), in
+  the slot's units (`docs/character-cosmetics.md`). Cosmetics move with the pose, the hop and
+  the head turn, take `palette` as `<id>.<name>`, and are left out at 20 px unless
+  `accessories` is on. A cosmetic on `headTop` zooms the character out about its feet so the
+  hat fits. `fits` and `fit` limit or nudge it per character; one a character can't wear
+  warns and isn't drawn. A recipe may carry `cosmetics` too. The slots are public, with each
+  built-in's `headTop.scale` set for hats (`docs/character-recipe.md`, *Slots and
+  cosmetics*). Example: `spec/examples/party-hat.fxspec.json`. 1.8–1.12 files resolve
+  exactly as before (`spec/fx-spec-1.13-resolved.json`).
+
 ### Changed
 
 - `parameterCatalog()` / `parameterCatalogJson()` no longer carry `description` texts: they are

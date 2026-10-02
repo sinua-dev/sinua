@@ -29,5 +29,5 @@
     {"part": "sparkles", "space": "ground", "count": 4, "head": [100, 104], "colors": ["aroma", "foam"]}
   ],
   "burst": {"at": [100, 108], "r": 86, "colors": ["celebrate", "bean", "cheek"]},
-  "slots": {"headTop": {"at": [100, 34], "follows": "head"}, "face": {"at": [100, 114], "follows": "face"}, "chest": {"at": [100, 150], "follows": "body"}}
+  "slots": {"headTop": {"at": [100, 34], "scale": 0.85, "follows": "head"}, "face": {"at": [100, 114], "follows": "face"}, "chest": {"at": [100, 150], "follows": "body"}}
 }

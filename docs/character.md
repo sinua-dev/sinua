@@ -285,6 +285,16 @@ as an error, and raw `colorMix` / `gradientStrength` overrides are ignored. The 
 effect drawing (ring, tick, burst) and the interrupt flash are skipped too
 (`effects::draws_own`): the face is the effect.
 
+## Cosmetics (FX Spec 1.13, design note 21)
+
+A character can wear a hat, glasses or a badge: `cosmetics` in an FX Spec file, `body` and
+`eyes` parts drawn on one of its slots (`headTop`, `face`, `neck`, `chest`) in the slot's
+units. They move with the slot (pose, hop, head turn), take `palette` as `<id>.<name>`, and
+are left out at 20 px unless `accessories` is on. A cosmetic on `headTop` zooms the character
+out about its feet so the hat fits. The guide is [`character-cosmetics.md`](character-cosmetics.md);
+the slots of each character are in [`character-recipe.md`](character-recipe.md), *Slots and
+cosmetics*.
+
 ## Remixing a built-in character
 
 A built-in's recipe is data: `characterRecipe("cuppa")` (Web) returns it as JSON. Copy it, give

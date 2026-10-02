@@ -83,9 +83,9 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 
 - Major ≠ 1 → error; this runtime doesn't load it.
 - **The floor is 1.8** (`fx_spec.rs`'s `FLOOR_MINOR`). A `1.0`–`1.7` file is one error at `/fxSpec` (``FX Spec 1.7 isn't supported; this runtime reads 1.8 and later``) and nothing resolves. Those minors were never published; their acceptance was dropped before the first release instead of becoming a promise (docs/release-roadmap.md, decision 0.1). A missing or malformed `fxSpec` is an error too, and the rest of the file is still read as the current minor so its other problems show.
-- The runtime is **1.12** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`; 1.12's `recipe`, `expression`, `palette`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
+- The runtime is **1.13** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`; 1.12's `recipe`, `expression`, `palette`; 1.13's `cosmetics`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
 - A **newer 1.x** file (`1.9`) → unknown keys are **warnings** and the rest renders (graceful degradation).
-- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is five locks, `spec/fx-spec-1.8-resolved.json` to `-1.12-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`, 1.12 over those 14 (byte-identical rows) plus `custom-character`; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
+- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is six locks, `spec/fx-spec-1.8-resolved.json` to `-1.13-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`, 1.12 over those 14 (byte-identical rows) plus `coffee-shop`, `custom-character` and `remix-latte`, 1.13 over those 17 (byte-identical rows) plus `party-hat`; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
 - **A key added in a later minor is gated automatically.** `spec/fx-spec-1.8-keys.json`
   freezes every key path a 1.8 file may use (103 today, built from the resolver's own
   tables). A new key (a material, a section key, a binding target, something low power
@@ -304,6 +304,51 @@ How state changes animate, per pair. Optional; without it every change takes 0.6
 - **Fields:** `duration` (seconds, 0–10; `0` = a cut) and `curve` (one of the binding curves: `linear`, `ease`, `easeIn`, `easeOut`, `easeInOut`).
 - **Diagnostics:** a key that isn't `default` or `a->b` is an error; a state name that isn't in `states` is a warning (the entry never applies); an unknown curve or an out-of-range duration is an error.
 - `fxSpecTransition(spec, from, to)` returns `{ duration, curve }` for a pair; the players call it on every state change. The technique (interpolate / morph / cross-fade) isn't in the file: the engine picks it from the pair (see *Caller loop*).
+
+## v1.13: cosmetics
+
+A character can **wear things**: a hat, glasses, a badge. The new top-level key
+**`cosmetics`** lists them as data: `body` and `eyes` parts (a body with its layers) drawn
+on one of the character's **slots** (`headTop`, `face`, `neck`, `chest`). The engine embeds
+no cosmetic; the file carries each one. The guide is
+[`character-cosmetics.md`](character-cosmetics.md); every field is in
+[`character-recipe.md`](character-recipe.md) (*Cosmetics*) and in the recipe schema
+(`#/$defs/cosmetic`), which this file's schema refers to.
+
+```json
+{ "fxSpec": "1.13", "object": "character", "pattern": "bean",
+  "cosmetics": [{ "id": "party-hat", "label": "party hat", "slot": "headTop",
+    "palette": { "felt": [330, 0.72, 0.62], "trim": [48, 0.95, 0.62], "line": [330, 0.5, 0.2] },
+    "parts": [{ "part": "body", "shape": { "path": "M-20 2 L0 -33 L20 2 Q0 8 -20 2 Z" }, … }] }] }
+```
+(`spec/examples/party-hat.fxspec.json`)
+
+- **`cosmetics` needs `"fxSpec": "1.13"`** and `object: "character"`. It is file-wide in
+  1.13 (not in `states` entries).
+- **A cosmetic's parts draw in its slot's units**: the slot point is (0, 0), up is −y, and
+  the character's slot `scale` and `angle` size and turn them. On `headTop` a hat has 40 units
+  of height. They move with the slot: the pose, the hop, the head turn (on `face`).
+- **Room for a hat:** a cosmetic on `headTop` zooms the whole character out about its feet,
+  just enough that the hat and the tap hop fit in the box (none for CHIRP, 15 % for HUM).
+- **Colours:** a cosmetic's own `palette` names join the character's palette as
+  `<id>.<name>`, so `palette` repaints them (`"palette": { "party-hat.felt": "#2E8B57" }`).
+  Its parts may also name the character's colours.
+- **Fit:** `fits` lists the characters it is made for; `fit` nudges it on one character
+  (`at` in local units, `scale`, `angle`). A cosmetic a character can't wear (not in `fits`,
+  or no such slot) is a **warning** and isn't drawn; when none is worn, the plain character
+  draws.
+- **Small sizes:** cosmetics are left out at 20 px unless `accessories` is on (a part's own
+  `when` decides otherwise).
+- **Errors point into `cosmetics`**: `/cosmetics/0/parts/1/part: a cosmetic draws `body` (with
+  its layers) and `eyes``. `space` and `surface` aren't allowed (a cosmetic draws in its slot
+  and turns with it). The recipe limits apply to the whole character with its cosmetics
+  (48 parts, 64 KB).
+- **How it resolves:** the cosmetics go into the character's recipe (a built-in's, or the
+  file's `recipe`), which registers under its content key (`recipe:<id>:<hash>`) like a 1.12
+  recipe. Platform code doesn't change. A recipe may also carry `cosmetics` itself (always
+  worn); a file's come after them.
+- 1.8–1.12 files resolve exactly as before (their locks are unchanged; the 1.13 lock has the
+  same rows for them and adds `party-hat`).
 
 ## v1.12: character recipes
 

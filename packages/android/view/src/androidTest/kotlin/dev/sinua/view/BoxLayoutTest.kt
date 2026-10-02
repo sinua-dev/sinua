@@ -66,4 +66,19 @@ class BoxLayoutTest {
         val ring = FxModel(FxInput.State("completing", 64u, mapOf("progress" to 1.0), 1.0), null, null)
         assertFalse(ring.boxLayout)
     }
+
+    /** A named palette's dark variant (design note 23): a dark view tells the engine `dark`. */
+    @Test fun aDarkViewPicksThePalettesDarkVariant() {
+        val assets = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().context.assets
+        val themed = assets.open("themed-cuppa.fxspec.json").bufferedReader().use { it.readText() }
+        fun frameOf(json: String, dark: Boolean): String {
+            val m = FxModel(FxInput.Spec(json), null, null)
+            m.dark = dark
+            return m.frame(1_000_000L, running = false, reduced = true)!!.frame.toString()
+        }
+        assertTrue("ocean's dark variant", frameOf(themed, false) != frameOf(themed, true))
+        // A character without a dark variant draws the same in both themes.
+        val plain = """{ "fxSpec": "1.13", "object": "character", "pattern": "cuppa" }"""
+        assertEquals(frameOf(plain, false), frameOf(plain, true))
+    }
 }

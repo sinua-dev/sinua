@@ -64,6 +64,7 @@ final class MaterialsRenderTests: XCTestCase {
     static let specRows: [(key: String, file: String)] = [
         ("rich-bean-64-0.6-spec", "rich-bean.fxspec.json"),
         ("rich-buzzy-64-0.6-spec", "rich-buzzy.fxspec.json"),
+        ("themed-cuppa-64-0.6-spec", "themed-cuppa.fxspec.json"),
     ]
 
     func testRenderMaterialsGoldenCases() throws {
@@ -83,8 +84,10 @@ final class MaterialsRenderTests: XCTestCase {
             XCTAssertTrue(r.ok, "\(row.file): \(r.diagnostics)")
             let frame = try XCTUnwrap(
                 frameWithOverrides(state: r.state, size: 64, t: 0.6, overrides: r.overrides), row.key)
-            XCTAssertTrue(frame.fills.contains { $0.blend == 2 }, "\(row.key) has grain")
-            XCTAssertTrue(frame.fills.contains { $0.gradient?.kind == 2 }, "\(row.key) has an elliptical gradient")
+            if row.key.hasPrefix("rich-") {
+                XCTAssertTrue(frame.fills.contains { $0.blend == 2 }, "\(row.key) has grain")
+                XCTAssertTrue(frame.fills.contains { $0.gradient?.kind == 2 }, "\(row.key) has an elliptical gradient")
+            }
             frames.append((row.key, frame))
         }
         for (key, frame) in frames {

@@ -337,6 +337,7 @@ private fun FxCanvas(
     DisposableEffect(model) { onDispose { model.release() } }
     val perf = remember(model, lowPowerOn, maxFps, small) { model.performance(lowPowerOn, maxFps, small) }
     model.perf = perf
+    model.dark = dark
     model.onFrame = onFrame
     val cap = if (reduced) min(30.0, perf.maxFps ?: 30.0) else perf.maxFps
 
@@ -480,6 +481,12 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
     var inputs: Map<String, Double> = emptyMap()
     var voiceLevelInput: String? = null
     var perf = FxPerformance(null, emptyMap())
+
+    /** The view's theme is dark: a palette's dark variant is picked (design note 23). */
+    var dark = false
+
+    /** The spec draws a character (it may name a palette with a dark variant). */
+    private var specIsCharacter = false
 
     /** Frames the pacer let through (tests / diagnostics). */
     internal var pacedFrames = 0
@@ -738,6 +745,7 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
                 }
                 val doc: JSONObject? = runCatching { JSONObject(json) }.getOrNull()
                 family = doc?.optString("object")?.takeIf { it.isNotEmpty() }
+                specIsCharacter = family == "character"
                 defaultLabel = doc?.optString("name")?.takeIf { it.isNotEmpty() } ?: r.state
                 if (!ok) {
                     android.util.Log.w(
@@ -864,7 +872,12 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
         val live = perf.overrides + (voice?.overrides(rawDt) ?: emptyMap())
         val boxed = if (aspect != null) live + ("aspect" to aspect) else live
         // A one-shot effect the view is playing: its runtime keys.
-        val voiceMap = boxed + effectKeys(reduced) + expressionKeys(reduced) + paletteKeys()
+        val keyed = boxed + effectKeys(reduced) + expressionKeys(reduced) + paletteKeys()
+        // A palette's dark variant (FX Spec 1.13, design note 23): the engine picks it when told
+        // `dark`. Sent only where a variant may exist, so other frames are untouched.
+        val darkPalette = specIsCharacter || keyed.keys.any { it.startsWith("palette.dark.") } ||
+            overrides.keys.any { it.startsWith("palette.dark.") }
+        val voiceMap = if (dark && darkPalette) keyed + ("dark" to 1.0) else keyed
         return when (input) {
             is FxInput.Spec -> {
                 val ins = HashMap(inputs)

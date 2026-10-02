@@ -152,6 +152,8 @@ export interface SinuaViewOptions {
   /**
    * A character's palette, in part (design note 19): slot -> hex or DTCG colour, e.g.
    * `{ shell: "#E63946" }`. The slots' tones follow; it wins over a spec's `palette`.
+   * FX Spec 1.13 (design note 23): role names (`primary`, `secondary`, `accent`), a
+   * named palette (`{ theme: "sunset" }`) and a `dark` variant, picked in a dark theme.
    * A change is immediate. Problems (an unknown slot) go to `onError`.
    */
   palette?: Record<string, unknown> | null;
@@ -272,6 +274,13 @@ function safeParse(text: string): { object?: unknown; name?: unknown; performanc
   } catch {
     return null;
   }
+}
+
+/** Whether resolved opts carry a palette's dark variant (`palette.dark.<slot>.*`). */
+function hasDarkPalette(o: Record<string, number> | null | undefined): boolean {
+  if (!o) return false;
+  for (const k in o) if (k.startsWith("palette.dark.")) return true;
+  return false;
 }
 
 /** The Studio's per-family `VoiceOverrides` settings (docs/fx-view.md). */
@@ -768,7 +777,12 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
     const shown = withEffect(boxLayout ? { ...withPerf, aspect: boxAspect() } : withPerf);
     const expr = expressionNow();
     const pal = opts.palette && resolved ? paletteNow(resolved.state) : null;
-    const extra = { ...shown, ...(expr ?? {}), ...(pal ?? {}) };
+    // A palette's dark variant (FX Spec 1.13, design note 23): the engine picks it
+    // when told `dark`. Only sent when a variant exists, so other frames are untouched.
+    // A character from a file always gets it (a state may name the theme; unused without a variant).
+    const darkPal = resolved?.family === "character" || hasDarkPalette(pal) || hasDarkPalette(resolved?.overrides);
+    const dark = isDark() && darkPal ? { dark: 1 } : null;
+    const extra = { ...shown, ...(expr ?? {}), ...(pal ?? {}), ...(dark ?? {}) };
     const t0 = opts.onFrame ? performance.now() : 0;
     let frame: OrbFrame | null = null;
     let packed: PackedFrame | null = null;

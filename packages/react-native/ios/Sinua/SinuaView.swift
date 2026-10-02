@@ -420,6 +420,8 @@ final class FxModel: ObservableObject {
     private var resolved:
         (state: String, size: UInt32, speed: Double, presetSpeed: Double, overrides: [String: Double])?
     private var spec: String?
+    /// The spec draws a character (it may name a palette with a dark variant, design note 23).
+    private var specIsCharacter = false
     private var player = FxStatePlayer()
 
     /// The engine time to draw at, continuous across speed changes (see `phaseBase`).
@@ -470,6 +472,7 @@ final class FxModel: ObservableObject {
         switch c.input {
         case .spec(let json):
             spec = json
+            specIsCharacter = Self.specObject(json) == "character"
             let r = resolveFxSpec(json: json)
             if r.ok {
                 resolved = (
@@ -484,6 +487,7 @@ final class FxModel: ObservableObject {
             player.crossFade = c.crossFade
         case .state(let state, let size, let overrides, let speed):
             spec = nil
+            specIsCharacter = false
             if let preset = resolvedOpts(state: state, size: size) {
                 resolved = (state, size, speed, preset.speed, overrides)
                 defaultLabel = state
@@ -735,6 +739,11 @@ final class FxModel: ObservableObject {
         extra.merge(expressionKeys(config.expression, reduced: reduced)) { $1 }
         // The app's palette (design note 19).
         extra.merge(paletteKeys(pattern: resolved.state, config.palette)) { $1 }
+        // A palette's dark variant (FX Spec 1.13, design note 23): the engine picks it when
+        // told `dark`. Sent only where a variant may exist, so other frames are untouched.
+        if dark, specIsCharacter || Self.hasDarkPalette(extra) || Self.hasDarkPalette(resolved.overrides) {
+            extra["dark"] = 1
+        }
         // A box-layout pattern (signal `playing`) fills the box: it
         // gets the box ratio as `aspect` and lays out in `size * aspect` by `size`.
         if boxLayout, size.height > 0 { extra["aspect"] = min(8, max(0.125, size.width / size.height)) }
@@ -832,6 +841,11 @@ final class FxModel: ObservableObject {
             o.historyCount = Int((overrides["historyCount"] ?? 40).rounded())
         }
         return o
+    }
+
+    /// Whether resolved opts carry a palette's dark variant (`palette.dark.<slot>.*`).
+    static func hasDarkPalette(_ o: [String: Double]) -> Bool {
+        o.keys.contains { $0.hasPrefix("palette.dark.") }
     }
 
     static func specObject(_ json: String?) -> String? {

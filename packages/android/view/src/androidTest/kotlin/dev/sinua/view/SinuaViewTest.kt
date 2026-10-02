@@ -440,13 +440,16 @@ class SinuaViewTest {
         for ((key, file) in listOf(
             "rich-bean-64-0.6-spec" to "rich-bean.fxspec.json",
             "rich-buzzy-64-0.6-spec" to "rich-buzzy.fxspec.json",
+            "themed-cuppa-64-0.6-spec" to "themed-cuppa.fxspec.json",
         )) {
             val json = assets.open(file).bufferedReader().use { it.readText() }
             val r = uniffi.core_engine.resolveFxSpecWith(json, "idle", emptyMap())
             assertTrue("$file: ${r.diagnostics}", r.ok)
             val f = uniffi.core_engine.frameWithOverrides(r.state, 64u, 0.6, r.overrides)!!
-            assertTrue("$key has grain", f.fills.any { it.blend.toInt() == 2 })
-            assertTrue("$key has an elliptical gradient", f.fills.any { it.gradient?.kind?.toInt() == 2 })
+            if (key.startsWith("rich-")) {
+                assertTrue("$key has grain", f.fills.any { it.blend.toInt() == 2 })
+                assertTrue("$key has an elliptical gradient", f.fills.any { it.gradient?.kind?.toInt() == 2 })
+            }
             frames.add(key to f)
         }
         for ((key, f) in frames) {

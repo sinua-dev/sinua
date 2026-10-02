@@ -212,6 +212,37 @@ final class SinuaViewTests: XCTestCase {
         }
     }
 
+    /// A named palette's dark variant (design note 23): the view passes `dark` in a dark
+    /// theme and the engine picks it. Cuppa in ocean: the sleeve is #D4EDF7 light, #72ADCA dark.
+    func testADarkThemePicksThePalettesDarkVariant() throws {
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("spec/examples/themed-cuppa.fxspec.json")
+        guard let json = try? String(contentsOf: url, encoding: .utf8) else { throw XCTSkip("spec not readable") }
+        func sleeve(_ theme: FxTheme) throws -> Double {
+            let r = ImageRenderer(
+                content: SinuaView(spec: json, theme: theme, reducedMotion: .always).frame(width: 160, height: 160))
+            r.scale = 2
+            let cg = try XCTUnwrap(r.cgImage)
+            let bytes = CFDataGetBytePtr(cg.dataProvider!.data!)!
+            // The sleeve band (box y ~140, left of the heart), averaged over a small patch.
+            var sum = 0.0
+            var n = 0.0
+            for y in 222..<228 {
+                for x in 92..<98 {
+                    let i = y * cg.bytesPerRow + x * 4
+                    sum += (Double(bytes[i]) + Double(bytes[i + 1]) + Double(bytes[i + 2])) / (3 * 255)
+                    n += 1
+                }
+            }
+            return sum / n
+        }
+        let light = try sleeve(.light)
+        let dark = try sleeve(.dark)
+        XCTAssertGreaterThan(light - dark, 0.12, "light \(light), dark \(dark)")
+    }
+
     func testFamilyVoiceDefaultsMatchTheStudios() {
         XCTAssertEqual(FxModel.voiceOptions(family: "orb", overrides: [:]).bandEaseRate, .infinity)
         let sig = FxModel.voiceOptions(family: "signal", overrides: ["historyCount": 24])

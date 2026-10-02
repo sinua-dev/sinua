@@ -1,0 +1,44 @@
+{
+  "$schema": "https://sinua.dev/schema/character-recipe-1.json",
+  "$comment": "BUZZY, a small space-hero assistant (design note 7): a rounded-square indigo helmet with an amber fin and chevron ear pods, a glass visor over a face screen, a voice core in the chest. The mouth is a voice line; the chest bars follow the level; while listening, sound arcs light at the ear pods with the user's level.",
+  "recipe": 1,
+  "id": "buzzy",
+  "palette": {
+    "shell": [231.9, 0.566, 0.461],
+    "shellLight": [231.3, 1.0, 0.718],
+    "shellDark": [234.1, 0.631, 0.255],
+    "line": [234.1, 0.662, 0.151],
+    "screen": [230.5, 0.61, 0.061],
+    "amber": [36.1, 1.0, 0.616],
+    "cyan": [185.0, 1.0, 0.716],
+    "glass": [203.0, 1.0, 0.873],
+    "glassEdge": [200.0, 1.0, 0.91],
+    "white": [0.0, 0.0, 1.0]
+  },
+  "hue": { "base": 232.0, "turns": ["shell", "shellLight", "shellDark", "line", "screen"] },
+  "contrast": [["cyan", "screen"]],
+  "rig": { "kind": "upright", "base": [100.0, 184.0] },
+  "surfaces": {
+    "face": { "c": [100.0, 92.0], "r": 64.0, "depth": 0.55 }
+  },
+  "parts": [
+    { "part": "shadow", "space": "ground", "at": [100.0, 184.0], "r": [46.0, 6.0] },
+    { "part": "torso", "space": "body", "shades": ["shellLight", "shell", "shellDark"], "outline": { "width": 3.5, "color": "line" } },
+    { "part": "chestCore", "space": "body", "at": [100.0, 168.0], "r": 11.0, "bars": [0.5, 0.85, 1.0, 0.85, 0.5], "colors": ["screen", "amber", "cyan"] },
+    { "part": "earPods", "space": "body", "x": 100.0, "reach": 62.0, "pod": "shellDark", "line": "line", "chevron": "amber", "arcs": "cyan" },
+    { "part": "helmet", "space": "body", "shades": ["shellLight", "shell", "shellDark"], "line": "line" },
+    { "part": "earPods", "space": "body", "front": true, "x": 100.0, "reach": 62.0, "pod": "shellDark", "line": "line", "chevron": "amber", "arcs": "cyan" },
+    { "part": "fin", "space": "body", "color": "amber", "line": "line" },
+    {
+      "part": "faceScreen", "space": "face", "surface": "face", "screen": "screen", "ink": "cyan", "line": "line",
+      "glass": "glass", "glassEdge": "glassEdge", "glint": "white"
+    }
+  ],
+  "burst": { "space": "body", "at": [100.0, 96.0], "r": 80.0, "colors": ["celebrate", "amber", "cyan"] },
+  "slots": {
+    "headTop": { "at": [100.0, 40.0], "follows": "head" },
+    "face": { "at": [100.0, 92.0], "follows": "face" },
+    "neck": { "at": [100.0, 146.0], "follows": "body" },
+    "chest": { "at": [100.0, 168.0], "follows": "body" }
+  }
+}

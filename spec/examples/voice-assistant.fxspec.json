@@ -1,5 +1,5 @@
 {
-  "$schema": "../fx-spec-1.schema.json",
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.8",
   "name": "Voice assistant",
   "description": "One orb for a voice agent's whole lifecycle. Keys follow LiveKit's AgentState names; the app passes the current one plus its mic/agent levels. The base design is 'idle' and the fallback for any state the file doesn't list.",

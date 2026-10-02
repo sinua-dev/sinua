@@ -1,5 +1,5 @@
 {
-  "$schema": "../fx-spec-1.schema.json",
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.8",
   "name": "Radar with a filled wedge and real-blur glow",
   "description": "The scanning radar with its trail as one filled wedge (CodeFronts' 46 degree conic fade, as a linear gradient across the wedge) and a blurred, additive glow. Under low power the blur is shed -- the glow falls back to stacked copies -- and the cap drops to 20 fps.",

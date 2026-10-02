@@ -1,0 +1,243 @@
+{
+  "$comment": "One sentence per recipe key and part field, written by hand. crates/core_engine/src/character/recipe_schema.rs puts them into spec/character-recipe-1.schema.json and docs/character-recipe.md, and fails when a part or field has none. A field takes its part's sentence, else the `common` one.",
+  "top": {
+    "$schema": "The schema URL, for editors: https://sinua.dev/schema/character-recipe-1.json. Ignored by the engine.",
+    "$comment": "A note for people. Ignored by the engine.",
+    "recipe": "The recipe format version: 1.",
+    "id": "The character's name: 1–32 of a–z, 0–9 and -. An FX Spec file's `pattern` names it.",
+    "profile": "The built-in character whose voice-state behaviour it borrows (how it turns, looks and moves per state). Without it, the shared `character` profile.",
+    "palette": "The colours, by name: each `[hue 0–360, saturation 0–1, lightness 0–1]`. Parts name these; they are also the slots `palette` repaints. `celebrate` is reserved for the burst.",
+    "hue": "`base`: the hue the palette is drawn at (the default `hue` option); `turns`: the colour names the `hue` option rotates.",
+    "contrast": "`[[ink, ground], …]`: a face colour and the colour it sits on. A `palette` override that brings the ground too close lifts the ink.",
+    "rig": "How the whole character moves: `pivot` (leans and squashes round a point), `upright` (stands on `base`) or `float` (drifts round `center`).",
+    "surfaces": "Named spheres or cylinders (`c`, `r`, `depth`, `cylinder`) that face parts are drawn on, so they wrap round when the head turns. `face` is the usual one.",
+    "parts": "What is drawn, back to front: up to 48 parts, a body's inner layers included.",
+    "burst": "The celebrate burst: `at`, `r` and three `colors` (palette names), optionally a `space`.",
+    "slots": "Named anchor points for cosmetics (1.13): `at`, and the chain it `follows` (`head`, `body` or `face`), with an optional `scale` and `angle`."
+  },
+  "common": {
+    "part": "The part's kind.",
+    "space": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+    "when": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+    "show": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+    "at": "Where it sits: `[x, y]` in the 200-unit box.",
+    "r": "Its radius.",
+    "x": "The centre line it is mirrored round (x).",
+    "width": "The stroke width.",
+    "color": "Its colour (a palette name).",
+    "colors": "Its colours (palette names), in the order listed below.",
+    "ink": "The ink colour (a palette name); effects tint it.",
+    "line": "The outline colour (a palette name).",
+    "outline.width": "The outline width (scaled with the character's line weight).",
+    "outline.color": "The outline colour (a palette name).",
+    "segments": "How many points a curve or ellipse is drawn with: 3–128.",
+    "count": "How many: 1–24.",
+    "surface": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
+    "alpha": "Its opacity, 0–1.",
+    "shape": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes).",
+    "scale": "Its size: `[at 64 and 32 px, at 20 px]`."
+  },
+  "parts": {
+    "shadow": {
+      "": "The soft shadow under the character.",
+      "r": "Its radii `[rx, ry]`.",
+      "floats": "Widens with the float rig's drift (a floating character's shadow breathes)."
+    },
+    "body": {
+      "": "A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns.",
+      "light": "`{ \"radial\": [cx, cy, r] }` (the centre stays put while the body turns under it) or `{ \"linear\": [x0, y0, x1, y1] }`.",
+      "light.stops": "The light's gradient: `[[offset 0–1, colour], …]`.",
+      "inner": "Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille` or `eyes`."
+    },
+    "eyes": {
+      "": "The shared eyes: they blink, look round, follow the voice state and take the expression. A part on its own (in `face` space) or a body layer.",
+      "at": "The point between the eyes.",
+      "glow": "A glow round the eyes, 0–1: one number, or `[at 64 and 32 px, at 20 px]`."
+    },
+    "feet": {
+      "": "Two feet of three strokes each, standing on the ground.",
+      "x": "The centre line between the feet.",
+      "gap": "Each foot's distance from `x`.",
+      "top": "Where the legs start (y).",
+      "ground": "Where they meet the floor (y).",
+      "toe": "A toe's reach `[dx, y]` from the foot."
+    },
+    "crest": {
+      "": "Curling feathers that lift while listening (higher with the user's voice), perk while speaking and droop while thinking.",
+      "base": "Where the feathers grow from `[x, y]`.",
+      "spread": "One number per feather: its sideways direction and spread (negative to the left).",
+      "mid": "Which feather (0-based) is the middle one; it rises highest.",
+      "root": "How far apart the roots are (times `spread`).",
+      "ctrl": "The curve's control point: `[x factor, y, lift factor, middle extra]`.",
+      "tip": "The tip: `[x factor, per-feather offset, y, lift factor, middle extra]`.",
+      "lift.ears": "How much listening lifts it: `[at rest, with the user's voice]`.",
+      "lift.talk": "How much speaking lifts it: `[at rest, with the level]`.",
+      "lift.dots": "How much thinking lowers it.",
+      "turnShift": "How far it slides sideways as the head turns."
+    },
+    "wings": {
+      "": "Two wings that flutter with the voice; turned, they swing round the body (the near one grows, the far one thins).",
+      "at": "A wing's centre `[dx from x, y]`.",
+      "size": "A wing's radii `[rx, ry]`.",
+      "angle": "Its tilt (radians, mirrored).",
+      "flutter.rate": "How fast it flutters.",
+      "flutter.gain": "The option name that scales the flutter (e.g. `flutterGain`).",
+      "turn.near": "How much the near wing grows when turned.",
+      "turn.far": "How much the far wing thins when turned."
+    },
+    "beak": {
+      "": "The beak is the mouth: its lower half opens with the voice.",
+      "lower": "The lower half's three points `[[x, y], …]`; the last one drops when it opens.",
+      "drop": "How far the lower tip drops, fully open.",
+      "upper.quad": "The upper half's curve: three points.",
+      "upper.segments": "Points along that curve: 3–128.",
+      "upper.tip": "The upper half's tip `[x, y]`.",
+      "upper.rise": "How far the upper tip rises, fully open.",
+      "open.effect": "How open it is during success / celebrate.",
+      "open.rest": "How open it is at rest.",
+      "colors": "`[lower, upper]` (palette names)."
+    },
+    "notes": {
+      "": "Music notes rising while it speaks, and thought dots lighting in turn while it thinks.",
+      "rate": "How fast the notes rise.",
+      "from": "Where a note starts `[x, y]`.",
+      "travel": "How far it travels `[dx, dy]`.",
+      "stagger": "Each next note's vertical offset.",
+      "scale": "A note's size: `[at 64 px, at 32 and 20 px]`.",
+      "floor": "The lowest note opacity while speaking.",
+      "dots.at": "The first dot `[x, y]`.",
+      "dots.step": "Each next dot's offset `[dx, dy]`.",
+      "dots.r": "A dot's radius `[first, growth per dot]`.",
+      "dots.segments": "Points per dot: 3–128.",
+      "dots.rate": "How fast the lit dot moves along.",
+      "dots.base": "An unlit dot's opacity.",
+      "dots.gain": "How much brighter the lit dot is."
+    },
+    "stand": {
+      "": "A stand: a shadowed round foot and a stem.",
+      "under": "The shadow ellipse under the foot `[cx, cy, rx, ry]`.",
+      "foot": "The foot ellipse `[cx, cy, rx, ry]`.",
+      "stem": "The stem, a rounded rectangle `[x, y, w, h, radius, step]`.",
+      "dark": "The shadow's colour."
+    },
+    "yoke": {
+      "": "A U-shaped yoke holding the body at its sides: a dark stroke under a lighter one.",
+      "x": "Its two sides `[left, right]`.",
+      "top": "Where the sides start (y).",
+      "knee": "Where they start to curve (y).",
+      "bottom": "The bottom of the U (y).",
+      "mid": "The bottom's middle (x).",
+      "under.width": "The dark stroke's width.",
+      "under.color": "The dark stroke's colour.",
+      "over.width": "The light stroke's width.",
+      "over.color": "The light stroke's colour."
+    },
+    "tally": {
+      "": "A tally light: red while listening, amber blinking while thinking, off otherwise.",
+      "off": "Its colour when off.",
+      "listening": "Its colour while listening.",
+      "thinking": "Its colour while thinking."
+    },
+    "halo": {
+      "": "A soft halo: a radial fade (not drawn at 20 px).",
+      "stops": "The fade: `[[offset 0–1, opacity 0–1], …]`."
+    },
+    "spirit": {
+      "": "A spirit's body: a round head flowing into a tail that curls (with `curlGain`), sways and trails the head turn, with smoke puffs off the tail tip and a shine.",
+      "head": "The head `[x, y, radius]`.",
+      "stops": "The body's gradient `[[offset 0–1, colour], …]`.",
+      "smoke": "The smoke puffs' colour.",
+      "shine": "The head's shine colour.",
+      "tail.lag": "How late the tail follows the head turn (seconds).",
+      "tail.swing": "How far the tail swings with the turn."
+    },
+    "ovalMouth": {
+      "": "A mouth that is a small smile at rest, thinking dots, or an oval that opens with the voice; it takes the expression's resting mouth.",
+      "halfWidth": "Half the mouth's width."
+    },
+    "sparkles": {
+      "": "Sparkles round the head: wandering at rest, gathering while listening, orbiting while thinking, streaming out with the voice.",
+      "head": "The point they move round `[x, y]`.",
+      "colors": "`[odd, even]` sparkles' colours."
+    },
+    "torso": {
+      "": "A robot torso: a rounded shoulder shape lit top to bottom.",
+      "shades": "`[light, mid, dark]` (palette names)."
+    },
+    "chestCore": {
+      "": "A voice core on the chest: a dark disc, a ring and bars that move with the voice; it follows the head turn at 40 %.",
+      "bars": "Each bar's horizontal offset.",
+      "colors": "`[disc, ring, bars]` (palette names)."
+    },
+    "earPods": {
+      "": "Ear pods with chevrons and listening arcs; turned, they swing round the head.",
+      "reach": "Each pod's distance from `x`.",
+      "front": "This is the near pod's copy in front of the helmet (list it after the helmet).",
+      "pod": "The pods' colour.",
+      "chevron": "The chevrons' colour.",
+      "arcs": "The listening arcs' colour."
+    },
+    "helmet": {
+      "": "A helmet: a rounded square lit from the top left; turned, its back edge shows.",
+      "shades": "`[light, mid, dark]` (palette names)."
+    },
+    "fin": {
+      "": "A fin on top of the helmet (64 and 32 px, with accessories)."
+    },
+    "faceScreen": {
+      "": "A face screen: the eyes and mouth on it (clipped to it), its rim, and a glass visor with a drifting reflection; it rides the face surface.",
+      "screen": "The screen's colour.",
+      "ink": "The eyes' and mouth's colour.",
+      "glass": "The visor's colour.",
+      "glassEdge": "The visor rim's colour.",
+      "glint": "The reflection's colour."
+    },
+    "steam": {
+      "": "Soft wisps rising and fading: higher while listening, swaying more while thinking, thicker with the voice.",
+      "at": "Where the wisps rise from `[x, y]`.",
+      "spread": "How far apart the wisps start.",
+      "rise": "How high they rise (kept inside the box).",
+      "width": "A wisp's width.",
+      "sway": "How far they sway.",
+      "rate": "How fast they rise.",
+      "blur": "How soft they are."
+    },
+    "arms": {
+      "": "Two arms (upper arm, forearm, hand): hanging at rest, a hand to the ear while listening and to the chin while thinking, beats while speaking. `arms: false` turns them off.",
+      "shoulder": "The right shoulder `[x, y]`; the left mirrors it round `mirror`.",
+      "mirror": "The centre line the arms mirror round (x).",
+      "length": "`[upper arm, forearm]`.",
+      "hand": "The hand's radius.",
+      "ear": "Where the right hand goes while listening `[x, y]`.",
+      "chin": "Where the right hand goes while thinking `[x, y]`.",
+      "back": "This is the copy behind the body: the far arm, shown as the head turns away (list it before the body).",
+      "handColor": "The hands' colour."
+    },
+    "patch": {
+      "": "A body layer: a shape in one colour, clipped to the body (on a surface, it wraps when the head turns)."
+    },
+    "band": {
+      "": "A body layer: a shape in one colour clipped to the body, flat (a sleeve, a belt)."
+    },
+    "stripes": {
+      "": "A body layer: thin rounded stripes across the body.",
+      "at": "Each stripe's y.",
+      "rect": "A stripe: `[x, w, h, radius, step]`."
+    },
+    "glints": {
+      "": "A body layer: rounded highlights.",
+      "at": "Each glint `[y, height]`.",
+      "rect": "A glint: `[x, w, radius, step]`."
+    },
+    "grille": {
+      "": "A body layer and a mouth: slots that light with the voice while speaking and one light scanning while thinking.",
+      "x": "The first slot's x.",
+      "pitch": "The distance between slots.",
+      "y": "The slots' y.",
+      "slot": "A slot at 64 and 32 px: `[width, height, height when lit]`.",
+      "smallSlot": "A slot at 20 px: `[width, height, height when lit]`.",
+      "rise": "How it moves up `[at rest, when lit]`.",
+      "step": "The slots' rounding step (at least 1)."
+    }
+  }
+}

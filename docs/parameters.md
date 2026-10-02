@@ -172,6 +172,13 @@ Every tunable of every object and pattern lives in one machine-readable catalog.
 | Validate overrides | `checkOverrides(pattern, size, overrides)` | `checkOverrides(state:size:overrides:)` (`state` = the pattern id in the low-level API) |
 | Checked-in copy | [`spec/parameters.json`](../spec/parameters.json) | same file |
 
+**The words stay out of the runtime** (design note 10, 1.12): `parameterCatalog()` /
+`parameterCatalogJson()` carry no `description` fields. The runtime embeds `catalog_source.json`
+without its prose and minified (`crates/core_engine/build.rs`; the voice-state profile is minified
+too), which keeps ~10 KB (gzip) out of every app. The descriptions are in `spec/parameters.json`
+(written by a test from the full source, so it is unchanged), in the typed components' doc comments
+(codegen reads that file, so an IDE shows them on hover) and on sinua.dev.
+
 **Shape** (`catalogVersion` 1):
 - **`objects[]`:** `{ id, label, component, patterns[] }`. A **pattern** is the visual (`breathing`, `tracking`, …). The app lifecycle key (`listening`, …) is a **state** (FX Spec `states`).
 - **`patterns[]`:** `{ id, label, mode, speed, sizes, params: [{ ref, default: { "20", "32", "64" } }], materialDefaults }`.
@@ -183,7 +190,7 @@ Every tunable of every object and pattern lives in one machine-readable catalog.
   |---|---|
   | `key` | the engine opt key |
   | `path` | the one name FX Spec bindings, typed props and docs use: `glow.strength`, `color.mix`, `lanes` |
-  | `label`, `description` | one line, docs-ready |
+  | `label`, `description` | one line, docs-ready (`description` only in `spec/parameters.json`, not the runtime catalog) |
   | `category` | appearance / motion / energy / material / input |
   | `group` | **value** = app data that becomes a direct prop (progress, quality, accuracy, level, once); **style** = the look |
   | `type` | number / integer / boolean / choice / `number[]` |

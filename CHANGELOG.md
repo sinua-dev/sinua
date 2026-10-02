@@ -36,10 +36,69 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 - FX Spec 1.11: `object: "character"`. A character takes `params.hue`, not `color` /
   `gradient`. 1.8–1.10 files resolve exactly as before
   (`spec/fx-spec-1.11-resolved.json`).
+- FX Spec 1.12: `recipe`. A brand's own character travels in one FX Spec file: the file
+  carries a character recipe and its `pattern` names the recipe's `id`. Every view draws it
+  with no platform code (`spec/examples/custom-character.fxspec.json`). Recipe errors point
+  into the recipe, and limits (64 KB, 48 parts, segments, counts, numbers) keep any file
+  cheap to draw. Voice states come from a shared character language or a built-in's
+  (`"profile": "chirp"`). 1.8–1.11 files resolve exactly as before
+  (`spec/fx-spec-1.12-resolved.json`).
+- Two new characters, made only from recipes: `cuppa`, a coffee mug on its saucer whose
+  steam rises while it listens and thickens with its voice, and `bean`, a coffee bean on
+  little feet with aroma sparkles. The new `steam` part draws soft wisps that rise and fade.
+- A new character, `beep`: a small tin robot with arms. A hand goes to the ear to listen and to
+  the chin to think, and the arms beat with the voice; the antenna light shows listening and
+  thinking. The new `arms` part is a recipe part like the others, and `arms: false` turns the
+  arms off.
+- Expressions: a character takes `expression` (`happy`, `surprised`, `thoughtful`, `sad`,
+  `sleepy`), as a view prop or an FX Spec 1.12 key in the base and in `states`. It shapes the
+  eyes and the resting mouth (new "O" and frown mouths) while the voice state keeps the gaze and
+  the talking mouth. Changes ease over 0.6 s.
+- Recipe reference and schema: `spec/character-recipe-1.schema.json` describes every recipe key
+  and part field (generated from the engine, so it can't drift), `docs/character-recipe.md` lists
+  them, and `docs/character-remix.md` walks through a remix; the new example
+  `remix-latte.fxspec.json` is Cuppa remixed into a latte glass. Example files point `$schema` at
+  `https://sinua.dev/schema/fx-spec-1.json` (recipes: `…/character-recipe-1.json`).
+- Remixing characters: `characterRecipe(id)` gives a built-in's recipe as JSON, a start for
+  your own (`recipe` in an FX Spec 1.12 file). `@sinua/snippets` adds `fitPath` (any SVG path,
+  arcs included, fitted into the recipe's 200-unit box) and `svgPaths`.
+- Palettes: a character takes `palette`, a few of its colours by name
+  (`{ shell: "#E63946" }`), as a view prop or an FX Spec 1.12 key in the base and in `states`.
+  Light and dark tones follow; a dark body lifts the eyes; `hue` never turns a given colour.
+  `characterRecipe(id)` gives a built-in's recipe, whose palette names are the slots. Snippets print it as the `palette` prop.
+- Tap to hop: a tap on a character plays the new `hop` effect. It hops, smiles, and glances
+  toward the tap, then goes back to the voice state. It is on by default on
+  `SinuaCharacter` (`tap: false` turns it off) and silent; on other objects `hop` does
+  nothing. Apps can play it themselves with `trigger("hop")` / `SinuaEffect.HOP`.
+- Character shapes from SVG paths: a recipe's body, patch or band can be a `path` (the
+  commands `M L H V C S Q T Z`). Later subpaths are holes (a mug's handle). A concave body
+  clips its inner layers exactly, and the outline keeps its width at sharp corners.
 - `stateAge`, a runtime input every view now sets: seconds since the lifecycle state changed.
 - State transitions: a catalog definition can mark a value as an *arrival*
   (`"transition": "arrive"`). A state change then takes the new state's value at once
   instead of interpolating it (a character's turn blink).
+
+### Changed
+
+- `parameterCatalog()` / `parameterCatalogJson()` no longer carry `description` texts: they are
+  in the typed components' doc comments (your IDE shows them), in `spec/parameters.json` and on
+  sinua.dev. The runtime embeds the catalog without them, minified (and the voice-state profile
+  minified), about 10 KB less (gzip) in every app. Labels, ranges and defaults are unchanged.
+- Characters are now **recipes** (`spec/characters/*.json`): a palette, a rig and a list of
+  parts from the character part library, read by one schema-checked reader. The four
+  characters draw exactly as before (golden byte-identical). A new look is a new recipe; a
+  part can fade by voice state (`show`); each recipe declares slots for 1.13's cosmetics.
+  Costs ~17 KB gzip in the wasm.
+
+### Removed
+
+- **SinuaEdge**: `SinuaEdge` / `<sinua-edge>` on every platform, FX Spec `object: "edge"` and
+  its pattern `framing` (the in-app screen-edge glow, new in beta.6). **FX Spec files with
+  `object: "edge"` now fail** with an error at `/object`, at every version: the one break of
+  the "minor versions only add" rule, made once during the beta (docs/fx-spec.md,
+  *Versioning*). Migration: remove the component or the file; Sinua has no replacement, so
+  draw a screen-edge glow in the app itself. The box layout stays (`playing`, the voice
+  message). Golden `sinua` 2.0.0 drops the 15 `framing` cases.
 
 ## 0.1.0-beta.7
 

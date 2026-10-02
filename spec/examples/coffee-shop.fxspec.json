@@ -1,0 +1,44 @@
+{
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
+  "fxSpec": "1.12",
+  "name": "Cuppa",
+  "description": "A coffee shop's voice assistant (FX Spec 1.12): Cuppa, a coffee mug drawn from an SVG path (the handle is a hole), with the library's steam part. The file only says who it is: the voice-state profile ships Cuppa's state language -- listening tips it toward you and lifts the steam, thinking looks away and curls it, speaking opens the mouth with the voice and thickens the steam. `hue` turns the mug (here a teal one); the coffee, the sleeve and the heart stay.",
+  "object": "character",
+  "pattern": "cuppa",
+  "size": 64,
+  "params": {
+    "hue": 180,
+    "seed": 2
+  },
+  "bindings": {
+    "muted": {
+      "input": "micMuted"
+    }
+  },
+  "states": {
+    "initializing": {},
+    "idle": {},
+    "listening": {
+      "bindings": {
+        "audioLevel": {
+          "input": "micLevel"
+        }
+      }
+    },
+    "thinking": {},
+    "speaking": {
+      "bindings": {
+        "audioLevel": {
+          "input": "agentVolume",
+          "inputRange": [
+            0,
+            0.8
+          ]
+        }
+      }
+    }
+  },
+  "accessibility": {
+    "name": "Cuppa"
+  }
+}

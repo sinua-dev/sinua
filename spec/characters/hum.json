@@ -1,0 +1,69 @@
+{
+  "$schema": "https://sinua.dev/schema/character-recipe-1.json",
+  "$comment": "HUM, a vintage studio microphone that hosts the show (design note 7). The grille is the mouth; the tally light is red while it listens and blinks amber while it thinks; the capsule tips toward you while listening and sways on its yoke while speaking.",
+  "recipe": 1,
+  "id": "hum",
+  "palette": {
+    "body": [9.2, 0.759, 0.563],
+    "bodyLight": [14.1, 1.0, 0.7],
+    "bodyDark": [7.4, 0.688, 0.39],
+    "brass": [39.1, 0.667, 0.553],
+    "brassDark": [38.9, 0.695, 0.361],
+    "grille": [12.5, 0.4, 0.118],
+    "glow": [39.7, 1.0, 0.739],
+    "line": [11.7, 0.657, 0.137],
+    "tallyRed": [0.0, 1.0, 0.616],
+    "tallyAmber": [36.1, 1.0, 0.616],
+    "tallyOff": [8.6, 0.452, 0.243],
+    "white": [0.0, 0.0, 1.0]
+  },
+  "hue": { "base": 9.0, "turns": ["body", "bodyLight", "bodyDark"] },
+  "contrast": [["glow", "grille"]],
+  "rig": {
+    "kind": "pivot", "pivot": [100.0, 94.0], "lean": 0.5, "squash": true,
+    "sway": { "gain": "swayGain", "rate": 9.0, "base": 0.4 },
+    "mount": { "bob": 0.3 }
+  },
+  "surfaces": {
+    "face": { "c": [100.0, 93.0], "r": 44.0, "depth": 1.0, "cylinder": true }
+  },
+  "parts": [
+    { "part": "shadow", "space": "ground", "at": [100.0, 186.0], "r": [40.0, 5.2] },
+    {
+      "part": "stand", "space": "whole", "under": [100.0, 181.0, 34.0, 7.0], "foot": [100.0, 178.0, 34.0, 7.0],
+      "segments": 40, "stem": [96.0, 148.0, 8.0, 30.0, 4.0, 3.0], "dark": "brassDark", "color": "brass",
+      "outline": { "width": 2.5, "color": "line" }
+    },
+    {
+      "part": "yoke", "space": "mount", "x": [48.0, 152.0], "top": 94.0, "knee": 128.0, "bottom": 150.0,
+      "mid": 100.0, "segments": 12, "under": { "width": 9.0, "color": "line" }, "over": { "width": 5.0, "color": "brass" }
+    },
+    {
+      "part": "body", "space": "body",
+      "shape": { "roundRect": [56.0, 34.0, 88.0, 118.0, 44.0, 3.0] },
+      "light": { "linear": [56.0, 0.0, 144.0, 0.0], "stops": [[0.0, "bodyLight"], [0.45, "body"], [1.0, "bodyDark"]] },
+      "inner": [
+        { "part": "band", "shape": { "roundRect": [40.0, 66.0, 120.0, 60.0, 0.0, 4.0] }, "color": "grille" },
+        { "part": "stripes", "at": [64.0, 125.0], "rect": [40.0, 120.0, 3.0, 0.0, 4.0], "color": "white", "alpha": 0.18 },
+        {
+          "part": "grille", "count": 9, "x": 66.0, "pitch": 7.6, "y": 112.0, "slot": [4.2, 3.0, 8.0],
+          "smallSlot": [6.0, 4.0, 10.0], "rise": [1.5, 4.0], "step": 2.0, "ink": "glow", "surface": "face"
+        },
+        { "part": "glints", "at": [[40.0, 22.0], [132.0, 12.0]], "rect": [68.0, 10.0, 5.0, 2.0], "color": "white", "alpha": 0.35 },
+        { "part": "eyes", "at": [100.0, 90.0], "scale": [0.82, 0.95], "ink": "glow", "glow": [4.5, 2.0], "surface": "face" }
+      ],
+      "outline": { "width": 3.5, "color": "line" }
+    },
+    {
+      "part": "tally", "space": "body", "at": [100.0, 28.0], "r": 6.0, "segments": 24,
+      "off": "tallyOff", "listening": "tallyRed", "thinking": "tallyAmber", "outline": { "width": 2.5, "color": "line" }
+    }
+  ],
+  "burst": { "space": "body", "at": [100.0, 92.0], "r": 78.0, "colors": ["celebrate", "tallyAmber", "glow"] },
+  "slots": {
+    "headTop": { "at": [100.0, 22.0], "follows": "head" },
+    "face": { "at": [100.0, 96.0], "follows": "face" },
+    "neck": { "at": [100.0, 150.0], "follows": "body" },
+    "chest": { "at": [100.0, 130.0], "follows": "body" }
+  }
+}

@@ -1,0 +1,451 @@
+{
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
+  "fxSpec": "1.12",
+  "name": "Pip",
+  "description": "A brand's own character in one file (FX Spec 1.12, `recipe`): Pip is a recipe of the character part library, a teal songbird with a coral crest and wings, carried in the spec itself, so no code and no Sinua release are needed. `pattern` names the recipe's `id`. `profile: chirp` takes Chirp's state language (its wings flutter with the voice); without it a recipe gets the shared character language. `show` fades a part by voice state: the crest dims while thinking, the notes and thought dots appear only while thinking and speaking.",
+  "object": "character",
+  "pattern": "pip",
+  "size": 64,
+  "recipe": {
+    "recipe": 1,
+    "id": "pip",
+    "palette": {
+      "body": [
+        174.0,
+        0.62,
+        0.52
+      ],
+      "bodyLight": [
+        172.0,
+        0.7,
+        0.68
+      ],
+      "bodyDark": [
+        176.0,
+        0.6,
+        0.36
+      ],
+      "belly": [
+        48.0,
+        1.0,
+        0.92
+      ],
+      "coral": [
+        8.0,
+        0.9,
+        0.66
+      ],
+      "beak": [
+        41.4,
+        1.0,
+        0.614
+      ],
+      "beakDark": [
+        39.3,
+        1.0,
+        0.425
+      ],
+      "line": [
+        184.0,
+        0.7,
+        0.16
+      ],
+      "eyes": [
+        190.0,
+        0.4,
+        0.12
+      ]
+    },
+    "hue": {
+      "base": 174.0,
+      "turns": [
+        "body",
+        "bodyLight",
+        "bodyDark"
+      ]
+    },
+    "rig": {
+      "kind": "pivot",
+      "pivot": [
+        100.0,
+        170.0
+      ],
+      "lean": 0.5
+    },
+    "surfaces": {
+      "face": {
+        "c": [
+          100.0,
+          110.0
+        ],
+        "r": 58.0,
+        "depth": 0.8
+      },
+      "ball": {
+        "c": [
+          100.0,
+          110.0
+        ],
+        "r": 58.0,
+        "depth": 1.0
+      }
+    },
+    "parts": [
+      {
+        "part": "shadow",
+        "space": "ground",
+        "at": [
+          100.0,
+          184.0
+        ],
+        "r": [
+          40.0,
+          5.2
+        ]
+      },
+      {
+        "part": "feet",
+        "space": "whole",
+        "x": 100.0,
+        "gap": 14.0,
+        "top": 164.0,
+        "ground": 180.0,
+        "toe": [
+          6.0,
+          182.0
+        ],
+        "width": 3.5,
+        "color": "beakDark"
+      },
+      {
+        "part": "crest",
+        "space": "body",
+        "when": "notSmallOrAccessories",
+        "base": [
+          100.0,
+          56.0
+        ],
+        "spread": [
+          -9.0,
+          0.0,
+          9.0
+        ],
+        "mid": 1,
+        "root": 0.5,
+        "ctrl": [
+          1.4,
+          36.0,
+          10.0,
+          6.0
+        ],
+        "tip": [
+          2.2,
+          4.0,
+          34.0,
+          12.0,
+          8.0
+        ],
+        "lift": {
+          "ears": [
+            0.3,
+            0.5
+          ],
+          "talk": [
+            0.2,
+            0.4
+          ],
+          "dots": 0.4
+        },
+        "turnShift": 20.0,
+        "segments": 10,
+        "width": 5.0,
+        "color": "coral",
+        "show": {
+          "idle": 0.6,
+          "listening": 1,
+          "thinking": 0.3,
+          "speaking": 1
+        }
+      },
+      {
+        "part": "body",
+        "space": "body",
+        "shape": {
+          "ellipse": [
+            100.0,
+            110.0,
+            58.0,
+            56.0,
+            0.0,
+            64
+          ]
+        },
+        "light": {
+          "radial": [
+            80.0,
+            80.0,
+            80.0
+          ],
+          "stops": [
+            [
+              0.0,
+              "bodyLight"
+            ],
+            [
+              0.55,
+              "body"
+            ],
+            [
+              1.0,
+              "bodyDark"
+            ]
+          ]
+        },
+        "turnLight": [
+          -14.0,
+          10.0
+        ],
+        "inner": [
+          {
+            "part": "patch",
+            "shape": {
+              "ellipse": [
+                100.0,
+                146.0,
+                40.0,
+                32.0,
+                0.0,
+                40
+              ]
+            },
+            "surface": "face",
+            "color": "belly"
+          }
+        ],
+        "outline": {
+          "width": 3.5,
+          "color": "line"
+        }
+      },
+      {
+        "part": "wings",
+        "space": "body",
+        "x": 100.0,
+        "at": [
+          54.0,
+          118.0
+        ],
+        "size": [
+          11.0,
+          22.0
+        ],
+        "angle": 0.5,
+        "segments": 24,
+        "flutter": {
+          "rate": 14.0,
+          "gain": "flutterGain"
+        },
+        "surface": "ball",
+        "turn": {
+          "near": 0.25,
+          "far": 0.6
+        },
+        "color": "coral",
+        "outline": {
+          "width": 3.0,
+          "color": "line"
+        }
+      },
+      {
+        "part": "eyes",
+        "space": "face",
+        "surface": "face",
+        "at": [
+          100.0,
+          96.0
+        ],
+        "scale": [
+          0.82,
+          0.95
+        ],
+        "ink": "eyes",
+        "glow": 0.0
+      },
+      {
+        "part": "beak",
+        "space": "face",
+        "surface": "face",
+        "lower": [
+          [
+            90.0,
+            118.0
+          ],
+          [
+            110.0,
+            118.0
+          ],
+          [
+            100.0,
+            122.0
+          ]
+        ],
+        "drop": 14.0,
+        "upper": {
+          "quad": [
+            [
+              89.0,
+              118.0
+            ],
+            [
+              100.0,
+              108.0
+            ],
+            [
+              111.0,
+              118.0
+            ]
+          ],
+          "segments": 10,
+          "tip": [
+            100.0,
+            127.0
+          ],
+          "rise": 2.0
+        },
+        "open": {
+          "effect": 0.45,
+          "rest": 0.05
+        },
+        "colors": [
+          "beakDark",
+          "beak"
+        ],
+        "outline": {
+          "width": 2.5,
+          "color": "line"
+        }
+      },
+      {
+        "part": "notes",
+        "space": "whole",
+        "count": 3,
+        "rate": 0.8,
+        "from": [
+          146.0,
+          70.0
+        ],
+        "travel": [
+          26.0,
+          40.0
+        ],
+        "stagger": 6.0,
+        "scale": [
+          1.0,
+          0.8
+        ],
+        "floor": 0.3,
+        "color": "coral",
+        "dots": {
+          "at": [
+            146.0,
+            44.0
+          ],
+          "step": [
+            10.0,
+            6.0
+          ],
+          "r": [
+            3.5,
+            1.0
+          ],
+          "segments": 16,
+          "rate": 2.2,
+          "base": 0.3,
+          "gain": 0.7
+        },
+        "show": {
+          "thinking": 1,
+          "speaking": 1
+        }
+      }
+    ],
+    "burst": {
+      "at": [
+        100.0,
+        104.0
+      ],
+      "r": 82.0,
+      "colors": [
+        "celebrate",
+        "beak",
+        "coral"
+      ]
+    },
+    "slots": {
+      "headTop": {
+        "at": [
+          100.0,
+          52.0
+        ],
+        "follows": "head"
+      },
+      "face": {
+        "at": [
+          100.0,
+          100.0
+        ],
+        "follows": "face"
+      },
+      "neck": {
+        "at": [
+          100.0,
+          150.0
+        ],
+        "follows": "body"
+      },
+      "chest": {
+        "at": [
+          100.0,
+          140.0
+        ],
+        "follows": "body"
+      }
+    },
+    "profile": "chirp"
+  },
+  "params": {
+    "seed": 5,
+    "flutterGain": 0.3
+  },
+  "bindings": {
+    "muted": {
+      "input": "micMuted"
+    }
+  },
+  "states": {
+    "initializing": {},
+    "idle": {},
+    "listening": {
+      "bindings": {
+        "audioLevel": {
+          "input": "micLevel"
+        }
+      }
+    },
+    "thinking": {},
+    "speaking": {
+      "bindings": {
+        "audioLevel": {
+          "input": "agentVolume",
+          "inputRange": [
+            0,
+            0.8
+          ]
+        }
+      }
+    }
+  },
+  "accessibility": {
+    "name": "Pip"
+  }
+}

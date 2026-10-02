@@ -1,5 +1,5 @@
 {
-  "$schema": "../fx-spec-1.schema.json",
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.8",
   "name": "Liquid orb",
   "description": "A glowing orb whose dots melt into ink contours -- the voice-orb 'gooey' mood in this engine's own line language, no shader. Thinking pools into soft filled blobs; speaking becomes a liquid ring (a filled band with a hole). Low power sheds the liquid (plain dots) and caps at 24 fps.",

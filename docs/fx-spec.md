@@ -83,9 +83,9 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 
 - Major ≠ 1 → error; this runtime doesn't load it.
 - **The floor is 1.8** (`fx_spec.rs`'s `FLOOR_MINOR`). A `1.0`–`1.7` file is one error at `/fxSpec` (``FX Spec 1.7 isn't supported; this runtime reads 1.8 and later``) and nothing resolves. Those minors were never published; their acceptance was dropped before the first release instead of becoming a promise (docs/release-roadmap.md, decision 0.1). A missing or malformed `fxSpec` is an error too, and the rest of the file is still read as the current minor so its other problems show.
-- The runtime is **1.11** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
+- The runtime is **1.12** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`; 1.12's `recipe`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
 - A **newer 1.x** file (`1.9`) → unknown keys are **warnings** and the rest renders (graceful degradation).
-- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is four locks, `spec/fx-spec-1.8-resolved.json` to `-1.11-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
+- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is five locks, `spec/fx-spec-1.8-resolved.json` to `-1.12-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`, 1.12 over those 14 (byte-identical rows) plus `custom-character`; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
 - **A key added in a later minor is gated automatically.** `spec/fx-spec-1.8-keys.json`
   freezes every key path a 1.8 file may use (103 today, built from the resolver's own
   tables). A new key (a material, a section key, a binding target, something low power
@@ -94,6 +94,11 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
   one gate in `resolve` then turns it into an error in older files ("`materials.frost`
   needs "fxSpec": "1.9" (this file says 1.8)") and drops it. Removing a frozen key fails
   too: 1.8 files would break.
+- **Minor versions only add. The one exception** is the `edge` object, removed during the
+  beta in 1.12 (0.1.0-beta.8): a file with `object: "edge"` fails at every version with
+  "`object: edge` was removed in 0.1.0-beta.8 (FX Spec 1.12); there is no replacement:
+  draw the screen-edge glow in the app". After 1.0 a removal like that only happens in a
+  major (FX Spec 2.0).
 - `migrate` in `fx_spec.rs` reads the 1.7 grammar into engine names (catalog-path binding targets, array params) and reports the replaced names. A later minor that renames something plugs in there.
 
 ## API
@@ -299,6 +304,58 @@ How state changes animate, per pair. Optional; without it every change takes 0.6
 - **Fields:** `duration` (seconds, 0–10; `0` = a cut) and `curve` (one of the binding curves: `linear`, `ease`, `easeIn`, `easeOut`, `easeInOut`).
 - **Diagnostics:** a key that isn't `default` or `a->b` is an error; a state name that isn't in `states` is a warning (the entry never applies); an unknown curve or an out-of-range duration is an error.
 - `fxSpecTransition(spec, from, to)` returns `{ duration, curve }` for a pair; the players call it on every state change. The technique (interpolate / morph / cross-fade) isn't in the file: the engine picks it from the pair (see *Caller loop*).
+
+## v1.12: character recipes
+
+A brand's own character in **one file**: the new top-level key **`recipe`** carries a
+character recipe, the same format as the built-in ones in `spec/characters/*.json`
+([`character.md`](character.md), *Recipes and parts*). No code, no Sinua release. Every key and
+part field: [`character-recipe.md`](character-recipe.md) and the schema
+`spec/character-recipe-1.schema.json` (`$id` `https://sinua.dev/schema/character-recipe-1.json`,
+which this file's schema refers to); a worked remix: [`character-remix.md`](character-remix.md).
+
+```json
+{ "fxSpec": "1.12", "object": "character", "pattern": "pip",
+  "recipe": { "recipe": 1, "id": "pip", "profile": "chirp", "palette": { … }, "rig": { … }, "parts": [ … ], "burst": { … } },
+  "params": { "seed": 5, "flutterGain": 0.3 }, "states": { "listening": {}, "speaking": {} } }
+```
+(`spec/examples/custom-character.fxspec.json`)
+
+- **`recipe` needs `"fxSpec": "1.12"`** and `object: "character"`. Every `pattern` (the base
+  and each `states` entry) equal to the recipe's `id` draws it; a recipe no pattern names is a
+  warning. The `id` (1–32 of `a–z`, `0–9`, `-`) can't be a built-in character's.
+- **Resolving registers the recipe** under a content key, `recipe:<id>:<hash>`, and the
+  resolved `state` is that key. The views draw it every frame like any other pattern, so
+  platform code doesn't change; the same recipe gives the same key everywhere. The engine
+  keeps the last 32 recipes used.
+- **Errors point into the recipe**: `/recipe/parts/2/segments: expected a whole number from 3 to 128`.
+- **Limits** (a file from outside can't make the engine slow; over a limit is an error, never
+  trimmed): the recipe at most 64 KB; at most 48 parts, a body's inner layers included; lists
+  (feathers, bars, stripes, glints, stops) at most 32; `segments` 3–128 (an ellipse's too);
+  counted things (`count`) 1–24; edge steps at least 1; every number within ±1000. A recipe
+  the cost estimate calls `heavy` is a warning.
+- **`expression`** (character only): `"happy"`, `"surprised"`, `"thoughtful"`, `"sad"`,
+  `"sleepy"` or `"none"`, in the base and in `states` entries (`null` in an entry removes it). It
+  resolves to five weights (`expressionHappy` …), so a state change blends one expression into the
+  next. The weights themselves are rejected in `params`, and a typo gets a "did you mean". See
+  [`character.md`](character.md), *Expressions*.
+- **`palette`** (character only): `{ "<slot>": <colour>, … }`, hex or DTCG, in the base and in
+  `states` entries (merged over the base; `null` removes a slot). Slots are the recipe's palette
+  names; a slot's `Light` / `Dark` tones follow it; it lands after `hue`; a dark ground lifts an
+  ink left as drawn, and an ink given too dark gets a warning. Unknown slots get a "did you
+  mean"; `palette.*` keys are rejected in `params`. See [`character.md`](character.md), *Palette*.
+- **Custom shapes**: any shape in a recipe may be an SVG path,
+  `"shape": { "path": "M50 74 L56 22 … Z" }`. It uses the commands `M L H V C S Q T Z`, sits in
+  the 200-unit box, and its later subpaths are holes. There are no arcs. Path limits: 16 KB,
+  512 commands, 512 points, 8 holes. Errors point inside the path:
+  `/recipe/parts/1/shape/path: at 7: …`. See [`character.md`](character.md), *Shapes*.
+- **Voice states**: a recipe gets the shared character language
+  (`voice-state-profile.json`'s `patterns.character`, Buzzy's numbers), or a built-in
+  character's with `"profile": "chirp"`. The file's own `states` override either.
+- **Params**: the character keys (`hue`, `mouth`, `accessories`, `look`, `turn`, `seed`, the
+  rig keys) plus the gains the recipe's own parts read (`flutterGain`, `swayGain`, `curlGain`).
+- 1.8–1.11 files resolve exactly as before (their locks are unchanged, and the 1.12 lock has
+  the same rows for them).
 
 ## v1.11: characters
 

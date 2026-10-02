@@ -1,5 +1,5 @@
 {
-  "$schema": "../fx-spec-1.schema.json",
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.8",
   "name": "Glowing radar",
   "object": "beacon",

@@ -1,0 +1,3661 @@
+{
+  "$defs": {
+    "colour": {
+      "description": "A colour: a name in this recipe's `palette`.",
+      "type": "string"
+    },
+    "layer-band": {
+      "additionalProperties": false,
+      "description": "A body layer: a shape in one colour clipped to the body, flat (a sleeve, a belt).",
+      "properties": {
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "part": {
+          "const": "band",
+          "description": "The part's kind."
+        },
+        "shape": {
+          "$ref": "#/$defs/shape",
+          "description": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes)."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "shape",
+        "color"
+      ],
+      "type": "object"
+    },
+    "layer-eyes": {
+      "additionalProperties": false,
+      "description": "The shared eyes: they blink, look round, follow the voice state and take the expression. A part on its own (in `face` space) or a body layer.",
+      "properties": {
+        "at": {
+          "description": "The point between the eyes.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "glow": {
+          "description": "A glow round the eyes, 0–1: one number, or `[at 64 and 32 px, at 20 px]`.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/number"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            }
+          ]
+        },
+        "ink": {
+          "$ref": "#/$defs/colour",
+          "description": "The ink colour (a palette name); effects tint it."
+        },
+        "part": {
+          "const": "eyes",
+          "description": "The part's kind."
+        },
+        "scale": {
+          "description": "Its size: `[at 64 and 32 px, at 20 px]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "surface": {
+          "description": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
+          "type": "string"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "at",
+        "scale",
+        "ink",
+        "glow"
+      ],
+      "type": "object"
+    },
+    "layer-glints": {
+      "additionalProperties": false,
+      "description": "A body layer: rounded highlights.",
+      "properties": {
+        "alpha": {
+          "$ref": "#/$defs/number",
+          "description": "Its opacity, 0–1."
+        },
+        "at": {
+          "description": "Each glint `[y, height]`.",
+          "items": {
+            "items": {
+              "$ref": "#/$defs/number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "maxItems": 32,
+          "type": "array"
+        },
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "part": {
+          "const": "glints",
+          "description": "The part's kind."
+        },
+        "rect": {
+          "description": "A glint: `[x, w, radius, step]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "at",
+        "rect",
+        "color",
+        "alpha"
+      ],
+      "type": "object"
+    },
+    "layer-grille": {
+      "additionalProperties": false,
+      "description": "A body layer and a mouth: slots that light with the voice while speaking and one light scanning while thinking.",
+      "properties": {
+        "count": {
+          "$ref": "#/$defs/number",
+          "description": "How many: 1–24."
+        },
+        "ink": {
+          "$ref": "#/$defs/colour",
+          "description": "The ink colour (a palette name); effects tint it."
+        },
+        "part": {
+          "const": "grille",
+          "description": "The part's kind."
+        },
+        "pitch": {
+          "$ref": "#/$defs/number",
+          "description": "The distance between slots."
+        },
+        "rise": {
+          "description": "How it moves up `[at rest, when lit]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "slot": {
+          "description": "A slot at 64 and 32 px: `[width, height, height when lit]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "smallSlot": {
+          "description": "A slot at 20 px: `[width, height, height when lit]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "step": {
+          "$ref": "#/$defs/number",
+          "description": "The slots' rounding step (at least 1)."
+        },
+        "surface": {
+          "description": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
+          "type": "string"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        },
+        "x": {
+          "$ref": "#/$defs/number",
+          "description": "The first slot's x."
+        },
+        "y": {
+          "$ref": "#/$defs/number",
+          "description": "The slots' y."
+        }
+      },
+      "required": [
+        "part",
+        "count",
+        "x",
+        "pitch",
+        "y",
+        "slot",
+        "smallSlot",
+        "rise",
+        "step",
+        "ink"
+      ],
+      "type": "object"
+    },
+    "layer-patch": {
+      "additionalProperties": false,
+      "description": "A body layer: a shape in one colour, clipped to the body (on a surface, it wraps when the head turns).",
+      "properties": {
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "part": {
+          "const": "patch",
+          "description": "The part's kind."
+        },
+        "shape": {
+          "$ref": "#/$defs/shape",
+          "description": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes)."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "surface": {
+          "description": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
+          "type": "string"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "shape",
+        "color"
+      ],
+      "type": "object"
+    },
+    "layer-stripes": {
+      "additionalProperties": false,
+      "description": "A body layer: thin rounded stripes across the body.",
+      "properties": {
+        "alpha": {
+          "$ref": "#/$defs/number",
+          "description": "Its opacity, 0–1."
+        },
+        "at": {
+          "description": "Each stripe's y.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 32,
+          "type": "array"
+        },
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "part": {
+          "const": "stripes",
+          "description": "The part's kind."
+        },
+        "rect": {
+          "description": "A stripe: `[x, w, h, radius, step]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 5,
+          "minItems": 5,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "at",
+        "rect",
+        "color",
+        "alpha"
+      ],
+      "type": "object"
+    },
+    "light": {
+      "oneOf": [
+        {
+          "required": [
+            "radial"
+          ]
+        },
+        {
+          "required": [
+            "linear"
+          ]
+        }
+      ],
+      "properties": {
+        "linear": {
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "type": "array"
+        },
+        "radial": {
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "stops": {
+          "$ref": "#/$defs/stops"
+        }
+      },
+      "type": "object"
+    },
+    "number": {
+      "maximum": 1000.0,
+      "minimum": -1000.0,
+      "type": "number"
+    },
+    "part-arms": {
+      "additionalProperties": false,
+      "description": "Two arms (upper arm, forearm, hand): hanging at rest, a hand to the ear while listening and to the chin while thinking, beats while speaking. `arms: false` turns them off.",
+      "properties": {
+        "back": {
+          "description": "This is the copy behind the body: the far arm, shown as the head turns away (list it before the body).",
+          "type": "boolean"
+        },
+        "chin": {
+          "description": "Where the right hand goes while thinking `[x, y]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "ear": {
+          "description": "Where the right hand goes while listening `[x, y]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "hand": {
+          "$ref": "#/$defs/number",
+          "description": "The hand's radius."
+        },
+        "handColor": {
+          "$ref": "#/$defs/colour",
+          "description": "The hands' colour."
+        },
+        "length": {
+          "description": "`[upper arm, forearm]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "mirror": {
+          "$ref": "#/$defs/number",
+          "description": "The centre line the arms mirror round (x)."
+        },
+        "outline": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/colour",
+              "description": "The outline colour (a palette name)."
+            },
+            "width": {
+              "$ref": "#/$defs/number",
+              "description": "The outline width (scaled with the character's line weight)."
+            }
+          },
+          "required": [
+            "width",
+            "color"
+          ],
+          "type": "object"
+        },
+        "part": {
+          "const": "arms",
+          "description": "The part's kind."
+        },
+        "shoulder": {
+          "description": "The right shoulder `[x, y]`; the left mirrors it round `mirror`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        },
+        "width": {
+          "$ref": "#/$defs/number",
+          "description": "The stroke width."
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "shoulder",
+        "mirror",
+        "length",
+        "width",
+        "hand",
+        "ear",
+        "chin",
+        "color",
+        "handColor",
+        "outline"
+      ],
+      "type": "object"
+    },
+    "part-beak": {
+      "additionalProperties": false,
+      "description": "The beak is the mouth: its lower half opens with the voice.",
+      "properties": {
+        "colors": {
+          "description": "`[lower, upper]` (palette names).",
+          "items": {
+            "$ref": "#/$defs/colour"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "drop": {
+          "$ref": "#/$defs/number",
+          "description": "How far the lower tip drops, fully open."
+        },
+        "lower": {
+          "description": "The lower half's three points `[[x, y], …]`; the last one drops when it opens.",
+          "items": {
+            "items": {
+              "$ref": "#/$defs/number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "open": {
+          "additionalProperties": false,
+          "properties": {
+            "effect": {
+              "$ref": "#/$defs/number",
+              "description": "How open it is during success / celebrate."
+            },
+            "rest": {
+              "$ref": "#/$defs/number",
+              "description": "How open it is at rest."
+            }
+          },
+          "required": [
+            "effect",
+            "rest"
+          ],
+          "type": "object"
+        },
+        "outline": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/colour",
+              "description": "The outline colour (a palette name)."
+            },
+            "width": {
+              "$ref": "#/$defs/number",
+              "description": "The outline width (scaled with the character's line weight)."
+            }
+          },
+          "required": [
+            "width",
+            "color"
+          ],
+          "type": "object"
+        },
+        "part": {
+          "const": "beak",
+          "description": "The part's kind."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "surface": {
+          "description": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
+          "type": "string"
+        },
+        "upper": {
+          "additionalProperties": false,
+          "properties": {
+            "quad": {
+              "description": "The upper half's curve: three points.",
+              "items": {
+                "items": {
+                  "$ref": "#/$defs/number"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            },
+            "rise": {
+              "$ref": "#/$defs/number",
+              "description": "How far the upper tip rises, fully open."
+            },
+            "segments": {
+              "$ref": "#/$defs/number",
+              "description": "Points along that curve: 3–128."
+            },
+            "tip": {
+              "description": "The upper half's tip `[x, y]`.",
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            }
+          },
+          "required": [
+            "quad",
+            "segments",
+            "tip",
+            "rise"
+          ],
+          "type": "object"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "lower",
+        "drop",
+        "colors",
+        "upper",
+        "open",
+        "outline"
+      ],
+      "type": "object"
+    },
+    "part-body": {
+      "additionalProperties": false,
+      "description": "A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns.",
+      "properties": {
+        "inner": {
+          "description": "Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille` or `eyes`.",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/layer-eyes"
+              },
+              {
+                "$ref": "#/$defs/layer-patch"
+              },
+              {
+                "$ref": "#/$defs/layer-band"
+              },
+              {
+                "$ref": "#/$defs/layer-stripes"
+              },
+              {
+                "$ref": "#/$defs/layer-glints"
+              },
+              {
+                "$ref": "#/$defs/layer-grille"
+              }
+            ]
+          },
+          "maxItems": 32,
+          "type": "array"
+        },
+        "light": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/light",
+              "description": "`{ \"radial\": [cx, cy, r] }` (the centre stays put while the body turns under it) or `{ \"linear\": [x0, y0, x1, y1] }`."
+            },
+            {
+              "properties": {
+                "stops": {
+                  "$ref": "#/$defs/stops",
+                  "description": "The light's gradient: `[[offset 0–1, colour], …]`."
+                }
+              },
+              "required": [
+                "stops"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "outline": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/colour",
+              "description": "The outline colour (a palette name)."
+            },
+            "width": {
+              "$ref": "#/$defs/number",
+              "description": "The outline width (scaled with the character's line weight)."
+            }
+          },
+          "required": [
+            "width",
+            "color"
+          ],
+          "type": "object"
+        },
+        "part": {
+          "const": "body",
+          "description": "The part's kind."
+        },
+        "shape": {
+          "$ref": "#/$defs/shape",
+          "description": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes)."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "turnLight": {
+          "allOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            }
+          ],
+          "description": "How the radial light moves as the body turns: `[dx, k]`."
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "shape",
+        "light",
+        "outline"
+      ],
+      "type": "object"
+    },
+    "part-chestCore": {
+      "additionalProperties": false,
+      "description": "A voice core on the chest: a dark disc, a ring and bars that move with the voice; it follows the head turn at 40 %.",
+      "properties": {
+        "at": {
+          "description": "Where it sits: `[x, y]` in the 200-unit box.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "bars": {
+          "description": "Each bar's horizontal offset.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 32,
+          "type": "array"
+        },
+        "colors": {
+          "description": "`[disc, ring, bars]` (palette names).",
+          "items": {
+            "$ref": "#/$defs/colour"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "part": {
+          "const": "chestCore",
+          "description": "The part's kind."
+        },
+        "r": {
+          "$ref": "#/$defs/number",
+          "description": "Its radius."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "at",
+        "r",
+        "bars",
+        "colors"
+      ],
+      "type": "object"
+    },
+    "part-crest": {
+      "additionalProperties": false,
+      "description": "Curling feathers that lift while listening (higher with the user's voice), perk while speaking and droop while thinking.",
+      "properties": {
+        "base": {
+          "description": "Where the feathers grow from `[x, y]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "ctrl": {
+          "description": "The curve's control point: `[x factor, y, lift factor, middle extra]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "type": "array"
+        },
+        "lift": {
+          "additionalProperties": false,
+          "properties": {
+            "dots": {
+              "$ref": "#/$defs/number",
+              "description": "How much thinking lowers it."
+            },
+            "ears": {
+              "description": "How much listening lifts it: `[at rest, with the user's voice]`.",
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            },
+            "talk": {
+              "description": "How much speaking lifts it: `[at rest, with the level]`.",
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            }
+          },
+          "required": [
+            "ears",
+            "talk",
+            "dots"
+          ],
+          "type": "object"
+        },
+        "mid": {
+          "$ref": "#/$defs/number",
+          "description": "Which feather (0-based) is the middle one; it rises highest."
+        },
+        "part": {
+          "const": "crest",
+          "description": "The part's kind."
+        },
+        "root": {
+          "$ref": "#/$defs/number",
+          "description": "How far apart the roots are (times `spread`)."
+        },
+        "segments": {
+          "$ref": "#/$defs/number",
+          "description": "How many points a curve or ellipse is drawn with: 3–128."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "spread": {
+          "description": "One number per feather: its sideways direction and spread (negative to the left).",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 32,
+          "type": "array"
+        },
+        "tip": {
+          "description": "The tip: `[x factor, per-feather offset, y, lift factor, middle extra]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 5,
+          "minItems": 5,
+          "type": "array"
+        },
+        "turnShift": {
+          "$ref": "#/$defs/number",
+          "description": "How far it slides sideways as the head turns."
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        },
+        "width": {
+          "$ref": "#/$defs/number",
+          "description": "The stroke width."
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "base",
+        "spread",
+        "mid",
+        "root",
+        "ctrl",
+        "tip",
+        "turnShift",
+        "segments",
+        "width",
+        "color",
+        "lift"
+      ],
+      "type": "object"
+    },
+    "part-earPods": {
+      "additionalProperties": false,
+      "description": "Ear pods with chevrons and listening arcs; turned, they swing round the head.",
+      "properties": {
+        "arcs": {
+          "$ref": "#/$defs/colour",
+          "description": "The listening arcs' colour."
+        },
+        "chevron": {
+          "$ref": "#/$defs/colour",
+          "description": "The chevrons' colour."
+        },
+        "front": {
+          "description": "This is the near pod's copy in front of the helmet (list it after the helmet).",
+          "type": "boolean"
+        },
+        "line": {
+          "$ref": "#/$defs/colour",
+          "description": "The outline colour (a palette name)."
+        },
+        "part": {
+          "const": "earPods",
+          "description": "The part's kind."
+        },
+        "pod": {
+          "$ref": "#/$defs/colour",
+          "description": "The pods' colour."
+        },
+        "reach": {
+          "$ref": "#/$defs/number",
+          "description": "Each pod's distance from `x`."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        },
+        "x": {
+          "$ref": "#/$defs/number",
+          "description": "The centre line it is mirrored round (x)."
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "x",
+        "reach",
+        "pod",
+        "line",
+        "chevron",
+        "arcs"
+      ],
+      "type": "object"
+    },
+    "part-eyes": {
+      "additionalProperties": false,
+      "description": "The shared eyes: they blink, look round, follow the voice state and take the expression. A part on its own (in `face` space) or a body layer.",
+      "properties": {
+        "at": {
+          "description": "The point between the eyes.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "glow": {
+          "description": "A glow round the eyes, 0–1: one number, or `[at 64 and 32 px, at 20 px]`.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/number"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            }
+          ]
+        },
+        "ink": {
+          "$ref": "#/$defs/colour",
+          "description": "The ink colour (a palette name); effects tint it."
+        },
+        "part": {
+          "const": "eyes",
+          "description": "The part's kind."
+        },
+        "scale": {
+          "description": "Its size: `[at 64 and 32 px, at 20 px]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "surface": {
+          "description": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
+          "type": "string"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "at",
+        "scale",
+        "ink",
+        "glow"
+      ],
+      "type": "object"
+    },
+    "part-faceScreen": {
+      "additionalProperties": false,
+      "description": "A face screen: the eyes and mouth on it (clipped to it), its rim, and a glass visor with a drifting reflection; it rides the face surface.",
+      "properties": {
+        "glass": {
+          "$ref": "#/$defs/colour",
+          "description": "The visor's colour."
+        },
+        "glassEdge": {
+          "$ref": "#/$defs/colour",
+          "description": "The visor rim's colour."
+        },
+        "glint": {
+          "$ref": "#/$defs/colour",
+          "description": "The reflection's colour."
+        },
+        "ink": {
+          "$ref": "#/$defs/colour",
+          "description": "The eyes' and mouth's colour."
+        },
+        "line": {
+          "$ref": "#/$defs/colour",
+          "description": "The outline colour (a palette name)."
+        },
+        "part": {
+          "const": "faceScreen",
+          "description": "The part's kind."
+        },
+        "screen": {
+          "$ref": "#/$defs/colour",
+          "description": "The screen's colour."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "surface": {
+          "description": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
+          "type": "string"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "screen",
+        "ink",
+        "line",
+        "glass",
+        "glassEdge",
+        "glint"
+      ],
+      "type": "object"
+    },
+    "part-feet": {
+      "additionalProperties": false,
+      "description": "Two feet of three strokes each, standing on the ground.",
+      "properties": {
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "gap": {
+          "$ref": "#/$defs/number",
+          "description": "Each foot's distance from `x`."
+        },
+        "ground": {
+          "$ref": "#/$defs/number",
+          "description": "Where they meet the floor (y)."
+        },
+        "part": {
+          "const": "feet",
+          "description": "The part's kind."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "toe": {
+          "description": "A toe's reach `[dx, y]` from the foot.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "top": {
+          "$ref": "#/$defs/number",
+          "description": "Where the legs start (y)."
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        },
+        "width": {
+          "$ref": "#/$defs/number",
+          "description": "The stroke width."
+        },
+        "x": {
+          "$ref": "#/$defs/number",
+          "description": "The centre line between the feet."
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "x",
+        "gap",
+        "top",
+        "ground",
+        "toe",
+        "width",
+        "color"
+      ],
+      "type": "object"
+    },
+    "part-fin": {
+      "additionalProperties": false,
+      "description": "A fin on top of the helmet (64 and 32 px, with accessories).",
+      "properties": {
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "line": {
+          "$ref": "#/$defs/colour",
+          "description": "The outline colour (a palette name)."
+        },
+        "part": {
+          "const": "fin",
+          "description": "The part's kind."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "color",
+        "line"
+      ],
+      "type": "object"
+    },
+    "part-halo": {
+      "additionalProperties": false,
+      "description": "A soft halo: a radial fade (not drawn at 20 px).",
+      "properties": {
+        "at": {
+          "description": "Where it sits: `[x, y]` in the 200-unit box.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "part": {
+          "const": "halo",
+          "description": "The part's kind."
+        },
+        "r": {
+          "$ref": "#/$defs/number",
+          "description": "Its radius."
+        },
+        "segments": {
+          "$ref": "#/$defs/number",
+          "description": "How many points a curve or ellipse is drawn with: 3–128."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "stops": {
+          "description": "The fade: `[[offset 0–1, opacity 0–1], …]`.",
+          "items": {
+            "items": {
+              "$ref": "#/$defs/number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "maxItems": 32,
+          "type": "array"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "at",
+        "r",
+        "segments",
+        "color",
+        "stops"
+      ],
+      "type": "object"
+    },
+    "part-helmet": {
+      "additionalProperties": false,
+      "description": "A helmet: a rounded square lit from the top left; turned, its back edge shows.",
+      "properties": {
+        "line": {
+          "$ref": "#/$defs/colour",
+          "description": "The outline colour (a palette name)."
+        },
+        "part": {
+          "const": "helmet",
+          "description": "The part's kind."
+        },
+        "shades": {
+          "description": "`[light, mid, dark]` (palette names).",
+          "items": {
+            "$ref": "#/$defs/colour"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "shades",
+        "line"
+      ],
+      "type": "object"
+    },
+    "part-notes": {
+      "additionalProperties": false,
+      "description": "Music notes rising while it speaks, and thought dots lighting in turn while it thinks.",
+      "properties": {
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "count": {
+          "$ref": "#/$defs/number",
+          "description": "How many: 1–24."
+        },
+        "dots": {
+          "additionalProperties": false,
+          "properties": {
+            "at": {
+              "description": "The first dot `[x, y]`.",
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            },
+            "base": {
+              "$ref": "#/$defs/number",
+              "description": "An unlit dot's opacity."
+            },
+            "gain": {
+              "$ref": "#/$defs/number",
+              "description": "How much brighter the lit dot is."
+            },
+            "r": {
+              "description": "A dot's radius `[first, growth per dot]`.",
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            },
+            "rate": {
+              "$ref": "#/$defs/number",
+              "description": "How fast the lit dot moves along."
+            },
+            "segments": {
+              "$ref": "#/$defs/number",
+              "description": "Points per dot: 3–128."
+            },
+            "step": {
+              "description": "Each next dot's offset `[dx, dy]`.",
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            }
+          },
+          "required": [
+            "at",
+            "step",
+            "r",
+            "segments",
+            "rate",
+            "base",
+            "gain"
+          ],
+          "type": "object"
+        },
+        "floor": {
+          "$ref": "#/$defs/number",
+          "description": "The lowest note opacity while speaking."
+        },
+        "from": {
+          "description": "Where a note starts `[x, y]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "part": {
+          "const": "notes",
+          "description": "The part's kind."
+        },
+        "rate": {
+          "$ref": "#/$defs/number",
+          "description": "How fast the notes rise."
+        },
+        "scale": {
+          "description": "A note's size: `[at 64 px, at 32 and 20 px]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "stagger": {
+          "$ref": "#/$defs/number",
+          "description": "Each next note's vertical offset."
+        },
+        "travel": {
+          "description": "How far it travels `[dx, dy]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "count",
+        "rate",
+        "from",
+        "travel",
+        "stagger",
+        "scale",
+        "floor",
+        "color",
+        "dots"
+      ],
+      "type": "object"
+    },
+    "part-ovalMouth": {
+      "additionalProperties": false,
+      "description": "A mouth that is a small smile at rest, thinking dots, or an oval that opens with the voice; it takes the expression's resting mouth.",
+      "properties": {
+        "at": {
+          "description": "Where it sits: `[x, y]` in the 200-unit box.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "halfWidth": {
+          "$ref": "#/$defs/number",
+          "description": "Half the mouth's width."
+        },
+        "ink": {
+          "$ref": "#/$defs/colour",
+          "description": "The ink colour (a palette name); effects tint it."
+        },
+        "part": {
+          "const": "ovalMouth",
+          "description": "The part's kind."
+        },
+        "scale": {
+          "description": "Its size: `[at 64 and 32 px, at 20 px]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "surface": {
+          "description": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
+          "type": "string"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "at",
+        "scale",
+        "halfWidth",
+        "ink"
+      ],
+      "type": "object"
+    },
+    "part-shadow": {
+      "additionalProperties": false,
+      "description": "The soft shadow under the character.",
+      "properties": {
+        "at": {
+          "description": "Where it sits: `[x, y]` in the 200-unit box.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "floats": {
+          "description": "Widens with the float rig's drift (a floating character's shadow breathes).",
+          "type": "boolean"
+        },
+        "part": {
+          "const": "shadow",
+          "description": "The part's kind."
+        },
+        "r": {
+          "description": "Its radii `[rx, ry]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "at",
+        "r"
+      ],
+      "type": "object"
+    },
+    "part-sparkles": {
+      "additionalProperties": false,
+      "description": "Sparkles round the head: wandering at rest, gathering while listening, orbiting while thinking, streaming out with the voice.",
+      "properties": {
+        "colors": {
+          "description": "`[odd, even]` sparkles' colours.",
+          "items": {
+            "$ref": "#/$defs/colour"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "count": {
+          "$ref": "#/$defs/number",
+          "description": "How many: 1–24."
+        },
+        "head": {
+          "description": "The point they move round `[x, y]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "part": {
+          "const": "sparkles",
+          "description": "The part's kind."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "count",
+        "head",
+        "colors"
+      ],
+      "type": "object"
+    },
+    "part-spirit": {
+      "additionalProperties": false,
+      "description": "A spirit's body: a round head flowing into a tail that curls (with `curlGain`), sways and trails the head turn, with smoke puffs off the tail tip and a shine.",
+      "properties": {
+        "head": {
+          "description": "The head `[x, y, radius]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "line": {
+          "$ref": "#/$defs/colour",
+          "description": "The outline colour (a palette name)."
+        },
+        "part": {
+          "const": "spirit",
+          "description": "The part's kind."
+        },
+        "shine": {
+          "$ref": "#/$defs/colour",
+          "description": "The head's shine colour."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "smoke": {
+          "$ref": "#/$defs/colour",
+          "description": "The smoke puffs' colour."
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "stops": {
+          "$ref": "#/$defs/stops",
+          "description": "The body's gradient `[[offset 0–1, colour], …]`."
+        },
+        "tail": {
+          "additionalProperties": false,
+          "properties": {
+            "lag": {
+              "$ref": "#/$defs/number",
+              "description": "How late the tail follows the head turn (seconds)."
+            },
+            "swing": {
+              "$ref": "#/$defs/number",
+              "description": "How far the tail swings with the turn."
+            }
+          },
+          "required": [
+            "lag",
+            "swing"
+          ],
+          "type": "object"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "head",
+        "stops",
+        "line",
+        "smoke",
+        "shine",
+        "tail"
+      ],
+      "type": "object"
+    },
+    "part-stand": {
+      "additionalProperties": false,
+      "description": "A stand: a shadowed round foot and a stem.",
+      "properties": {
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "dark": {
+          "$ref": "#/$defs/colour",
+          "description": "The shadow's colour."
+        },
+        "foot": {
+          "description": "The foot ellipse `[cx, cy, rx, ry]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "type": "array"
+        },
+        "outline": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/colour",
+              "description": "The outline colour (a palette name)."
+            },
+            "width": {
+              "$ref": "#/$defs/number",
+              "description": "The outline width (scaled with the character's line weight)."
+            }
+          },
+          "required": [
+            "width",
+            "color"
+          ],
+          "type": "object"
+        },
+        "part": {
+          "const": "stand",
+          "description": "The part's kind."
+        },
+        "segments": {
+          "$ref": "#/$defs/number",
+          "description": "How many points a curve or ellipse is drawn with: 3–128."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "stem": {
+          "description": "The stem, a rounded rectangle `[x, y, w, h, radius, step]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 6,
+          "minItems": 6,
+          "type": "array"
+        },
+        "under": {
+          "description": "The shadow ellipse under the foot `[cx, cy, rx, ry]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "type": "array"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "under",
+        "foot",
+        "segments",
+        "stem",
+        "dark",
+        "color",
+        "outline"
+      ],
+      "type": "object"
+    },
+    "part-steam": {
+      "additionalProperties": false,
+      "description": "Soft wisps rising and fading: higher while listening, swaying more while thinking, thicker with the voice.",
+      "properties": {
+        "alpha": {
+          "$ref": "#/$defs/number",
+          "description": "Its opacity, 0–1."
+        },
+        "at": {
+          "description": "Where the wisps rise from `[x, y]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "blur": {
+          "$ref": "#/$defs/number",
+          "description": "How soft they are."
+        },
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "count": {
+          "$ref": "#/$defs/number",
+          "description": "How many: 1–24."
+        },
+        "part": {
+          "const": "steam",
+          "description": "The part's kind."
+        },
+        "rate": {
+          "$ref": "#/$defs/number",
+          "description": "How fast they rise."
+        },
+        "rise": {
+          "$ref": "#/$defs/number",
+          "description": "How high they rise (kept inside the box)."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "spread": {
+          "$ref": "#/$defs/number",
+          "description": "How far apart the wisps start."
+        },
+        "sway": {
+          "$ref": "#/$defs/number",
+          "description": "How far they sway."
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        },
+        "width": {
+          "$ref": "#/$defs/number",
+          "description": "A wisp's width."
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "at",
+        "count",
+        "spread",
+        "rise",
+        "width",
+        "sway",
+        "rate",
+        "blur",
+        "color",
+        "alpha"
+      ],
+      "type": "object"
+    },
+    "part-tally": {
+      "additionalProperties": false,
+      "description": "A tally light: red while listening, amber blinking while thinking, off otherwise.",
+      "properties": {
+        "at": {
+          "description": "Where it sits: `[x, y]` in the 200-unit box.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "listening": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour while listening."
+        },
+        "off": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour when off."
+        },
+        "outline": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/colour",
+              "description": "The outline colour (a palette name)."
+            },
+            "width": {
+              "$ref": "#/$defs/number",
+              "description": "The outline width (scaled with the character's line weight)."
+            }
+          },
+          "required": [
+            "width",
+            "color"
+          ],
+          "type": "object"
+        },
+        "part": {
+          "const": "tally",
+          "description": "The part's kind."
+        },
+        "r": {
+          "$ref": "#/$defs/number",
+          "description": "Its radius."
+        },
+        "segments": {
+          "$ref": "#/$defs/number",
+          "description": "How many points a curve or ellipse is drawn with: 3–128."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "thinking": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour while thinking."
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "at",
+        "r",
+        "segments",
+        "off",
+        "listening",
+        "thinking",
+        "outline"
+      ],
+      "type": "object"
+    },
+    "part-torso": {
+      "additionalProperties": false,
+      "description": "A robot torso: a rounded shoulder shape lit top to bottom.",
+      "properties": {
+        "outline": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/colour",
+              "description": "The outline colour (a palette name)."
+            },
+            "width": {
+              "$ref": "#/$defs/number",
+              "description": "The outline width (scaled with the character's line weight)."
+            }
+          },
+          "required": [
+            "width",
+            "color"
+          ],
+          "type": "object"
+        },
+        "part": {
+          "const": "torso",
+          "description": "The part's kind."
+        },
+        "shades": {
+          "description": "`[light, mid, dark]` (palette names).",
+          "items": {
+            "$ref": "#/$defs/colour"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "shades",
+        "outline"
+      ],
+      "type": "object"
+    },
+    "part-wings": {
+      "additionalProperties": false,
+      "description": "Two wings that flutter with the voice; turned, they swing round the body (the near one grows, the far one thins).",
+      "properties": {
+        "angle": {
+          "$ref": "#/$defs/number",
+          "description": "Its tilt (radians, mirrored)."
+        },
+        "at": {
+          "description": "A wing's centre `[dx from x, y]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "color": {
+          "$ref": "#/$defs/colour",
+          "description": "Its colour (a palette name)."
+        },
+        "flutter": {
+          "additionalProperties": false,
+          "properties": {
+            "gain": {
+              "description": "The option name that scales the flutter (e.g. `flutterGain`).",
+              "type": "string"
+            },
+            "rate": {
+              "$ref": "#/$defs/number",
+              "description": "How fast it flutters."
+            }
+          },
+          "required": [
+            "rate",
+            "gain"
+          ],
+          "type": "object"
+        },
+        "outline": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/colour",
+              "description": "The outline colour (a palette name)."
+            },
+            "width": {
+              "$ref": "#/$defs/number",
+              "description": "The outline width (scaled with the character's line weight)."
+            }
+          },
+          "required": [
+            "width",
+            "color"
+          ],
+          "type": "object"
+        },
+        "part": {
+          "const": "wings",
+          "description": "The part's kind."
+        },
+        "segments": {
+          "$ref": "#/$defs/number",
+          "description": "How many points a curve or ellipse is drawn with: 3–128."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "size": {
+          "description": "A wing's radii `[rx, ry]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "surface": {
+          "description": "The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat.",
+          "type": "string"
+        },
+        "turn": {
+          "additionalProperties": false,
+          "properties": {
+            "far": {
+              "$ref": "#/$defs/number",
+              "description": "How much the far wing thins when turned."
+            },
+            "near": {
+              "$ref": "#/$defs/number",
+              "description": "How much the near wing grows when turned."
+            }
+          },
+          "required": [
+            "near",
+            "far"
+          ],
+          "type": "object"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        },
+        "x": {
+          "$ref": "#/$defs/number",
+          "description": "The centre line it is mirrored round (x)."
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "x",
+        "at",
+        "size",
+        "angle",
+        "segments",
+        "color",
+        "flutter",
+        "turn",
+        "outline"
+      ],
+      "type": "object"
+    },
+    "part-yoke": {
+      "additionalProperties": false,
+      "description": "A U-shaped yoke holding the body at its sides: a dark stroke under a lighter one.",
+      "properties": {
+        "bottom": {
+          "$ref": "#/$defs/number",
+          "description": "The bottom of the U (y)."
+        },
+        "knee": {
+          "$ref": "#/$defs/number",
+          "description": "Where they start to curve (y)."
+        },
+        "mid": {
+          "$ref": "#/$defs/number",
+          "description": "The bottom's middle (x)."
+        },
+        "over": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/colour",
+              "description": "The light stroke's colour."
+            },
+            "width": {
+              "$ref": "#/$defs/number",
+              "description": "The light stroke's width."
+            }
+          },
+          "required": [
+            "width",
+            "color"
+          ],
+          "type": "object"
+        },
+        "part": {
+          "const": "yoke",
+          "description": "The part's kind."
+        },
+        "segments": {
+          "$ref": "#/$defs/number",
+          "description": "How many points a curve or ellipse is drawn with: 3–128."
+        },
+        "show": {
+          "additionalProperties": false,
+          "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
+          "properties": {
+            "idle": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "listening": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "speaking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            "thinking": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "space": {
+          "description": "Where it moves: `body` (with the body and head), `face` (with the face, turned on its surface), `mount` (with a pivot rig's `mount`: between the stand and the body, as Hum's yoke), `ground` (stays on the floor) or `whole` (the character's box, unturned).",
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        },
+        "top": {
+          "$ref": "#/$defs/number",
+          "description": "Where the sides start (y)."
+        },
+        "under": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/colour",
+              "description": "The dark stroke's colour."
+            },
+            "width": {
+              "$ref": "#/$defs/number",
+              "description": "The dark stroke's width."
+            }
+          },
+          "required": [
+            "width",
+            "color"
+          ],
+          "type": "object"
+        },
+        "when": {
+          "description": "`notSmallOrAccessories`: left out at 20 px with `accessories` off. Absent: always drawn.",
+          "enum": [
+            "notSmallOrAccessories"
+          ]
+        },
+        "x": {
+          "description": "Its two sides `[left, right]`.",
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "part",
+        "space",
+        "x",
+        "top",
+        "knee",
+        "bottom",
+        "mid",
+        "segments",
+        "under",
+        "over"
+      ],
+      "type": "object"
+    },
+    "shape": {
+      "description": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes).",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "ellipse": {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 6,
+              "minItems": 6,
+              "type": "array"
+            }
+          },
+          "required": [
+            "ellipse"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "roundRect": {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 6,
+              "minItems": 6,
+              "type": "array"
+            }
+          },
+          "required": [
+            "roundRect"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "description": "An SVG path: M L H V C S Q T Z (no arcs; `fitPath` in @sinua/snippets converts them), in the 200-unit box. Later subpaths are holes.",
+              "maxLength": 16384,
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "stops": {
+      "items": {
+        "maxItems": 2,
+        "minItems": 2,
+        "prefixItems": [
+          {
+            "$ref": "#/$defs/number"
+          },
+          {
+            "$ref": "#/$defs/colour"
+          }
+        ],
+        "type": "array"
+      },
+      "maxItems": 32,
+      "type": "array"
+    }
+  },
+  "$id": "https://sinua.dev/schema/character-recipe-1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A character as data (FX Spec 1.12 `recipe`; spec/characters/*.json). Generated from the engine's tables: do not edit; see docs/character-recipe.md.",
+  "properties": {
+    "$comment": {
+      "description": "A note for people. Ignored by the engine.",
+      "type": "string"
+    },
+    "$schema": {
+      "description": "The schema URL, for editors: https://sinua.dev/schema/character-recipe-1.json. Ignored by the engine.",
+      "type": "string"
+    },
+    "burst": {
+      "additionalProperties": false,
+      "description": "The celebrate burst: `at`, `r` and three `colors` (palette names), optionally a `space`.",
+      "properties": {
+        "at": {
+          "items": {
+            "$ref": "#/$defs/number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "colors": {
+          "items": {
+            "$ref": "#/$defs/colour"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "r": {
+          "$ref": "#/$defs/number"
+        },
+        "space": {
+          "enum": [
+            "body",
+            "face",
+            "mount",
+            "ground",
+            "whole"
+          ]
+        }
+      },
+      "required": [
+        "at",
+        "r",
+        "colors"
+      ],
+      "type": "object"
+    },
+    "contrast": {
+      "description": "`[[ink, ground], …]`: a face colour and the colour it sits on. A `palette` override that brings the ground too close lifts the ink.",
+      "items": {
+        "items": {
+          "$ref": "#/$defs/colour"
+        },
+        "maxItems": 2,
+        "minItems": 2,
+        "type": "array"
+      },
+      "type": "array"
+    },
+    "hue": {
+      "additionalProperties": false,
+      "description": "`base`: the hue the palette is drawn at (the default `hue` option); `turns`: the colour names the `hue` option rotates.",
+      "properties": {
+        "base": {
+          "$ref": "#/$defs/number"
+        },
+        "turns": {
+          "items": {
+            "$ref": "#/$defs/colour"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "base",
+        "turns"
+      ],
+      "type": "object"
+    },
+    "id": {
+      "description": "The character's name: 1–32 of a–z, 0–9 and -. An FX Spec file's `pattern` names it.",
+      "pattern": "^[a-z0-9-]{1,32}$",
+      "type": "string"
+    },
+    "palette": {
+      "additionalProperties": {
+        "items": {
+          "$ref": "#/$defs/number"
+        },
+        "maxItems": 3,
+        "minItems": 3,
+        "type": "array"
+      },
+      "description": "The colours, by name: each `[hue 0–360, saturation 0–1, lightness 0–1]`. Parts name these; they are also the slots `palette` repaints. `celebrate` is reserved for the burst.",
+      "type": "object"
+    },
+    "parts": {
+      "description": "What is drawn, back to front: up to 48 parts, a body's inner layers included.",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/part-shadow"
+          },
+          {
+            "$ref": "#/$defs/part-body"
+          },
+          {
+            "$ref": "#/$defs/part-eyes"
+          },
+          {
+            "$ref": "#/$defs/part-feet"
+          },
+          {
+            "$ref": "#/$defs/part-crest"
+          },
+          {
+            "$ref": "#/$defs/part-wings"
+          },
+          {
+            "$ref": "#/$defs/part-beak"
+          },
+          {
+            "$ref": "#/$defs/part-notes"
+          },
+          {
+            "$ref": "#/$defs/part-stand"
+          },
+          {
+            "$ref": "#/$defs/part-yoke"
+          },
+          {
+            "$ref": "#/$defs/part-tally"
+          },
+          {
+            "$ref": "#/$defs/part-halo"
+          },
+          {
+            "$ref": "#/$defs/part-spirit"
+          },
+          {
+            "$ref": "#/$defs/part-ovalMouth"
+          },
+          {
+            "$ref": "#/$defs/part-sparkles"
+          },
+          {
+            "$ref": "#/$defs/part-torso"
+          },
+          {
+            "$ref": "#/$defs/part-chestCore"
+          },
+          {
+            "$ref": "#/$defs/part-earPods"
+          },
+          {
+            "$ref": "#/$defs/part-helmet"
+          },
+          {
+            "$ref": "#/$defs/part-fin"
+          },
+          {
+            "$ref": "#/$defs/part-faceScreen"
+          },
+          {
+            "$ref": "#/$defs/part-steam"
+          },
+          {
+            "$ref": "#/$defs/part-arms"
+          }
+        ]
+      },
+      "maxItems": 48,
+      "type": "array"
+    },
+    "profile": {
+      "description": "The built-in character whose voice-state behaviour it borrows (how it turns, looks and moves per state). Without it, the shared `character` profile.",
+      "enum": [
+        "bean",
+        "beep",
+        "buzzy",
+        "chirp",
+        "cuppa",
+        "hum",
+        "wisp"
+      ]
+    },
+    "recipe": {
+      "const": 1,
+      "description": "The recipe format version: 1."
+    },
+    "rig": {
+      "description": "How the whole character moves: `pivot` (leans and squashes round a point), `upright` (stands on `base`) or `float` (drifts round `center`).",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "pivot"
+            },
+            "lean": {
+              "$ref": "#/$defs/number"
+            },
+            "mount": {
+              "additionalProperties": false,
+              "properties": {
+                "bob": {
+                  "$ref": "#/$defs/number"
+                }
+              },
+              "required": [
+                "bob"
+              ],
+              "type": "object"
+            },
+            "pivot": {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            },
+            "squash": {
+              "type": "boolean"
+            },
+            "sway": {
+              "additionalProperties": false,
+              "properties": {
+                "base": {
+                  "$ref": "#/$defs/number"
+                },
+                "gain": {
+                  "type": "string"
+                },
+                "rate": {
+                  "$ref": "#/$defs/number"
+                }
+              },
+              "required": [
+                "gain",
+                "rate",
+                "base"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "pivot",
+            "lean"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "base": {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            },
+            "kind": {
+              "const": "upright"
+            }
+          },
+          "required": [
+            "kind",
+            "base"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "center": {
+              "items": {
+                "$ref": "#/$defs/number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            },
+            "float": {
+              "additionalProperties": false,
+              "properties": {
+                "amp": {
+                  "$ref": "#/$defs/number"
+                },
+                "rate": {
+                  "$ref": "#/$defs/number"
+                }
+              },
+              "required": [
+                "rate",
+                "amp"
+              ],
+              "type": "object"
+            },
+            "kind": {
+              "const": "float"
+            },
+            "lean": {
+              "$ref": "#/$defs/number"
+            }
+          },
+          "required": [
+            "kind",
+            "center",
+            "lean",
+            "float"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "slots": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "angle": {
+            "$ref": "#/$defs/number"
+          },
+          "at": {
+            "items": {
+              "$ref": "#/$defs/number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "follows": {
+            "enum": [
+              "head",
+              "body",
+              "face"
+            ]
+          },
+          "scale": {
+            "$ref": "#/$defs/number"
+          }
+        },
+        "required": [
+          "at",
+          "follows"
+        ],
+        "type": "object"
+      },
+      "description": "Named anchor points for cosmetics (1.13): `at`, and the chain it `follows` (`head`, `body` or `face`), with an optional `scale` and `angle`.",
+      "type": "object"
+    },
+    "surfaces": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "c": {
+            "items": {
+              "$ref": "#/$defs/number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "cylinder": {
+            "type": "boolean"
+          },
+          "depth": {
+            "$ref": "#/$defs/number"
+          },
+          "r": {
+            "$ref": "#/$defs/number"
+          }
+        },
+        "required": [
+          "c",
+          "r",
+          "depth"
+        ],
+        "type": "object"
+      },
+      "description": "Named spheres or cylinders (`c`, `r`, `depth`, `cylinder`) that face parts are drawn on, so they wrap round when the head turns. `face` is the usual one.",
+      "type": "object"
+    }
+  },
+  "required": [
+    "recipe",
+    "id",
+    "palette",
+    "hue",
+    "rig",
+    "parts",
+    "burst"
+  ],
+  "title": "Sinua character recipe, version 1",
+  "type": "object"
+}

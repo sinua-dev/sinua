@@ -671,6 +671,35 @@ carry on underneath.
 | `success` | a green tint pulse, one ring expanding from the shape, a tick drawn in the middle | 0.9 s | "Done" |
 | `error` | a short horizontal shake (three decaying swings) with a red tint | 0.5 s | "Something went wrong" |
 | `celebrate` | a seeded burst of particles out of the shape, and a small brightness lift | 1.4 s | "Well done" |
+| `hop` | characters only: a crouch, a hop and a squash on landing, with a smile; other families draw nothing | 0.6 s | nothing |
+
+**Expression** (FX Spec 1.12, design note 16): a character's `expression` prop.
+- **Values:** `happy`, `surprised`, `thoughtful`, `sad`, `sleepy`, or `"none"` / `null` for none.
+- **Over the spec:** it wins over a spec's `expression`. Left unset, the spec decides.
+- **Easing:** a change eases over 0.6 s; reduced motion cuts.
+- **What it changes:** the eyes and the resting mouth. The voice state keeps the gaze and the
+  talking mouth. It is never announced.
+
+**Palette** (FX Spec 1.12, design note 19): a character's `palette` prop, slot -> hex (Web /
+React / RN `{ shell: "#E63946" }`, SwiftUI `["shell": "#E63946"]`, Compose
+`mapOf("shell" to "#E63946")`; on `<sinua-character>` a property).
+- **Over the spec:** it wins over a spec's `palette`, slot by slot through the engine's own
+  rules (tones follow, a dark ground lifts the ink). See [`character.md`](character.md), *Palette*.
+- **A change is immediate**, no easing. An unknown slot draws nothing new (Web: `onError`).
+
+**Tap to hop** (FX Spec 1.12, design note 15).
+- **Option:** `tap` (Web `tap`, SwiftUI / Compose `tap:`, RN `tap`). It is on by default on
+  `SinuaCharacter` / `<sinua-character>` and off on the plain view.
+- **What a tap does:** a click or a touch on the view plays `hop`. The character's eyes glance
+  toward the tap for the first two thirds of it (`tapX` / `tapY`, -1..1 from the drawn
+  square's centre, set by the view), then return to the voice state's gaze.
+- **The voice state goes on underneath:** the mouth, the ears and the lids stay its own.
+- **Limits:** a tap never cuts a running `success` / `error` / `celebrate`, and the view
+  plays at most two hops a second.
+- **Reduced motion:** only the smile, no hop and no glance.
+- **Scrolling:** on iOS a touch that moves more than 10 pt is a scroll, not a tap.
+- **Not used:** a continuous pointer gaze was considered and left out. Phones have no hover,
+  and it would fight the voice's gaze language.
 
 - A new trigger replaces a running effect.
 - Under reduced motion there's no shake, no burst and no moving ring: the tint pulse
@@ -678,14 +707,11 @@ carry on underneath.
 - The effect is spoken at once (it's an event, so the state rate limit doesn't apply)
   unless `announce` is false. `labels["effect:success"]` etc. replace the words.
 - Unknown names do nothing.
-- Box-layout patterns play effects in place: the screen-edge `framing` and the
-  voice-message bar `playing`. The rim or the bars turn green, red or gold and brighten
-  toward full opacity, so a faint resting rim flashes too, and nothing is drawn in the
-  middle. A rim that draws nothing (the voice `idle` state's `idleOpacity: 0`) has nothing
-  to flash. There's no ring, tick, burst or shake, which would otherwise land on
-  the app's content or slide the rim off the screen.
+- Box-layout patterns play effects in place: the voice-message bar `playing`. The bars
+  turn green, red or gold where they are, and nothing is drawn in the middle. There's no
+  ring, tick, burst or shake, which would otherwise spill out of the bar or slide it about.
 - The typed components take the same parameter (`SinuaRing(…, effect:)`,
-  `SinuaEdge(…, effect = …)`), along with `labels`, `announce`, `haptics` and, on a spec,
+  `SinuaCharacter(…, effect = …)`), along with `labels`, `announce`, `haptics` and, on a spec,
   `rules`.
 
 ```ts
@@ -712,7 +738,7 @@ the effect runs. So it works on every pattern of every family and looks identica
 every platform (`spec/effect-vectors.json`). The durations and words come from
 `effect_info(name)`.
 
-## Typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaCore`, `SinuaBeacon`, `SinuaEdge`, `SinuaCharacter`)
+## Typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaCore`, `SinuaBeacon`, `SinuaCharacter`)
 
 One component per engine object, generated from the parameter catalog
 (`spec/parameters.json`). Each one is a thin wrapper over `FxView`, with no

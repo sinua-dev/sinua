@@ -151,6 +151,28 @@ Every binding checks the frozen file itself. The rules mirror the Rust checker: 
       - **Follow-up re-baseline (same day, still 1.6.0): drifting particles.** Drifting's per-state particle defaults changed to anchored drift, at the user's request after watching it live. This was deliberate and touched **one case only**: `drifting-64-0.6-particles-liquid` (polylines 30 → 24, lines identical). The diff script confirmed the other 232 cases, `resolved` and the metadata unchanged.
     - **Size 32 (2026-09-21):** sinua golden **1.7.0**. The plain `frame()` cases now cover every shipped size, 64 / 32 / 20: 100 **added** cases (25 states × 4 times) and 25 `resolved` entries. The diff script confirmed all 233 earlier cases, their `resolved` entries and digests unchanged. Web, iOS, Android and the RN checkpoints read the file, so every platform checks 32 with no per-platform code.
     - **Character family (2026-09-30, FX Spec 1.11):** sinua golden **1.8.0**. `buzzy`, `hum`, `wisp` and `chirp` join `STATES` (12 plain cases each, 3 sizes × 4 times), each with 8 input-driven cases: listening at level 0.7, thinking with the turn blink (`stateAge` 0.09), speaking at level 0.8 with `hue` 150, barge-in (`interruptAge`), celebrate (`effectCode` 3), muted, and the head turn (`turned`: thinking's facing; `turn-off`: `turn` 0). A character is fills only (`character/geom.rs`). The digest diff: 80 added (20 per character), 0 changed, 0 removed.
+    - **SinuaEdge removed (2026-10-01, design note 9):** sinua golden **2.0.0**, the first removal (hence the major). The 15 `framing` cases are gone (12 plain + `square-speaking`, `portrait-speaking`, `landscape-thinking`); every other case is byte-identical. `spec/effect-vectors.json` loses its 24 `framing` rows, 0 changed.
+    - **Cuppa and Bean (2026-10-01, design note 14):** sinua golden **2.1.0**, additions only. `cuppa` (a path body with a hole, plus the `steam` part) and `bean` (path patches) join `STATES`, with the same 20 cases as the other characters.
+      - Check: rewrite with `SINUA_GOLDEN_WRITE=1 cargo test -p core_engine --test sinua_golden -- --ignored`, then diff the old keys. Result: 442 cases, 442 digests and 96 `resolved` entries unchanged; 40 cases and 6 `resolved` entries added.
+      - The always-run `sinua_states_match_frozen_vectors` compares live frames with the file.
+    - **Tap hop (2026-10-01, design note 15):** sinua golden **2.2.0**.
+      - Added `buzzy-64-0.6-hop` (mid-hop) and `cuppa-64-0.6-hop-glance` (with `tapX` / `tapY`).
+      - One deliberate change: `cuppa-64-0.6-turned`. The user asked for a fix to Cuppa's gaze
+        drifting off the mug, so its face surface depth went from 0.6 to 0.4.
+      - Every other case is unchanged (same method: `-- --ignored` rewrite, old-key diff).
+    - **Expressions (2026-10-01, design note 16):** sinua golden **2.3.0**, additions only.
+      - Added `buzzy-64-0.6-happy`, `cuppa-64-0.6-surprised` (the O mouth), `bean-64-0.6-sad` (the
+        frown), `wisp-64-0.6-sleepy` and `buzzy-64-0.6-thoughtful-speaking` (the voice keeps the
+        mouth).
+      - 484 old cases, 484 digests and 102 resolved entries unchanged.
+    - **Beep (2026-10-01, design note 17):** sinua golden **2.4.0**, additions only.
+      - `beep` (the `arms` part) gets the characters' 20 cases plus `beep-64-0.6-arms-off`.
+      - 489 old cases, 489 digests and 102 resolved entries unchanged.
+    - **Palette (2026-10-01, design note 19):** sinua golden **2.5.0**, additions only.
+      - Added `buzzy-64-0.6-palette` (shell and amber), `bean-64-0.6-palette-dark` (the ink
+        lifted on a dark ground) and `cuppa-64-0.6-palette-hue` (`hue` with a palette: the given
+        colour isn't turned). Their keys come from `palette_overrides`, the views' entry point.
+      - 510 old cases, 510 digests and 105 resolved entries unchanged. The regenerate test is `#[ignore]`: without `-- --ignored` nothing is written, so a `cmp` alone proves nothing.
   - **What a 1.8 file may say is frozen too** (`spec/fx-spec-1.8-keys.json`, 103 key paths). `every_key_is_a_1_8_key_or_has_a_since_minor` requires every key the resolver accepts to be in it or in `SINCE` with its later minor. Capture it only with `FX_SPEC_KEYS_WRITE=1 cargo test -p core_engine --lib -- --ignored write_the_1_8_keys`, and never to paper over a failure. Proven 2026-09-21 by adding a `frost` material in scratch: it failed by name with no `SINCE` row, and with `("materials.frost", 9)` a 1.8 file got the gate error while a 1.9 file resolved it.
   - **The 1.0–1.7 locks were removed with the FX Spec 1.8 floor (2026-09-21).** The per-minor lock notes above are history: those minors are no longer read, so there is no older wording left to hold. The one lock today is 1.8's, below.
   - **Packed transport:** `packages/core/test/packed.test.mjs` proves the `Float64Array` path bit-identical to JSON (all 214 golden cases, every example × state × power state). The public `frame*` functions ride that path, so every web parity test exercises it too. `bench/transport.mjs` is the benchmark; it is not a test.

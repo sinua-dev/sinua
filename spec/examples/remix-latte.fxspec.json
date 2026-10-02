@@ -1,0 +1,372 @@
+{
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
+  "fxSpec": "1.12",
+  "name": "Latte",
+  "description": "A remix of a built-in character (docs/character-remix.md): Cuppa's recipe, copied and changed. The id is `latte`; `profile: cuppa` keeps Cuppa's voice-state behaviour (its gentle thinking turn); the palette is cream and coffee, and `hue.base` follows it; the body is a tall glass from an SVG path (fitted with `fitPath`), so the handle and its hole are gone; the saucer (`stand`) is left out. Everything else is Cuppa's: the steam, the face, the sleeve and the heart.",
+  "object": "character",
+  "pattern": "latte",
+  "size": 64,
+  "recipe": {
+    "recipe": 1,
+    "id": "latte",
+    "palette": {
+      "mug": [
+        34,
+        0.45,
+        0.86
+      ],
+      "mugLight": [
+        38,
+        0.6,
+        0.95
+      ],
+      "mugDark": [
+        30,
+        0.32,
+        0.72
+      ],
+      "coffee": [
+        22,
+        0.55,
+        0.22
+      ],
+      "crema": [
+        30,
+        0.55,
+        0.55
+      ],
+      "sleeve": [
+        24,
+        0.45,
+        0.42
+      ],
+      "sleeveDark": [
+        22,
+        0.45,
+        0.32
+      ],
+      "heart": [
+        30,
+        0.35,
+        0.95
+      ],
+      "shine": [
+        20,
+        1.0,
+        0.96
+      ],
+      "cheek": [
+        352,
+        0.8,
+        0.72
+      ],
+      "saucer": [
+        40,
+        0.3,
+        0.92
+      ],
+      "saucerDark": [
+        36,
+        0.18,
+        0.72
+      ],
+      "line": [
+        10,
+        0.45,
+        0.18
+      ],
+      "ink": [
+        10,
+        0.4,
+        0.12
+      ],
+      "steam": [
+        25,
+        0.12,
+        0.74
+      ]
+    },
+    "hue": {
+      "base": 34,
+      "turns": [
+        "mug",
+        "mugLight",
+        "mugDark"
+      ]
+    },
+    "contrast": [
+      [
+        "ink",
+        "mug"
+      ]
+    ],
+    "rig": {
+      "kind": "pivot",
+      "pivot": [
+        92,
+        176
+      ],
+      "lean": 0.5,
+      "squash": true
+    },
+    "surfaces": {
+      "face": {
+        "c": [
+          90,
+          110
+        ],
+        "r": 58,
+        "depth": 0.4,
+        "cylinder": true
+      }
+    },
+    "parts": [
+      {
+        "part": "shadow",
+        "space": "ground",
+        "at": [
+          96,
+          188
+        ],
+        "r": [
+          66,
+          5
+        ]
+      },
+      {
+        "part": "steam",
+        "space": "body",
+        "at": [
+          90,
+          46
+        ],
+        "count": 3,
+        "spread": 16,
+        "rise": 28,
+        "width": 6,
+        "sway": 4,
+        "rate": 0.45,
+        "blur": 1.8,
+        "color": "steam",
+        "alpha": 0.9
+      },
+      {
+        "part": "body",
+        "space": "body",
+        "shape": {
+          "path": "M52 48 C52 40 128 40 128 48 L122 166 C121 174 114 178 106 178 H74 C66 178 59 174 58 166 Z"
+        },
+        "light": {
+          "radial": [
+            66,
+            70,
+            120
+          ],
+          "stops": [
+            [
+              0,
+              "mugLight"
+            ],
+            [
+              0.55,
+              "mug"
+            ],
+            [
+              1,
+              "mugDark"
+            ]
+          ]
+        },
+        "turnLight": [
+          -14,
+          10
+        ],
+        "inner": [
+          {
+            "part": "patch",
+            "shape": {
+              "ellipse": [
+                90,
+                52,
+                40,
+                7,
+                0,
+                40
+              ]
+            },
+            "color": "coffee"
+          },
+          {
+            "part": "patch",
+            "shape": {
+              "ellipse": [
+                84,
+                50,
+                18,
+                3,
+                0,
+                24
+              ]
+            },
+            "color": "crema"
+          },
+          {
+            "part": "glints",
+            "at": [
+              [
+                66,
+                56
+              ]
+            ],
+            "rect": [
+              54,
+              6,
+              3,
+              2
+            ],
+            "color": "shine",
+            "alpha": 0.35
+          },
+          {
+            "part": "band",
+            "shape": {
+              "roundRect": [
+                30,
+                128,
+                160,
+                24,
+                0,
+                4
+              ]
+            },
+            "color": "sleeve"
+          },
+          {
+            "part": "stripes",
+            "at": [
+              132,
+              147
+            ],
+            "rect": [
+              30,
+              160,
+              1.6,
+              0.8,
+              2
+            ],
+            "color": "sleeveDark",
+            "alpha": 0.7
+          },
+          {
+            "part": "patch",
+            "shape": {
+              "path": "M90 148 C78 140 80 131 86 132 C88 132 90 134 90 136 C90 134 92 132 94 132 C100 131 102 140 90 148 Z"
+            },
+            "surface": "face",
+            "color": "heart"
+          },
+          {
+            "part": "patch",
+            "shape": {
+              "ellipse": [
+                64,
+                112,
+                8,
+                5,
+                0,
+                24
+              ]
+            },
+            "surface": "face",
+            "color": "cheek"
+          },
+          {
+            "part": "patch",
+            "shape": {
+              "ellipse": [
+                116,
+                112,
+                8,
+                5,
+                0,
+                24
+              ]
+            },
+            "surface": "face",
+            "color": "cheek"
+          }
+        ],
+        "outline": {
+          "width": 3.5,
+          "color": "line"
+        }
+      },
+      {
+        "part": "eyes",
+        "space": "face",
+        "surface": "face",
+        "at": [
+          90,
+          94
+        ],
+        "scale": [
+          0.95,
+          1.05
+        ],
+        "ink": "ink",
+        "glow": 0.0
+      },
+      {
+        "part": "ovalMouth",
+        "space": "face",
+        "surface": "face",
+        "at": [
+          90,
+          94
+        ],
+        "scale": [
+          0.95,
+          1.05
+        ],
+        "halfWidth": 11.0,
+        "ink": "ink"
+      }
+    ],
+    "burst": {
+      "at": [
+        90,
+        110
+      ],
+      "r": 84,
+      "colors": [
+        "celebrate",
+        "mug",
+        "heart"
+      ]
+    },
+    "slots": {
+      "headTop": {
+        "at": [
+          90,
+          40
+        ],
+        "follows": "head"
+      },
+      "face": {
+        "at": [
+          90,
+          100
+        ],
+        "follows": "face"
+      },
+      "chest": {
+        "at": [
+          90,
+          140
+        ],
+        "follows": "body"
+      }
+    },
+    "profile": "cuppa"
+  }
+}

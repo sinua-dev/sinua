@@ -92,6 +92,29 @@
       "uiMin": 0.1,
       "unit": "fraction"
     },
+    "arms@character": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "The character's arms (Beep): a hand to the ear while listening, to the chin while thinking, beats while speaking. Off: no arms.",
+      "fallback": 1,
+      "group": "style",
+      "if": null,
+      "key": "arms",
+      "label": "Arms",
+      "max": 1,
+      "min": 0,
+      "path": "arms",
+      "scope": "character",
+      "specPath": "/params/arms",
+      "step": 1,
+      "tier": "basic",
+      "type": "boolean",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": null
+    },
     "avatarGap@speaker": {
       "aliases": [],
       "category": "appearance",
@@ -571,29 +594,6 @@
       "tier": "advanced",
       "type": "number",
       "unit": null
-    },
-    "cornerRadius@rim": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Corner radius as a fraction of the box's shorter side; match your screen's or container's corners (0.12 is about a phone screen).",
-      "fallback": 0.12,
-      "group": "style",
-      "if": null,
-      "key": "cornerRadius",
-      "label": "Corner radius",
-      "max": 0.5,
-      "min": 0,
-      "path": "cornerRadius",
-      "scope": "rim",
-      "specPath": "/params/cornerRadius",
-      "step": 0.01,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.3,
-      "uiMin": 0,
-      "unit": "fraction"
     },
     "cumulative@broadcast": {
       "aliases": [],
@@ -1312,29 +1312,6 @@
       "type": "number",
       "uiMax": 1,
       "uiMin": -1,
-      "unit": null
-    },
-    "flowSpeed@rim": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "How fast the colours travel round the frame, in turns per second (negative = the other way).",
-      "fallback": 0.12,
-      "group": "style",
-      "if": null,
-      "key": "flowSpeed",
-      "label": "Flow",
-      "max": 2,
-      "min": -2,
-      "path": "flowSpeed",
-      "scope": "rim",
-      "specPath": "/params/flowSpeed",
-      "step": 0.01,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.5,
-      "uiMin": -0.5,
       "unit": null
     },
     "flutterGain@chirp": {
@@ -2276,6 +2253,52 @@
       "uiMin": 0,
       "unit": "deg"
     },
+    "hue@bean": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Turns the bean's roast in degrees; the cheeks and the aroma stay.",
+      "fallback": 24,
+      "group": "style",
+      "if": null,
+      "key": "hue",
+      "label": "Hue",
+      "max": 360,
+      "min": 0,
+      "path": "hue",
+      "scope": "bean",
+      "specPath": "/params/hue",
+      "step": 5,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 360,
+      "uiMin": 0,
+      "unit": "deg"
+    },
+    "hue@beep": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Turns the robot's steel in degrees; the screen, the orange accents and the antenna light stay.",
+      "fallback": 200,
+      "group": "style",
+      "if": null,
+      "key": "hue",
+      "label": "Hue",
+      "max": 360,
+      "min": 0,
+      "path": "hue",
+      "scope": "beep",
+      "specPath": "/params/hue",
+      "step": 5,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 360,
+      "uiMin": 0,
+      "unit": "deg"
+    },
     "hue@broadcast": {
       "aliases": [],
       "category": "appearance",
@@ -2337,6 +2360,29 @@
       "min": 0,
       "path": "hue",
       "scope": "chirp",
+      "specPath": "/params/hue",
+      "step": 5,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 360,
+      "uiMin": 0,
+      "unit": "deg"
+    },
+    "hue@cuppa": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Turns the mug's colour in degrees; the coffee, the sleeve and the heart stay.",
+      "fallback": 12,
+      "group": "style",
+      "if": null,
+      "key": "hue",
+      "label": "Hue",
+      "max": 360,
+      "min": 0,
+      "path": "hue",
+      "scope": "cuppa",
       "specPath": "/params/hue",
       "step": 5,
       "tier": "basic",
@@ -2598,29 +2644,6 @@
       "uiMin": 0,
       "unit": "deg"
     },
-    "hue@rim": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Base hue in degrees.",
-      "fallback": 265,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "rim",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
     "hue@scroll": {
       "aliases": [],
       "category": "appearance",
@@ -2874,29 +2897,6 @@
       "uiMin": 0,
       "unit": "deg"
     },
-    "hueSpread@rim": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far the hue varies round the frame, in degrees (0 = one colour).",
-      "fallback": 80,
-      "group": "style",
-      "if": null,
-      "key": "hueSpread",
-      "label": "Hue spread",
-      "max": 360,
-      "min": 0,
-      "path": "hueSpread",
-      "scope": "rim",
-      "specPath": "/params/hueSpread",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 180,
-      "uiMin": 0,
-      "unit": "deg"
-    },
     "hueStep@nested": {
       "aliases": [],
       "category": "appearance",
@@ -2939,29 +2939,6 @@
       "tier": "advanced",
       "type": "number",
       "unit": "x"
-    },
-    "idleOpacity@rim": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "The rim's opacity with no voice (0 = hidden until there's a voice).",
-      "fallback": 0.35,
-      "group": "style",
-      "if": null,
-      "key": "idleOpacity",
-      "label": "Resting opacity",
-      "max": 1,
-      "min": 0,
-      "path": "idleOpacity",
-      "scope": "rim",
-      "specPath": "/params/idleOpacity",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
     },
     "idleOpacity@speaker": {
       "aliases": [],
@@ -5760,29 +5737,6 @@
       "type": "number",
       "unit": "px"
     },
-    "reach@rim": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "How much wider the rim grows at full voice, inward only, as a fraction of the shorter side.",
-      "fallback": 0.035,
-      "group": "style",
-      "if": null,
-      "key": "reach",
-      "label": "Reach",
-      "max": 0.2,
-      "min": 0,
-      "path": "reach",
-      "scope": "rim",
-      "specPath": "/params/reach",
-      "step": 0.005,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.15,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "reach@speaker": {
       "aliases": [],
       "category": "energy",
@@ -6363,29 +6317,6 @@
       "uiMin": 0,
       "unit": "fraction"
     },
-    "saturation@rim": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "How colourful the rim is (0 = the grey ink). Colourful by default: a grey rim reads as a border, not a glow.",
-      "fallback": 0.7,
-      "group": "style",
-      "if": null,
-      "key": "saturation",
-      "label": "Saturation",
-      "max": 1,
-      "min": 0,
-      "path": "saturation",
-      "scope": "rim",
-      "specPath": "/params/saturation",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "saturation@scroll": {
       "aliases": [],
       "category": "appearance",
@@ -6767,29 +6698,6 @@
       "tier": "advanced",
       "type": "integer",
       "unit": null
-    },
-    "shimmer@rim": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "A bright segment that circles the frame (thinking); 0 = off.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "shimmer",
-      "label": "Shimmer",
-      "max": 1,
-      "min": 0,
-      "path": "shimmer",
-      "scope": "rim",
-      "specPath": "/params/shimmer",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
     },
     "shimmer@speaker": {
       "aliases": [],
@@ -7333,29 +7241,6 @@
       "uiMax": 330,
       "uiMin": 90,
       "unit": "deg"
-    },
-    "thickness@rim": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "The rim's resting width, as a fraction of the box's shorter side.",
-      "fallback": 0.015,
-      "group": "style",
-      "if": null,
-      "key": "thickness",
-      "label": "Thickness",
-      "max": 0.2,
-      "min": 0.002,
-      "path": "thickness",
-      "scope": "rim",
-      "specPath": "/params/thickness",
-      "step": 0.005,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.1,
-      "uiMin": 0.005,
-      "unit": "fraction"
     },
     "thickness@shimmer": {
       "aliases": [],
@@ -7974,7 +7859,7 @@
       "unit": null
     }
   },
-  "fxSpec": "1.11",
+  "fxSpec": "1.12",
   "internalKeys": [
     "rSizeMul",
     "historyCount",
@@ -11676,120 +11561,6 @@
       ]
     },
     {
-      "component": "SinuaEdge",
-      "id": "edge",
-      "label": "Edge",
-      "patterns": [
-        {
-          "description": "The whole screen is listening: a glow round the inside edge of the app that swells with the voice.",
-          "id": "framing",
-          "label": "Framing",
-          "layout": "box",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
-          "mode": "rim",
-          "params": [
-            {
-              "default": {
-                "20": 0.12,
-                "32": 0.12,
-                "64": 0.12
-              },
-              "ref": "cornerRadius@rim"
-            },
-            {
-              "default": {
-                "20": 265,
-                "32": 265,
-                "64": 265
-              },
-              "ref": "hue@rim"
-            },
-            {
-              "default": {
-                "20": 80,
-                "32": 80,
-                "64": 80
-              },
-              "ref": "hueSpread@rim"
-            },
-            {
-              "default": {
-                "20": 0.35,
-                "32": 0.35,
-                "64": 0.35
-              },
-              "ref": "idleOpacity@rim"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 0.7,
-                "32": 0.7,
-                "64": 0.7
-              },
-              "ref": "saturation@rim"
-            },
-            {
-              "default": {
-                "20": 0.015,
-                "32": 0.015,
-                "64": 0.015
-              },
-              "ref": "thickness@rim"
-            },
-            {
-              "default": {
-                "20": 0.12,
-                "32": 0.12,
-                "64": 0.12
-              },
-              "ref": "flowSpeed@rim"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "shimmer@rim"
-            },
-            {
-              "default": {
-                "20": 0.035,
-                "32": 0.035,
-                "64": 0.035
-              },
-              "ref": "reach@rim"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        }
-      ]
-    },
-    {
       "component": "SinuaCharacter",
       "id": "character",
       "label": "Character",
@@ -12857,6 +12628,812 @@
                 "64": 0
               },
               "ref": "flutterGain@chirp"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "squashGain@character"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1
+        },
+        {
+          "description": "A coffee mug on its saucer: its steam rises while it listens, curls while it thinks and thickens with its voice.",
+          "id": "cuppa",
+          "label": "Cuppa",
+          "materialDefaults": {
+            "liquid": {},
+            "particles": {
+              "particleAudio": 0,
+              "particleCount": 28,
+              "particleLife": 4.5,
+              "particleSize": 0.8,
+              "particleSpread": 0.18,
+              "particleStyle": 0,
+              "particleSync": 0
+            }
+          },
+          "mode": "cuppa",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "accessories@character"
+            },
+            {
+              "default": {
+                "20": 12,
+                "32": 12,
+                "64": 12
+              },
+              "ref": "hue@cuppa"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "look@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "seed@character"
+            },
+            {
+              "default": {
+                "20": 0.71,
+                "32": 0.71,
+                "64": 0.71
+              },
+              "ref": "turn@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeAsym@character"
+            },
+            {
+              "default": {
+                "20": 26,
+                "32": 26,
+                "64": 26
+              },
+              "ref": "eyeH@character"
+            },
+            {
+              "default": {
+                "20": 8,
+                "32": 8,
+                "64": 8
+              },
+              "ref": "eyeR@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeSmile@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeTilt@character"
+            },
+            {
+              "default": {
+                "20": 20,
+                "32": 20,
+                "64": 20
+              },
+              "ref": "eyeW@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "lid@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthDots@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthTalk@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "gazeX@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "gazeY@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "lean@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "tilt@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnBlink@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnNod@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnPitch@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnWander@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnYaw@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "bounceGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "breath@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "earGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "squashGain@character"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1
+        },
+        {
+          "description": "A coffee bean on little feet: aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice.",
+          "id": "bean",
+          "label": "Bean",
+          "materialDefaults": {
+            "liquid": {},
+            "particles": {
+              "particleAudio": 0,
+              "particleCount": 28,
+              "particleLife": 4.5,
+              "particleSize": 0.8,
+              "particleSpread": 0.18,
+              "particleStyle": 0,
+              "particleSync": 0
+            }
+          },
+          "mode": "bean",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "accessories@character"
+            },
+            {
+              "default": {
+                "20": 24,
+                "32": 24,
+                "64": 24
+              },
+              "ref": "hue@bean"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "look@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "seed@character"
+            },
+            {
+              "default": {
+                "20": 0.71,
+                "32": 0.71,
+                "64": 0.71
+              },
+              "ref": "turn@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeAsym@character"
+            },
+            {
+              "default": {
+                "20": 26,
+                "32": 26,
+                "64": 26
+              },
+              "ref": "eyeH@character"
+            },
+            {
+              "default": {
+                "20": 8,
+                "32": 8,
+                "64": 8
+              },
+              "ref": "eyeR@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeSmile@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeTilt@character"
+            },
+            {
+              "default": {
+                "20": 20,
+                "32": 20,
+                "64": 20
+              },
+              "ref": "eyeW@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "lid@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthDots@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthTalk@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "gazeX@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "gazeY@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "lean@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "tilt@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnBlink@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnNod@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnPitch@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnWander@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnYaw@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "bounceGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "breath@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "earGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "squashGain@character"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1
+        },
+        {
+          "description": "A small tin robot with arms: a hand to the ear to listen, to the chin to think, small beats as it speaks; its antenna light shows when it listens and thinks.",
+          "id": "beep",
+          "label": "Beep",
+          "materialDefaults": {
+            "liquid": {},
+            "particles": {
+              "particleAudio": 0,
+              "particleCount": 28,
+              "particleLife": 4.5,
+              "particleSize": 0.8,
+              "particleSpread": 0.18,
+              "particleStyle": 0,
+              "particleSync": 0
+            }
+          },
+          "mode": "beep",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "accessories@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "arms@character"
+            },
+            {
+              "default": {
+                "20": 200,
+                "32": 200,
+                "64": 200
+              },
+              "ref": "hue@beep"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "look@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "seed@character"
+            },
+            {
+              "default": {
+                "20": 0.71,
+                "32": 0.71,
+                "64": 0.71
+              },
+              "ref": "turn@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeAsym@character"
+            },
+            {
+              "default": {
+                "20": 26,
+                "32": 26,
+                "64": 26
+              },
+              "ref": "eyeH@character"
+            },
+            {
+              "default": {
+                "20": 8,
+                "32": 8,
+                "64": 8
+              },
+              "ref": "eyeR@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeSmile@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeTilt@character"
+            },
+            {
+              "default": {
+                "20": 20,
+                "32": 20,
+                "64": 20
+              },
+              "ref": "eyeW@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "lid@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthDots@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthTalk@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "gazeX@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "gazeY@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "lean@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "tilt@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnBlink@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnNod@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnPitch@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnWander@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnYaw@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "bounceGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "breath@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "earGain@character"
             },
             {
               "default": {

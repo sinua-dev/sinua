@@ -1,5 +1,5 @@
 {
-  "$schema": "../fx-spec-1.schema.json",
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.8",
   "name": "Activity rings",
   "description": "Three progress rings with a 3-stop gradient (one stop as a DTCG hsl color). Concentric rings share a centre, so the gradient tints them all with one hue rather than ramping (docs/materials.md).",

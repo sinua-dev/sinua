@@ -24,12 +24,123 @@ Design note and research (private repo): `sinua-studio/docs/agents/families/desi
 | `hum` | A vintage studio microphone that hosts the show: a red capsule on a brass yoke and stand, the face on its grille band | the grille is the mouth: its slots light with the level while speaking, one light scans them while thinking; a tally light is red while listening and blinks amber while thinking; the capsule tips toward you while listening and sways on the yoke while speaking (`swayGain`) |
 | `wisp` | A helpful spirit: a round, glowing head flowing into a curling smoke tail, violet into teal, with a soft halo | its sparkles wander at rest, gather in while it listens (closer as the user speaks), orbit its crown while it thinks and stream out with its voice; the tail curls tighter while thinking (`curlGain`); the mouth is an oval that opens with the level |
 | `chirp` | A songbird: a coral egg-shaped body with a cream breast, teal wings and a three-feather crest | the beak is the mouth: it opens with the level while speaking and little notes rise from it, the wings flutter (`flutterGain`); it tilts its head and lifts its crest while listening; while thinking the crest drops and three thought dots light in turn |
+| `cuppa` | A coffee mug on its saucer (FX Spec 1.12, design note 14): drawn from an SVG path, the handle is a hole; coffee at the rim, a sleeve with a heart | the mouth is an oval that opens with the level; its steam (the `steam` part) rises higher while it listens, curls while it thinks and thickens with the voice; it squashes a little as it talks |
+| `bean` | A coffee bean on little feet (FX Spec 1.12, design note 14): an SVG-path body with its S-shaped groove and lit edge as path patches, rosy cheeks | the mouth is an oval that opens with the level; aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice |
+
+**Expressions** (design note 16): the app picks one with `expression` (a view prop, or the
+FX Spec key in the base and in `states`). It stays until changed, and a change eases over 0.6 s.
+
+| Expression | Eyes | Resting mouth |
+|---|---|---|
+| `happy` | the happy arc (smile 0.8) | smile |
+| `surprised` | wider and taller, lids open | a small "O" |
+| `thoughtful` | a lid, the left one shorter, a slight tilt | smile |
+| `sad` | a lid, outer corners dropped, a little shorter | a downturned line |
+| `sleepy` | heavy lids, a slow deep breath | smile |
+
+- **Layering:** the expression owns the eyes' shape. The voice state keeps the gaze, the head turn,
+  the blinks and the talking or thinking mouth: a sad Bean still turns to you while listening, and
+  its mouth still follows the voice while speaking.
+- **Weights:** each expression is an engine opt (`expressionHappy` … `expressionSleepy`, 0..1), so
+  transitions blend them like any number. The views ease their own prop.
+- **Mouths:** Chirp's beak and Hum's grille have no resting mouth to change; there the expression is
+  in the eyes only.
+- **Effects:** effects still play on top.
+
+**Tap to hop** (design note 15): a tap on a `SinuaCharacter` plays the `hop` effect.
+- The body crouches, hops 9 units and squashes on landing; the ground (the shadow, feet and
+  saucer) stays put.
+- The eyes smile and glance toward the tap, then come back. The voice state keeps the mouth,
+  ears and lids.
+- `tap: false` turns it off; reduced motion keeps only the smile. See
+  [`fx-view.md`](fx-view.md), *One-shot effects*.
+
+| `beep` | A small tin robot (FX Spec 1.12, design note 17): a path head and body, a face screen, an antenna light, a chest core, legs, and **arms** | a hand goes to the ear to listen and to the chin to think, and the arms beat with the voice while speaking; the antenna light is red while listening and amber while thinking; `arms: false` takes the arms off |
+
+Cuppa and Bean are the first characters made **only from recipes** (1.12 item 5). They
+needed no new drawing code, only one new library part: the steam.
 
 **Shared, not repeated.** What every character does alike lives once: the face (`face.rs`),
 the rig (`rig.rs`), the drawing helpers (`geom.rs`) and the kit (`kit.rs`: the size tiers, the
 ground shadow, the effect colours, the celebrate burst, the mute fade and the frame). The
-catalog defines the rig and the options once, as `key@character`; a character's own file and
+catalog defines the rig and the options once, as `key@character`; a character's own recipe and
 catalog entries hold only what makes it itself. Each character is named after a sound.
+
+## Recipes and parts (`character/recipe.rs`, `character/parts/`)
+
+A character is **data** (design note 11, FX Spec 1.12). Its recipe,
+`spec/characters/<id>.json`, names:
+- its **palette** (and which colours `hue` turns);
+- its **rig**: `pivot` (Chirp, Hum: tilt about a point, with optional squash, voice sway and a
+  `mount` for Hum's yoke), `upright` (Buzzy) or `float` (Wisp);
+- the **surfaces** its face turns on;
+- an ordered list of **parts** from the library, each with its numbers, in a **space**
+  (`ground`, `whole`, `mount`, `body`, `face`);
+- the celebrate **burst**, and its **slots**.
+
+The parts are the behaviour; the recipe says where, how big, what colour and how much. A new
+look (shape, colour, size, which parts, how they react) is a new recipe. A new behaviour (a
+new kind of sparkle, a new mouth mechanism) is a new part in Rust.
+
+| Library | Parts |
+|---|---|
+| `common` | `shadow`, `body` (radial or linear light that stays put while the body turns; inner layers `patch`, `band`, `stripes`, `glints`, `grille`, `eyes`; outline), `eyes` |
+| `bird` (Chirp) | `feet`, `crest`, `wings`, `beak`, `notes` (with the thought dots) |
+| `mic` (Hum) | `stand`, `yoke`, `grille` (a body layer), `tally` |
+| `spirit` (Wisp) | `halo`, `spirit` (smoke, the curling tail that trails the turn, shine), `ovalMouth`, `sparkles` |
+| `ranger` (Buzzy) | `torso`, `chestCore`, `earPods` (and the near pod's front copy), `helmet`, `fin`, `faceScreen` |
+| `arms` (Beep) | `arms` (design note 17): two arms (upper arm, forearm, round hand) from mirrored shoulders. The hands blend with the voice state: hanging at rest, the right hand to the recipe's `ear` while listening and its `chin` while thinking, beats with the level while speaking; up for celebrate, a shrug for error, open for the hop. Elbows come from a two-segment IK, bent outward. A `back` copy before the body draws the far arm behind it when turned. Not at 20 px, nor with `arms` off |
+| `steam` (Cuppa) | `steam`: soft blurred wisps that rise from a point, curl and fade at the top. Listening lifts them, thinking curls them, the voice thickens them. They never rise past the top of the box, and they are not drawn at 20 px or with `accessories` off |
+
+- **One reader.** Every part kind has a schema (its fields, in order, with types). A single
+  reader checks a recipe against them: a missing field, a wrong type, an unknown field, an
+  unknown colour or surface, each with its JSON pointer
+  (`/parts/2/lift/ears: expected 2 values`). The per-part readers it replaced cost ~11 KB
+  gzip more.
+- **`show`:** any part may say how visible it is per voice state,
+  `{ "idle", "listening", "thinking", "speaking" }`. The weights come from the pose
+  (`earGain`, the dots and talk mouths), so a state change fades it in or out. Absent, the
+  part always draws at its own alpha.
+- **Shapes:** `ellipse`, `roundRect` or **`path`** (FX Spec 1.12, design note 13), wherever
+  a part takes a shape (`body`, `patch`, `band`). A path is an SVG `d` in the 200-unit box:
+  - **Commands:** `M L H V C S Q T Z`, absolute and relative. No arcs (`A`): the error says to
+    convert them to curves (Figma: Flatten).
+  - **Read once:** `character/path.rs` reads the path when the recipe is read, and flattens
+    each curve by its length (`geom::cubic` / `quad`, 2–32 pieces). A frame costs nothing
+    extra, and every platform gets the same points.
+  - **Holes:** later subpaths are holes, painted even-odd (a mug's handle). A subpath outside
+    the outline is an error; a separate shape goes in its own part.
+  - **Clipping and outline:** a path body may be concave, so its inner layers clip with
+    Greiner–Hormann (`character/region.rs`), not `clip_convex`. A forehead band across a
+    cat's ears becomes one piece per ear. The outline is mitred at sharp corners (at most 2×)
+    and drawn round each hole. Ellipse and roundRect keep the old convex path exactly, so
+    the built-in characters are byte-identical.
+  - **Limits:** `d` ≤ 16 KB and ≤ 512 commands; ≤ 512 points after flattening; ≤ 8 holes;
+    ≥ 3 points per subpath; numbers within ±1000. An error gives the pointer and the byte:
+    `/parts/1/shape/path: at 7: …`.
+  - **Not checked:** a self-intersecting path is not an error; it paints even-odd.
+  - **Size:** path cost +9.3 KB gzip in the wasm (parser 3.1, clipping 3.0, miter 1.0, shape
+    wiring 2.2).
+  - **Test recipe:** `recipe_tests/cat.json`.
+- **Slots** (`headTop`, `face`, `neck`, `chest`): where 1.13's cosmetics will attach. Each one
+  follows its chain (`head`/`body` take the rig's pose; `face` also wraps onto the face
+  surface), resolved per frame by `character::recipe::slots` as a position, scale and angle.
+  They are not drawn and not public yet.
+- **Same drawing.** The four launch characters were hand-written Rust. Before that code
+  went, a test compared the recipes with it on 900 frames (3 sizes × 5 times × 15 poses ×
+  4), and they matched exactly. The golden cases are byte-identical too. A bit-exact
+  snapshot test (`recipe_snapshot`, ignored) guards later refactors of the reader or the parts.
+- **Size:** the reader and the recipes cost about 17 KB gzip in the wasm (1.12 items 1a
+  and 1b saved 16 KB just before). FX Spec-carried recipes (1.12, item 3) reuse the same
+  reader; the registry, the limits and the FX Spec wiring add about 7 KB gzip.
+- **Limits.** Every recipe, built-in or from a file, stays within: 64 KB, 48 parts (inner
+  layers included), lists of 32, `segments` 3–128, `count` 1–24, edge steps ≥ 1, numbers
+  within ±1000. Over a limit is an error with its pointer, never trimmed.
+- **In an FX Spec (1.12).** A file's `recipe` is registered (`character/registry.rs`) under
+  `recipe:<id>:<fnv-1a 64>` and its `pattern` resolves to that key, which `render` draws like
+  any character ([`fx-spec.md`](fx-spec.md), *v1.12*). The registry keeps the last 32 used.
+  A recipe's voice states are the shared `patterns.character` profile, or a built-in's with
+  `"profile": "chirp"`; its gains (`Recipe::gains`) are allowed in `params`.
 
 ## The face (`character/face.rs`)
 
@@ -137,19 +248,61 @@ and mouth, with heavier lines.
 | `turn` | 0.71 | how far the head turns (see *The head turn*; 0 = flat) |
 | `seed` | 0 | when it blinks and glances |
 
+## Palette (FX Spec 1.12, design note 19)
+
+`palette` repaints some of a character's colours and leaves the rest as drawn:
+`"palette": { "shell": "#E63946", "amber": "#FFFFFF" }` in an FX Spec (base and `states`), or
+the `palette` prop on a view.
+- **Slots** are the recipe's palette names (`characterRecipe(id).palette` on the Web). An unknown slot is an error with a "did you mean".
+- **Colours** are hex or DTCG, as everywhere in the FX Spec.
+- **Tones follow:** given `shell`, the recipe's `shellLight` and `shellDark` move with it and keep
+  their own offset in hue, saturation and lightness. A tone given outright wins.
+- **After `hue`:** `hue` still turns the slots it turns; a colour given in `palette` is never
+  turned.
+- **Contrast:** a recipe names the ink each face part sits on (`contrast`, e.g.
+  `[["ink", "bean"]]`). When a new ground comes within 0.35 lightness of an ink left as drawn,
+  the ink moves to the far side (0.9 on dark, 0.12 on light). An ink given outright is kept,
+  with a warning at `/palette/<ink>`. The outline stays as drawn.
+- **Blending:** the override is engine keys (`palette.<slot>.h/.s/.l/.w`, set only through
+  `palette`; `params` rejects them). A state change keeps the colour and blends its weight, so
+  the hue never sweeps from 0. A view's prop applies at once.
+
+| Character | Slots (a `+Light/Dark` slot's tones follow it) |
+|---|---|
+| buzzy | shell (+Light/Dark), line, screen, amber, cyan, glass, glassEdge, white |
+| hum | body (+Light/Dark), brass (+Dark), grille, glow, line, tallyRed, tallyAmber, tallyOff, white |
+| wisp | violet, blue, teal, line, eyes, gold, ice, white |
+| chirp | body (+Light/Dark), belly, teal, beak (+Dark), line, eyes |
+| cuppa | mug (+Light/Dark), coffee, crema, sleeve (+Dark), heart, shine, cheek, saucer (+Dark), line, ink, steam |
+| bean | bean (+Light/Dark), groove, grooveEdge, shine, cheek, aroma, foam, line, ink |
+| beep | steel (+Light/Dark), panel, screen, glow, accent (+Dark), off, red, amber, line, rivet, cheek |
+
 A frame-wide `color` or `gradient` doesn't apply to a character. The FX Spec reports it
 as an error, and raw `colorMix` / `gradientStrength` overrides are ignored. The generic
 effect drawing (ring, tick, burst) and the interrupt flash are skipped too
 (`effects::draws_own`): the face is the effect.
+
+## Remixing a built-in character
+
+A built-in's recipe is data: `characterRecipe("cuppa")` (Web) returns it as JSON. Copy it, give
+it a new `id` and `"profile": "<the original>"`, change it, and ship it as an FX Spec 1.12
+file's `recipe`. The [remix guide](character-remix.md) walks through it (the result is
+`spec/examples/remix-latte.fxspec.json`); the [recipe reference](character-recipe.md) lists every
+key, and `spec/character-recipe-1.schema.json` checks it in an editor. The Studio's editor
+(design note 18) does the same with a form; `fitPath` in `@sinua/snippets` turns an SVG from a
+drawing tool into a body.
 
 ## Tests
 
 - Rust: `geom` (areas, stroke width, ring offsets, convex and half-plane clipping,
   transforms), `face` (blink, lid, smile, mirrored tilt, gaze, the voice line's swing,
   clipping, effect eyes), `rig` (the seeded blink rate and de-sync, the turn blink, the
-  mouth rules, the startle, effects, the mute squint, glance bounds) and `buzzy` (in its
-  box at every size and pose, fills only and fixed, detail by size, `hue`, ear arcs,
-  mute, colour overrides ignored, determinism).
+  mouth rules, the startle, effects, the mute squint, glance bounds), the recipes (every
+  built-in recipe parses; bad recipes say where; every recipe in every pose is
+  deterministic, fills only, `Fixed` and in its box; slots follow tilt and turn; `show`
+  fades a part by voice state; `path` is reserved) and each character's own claims in
+  `character/recipe_tests/` (in its box, detail by size, `hue`, ear arcs, the grille, the
+  tally, the sparkles, the beak, the crest, mute, colour overrides ignored, determinism).
 - sinua golden 1.8.0: each character at every size and time plus eight input-driven cases
   (among them `turned`, thinking's facing, and `turn-off`); wasm, iOS and Android read the
   same file.

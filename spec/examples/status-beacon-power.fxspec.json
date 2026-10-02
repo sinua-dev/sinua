@@ -1,5 +1,5 @@
 {
-  "$schema": "../fx-spec-1.schema.json",
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.8",
   "name": "Status beacon (power-aware)",
   "description": "An always-on radar with glow and a noise shimmer. It never needs more than 30 fps; when the host reports low power (iOS Low Power Mode, Android Battery Saver, or an app policy) it drops to 15 fps and sheds the glow and noise -- the two materials that multiply what the renderer draws.",

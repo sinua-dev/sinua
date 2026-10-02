@@ -1,5 +1,5 @@
 {
-  "$schema": "../fx-spec-1.schema.json",
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.8",
   "name": "Holographic orb",
   "description": "A composing orb in holographic foil: hue sweeps by depth and by distance from a slowly circling view point over the orb's own ink shading, and drifts with time. Speaking adds a blurred glow that inherits the foil hues. Holographic only recolours, so low power keeps it and sheds the glow.",

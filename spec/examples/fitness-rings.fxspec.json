@@ -1,5 +1,5 @@
 {
-  "$schema": "../fx-spec-1.schema.json",
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.8",
   "name": "Fitness rings",
   "description": "Daily goals as activity rings: steps, water and active minutes drive the three rings (goal = one lap; steps go on to extra laps, up to 3 at 30k), heart rate drives the glow. 'goalReached' swaps to a full completion ring and drops the bindings it no longer needs (null deletes, RFC 7396).",

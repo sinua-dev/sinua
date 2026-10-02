@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://sinua.dev/spec/fx-spec-1.schema.json",
+  "$id": "https://sinua.dev/schema/fx-spec-1.json",
   "title": "FX Spec v1 (1.8 and later)",
   "description": "One Sinua object in one pattern. Editor aid only: the runtime validator (core_engine::fx_spec, exported as resolveFxSpec / resolve_fx_spec) is the authority -- it also checks that `object` matches the pattern's family, that every `params` key is one the pattern's mode reads, and applies the glTF minor-version rule (unknown keys are errors in a file this runtime fully knows, warnings in a newer 1.x file). The oldest version the runtime reads is 1.8: 1.0-1.7 were never published, so their acceptance (and the old names 1.7 replaced -- `state`, engine-key binding targets) was dropped before the first release. What each minor added, for reference: 1.1 `states` (a lifecycle map merged over the top-level design, RFC 7396) and `bindings` (app inputs -> curated Reactive targets); 1.2 `performance`; 1.3 glow `mode`/`blend` and shedding `blur`; 1.4 `materials.liquid`; 1.5 `materials.particles`; 1.6 `materials.holographic` and particles `sync`/`audio`; 1.7 the parameter catalog's names (`pattern`, dotted binding targets, array params); 1.8 `ink` and the built-in voice-state profile. See docs/fx-spec.md.",
   "type": "object",
@@ -32,7 +32,6 @@
         "ring",
         "beacon",
         "core",
-        "edge",
         "character"
       ]
     },
@@ -61,6 +60,15 @@
       "maximum": 1,
       "default": 1,
       "description": "FX Spec 1.8: the whole visual's opacity, 0 to 1. 1 draws it as the pattern defines it; lower fades everything, halos included. A state patches it (a voice assistant's idle typically sits below 1)."
+    },
+    "palette": {
+      "type": "object",
+      "description": "FX Spec 1.12, `object: character` only: repaint some of the character's colours (its recipe's palette names, e.g. `shell`), as hex or DTCG colours. A slot's Light/Dark tones follow it; the rest stays as drawn. A state patches it.",
+      "additionalProperties": { "$ref": "#/$defs/color" }
+    },
+    "expression": {
+      "enum": ["happy", "surprised", "thoughtful", "sad", "sleepy", "none"],
+      "description": "FX Spec 1.12, `object: character` only: the character's expression. It shapes the eyes and the resting mouth; the voice state keeps the gaze, the turn and the talking or thinking mouth. A state patches it; `null` there removes it."
     },
     "color": {
       "description": "A color (shorthand for { value, mix: 1 }) or the full section.",
@@ -141,6 +149,10 @@
     },
     "accessibility": {
       "$ref": "#/$defs/accessibility"
+    },
+    "recipe": {
+      "$ref": "https://sinua.dev/schema/character-recipe-1.json",
+      "description": "1.12: a character recipe (the format of spec/characters/*.json) for `object: character`; `pattern` equal to its `id` draws it. Every field: spec/character-recipe-1.schema.json and docs/character-recipe.md."
     }
   },
   "$defs": {
@@ -517,6 +529,15 @@
           "minimum": 0,
           "maximum": 1,
           "description": "FX Spec 1.8: this state's opacity; inherits the top-level `ink` when absent."
+        },
+        "palette": {
+          "type": ["object", "null"],
+          "description": "FX Spec 1.12: this state's palette override (a character); merged over the top-level `palette`.",
+          "additionalProperties": { "anyOf": [{ "$ref": "#/$defs/color" }, { "type": "null" }] }
+        },
+        "expression": {
+          "enum": ["happy", "surprised", "thoughtful", "sad", "sleepy", "none", null],
+          "description": "FX Spec 1.12: this state's expression (a character); inherits the top-level `expression`, `null` removes it."
         },
         "color": {
           "anyOf": [

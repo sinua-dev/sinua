@@ -1,0 +1,44 @@
+{
+  "$schema": "https://sinua.dev/schema/character-recipe-1.json",
+  "$comment": "WISP, a helpful spirit (design note 7). Its sparkles wander at rest, gather in while it listens (closer as the user speaks), orbit its crown while it thinks and stream out with its voice; the tail curls tighter while thinking (curlGain); the mouth is an oval that opens with the level.",
+  "recipe": 1,
+  "id": "wisp",
+  "palette": {
+    "violet": [252.7, 1.0, 0.712],
+    "blue": [227.9, 1.0, 0.718],
+    "teal": [174.8, 0.662, 0.524],
+    "line": [249.7, 0.523, 0.255],
+    "eyes": [247.2, 0.569, 0.2],
+    "gold": [46.0, 1.0, 0.739],
+    "ice": [187.0, 1.0, 0.875],
+    "white": [0.0, 0.0, 1.0]
+  },
+  "hue": { "base": 253.0, "turns": ["violet", "blue", "teal", "line"] },
+  "contrast": [["eyes", "violet"]],
+  "rig": { "kind": "float", "center": [100.0, 90.0], "lean": 0.5, "float": { "rate": 2.0, "amp": 4.0 } },
+  "surfaces": {
+    "face": { "c": [100.0, 82.0], "r": 52.0, "depth": 0.55 }
+  },
+  "parts": [
+    { "part": "shadow", "space": "ground", "at": [100.0, 190.0], "r": [26.0, 4.0], "floats": true },
+    {
+      "part": "halo", "space": "body", "at": [100.0, 82.0], "r": 64.0, "segments": 48, "color": "violet",
+      "stops": [[0.0, 0.5], [0.7, 0.3], [1.0, 0.0]]
+    },
+    {
+      "part": "spirit", "space": "body", "head": [100.0, 82.0, 46.0],
+      "stops": [[0.0, "violet"], [0.6, "blue"], [1.0, "teal"]], "line": "line", "smoke": "teal", "shine": "white",
+      "tail": { "lag": 0.25, "swing": 14.0 }
+    },
+    { "part": "eyes", "space": "face", "surface": "face", "at": [100.0, 84.0], "scale": [0.9, 1.0], "ink": "eyes", "glow": 0.0 },
+    { "part": "ovalMouth", "space": "face", "surface": "face", "at": [100.0, 84.0], "scale": [0.9, 1.0], "halfWidth": 12.0, "ink": "eyes" },
+    { "part": "sparkles", "space": "ground", "count": 5, "head": [100.0, 82.0], "colors": ["gold", "ice"] }
+  ],
+  "burst": { "at": [100.0, 88.0], "r": 80.0, "colors": ["celebrate", "gold", "ice"] },
+  "slots": {
+    "headTop": { "at": [100.0, 38.0], "follows": "head" },
+    "face": { "at": [100.0, 88.0], "follows": "face" },
+    "neck": { "at": [100.0, 128.0], "follows": "body" },
+    "chest": { "at": [100.0, 140.0], "follows": "body" }
+  }
+}

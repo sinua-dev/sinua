@@ -1,0 +1,202 @@
+{
+  "$comment": "Loadout rules (FX Spec 1.13, design note 25), checked on every platform against the engine's applyLoadout / cosmeticsFor: spec/examples/wardrobe-bean.fxspec.json with each loadout. `wear`: the ids worn after applying it; `palette`: the file's `palette` after it (null = none); `eyeStyle`: `params.eyeStyle` (null = none); `warnings`: the warning paths, sorted. `fits`: cosmeticsFor's reason per character and id.",
+  "spec": "examples/wardrobe-bean.fxspec.json",
+  "cases": [
+    {
+      "name": "no choice keeps the file",
+      "loadout": {
+        "loadout": 1
+      },
+      "wear": [
+        "party-hat"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": []
+    },
+    {
+      "name": "wears from the wardrobe",
+      "loadout": {
+        "loadout": 1,
+        "wear": [
+          "round-glasses"
+        ]
+      },
+      "wear": [
+        "round-glasses"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": []
+    },
+    {
+      "name": "two slots",
+      "loadout": {
+        "loadout": 1,
+        "wear": [
+          "party-hat",
+          "round-glasses"
+        ]
+      },
+      "wear": [
+        "party-hat",
+        "round-glasses"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": []
+    },
+    {
+      "name": "nothing worn",
+      "loadout": {
+        "loadout": 1,
+        "wear": []
+      },
+      "wear": [],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": []
+    },
+    {
+      "name": "a wardrobe palette and an eye style",
+      "loadout": {
+        "loadout": 1,
+        "palette": "mint",
+        "eyeStyle": "glossy"
+      },
+      "wear": [
+        "party-hat"
+      ],
+      "palette": {
+        "primary": "#3FBF9F",
+        "accent": "#FFD166"
+      },
+      "eyeStyle": "glossy",
+      "warnings": []
+    },
+    {
+      "name": "a built-in palette",
+      "loadout": {
+        "loadout": 1,
+        "palette": "sunset"
+      },
+      "wear": [
+        "party-hat"
+      ],
+      "palette": "sunset",
+      "eyeStyle": null,
+      "warnings": []
+    },
+    {
+      "name": "a stale loadout still draws",
+      "loadout": {
+        "loadout": 1,
+        "wear": [
+          "top-hat",
+          "round-glasses"
+        ],
+        "palette": "neon",
+        "eyeStyle": "laser"
+      },
+      "wear": [
+        "round-glasses"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": [
+        "/loadout/eyeStyle",
+        "/loadout/palette",
+        "/loadout/wear/0"
+      ]
+    },
+    {
+      "name": "a newer loadout",
+      "loadout": {
+        "loadout": 2,
+        "wear": [
+          "round-glasses"
+        ],
+        "aura": "gold"
+      },
+      "wear": [
+        "round-glasses"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": [
+        "/loadout/aura",
+        "/loadout/loadout"
+      ]
+    },
+    {
+      "name": "no expression or hue",
+      "loadout": {
+        "loadout": 1,
+        "expression": "happy",
+        "hue": 40
+      },
+      "wear": [
+        "party-hat"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": [
+        "/loadout/expression",
+        "/loadout/hue"
+      ]
+    },
+    {
+      "name": "one per slot, the later wins",
+      "loadout": {
+        "loadout": 1,
+        "wear": [
+          "round-glasses",
+          "party-hat",
+          "party-hat"
+        ]
+      },
+      "wear": [
+        "round-glasses",
+        "party-hat"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": [
+        "/loadout/wear/2"
+      ]
+    },
+    {
+      "name": "not a loadout",
+      "loadout": [
+        1,
+        2
+      ],
+      "wear": [
+        "party-hat"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": [
+        "/loadout"
+      ]
+    }
+  ],
+  "fits": [
+    {
+      "character": "bean",
+      "expect": {
+        "round-glasses": "fits",
+        "bow-tie": "no-slot",
+        "party-hat": "fits"
+      }
+    },
+    {
+      "character": "wisp",
+      "expect": {
+        "round-glasses": "not-made-for",
+        "bow-tie": "fits",
+        "party-hat": "fits"
+      }
+    }
+  ]
+}

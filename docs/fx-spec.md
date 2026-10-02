@@ -85,7 +85,7 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 - **The floor is 1.8** (`fx_spec.rs`'s `FLOOR_MINOR`). A `1.0`–`1.7` file is one error at `/fxSpec` (``FX Spec 1.7 isn't supported; this runtime reads 1.8 and later``) and nothing resolves. Those minors were never published; their acceptance was dropped before the first release instead of becoming a promise (docs/release-roadmap.md, decision 0.1). A missing or malformed `fxSpec` is an error too, and the rest of the file is still read as the current minor so its other problems show.
 - The runtime is **1.13** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`; 1.12's `recipe`, `expression`, `palette`; 1.13's `cosmetics`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
 - A **newer 1.x** file (`1.9`) → unknown keys are **warnings** and the rest renders (graceful degradation).
-- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is six locks, `spec/fx-spec-1.8-resolved.json` to `-1.13-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`, 1.12 over those 14 (byte-identical rows) plus `coffee-shop`, `custom-character` and `remix-latte`, 1.13 over those 17 (byte-identical rows) plus `party-hat`, `rich-bean`, `rich-buzzy`, `themed-cuppa`, `glossy-bean`, `pixel-beep` and `dot-hum`; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
+- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is six locks, `spec/fx-spec-1.8-resolved.json` to `-1.13-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`, 1.12 over those 14 (byte-identical rows) plus `coffee-shop`, `custom-character` and `remix-latte`, 1.13 over those 17 (byte-identical rows) plus `party-hat`, `rich-bean`, `rich-buzzy`, `themed-cuppa`, `glossy-bean`, `pixel-beep`, `dot-hum` and `wardrobe-bean`; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
 - **A key added in a later minor is gated automatically.** `spec/fx-spec-1.8-keys.json`
   freezes every key path a 1.8 file may use (103 today, built from the resolver's own
   tables). A new key (a material, a section key, a binding target, something low power
@@ -366,11 +366,16 @@ no cosmetic; the file carries each one. The guide is
   `eyes` / `faceScreen` part takes `style`, `iris` and `sclera`. See
   [`character.md`](character.md), *Eye styles*; `spec/examples/glossy-bean.fxspec.json`,
   `pixel-beep.fxspec.json`, `dot-hum.fxspec.json`.
+- **Wardrobe and loadout** (design note 25): the top-level `wardrobe` (`object: character`)
+  holds what an end user may pick (`cosmetics`, named `palettes`). A loadout
+  (`{ "loadout": 1, "wear": [ids], "palette": name, "eyeStyle": name }`) is applied by the
+  views (`loadout`) or `applyLoadout`; it only ever warns. A cosmetic may name its `category`.
+  See [`character-cosmetics.md`](character-cosmetics.md), *Let end users pick*.
 - **Registry keys** of a built-in wearing cosmetics hash the character's id and the cosmetics,
   not its recipe text, so an edit to a built-in that draws the same leaves them (and the lock)
   as they were.
 - 1.8–1.12 files resolve exactly as before (their locks are unchanged; the 1.13 lock has the
-  same rows for them and adds `party-hat`, `rich-bean`, `rich-buzzy`, `themed-cuppa`, `glossy-bean`, `pixel-beep` and `dot-hum`).
+  same rows for them and adds `party-hat`, `rich-bean`, `rich-buzzy`, `themed-cuppa`, `glossy-bean`, `pixel-beep`, `dot-hum` and `wardrobe-bean`).
 
 ## v1.12: character recipes
 

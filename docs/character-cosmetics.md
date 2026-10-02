@@ -126,12 +126,57 @@ The engine reports them with a pointer into `cosmetics`:
 A recipe may carry `cosmetics` too: a brand's own character can come with its cap on. A
 file's `cosmetics` are added after the recipe's own.
 
+## Let end users pick: wardrobe and loadout
+
+A **wardrobe** is what an end user may pick; the brand decides what is in it. A **loadout** is
+what one user picked: a small value your app stores in its own account and passes back next
+launch (`spec/examples/wardrobe-bean.fxspec.json`).
+
+```json
+"cosmetics": [ { "id": "party-hat", "category": "hat", ... } ],
+"wardrobe": {
+  "cosmetics": [ { "id": "round-glasses", "category": "glasses", "slot": "face", ... } ],
+  "palettes": { "mint": { "primary": "#3FBF9F", "accent": "#FFD166" } }
+}
+```
+
+```json
+{ "loadout": 1, "wear": ["round-glasses"], "palette": "mint", "eyeStyle": "glossy" }
+```
+
+- `wear`: ids from the wardrobe or the file's `cosmetics`, one per slot (a later one replaces
+  an earlier one); `[]` wears nothing. Without a loadout the file wears its own `cosmetics`.
+- `palette`: a `wardrobe.palettes` name or a built-in palette (`sunset`, `ocean`, …), by name only.
+- `eyeStyle`: `auto`, `shape`, `glossy`, `pixel` or `dot`.
+- **Never an error.** A loadout lives for months; when it names something the wardrobe no
+  longer has, a newer format, or an unknown key, that part warns and is skipped, and the
+  character still draws.
+- `category` (optional, on any cosmetic) groups a picker: `hat`, `glasses`, `scarf`, `badge`,
+  `frame`, `effect` or `other`.
+
+Pass it to the view: `loadout` on `SinuaView` / `SinuaCharacter` (Web, React, the web
+components, SwiftUI `SinuaLoadout`, Compose `SinuaLoadout`, React Native). A change **eases**:
+an item that arrives pops in with a small overshoot, one that leaves shrinks away, the height a
+hat needs eases, colours blend, and a new eye style swaps while the eyes blink (0.35 s, a cut
+under reduced motion). It runs on its own clock beside a voice state change. Your app calls
+nothing; the view does it when the value changes.
+
+**For a picker screen:**
+- `cosmeticsFor(spec, character)` (`SinuaCosmeticFit.list` natively) lists every item with
+  `fits` and a `reason` key to translate: `fits`, `no-slot` (the character has no such slot)
+  or `not-made-for` (its `fits` leaves the character out), plus the English `why`.
+- **Thumbnails** on the user's own character: `frameStill(spec, size, { loadout, turnYaw })`
+  draws a still pose (no blink, no glance; `turnYaw` about ±0.5 shows another angle).
+  `characterThumbnail` (`@sinua/web`, a PNG `Blob`), `SinuaThumbnail.image` (iOS 16+) and
+  `SinuaThumbnail.bitmap` (Android) paint it. Thumbnails never take the live character's
+  place in the engine, so a grid of them is safe.
+- To apply a loadout yourself: `applyLoadout(spec, loadout)` returns the file and its warnings.
+
+The Studio's character panel has a **Wardrobe** group: every item as a thumbnail on the
+current character, a click to wear it (with the same soft change), and *Copy loadout*.
+
 ## Next in 1.13
 
 Planned additions on top of this format (not in this release yet):
-- named palettes;
-- face styles;
-- a serializable **loadout** with a "what fits this character" list, still-pose thumbnails
-  and a soft change;
-- a separate cosmetic **catalog** pack;
+- a separate cosmetic **catalog** pack (wardrobe items will be able to name its ids);
 - brand cosmetics in the Studio editor.

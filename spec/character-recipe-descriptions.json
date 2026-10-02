@@ -260,6 +260,7 @@
     "": "A cosmetic: `body` and `eyes` parts drawn on one of the character's slots, in the slot's local units (the slot point is (0, 0), up is −y; on `headTop` a hat has 40 units of height). It moves with the slot: the pose, the head turn, the hop.",
     "id": "Its name: 1–32 of a–z, 0–9 and -, unique in the list. Its colours are `<id>.<name>` in the palette, so `palette` repaints them.",
     "label": "What it is, for people (\"party hat\").",
+    "category": "What kind of thing it is, for grouping in a picker (FX Spec 1.13, design note 25): `hat`, `glasses`, `scarf`, `badge`, `frame`, `effect` or `other`.",
     "slot": "The slot it sits on: `headTop`, `face`, `neck` or `chest` (or a slot a custom recipe names). A character without that slot doesn't wear it.",
     "palette": "Its own colours, by name, `[hue, saturation, lightness]`. Its parts name them; they hide the character's colour of the same name. Its parts may also name the character's colours.",
     "parts": "What it draws, back to front, on top of the character: `body` (with its layers) and `eyes`, without `space` or `surface`. Left out at 20 px unless `accessories` is on, or a part says `when`.",

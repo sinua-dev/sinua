@@ -344,6 +344,8 @@ effect drawing (ring, tick, burst) and the interrupt flash are skipped too
 
 ## Cosmetics (FX Spec 1.13, design note 21)
 
+End users pick from a file's `wardrobe` with a `loadout` (design note 25): see [`character-cosmetics.md`](character-cosmetics.md), *Let end users pick*.
+
 A character can wear a hat, glasses or a badge: `cosmetics` in an FX Spec file, `body` and
 `eyes` parts drawn on one of its slots (`headTop`, `face`, `neck`, `chest`) in the slot's
 units. They move with the slot (pose, hop, head turn), take `palette` as `<id>.<name>`, and

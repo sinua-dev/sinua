@@ -123,6 +123,19 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
     it. Blinks, the gaze and every expression work in each style; the built-ins keep the
     shape eye. The Studios have an Eye style picker.
 
+- FX Spec 1.13: wardrobes and loadouts (`docs/character-cosmetics.md`, *Let end users pick*).
+  - A file's `wardrobe` lists what an end user may pick (cosmetics, named palettes); a cosmetic
+    may name its `category`.
+  - A loadout (`{ "loadout": 1, "wear": [...], "palette": "...", "eyeStyle": "..." }`) is one
+    small value the app stores; the new `loadout` option / prop on every view applies it and
+    eases a change (a hat pops in, colours blend, a new eye style swaps in a blink). A stale
+    loadout only warns.
+  - For picker screens: `cosmeticsFor` (what fits, with a translatable reason), `frameStill`
+    and the thumbnail helpers (`characterThumbnail` on the Web, `SinuaThumbnail` on iOS and
+    Android), `applyLoadout`. `SinuaThumbnail.image` needs iOS 16 (SwiftUI's `ImageRenderer`);
+    the package still supports iOS 15, where `frameStill`'s frame can be drawn yourself.
+  - The Studio's character panel has a Wardrobe group (thumbnails, wear, *Copy loadout*).
+
 ### Changed
 
 - `parameterCatalog()` / `parameterCatalogJson()` no longer carry `description` texts: they are

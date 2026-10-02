@@ -8,6 +8,18 @@
       "additionalProperties": false,
       "description": "A cosmetic: `body` and `eyes` parts drawn on one of the character's slots, in the slot's local units (the slot point is (0, 0), up is −y; on `headTop` a hat has 40 units of height). It moves with the slot: the pose, the head turn, the hop.",
       "properties": {
+        "category": {
+          "description": "What kind of thing it is, for grouping in a picker (FX Spec 1.13, design note 25): `hat`, `glasses`, `scarf`, `badge`, `frame`, `effect` or `other`.",
+          "enum": [
+            "hat",
+            "glasses",
+            "scarf",
+            "badge",
+            "frame",
+            "effect",
+            "other"
+          ]
+        },
         "fit": {
           "additionalProperties": {
             "additionalProperties": false,

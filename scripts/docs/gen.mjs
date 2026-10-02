@@ -236,6 +236,32 @@ for (const m of catalog.materials) {
   files.set("diagnostics.mdx", s);
 }
 
+// ---- character-recipe.mdx
+// docs/character-recipe.md from "The box and the spaces" on. Its part tables are themselves
+// generated from the engine (recipe_schema.rs + spec/character-recipe-descriptions.json, kept
+// current by a Rust test), so the site page and the repo's reference are one source.
+{
+  const md = readFileSync(join(root, "docs/character-recipe.md"), "utf8");
+  const start = md.indexOf("## The box and the spaces");
+  if (start < 0 || !md.includes("<!-- generated:parts")) throw new Error("docs/character-recipe.md: sections moved; update gen.mjs");
+  const LINKS = {
+    "character-remix.md#a-body-from-a-drawing": "/docs/catalog/own-character#4-a-body-from-a-drawing",
+    "character-remix.md": "/docs/catalog/own-character",
+    "character.md": "/docs/catalog/character",
+    "fx-spec.md": "/docs/reference/fx-spec",
+  };
+  const body = md
+    .slice(start)
+    .replace(/<!-- \/?generated:parts[^>]*-->\n?/g, "")
+    .replace(/\]\(([^)#]+\.md(?:#[^)]*)?)\)/g, (all, target) => {
+      const to = LINKS[target];
+      if (!to) throw new Error(`docs/character-recipe.md: no site page for the link ${target}; add it to LINKS`);
+      return `](${to})`;
+    })
+    .replace(/\]\((\.\.\/[^)]+)\)/g, (_, path) => `](https://github.com/sinua-dev/sinua/blob/main/${path.slice(3)})`);
+  files.set("character-recipe.mdx", HEADER("docs/character-recipe.md") + body.trim() + "\n");
+}
+
 // ---- write or check
 let stale = [];
 const want = new Set([...files.keys()].map((k) => join(OUT, k)));

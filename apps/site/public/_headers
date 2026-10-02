@@ -14,3 +14,7 @@
 
 /llms-full.txt
   Content-Type: text/plain; charset=utf-8
+
+# The JSON Schemas (copied from spec/ by scripts/copy-specs.mjs): editors in a browser fetch them too.
+/schema/*
+  Access-Control-Allow-Origin: *

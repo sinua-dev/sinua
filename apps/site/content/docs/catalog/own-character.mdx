@@ -1,0 +1,84 @@
+---
+title: Make your own character
+description: "Start from a built-in character, change its colours, body and parts, and ship it as one FX Spec file. No code, no Sinua release."
+---
+
+A character is data: a **recipe** the engine reads and draws. The seven built-in [characters](/docs/catalog/character) are recipes, and yours goes into an FX Spec 1.12 file, so the file *is* the character. Load it like any other spec, on every platform.
+
+This page makes **Latte** from **Cuppa**: a cream glass instead of a mug, no saucer, everything else Cuppa's.
+
+<Demo spec="examples/remix-latte.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }]} />
+
+<a href="/examples/remix-latte.fxspec.json" download>Download remix-latte.fxspec.json</a> · every key is in the [recipe reference](/docs/reference/character-recipe).
+
+To change only colours, you don't need a recipe: [`palette`](/docs/catalog/character#palette) on a built-in does it.
+
+## 1. Copy a recipe
+
+`characterRecipe("cuppa")` returns Cuppa's recipe as the engine carries it. Put it in an FX Spec 1.12 file as `recipe`:
+
+```json
+{
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
+  "fxSpec": "1.12",
+  "object": "character",
+  "pattern": "latte",
+  "recipe": { "recipe": 1, "id": "latte", "profile": "cuppa", "…": "the rest of Cuppa's recipe" }
+}
+```
+
+With `$schema`, your editor completes and checks every key as you type.
+
+## 2. Name it, and keep how it behaves
+
+- **`id`:** 1–32 of `a–z`, `0–9` and `-`. The file's `pattern` must be the same.
+- **`"profile": "cuppa"`** keeps Cuppa's voice-state behaviour: how far it turns while thinking, where it looks, how it leans. Without it a recipe takes the shared character behaviour, which turns further, so on a narrower body the eyes can reach the edge. Keep the original's unless you want the other one.
+
+## 3. Colours
+
+`palette` holds every colour by name, as `[hue, saturation, lightness]`. Latte's glass is cream:
+
+```json
+"mug": [34, 0.45, 0.86], "mugLight": [38, 0.6, 0.95], "mugDark": [30, 0.32, 0.72],
+"sleeve": [24, 0.45, 0.42], "sleeveDark": [22, 0.45, 0.32], "heart": [30, 0.35, 0.95]
+```
+
+- Move a colour's `Light` and `Dark` tones with it, or the body's gradient looks wrong.
+- Set `hue.base` to the new main colour's hue (Latte: `34`), so the `hue` option starts from there. `hue.turns` lists the colours that option rotates.
+- These names are also the slots apps repaint with `palette`. `contrast` names the ink the eyes are drawn in and what it sits on, so they stay readable when a slot is repainted.
+
+## 4. A body from a drawing
+
+A body's `shape` can be an SVG path in the 200-unit box. Latte's is a tall glass:
+
+```json
+"shape": { "path": "M52 48 C52 40 128 40 128 48 L122 166 C121 174 114 178 106 178 H74 C66 178 59 174 58 166 Z" }
+```
+
+The engine takes the commands `M L H V C S Q T Z`, and later subpaths are holes (Cuppa's handle is one). A path from a drawing tool usually has arcs and its own coordinates: `fitPath` from `@sinua/snippets` turns arcs into curves and fits the path into a box. Fit it into the old body's box (`pathBox`) and the face, the steam and the rig stay where they were. The body's inner layers (Cuppa's sleeve and heart) are clipped to the new shape.
+
+<include lang="ts" meta='title="remix-character.ts"'>../../../snippets/ts/remix-character.ts</include>
+
+## 5. Parts
+
+`parts` is drawn back to front. Leave out what you don't want: Latte drops the saucer (`stand`). Some parts come in pairs (an arm behind the body and its copy in front, or ear pods); keep or drop both.
+
+- `show` fades a part by voice state: `"show": { "thinking": 1, "speaking": 1 }` draws it only then.
+- `when: "notSmallOrAccessories"` leaves it out at 20 px and with `accessories` off.
+- `surfaces.face` (`c`, `r`, `depth`) is where the eyes and mouth sit, and how they wrap when the head turns.
+
+## 6. Check it
+
+- **Mistakes come back with their place:** `/recipe/parts/2/rise: expected a number`. `resolveFxSpec` returns them, and the views report them through `onError`.
+- **Limits** (an error, never trimmed): 64 KB, 48 parts, lists of 32, numbers within ±1000; a path at most 16 KB and 512 commands.
+- **Look at it** in all four voice states and at 20 px, and ask `fxSpecCost` for its cost class.
+
+## 7. Ship it
+
+The file is the character. Load it like any FX Spec, on any platform:
+
+```tsx
+<SinuaView spec={latte} />
+```
+
+Apps can still set `palette`, `expression`, `hue`, `tap` and the other [options](/docs/catalog/character#options) on top.

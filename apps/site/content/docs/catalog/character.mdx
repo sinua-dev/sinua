@@ -10,9 +10,14 @@ A character is a face for your voice assistant. The gaze knows whose turn it is:
 <Demo object="character" pattern="hum" />
 <Demo object="character" pattern="wisp" />
 <Demo object="character" pattern="chirp" />
+<Demo object="character" pattern="cuppa" />
+<Demo object="character" pattern="bean" />
+<Demo object="character" pattern="beep" />
 </div>
 
 <GalleryLink family="character" />
+
+Want your own? A character is a recipe, and you can [make your own](/docs/catalog/own-character) from one of these in a single file.
 
 ## When to use which pattern
 
@@ -22,6 +27,9 @@ A character is a face for your voice assistant. The gaze knows whose turn it is:
 | [Hum](#hum) | `hum` | A vintage studio microphone that hosts the show, with its face on the grille. | The grille's slots light with the voice. A tally light is red while listening and blinks amber while thinking. |
 | [Wisp](#wisp) | `wisp` | A helpful spirit: a glowing head flowing into a curling smoke tail. | Its sparkles gather in while it listens, circle its head while it thinks and stream out with its voice. |
 | [Chirp](#chirp) | `chirp` | A songbird with teal wings and a feather crest. | The beak opens with the voice and little notes rise from it. While thinking, three thought dots light in turn. |
+| [Cuppa](#cuppa) | `cuppa` | A coffee mug on its saucer. | Steam rises while it listens and thickens with its voice. |
+| [Bean](#bean) | `bean` | A coffee bean on little feet, with aroma sparkles. | Its sparkles gather while it listens, circle while it thinks and stream out with its voice. |
+| [Beep](#beep) | `beep` | A small tin robot with arms. | A hand goes to its ear to listen and to its chin to think, and its arms beat with the voice. `arms: false` takes them off. |
 
 ## How it behaves
 
@@ -38,18 +46,69 @@ The head turns like a solid, not a flat sticker: the face slides round its surfa
 
 `turn` sets how far: the default is about ±25°, `1` is ±35° and `0` draws it flat. At 20 px the head doesn't turn, and with reduced motion only the facing of each state stays. It stays in the [light cost class](/docs/performance).
 
+## Expressions
+
+`expression` gives the character a mood your app picks. It stays until you change it, and a change eases over 0.6 s.
+
+| `expression` | Eyes | Resting mouth |
+|---|---|---|
+| `happy` | the happy arc | a smile |
+| `surprised` | wider and taller, lids open | a small "O" |
+| `thoughtful` | a lid, the left eye shorter, a slight tilt | a smile |
+| `sad` | a lid, outer corners dropped | a downturned line |
+| `sleepy` | heavy lids, a slow deep breath | a smile |
+| `none` | the character's own | its own |
+
+- **It sits on top of the voice state.** The expression owns the eyes' shape; the state keeps the gaze, the head turn, the blinks and the talking mouth. A sad Bean still turns to you while you talk.
+- **Chirp and Hum** have no resting mouth to change (a beak, a grille), so theirs is in the eyes only.
+- **Effects** still play on top, and an expression is never announced.
+- In an FX Spec, `expression` can go in the file and in each state. The view's prop wins over the file's.
+
+## Tap reaction
+
+A tap or a click on a character plays `hop`: it crouches, hops and lands with a little squash, smiles, and glances toward where you tapped. The voice state carries on underneath.
+
+- It's on by default on `SinuaCharacter` and `<sinua-character>`; the plain `SinuaView` leaves it off.
+- A tap never cuts a running `success`, `error` or `celebrate`, and there are at most two hops a second.
+- With reduced motion it only smiles.
+- **Inside a tappable button or list row, set `tap: false`**, so the tap goes to your control and the character doesn't hop as well.
+
+## Palette
+
+`palette` repaints some of a character's colours and leaves the rest as drawn: `{ shell: "#E63946" }`. To change only colours, this is all you need; no recipe.
+
+- **Slots** are the character's own colour names (the table below). An unknown slot is an error that suggests the closest name.
+- **Tones follow.** Given `shell`, its `shellLight` and `shellDark` move with it. A tone you give yourself wins.
+- **After `hue`.** `hue` still turns the slots it turns; a colour you give is never turned.
+- **The eyes stay readable.** When a new colour comes too close to the ink of the eyes and mouth, the ink moves to the far side, unless you set the ink too.
+- A change applies at once. In an FX Spec, `palette` can go in the file and in each state.
+
+| Character | Slots (a slot marked +Light/Dark brings its tones) |
+|---|---|
+| `buzzy` | shell (+Light/Dark), line, screen, amber, cyan, glass, glassEdge, white |
+| `hum` | body (+Light/Dark), brass (+Dark), grille, glow, line, tallyRed, tallyAmber, tallyOff, white |
+| `wisp` | violet, blue, teal, line, eyes, gold, ice, white |
+| `chirp` | body (+Light/Dark), belly, teal, beak (+Dark), line, eyes |
+| `cuppa` | mug (+Light/Dark), coffee, crema, sleeve (+Dark), heart, shine, cheek, saucer (+Dark), line, ink, steam |
+| `bean` | bean (+Light/Dark), groove, grooveEdge, shine, cheek, aroma, foam, line, ink |
+| `beep` | steel (+Light/Dark), panel, screen, glow, accent (+Dark), off, red, amber, line, rivet, cheek |
+
+A character keeps its own colours otherwise: `color` and `gradient` don't apply, and in an [FX Spec](/docs/reference/fx-spec#111-characters) they are an error.
+
 ## Options
 
 | Prop | Default | What it does |
 |---|---|---|
-| `hue` | 232 | Turns the character's colour. The eyes and the accents stay. |
+| `hue` | 232 | Turns the character's main colour. The eyes and the accents stay. |
+| `palette` | none | Repaints colours by slot (see [Palette](#palette)). |
+| `expression` | none | A mood: `happy`, `surprised`, `thoughtful`, `sad`, `sleepy`. |
+| `tap` | on | A tap plays a hop. Off inside a tappable control. |
 | `mouth` | on | Off draws eyes only. |
-| `accessories` | on | Off drops the extras: Buzzy's crest and ear arcs, Hum's tally light, Wisp's sparkles, Chirp's notes. |
+| `accessories` | on | Off drops the extras: Buzzy's crest and ear arcs, Hum's tally light, Wisp's sparkles, Chirp's notes, Cuppa's steam. |
+| `arms` | on | Beep's arms. |
 | `look` | 1 | How much the eyes glance around on their own; `0` keeps them on the viewer. |
 | `turn` | 0.71 | How far the head turns; `0` is flat. |
 | `seed` | 0 | When it blinks and glances, so two characters side by side don't move in step. |
-
-A character keeps its own colours: use `hue`, not `color` or `gradient`. In an [FX Spec](/docs/reference/fx-spec#111-characters), `color` or `gradient` on a character is an error.
 
 <Tabs groupId="platform" items={["React", "SwiftUI", "Compose", "React Native"]} persist>
 <Tab value="React">
@@ -66,7 +125,7 @@ A character keeps its own colours: use `hue`, not `color` or `gradient`. In an [
 </Tab>
 </Tabs>
 
-On the web it's also a tag: `<sinua-character pattern="buzzy" hue="190">`.
+On the web it's also a tag: `<sinua-character pattern="buzzy" hue="190">`, with `palette` as a property.
 
 ## Props
 

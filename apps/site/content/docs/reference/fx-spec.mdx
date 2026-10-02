@@ -9,7 +9,7 @@ An **FX Spec** is a small JSON file that describes a visual completely: the obje
 
 ## Structure
 
-- **`fxSpec`** (required): the version, `"1.11"`.
+- **`fxSpec`** (required): the version, `"1.12"`.
 - **`object`** (required) and **`pattern`** (required): what to draw. See the [catalog](/docs/catalog).
 - **`size`** (20 · 32 · 64) and **`speed`**: see [Speed & size](/docs/look/speed-and-size).
 - **`ink`** (1.8): how present the visual is, `0` to `1` (default `1`). It fades everything, halos included, and a state can patch it — an assistant rests below full ink when idle and comes to full ink when it listens.
@@ -24,11 +24,40 @@ An **FX Spec** is a small JSON file that describes a visual completely: the obje
 - **`performance`**: `maxFps`, and what to shed under low power.
 - **`name`**, **`description`**, **`$schema`**: for people and editors.
 
-Point `$schema` at `fx-spec-1.schema.json` for completion and validation in your editor.
+Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor completes and checks the file as you type. A [character recipe](/docs/reference/character-recipe) inside it is checked too.
 
 ## Versioning
 
-`fxSpec` is `"1.11"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.11"` and use whatever this page documents. An older file stays valid and renders the same.
+`fxSpec` is `"1.12"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.12"` and use whatever this page documents. An older file stays valid and renders the same, with one exception: [`object: "edge"`](#removed-the-edge-object) was removed during the beta.
+
+### 1.12: character recipes
+
+1.12 lets a file carry its own [character](/docs/catalog/character): the new key **`recipe`** holds a character recipe, the same format as the built-in characters. No code and no Sinua release; the file is the character. [Make your own character](/docs/catalog/own-character) walks through one, and the [recipe reference](/docs/reference/character-recipe) lists every key.
+
+<Demo spec="spec/custom-character.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }]} />
+
+```json title="custom-character.fxspec.json (shortened)"
+{
+  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
+  "fxSpec": "1.12",
+  "object": "character",
+  "pattern": "pip",
+  "recipe": { "recipe": 1, "id": "pip", "profile": "chirp", "palette": { … }, "rig": { … }, "parts": [ … ], "burst": { … } },
+  "params": { "seed": 5, "flutterGain": 0.3 }
+}
+```
+
+- **`recipe`** needs `"fxSpec": "1.12"` and `object: "character"`. The `pattern` (and any state's) names the recipe's `id`, which can't be a built-in character's. Its mistakes point into it: `/recipe/parts/2/segments: expected a whole number from 3 to 128`.
+- **Limits**, so a file from outside can't make the engine slow: at most 64 KB, 48 parts, lists of 32, numbers within ±1000. Over a limit is an error, never trimmed; a recipe that would be heavy to draw is a warning.
+- **Shapes from a drawing:** any shape in a recipe may be an SVG path, `"shape": { "path": "M50 74 L56 22 … Z" }`, with the commands `M L H V C S Q T Z` (no arcs) in the 200-unit box; later subpaths are holes.
+- **Voice states:** a recipe moves like the shared character, or like a built-in with `"profile": "chirp"`. The file's own `states` go on top.
+- **`expression`** (any character): `"happy"`, `"surprised"`, `"thoughtful"`, `"sad"`, `"sleepy"` or `"none"`, in the base and in `states`. A state change blends one into the next.
+- **`palette`** (any character): `{ "<slot>": "<colour>" }`, hex or DTCG, in the base and in `states`. See [Palette](/docs/catalog/character#palette).
+- 1.8–1.11 files resolve exactly as before.
+
+#### Removed: the edge object
+
+`object: "edge"` (the screen-edge glow, `SinuaEdge`, `<sinua-edge>`) was removed in 0.1.0-beta.8. A file with it fails at every version, with an error at `/object`. There's no replacement: draw a screen-edge glow in your app. It's the one time a minor version took something away, during the beta; after 1.0 a removal only comes in a major version (FX Spec 2.0), after a minor of deprecation warnings.
 
 ### 1.11: characters
 

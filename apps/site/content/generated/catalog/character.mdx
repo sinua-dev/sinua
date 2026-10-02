@@ -8,6 +8,9 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | Hum (`hum`) | `hum` | 1× | — |
 | Wisp (`wisp`) | `wisp` | 1× | — |
 | Chirp (`chirp`) | `chirp` | 1× | — |
+| Cuppa (`cuppa`) | `cuppa` | 1× | — |
+| Bean (`bean`) | `bean` | 1× | — |
+| Beep (`beep`) | `beep` | 1× | — |
 
 ### Buzzy [#buzzy]
 
@@ -187,6 +190,142 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
 | `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
 | `flutterGain` | Energy | number | 0–0.6 | 0 | How much the wings flutter with the voice while speaking (radians). |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
+| `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
+
+</details>
+
+### Cuppa [#cuppa]
+
+`pattern: "cuppa"` · mode `cuppa` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `accessories` | Appearance | boolean |  | 1 | The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. |
+| `hue` | Appearance | number | 0–360 deg | 12 | Turns the mug's colour in degrees; the coffee, the sleeve and the heart stay. |
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. |
+| `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
+| `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
+| `turn` | Motion | number | 0–1 | 0.71 | How far the head turns like a solid (0 = flat, 1 = ±35°; the default is ±25°). |
+
+<details>
+<summary>Advanced props (23)</summary>
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `eyeAsym` | Appearance | number | 0–0.6 | 0 | Makes the left eye shorter (a quizzical look). |
+| `eyeH` | Appearance | number | 8–40 | 26 | Eye height, in design units. |
+| `eyeR` | Appearance | number | 0–20 | 8 | Eye corner radius, in design units. |
+| `eyeSmile` | Appearance | number | 0–1 | 0 | The happy arc cut from below the eyes. |
+| `eyeTilt` | Appearance | number | -1–1 | 0 | Slope of the lid: positive lowers the outer corners (pensive). |
+| `eyeW` | Appearance | number | 8–36 | 20 | Eye width, in the character's 200-unit design box. |
+| `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). |
+| `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
+| `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
+| `lean` | Motion | number | -8–8 | 0 | Leans the whole character toward the viewer (design units). |
+| `tilt` | Motion | number | -0.3–0.3 | 0 | Tilts the whole character (radians; positive = clockwise). |
+| `turnBlink` | Motion | number | 0–1 | 0 | Blink once as this state starts (the end of the user's turn). |
+| `turnNod` | Motion | number | 0–1 | 0 | How much the head nods with the voice level. |
+| `turnPitch` | Motion | number | -1–1 | 0 | Where this state faces, up or down (-1..1 of the turn; positive = up). |
+| `turnWander` | Motion | number | 0–1 | 0 | How much the head looks from corner to corner on its own, holding each look. |
+| `turnYaw` | Motion | number | -1–1 | 0 | Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). |
+| `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
+| `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
+| `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
+
+</details>
+
+### Bean [#bean]
+
+`pattern: "bean"` · mode `bean` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `accessories` | Appearance | boolean |  | 1 | The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. |
+| `hue` | Appearance | number | 0–360 deg | 24 | Turns the bean's roast in degrees; the cheeks and the aroma stay. |
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. |
+| `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
+| `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
+| `turn` | Motion | number | 0–1 | 0.71 | How far the head turns like a solid (0 = flat, 1 = ±35°; the default is ±25°). |
+
+<details>
+<summary>Advanced props (23)</summary>
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `eyeAsym` | Appearance | number | 0–0.6 | 0 | Makes the left eye shorter (a quizzical look). |
+| `eyeH` | Appearance | number | 8–40 | 26 | Eye height, in design units. |
+| `eyeR` | Appearance | number | 0–20 | 8 | Eye corner radius, in design units. |
+| `eyeSmile` | Appearance | number | 0–1 | 0 | The happy arc cut from below the eyes. |
+| `eyeTilt` | Appearance | number | -1–1 | 0 | Slope of the lid: positive lowers the outer corners (pensive). |
+| `eyeW` | Appearance | number | 8–36 | 20 | Eye width, in the character's 200-unit design box. |
+| `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). |
+| `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
+| `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
+| `lean` | Motion | number | -8–8 | 0 | Leans the whole character toward the viewer (design units). |
+| `tilt` | Motion | number | -0.3–0.3 | 0 | Tilts the whole character (radians; positive = clockwise). |
+| `turnBlink` | Motion | number | 0–1 | 0 | Blink once as this state starts (the end of the user's turn). |
+| `turnNod` | Motion | number | 0–1 | 0 | How much the head nods with the voice level. |
+| `turnPitch` | Motion | number | -1–1 | 0 | Where this state faces, up or down (-1..1 of the turn; positive = up). |
+| `turnWander` | Motion | number | 0–1 | 0 | How much the head looks from corner to corner on its own, holding each look. |
+| `turnYaw` | Motion | number | -1–1 | 0 | Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). |
+| `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
+| `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
+| `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
+
+</details>
+
+### Beep [#beep]
+
+`pattern: "beep"` · mode `beep` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `accessories` | Appearance | boolean |  | 1 | The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. |
+| `arms` | Appearance | boolean |  | 1 | The character's arms (Beep): a hand to the ear while listening, to the chin while thinking, beats while speaking. Off: no arms. |
+| `hue` | Appearance | number | 0–360 deg | 200 | Turns the robot's steel in degrees; the screen, the orange accents and the antenna light stay. |
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. |
+| `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
+| `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
+| `turn` | Motion | number | 0–1 | 0.71 | How far the head turns like a solid (0 = flat, 1 = ±35°; the default is ±25°). |
+
+<details>
+<summary>Advanced props (23)</summary>
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `eyeAsym` | Appearance | number | 0–0.6 | 0 | Makes the left eye shorter (a quizzical look). |
+| `eyeH` | Appearance | number | 8–40 | 26 | Eye height, in design units. |
+| `eyeR` | Appearance | number | 0–20 | 8 | Eye corner radius, in design units. |
+| `eyeSmile` | Appearance | number | 0–1 | 0 | The happy arc cut from below the eyes. |
+| `eyeTilt` | Appearance | number | -1–1 | 0 | Slope of the lid: positive lowers the outer corners (pensive). |
+| `eyeW` | Appearance | number | 8–36 | 20 | Eye width, in the character's 200-unit design box. |
+| `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). |
+| `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
+| `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
+| `lean` | Motion | number | -8–8 | 0 | Leans the whole character toward the viewer (design units). |
+| `tilt` | Motion | number | -0.3–0.3 | 0 | Tilts the whole character (radians; positive = clockwise). |
+| `turnBlink` | Motion | number | 0–1 | 0 | Blink once as this state starts (the end of the user's turn). |
+| `turnNod` | Motion | number | 0–1 | 0 | How much the head nods with the voice level. |
+| `turnPitch` | Motion | number | -1–1 | 0 | Where this state faces, up or down (-1..1 of the turn; positive = up). |
+| `turnWander` | Motion | number | 0–1 | 0 | How much the head looks from corner to corner on its own, holding each look. |
+| `turnYaw` | Motion | number | -1–1 | 0 | Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). |
+| `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
+| `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
 | `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
 | `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
 

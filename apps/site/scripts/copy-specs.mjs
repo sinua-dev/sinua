@@ -1,10 +1,24 @@
-// The <Demo> specs the pages reference (`spec="spec/x.fxspec.json"`) have to be
-// fetchable at runtime, so the snippets' spec files are copied into public/.
-// Run before `dev` and `build`; public/spec is generated, not checked in.
+// Files the site serves as they are, copied in before `dev` and `build`; none is checked in:
+// - public/spec: the snippets' spec files, which <Demo spec="spec/x.fxspec.json"> fetches;
+// - public/schema: the JSON Schemas at the URLs their `$id`s and every example's `$schema`
+//   name (https://sinua.dev/schema/<name>.json), so editors can complete and check a file;
+// - public/examples: example files a page offers for download or draws with <Demo>.
 import { cpSync, mkdirSync, rmSync } from "node:fs";
 
-const from = new URL("../snippets/spec/", import.meta.url);
-const to = new URL("../public/spec/", import.meta.url);
-rmSync(to, { recursive: true, force: true });
-mkdirSync(to, { recursive: true });
-cpSync(from, to, { recursive: true });
+const site = (p) => new URL(`../${p}`, import.meta.url);
+const repo = (p) => new URL(`../../../${p}`, import.meta.url);
+
+function fresh(dir) {
+  rmSync(site(dir), { recursive: true, force: true });
+  mkdirSync(site(dir), { recursive: true });
+}
+
+fresh("public/spec/");
+cpSync(site("snippets/spec/"), site("public/spec/"), { recursive: true });
+
+fresh("public/schema/");
+cpSync(repo("spec/fx-spec-1.schema.json"), site("public/schema/fx-spec-1.json"));
+cpSync(repo("spec/character-recipe-1.schema.json"), site("public/schema/character-recipe-1.json"));
+
+fresh("public/examples/");
+cpSync(repo("spec/examples/remix-latte.fxspec.json"), site("public/examples/remix-latte.fxspec.json"));

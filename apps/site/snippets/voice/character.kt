@@ -18,6 +18,8 @@ fun Assistant(voice: VoiceSource) {
         voice = voice,
         contentDescription = "Buzzy",
         labels = mapOf("listening" to "Buzzy is listening", "speaking" to "Buzzy is speaking"),
+        expression = "happy", // a mood your app picks
+        palette = mapOf("amber" to "#FFFFFF"), // repaint a slot outright
         modifier = Modifier.size(160.dp),
     )
 }

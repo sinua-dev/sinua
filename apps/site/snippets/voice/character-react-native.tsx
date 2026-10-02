@@ -8,6 +8,8 @@ export function Assistant({ voice }: { voice: VoiceSourceHandle }) {
       pattern="buzzy"
       voice={voice}
       hue={190}
+      palette={{ amber: "#FFFFFF" }}
+      expression="happy"
       accessibilityLabel="Buzzy"
       labels={{ listening: "Buzzy is listening", speaking: "Buzzy is speaking" }}
       style={{ width: 160, height: 160 }}

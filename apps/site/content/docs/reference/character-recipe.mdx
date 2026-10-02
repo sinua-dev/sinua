@@ -1,0 +1,12 @@
+---
+title: Character recipe
+description: "Every key a character recipe may hold: the box and its spaces, the palette, the rig, shapes, limits and every part."
+---
+
+A character is data: a **recipe**, a JSON object the engine reads and draws. The seven [built-in characters](/docs/catalog/character) are recipes, and your own goes into an FX Spec 1.12 file's `recipe`, with the file's `pattern` naming its `id`. [Make your own character](/docs/catalog/own-character) walks through one; this page lists everything a recipe may hold.
+
+- **Schema:** put `"$schema": "https://sinua.dev/schema/character-recipe-1.json"` in a recipe file, or use the FX Spec schema (`https://sinua.dev/schema/fx-spec-1.json`), which includes it. Your editor then completes and checks the recipe as you type.
+- **The engine has the last word:** it reports the same mistakes, with a JSON Pointer into the recipe (`/recipe/parts/2/rise: expected a number`).
+- **Generated:** the part tables below come from the engine's own tables, so they are always current.
+
+<include>../../generated/character-recipe.mdx</include>

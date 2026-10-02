@@ -9,6 +9,8 @@ export function Assistant({ voice }: { voice: VoiceSource }) {
       pattern="buzzy"
       voice={voice}
       hue={190} // turns the shell; the eyes and accents keep their colours
+      palette={{ amber: "#FFFFFF" }} // repaint a slot outright
+      expression="happy" // a mood your app picks; the voice state still moves it
       label="Buzzy"
       labels={{ listening: "Buzzy is listening", speaking: "Buzzy is speaking" }}
       style={{ width: 160, height: 160 }}

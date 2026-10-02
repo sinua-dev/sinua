@@ -13,7 +13,9 @@ struct Assistant: View {
             hue: 190,
             voice: voice,
             accessibilityLabel: "Buzzy",
-            labels: ["listening": "Buzzy is listening", "speaking": "Buzzy is speaking"]
+            labels: ["listening": "Buzzy is listening", "speaking": "Buzzy is speaking"],
+            expression: "happy",          // a mood your app picks
+            palette: ["amber": "#FFFFFF"]  // repaint a slot outright
         )
         .frame(width: 160, height: 160)
     }

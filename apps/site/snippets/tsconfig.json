@@ -10,7 +10,10 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
-    "paths": { "@sinua/core": ["../../../packages/core/dist/index.d.ts"] }
+    "paths": {
+      "@sinua/core": ["../../../packages/core/dist/index.d.ts"],
+      "@sinua/snippets": ["../../../packages/snippets/dist/index.d.ts"]
+    }
   },
   "include": ["ts/**/*.ts"]
 }

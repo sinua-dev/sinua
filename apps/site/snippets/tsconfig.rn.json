@@ -31,7 +31,6 @@
     "voice/credentials-provider-react-native.tsx",
     "voice/simulated-react-native.tsx",
     "voice/voice-button-react-native.tsx",
-    "voice/edge-react-native.tsx",
     "voice/character-react-native.tsx",
     "states/effects-react-native.tsx"
   ]

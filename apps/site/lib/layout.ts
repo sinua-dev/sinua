@@ -1,19 +1,14 @@
 /**
  * The frame a pattern is shown in. Most patterns draw in a square; the box-layout
- * ones (`patternLayout()`: edge `framing`, signal `playing`) fill whatever box they
- * get, so the site gives them the box their use has: a phone screen for the edge
- * glow, a chat bubble for a voice message.
+ * one (`patternLayout()`: signal `playing`) fills whatever box it gets, so the site
+ * gives it the box its use has: a chat bubble for a voice message.
  */
-import { parameterCatalog, patternLayout } from "@sinua/core";
+import { patternLayout } from "@sinua/core";
 
-export type Shape = "square" | "portrait" | "wide";
-
-let objectOf: Map<string, string> | null = null;
+export type Shape = "square" | "wide";
 
 export function shapeOf(pattern: string): Shape {
-  if (patternLayout(pattern) !== "box") return "square";
-  objectOf ??= new Map(parameterCatalog().objects.flatMap((o) => o.patterns.map((p) => [p.id, o.id] as const)));
-  return objectOf.get(pattern) === "edge" ? "portrait" : "wide";
+  return patternLayout(pattern) === "box" ? "wide" : "square";
 }
 
 /**

@@ -52,7 +52,6 @@
     "voice/voice-button-web.ts",
     "voice/voice-button-react.tsx",
     "voice/sharing-web.ts",
-    "voice/edge-react.tsx",
     "voice/character-react.tsx",
     "voice/avatar-react.tsx",
     "values/voice-message-react.tsx",

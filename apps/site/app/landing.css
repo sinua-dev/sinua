@@ -1206,19 +1206,9 @@
 }
 
 /* ---- box-layout patterns (lib/layout.ts) ----------------------------------------
-   Edge `framing` fills a phone screen, signal `playing` a chat bubble: a square frame
-   would show one as a square ring and the other as a thin strip. The canvas takes the
-   frame's shape; mount (or the still) hands the engine that ratio as `aspect`. */
+   Signal `playing` fills a chat bubble: a square frame would show it as a thin
+   strip. The canvas takes the frame's shape; mount (or the still) hands the engine that ratio as `aspect`. */
 
-.lp-tile-canvas[data-shape="portrait"],
-.gl-tile-canvas[data-shape="portrait"] {
-  width: auto;
-  height: 86%;
-  aspect-ratio: 9 / 19.5;
-  margin: 7% auto;
-  border: 1px solid var(--hairline);
-  border-radius: 10px;
-}
 .lp-tile-canvas[data-shape="wide"],
 .gl-tile-canvas[data-shape="wide"] {
   width: 88%;
@@ -1227,16 +1217,6 @@
   margin: 40% auto 0;
   border-radius: 999px;
   background: var(--bg-control);
-}
-.gl-preview[data-shape="portrait"],
-.lp-detail-visual[data-shape="portrait"] {
-  width: auto;
-  height: 360px;
-  max-width: 100%;
-  aspect-ratio: 9 / 19.5;
-  margin: 24px auto;
-  border: 1px solid var(--hairline);
-  border-radius: 28px;
 }
 .gl-preview[data-shape="wide"],
 .lp-detail-visual[data-shape="wide"] {

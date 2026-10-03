@@ -3,6 +3,7 @@
   "$comment": "BEAN, a coffee bean on little feet (design note 14). Drawn from an SVG path, with its S-shaped groove and the groove's lit edge as path patches; aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice. A recipe only.",
   "recipe": 1,
   "id": "bean",
+  "tags": ["round"],
   "palette": {
     "bean": [24, 0.52, 0.42],
     "beanLight": [28, 0.6, 0.6],

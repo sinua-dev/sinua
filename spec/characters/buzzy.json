@@ -3,6 +3,7 @@
   "$comment": "BUZZY, a small space-hero assistant (design note 7): a rounded-square indigo helmet with an amber fin and chevron ear pods, a glass visor over a face screen, a voice core in the chest. The mouth is a voice line; the chest bars follow the level; while listening, sound arcs light at the ear pods with the user's level.",
   "recipe": 1,
   "id": "buzzy",
+  "tags": ["screen-face"],
   "palette": {
     "shell": [231.9, 0.566, 0.461],
     "shellLight": [231.3, 1.0, 0.718],

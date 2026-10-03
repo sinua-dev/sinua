@@ -3,6 +3,7 @@
   "$comment": "BEEP, a small tin robot with arms (design note 17). An antenna light is red while it listens and amber while it thinks; its chest core moves with the voice; its arms move with the conversation: a hand to the ear to listen, to the chin to think, small beats as it speaks, up to celebrate. Drawn from SVG paths and the part library, arms included.",
   "recipe": 1,
   "id": "beep",
+  "tags": ["screen-face", "has-arms"],
   "palette": {
     "steel": [200, 0.18, 0.72],
     "steelLight": [200, 0.25, 0.86],

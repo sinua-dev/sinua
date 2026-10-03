@@ -1,5 +1,5 @@
 {
-  "$comment": "Loadout rules (FX Spec 1.13, design note 25), checked on every platform against the engine's applyLoadout / cosmeticsFor: spec/examples/wardrobe-bean.fxspec.json with each loadout. `wear`: the ids worn after applying it; `palette`: the file's `palette` after it (null = none); `eyeStyle`: `params.eyeStyle` (null = none); `warnings`: the warning paths, sorted. `fits`: cosmeticsFor's reason per character and id.",
+  "$comment": "Loadout rules (FX Spec 1.13, design note 25), checked on every platform against the engine's applyLoadout / cosmeticsFor: spec/examples/wardrobe-bean.fxspec.json with each loadout. `wear`: the ids worn after applying it; `palette`: the file's `palette` after it (null = none); `eyeStyle`: `params.eyeStyle` (null = none); `warnings`: the warning paths, sorted. `fits`: cosmeticsFor's reason per character and id. A wear entry may be an object with a bounded nudge (C2): `fit` lists the cosmetic's resulting `fit` for the drawn character. A `fits` entry may carry its own `spec`.",
   "spec": "examples/wardrobe-bean.fxspec.json",
   "cases": [
     {
@@ -179,6 +179,108 @@
       "warnings": [
         "/loadout"
       ]
+    },
+    {
+      "name": "a nudge within bounds",
+      "loadout": {
+        "loadout": 1,
+        "wear": [
+          {
+            "id": "round-glasses",
+            "offset": [
+              10,
+              -10
+            ],
+            "scale": 1.2,
+            "rotate": 15
+          }
+        ]
+      },
+      "wear": [
+        "round-glasses"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": [],
+      "fit": {
+        "round-glasses": {
+          "at": [
+            10,
+            -10
+          ],
+          "scale": 1.2,
+          "angle": 0.2617993877991494
+        }
+      }
+    },
+    {
+      "name": "a nudge out of bounds is clamped",
+      "loadout": {
+        "loadout": 1,
+        "wear": [
+          {
+            "id": "party-hat",
+            "offset": [
+              30,
+              0
+            ],
+            "scale": 2,
+            "rotate": -40,
+            "spin": 1
+          }
+        ]
+      },
+      "wear": [
+        "party-hat"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": [
+        "/loadout/wear/0/offset",
+        "/loadout/wear/0/rotate",
+        "/loadout/wear/0/scale",
+        "/loadout/wear/0/spin"
+      ],
+      "fit": {
+        "party-hat": {
+          "at": [
+            10,
+            0
+          ],
+          "scale": 1.2,
+          "angle": -0.2617993877991494
+        }
+      }
+    },
+    {
+      "name": "strings and objects mixed",
+      "loadout": {
+        "loadout": 1,
+        "wear": [
+          "party-hat",
+          {
+            "id": "round-glasses",
+            "scale": 0.9
+          }
+        ]
+      },
+      "wear": [
+        "party-hat",
+        "round-glasses"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": [],
+      "fit": {
+        "round-glasses": {
+          "at": [
+            0,
+            0
+          ],
+          "scale": 0.9,
+          "angle": 0
+        }
+      }
     }
   ],
   "fits": [
@@ -196,6 +298,124 @@
         "round-glasses": "not-made-for",
         "bow-tie": "fits",
         "party-hat": "fits"
+      }
+    },
+    {
+      "character": "bean",
+      "spec": {
+        "fxSpec": "1.13",
+        "object": "character",
+        "pattern": "bean",
+        "wardrobe": {
+          "cosmetics": [
+            {
+              "id": "ear-muffs",
+              "category": "other",
+              "slot": "headTop",
+              "requires": [
+                "has-ears"
+              ],
+              "palette": {
+                "m": [
+                  0,
+                  0,
+                  0.5
+                ]
+              },
+              "parts": [
+                {
+                  "part": "body",
+                  "shape": {
+                    "ellipse": [
+                      0,
+                      0,
+                      10,
+                      10,
+                      0,
+                      16
+                    ]
+                  },
+                  "light": {
+                    "radial": [
+                      0,
+                      0,
+                      10
+                    ],
+                    "stops": [
+                      [
+                        0,
+                        "m"
+                      ],
+                      [
+                        1,
+                        "m"
+                      ]
+                    ]
+                  },
+                  "outline": {
+                    "width": 0,
+                    "color": "m"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "round-badge",
+              "category": "badge",
+              "slot": "chest",
+              "requires": [
+                "round"
+              ],
+              "palette": {
+                "m": [
+                  0,
+                  0,
+                  0.5
+                ]
+              },
+              "parts": [
+                {
+                  "part": "body",
+                  "shape": {
+                    "ellipse": [
+                      0,
+                      0,
+                      6,
+                      6,
+                      0,
+                      16
+                    ]
+                  },
+                  "light": {
+                    "radial": [
+                      0,
+                      0,
+                      6
+                    ],
+                    "stops": [
+                      [
+                        0,
+                        "m"
+                      ],
+                      [
+                        1,
+                        "m"
+                      ]
+                    ]
+                  },
+                  "outline": {
+                    "width": 0,
+                    "color": "m"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expect": {
+        "ear-muffs": "missing-tag",
+        "round-badge": "fits"
       }
     }
   ]

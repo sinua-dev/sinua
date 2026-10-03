@@ -8,11 +8,26 @@
       "additionalProperties": false,
       "description": "A cosmetic: `body` and `eyes` parts drawn on one of the character's slots, in the slot's local units (the slot point is (0, 0), up is −y; on `headTop` a hat has 40 units of height). It moves with the slot: the pose, the head turn, the hop.",
       "properties": {
+        "above": {
+          "description": "Reserved (FX Spec 1.13, drawn from item 7 on): part names to draw in front of.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "behind": {
+          "description": "Reserved (FX Spec 1.13, drawn from item 7 on): part names to draw behind (`[\"ears\", \"antenna\"]`).",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "category": {
-          "description": "What kind of thing it is, for grouping in a picker (FX Spec 1.13, design note 25): `hat`, `glasses`, `scarf`, `badge`, `frame`, `effect` or `other`.",
+          "description": "What kind of thing it is, for grouping in a picker (FX Spec 1.13, design note 25): `hat`, `glasses`, `headphones`, `scarf`, `badge`, `frame`, `effect` or `other`.",
           "enum": [
             "hat",
             "glasses",
+            "headphones",
             "scarf",
             "badge",
             "frame",
@@ -87,6 +102,24 @@
           "maxItems": 48,
           "minItems": 1,
           "type": "array"
+        },
+        "requires": {
+          "description": "Capability tags the character must have (C1, design note 26), from the closed list `has-ears`, `has-arms`, `round`, `tall`, `screen-face`, `floats`; a character without them doesn't wear it (reason `missing-tag`). Slots already cover where it sits: a bow tie needs only a `neck` slot.",
+          "items": {
+            "enum": [
+              "has-ears",
+              "has-arms",
+              "round",
+              "tall",
+              "screen-face",
+              "floats"
+            ]
+          },
+          "type": "array"
+        },
+        "season": {
+          "description": "A seasonal item (`winter`, `spring`, …), for a picker to show or hide by date. A pack can ship one and drop it later; its id is never reused.",
+          "type": "string"
         },
         "slot": {
           "description": "The slot it sits on: `headTop`, `face`, `neck` or `chest` (or a slot a custom recipe names). A character without that slot doesn't wear it.",
@@ -4294,6 +4327,20 @@
       },
       "description": "Named spheres or cylinders (`c`, `r`, `depth`, `cylinder`) that face parts are drawn on, so they wrap round when the head turns. `face` is the usual one.",
       "type": "object"
+    },
+    "tags": {
+      "description": "What the character can wear beyond its slots (C1, design note 26): tags from the closed list `has-ears`, `has-arms`, `round`, `tall`, `screen-face`, `floats`, which a cosmetic's `requires` names. An unknown tag warns (the schema lists the known ones).",
+      "items": {
+        "enum": [
+          "has-ears",
+          "has-arms",
+          "round",
+          "tall",
+          "screen-face",
+          "floats"
+        ]
+      },
+      "type": "array"
     }
   },
   "required": [

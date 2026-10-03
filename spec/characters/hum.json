@@ -3,6 +3,7 @@
   "$comment": "HUM, a vintage studio microphone that hosts the show (design note 7). The grille is the mouth; the tally light is red while it listens and blinks amber while it thinks; the capsule tips toward you while listening and sways on its yoke while speaking.",
   "recipe": 1,
   "id": "hum",
+  "tags": ["screen-face"],
   "palette": {
     "body": [9.2, 0.759, 0.563],
     "bodyLight": [14.1, 1.0, 0.7],

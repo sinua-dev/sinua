@@ -3,6 +3,7 @@
   "$comment": "WISP, a helpful spirit (design note 7). Its sparkles wander at rest, gather in while it listens (closer as the user speaks), orbit its crown while it thinks and stream out with its voice; the tail curls tighter while thinking (curlGain); the mouth is an oval that opens with the level.",
   "recipe": 1,
   "id": "wisp",
+  "tags": ["floats"],
   "palette": {
     "violet": [252.7, 1.0, 0.712],
     "blue": [227.9, 1.0, 0.718],

@@ -136,6 +136,16 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
     the package still supports iOS 15, where `frameStill`'s frame can be drawn yourself.
   - The Studio's character panel has a Wardrobe group (thumbnails, wear, *Copy loadout*).
 
+- FX Spec 1.13: catalog packs (`docs/character-cosmetics.md`, *Catalog packs*). Sinua's free
+  catalog (14 cosmetics, among them headphones that glow while speaking and a seasonal winter
+  hat, and 6 palettes) loads as data: `@sinua/web/catalog`, `SinuaCatalog` on iOS and Android,
+  `SINUA_CATALOG` + the `catalogs` prop on React Native. Files name items as `"catalog:<id>"`;
+  a brand loads its own pack (from a file or a URL) under its own namespace.
+  - Fit by capability: a slot is enough (a bow tie needs a `neck`), and `requires` / recipe
+    `tags` cover the rest; a new `frame` slot draws round the whole character.
+  - A loadout entry may carry a bounded nudge (`offset`, `scale`, `rotate`).
+  - The Studio's Wardrobe group lists the catalog beside the file's own items.
+
 ### Changed
 
 - `parameterCatalog()` / `parameterCatalogJson()` no longer carry `description` texts: they are

@@ -175,8 +175,75 @@ nothing; the view does it when the value changes.
 The Studio's character panel has a **Wardrobe** group: every item as a thumbnail on the
 current character, a click to wear it (with the same soft change), and *Copy loadout*.
 
+## Catalog packs: ready cosmetics as data
+
+Sinua ships a free catalog (`spec/catalog/catalog-1.json`): 14 cosmetics (hats, glasses,
+headphones whose pads glow while the character speaks, a scarf, a bow tie, badges, two frames)
+and 6 palettes. It is data, never part of the engine, so only an app that loads it carries it.
+
+```js
+import { loadSinuaCatalog } from "@sinua/web/catalog";     // Web; React Native: SINUA_CATALOG + the `catalogs` prop
+loadSinuaCatalog();                                          // iOS: SinuaCatalog.load(); Android: SinuaCatalog.load(context)
+```
+
+A file then names its items as `"<namespace>:<id>"`:
+
+```json
+"cosmetics": ["catalog:crown"],
+"wardrobe": { "cosmetics": ["catalog:headphones", "catalog:halo-ring"] },
+"palette": "catalog:berry"
+```
+
+- A catalog palette acts like a built-in one: it is written in roles (`primary`, `secondary`,
+  `accent`, plus `dark`), so it fits every character, and a role a character lacks is skipped.
+- A catalog item or palette that isn't loaded only warns; the character still draws.
+- Catalog ids are permanent: an item to be removed is marked `deprecated` first and its id
+  is never reused, so stored loadouts keep working.
+
+**Your own pack.** A brand loads its own the same way, under its own namespace:
+
+```json
+{ "catalog": 1, "namespace": "acme", "cosmetics": [ ... ], "palettes": { ... } }
+```
+
+`loadCatalog(json)` takes the text, so a pack can come from your server: seasonal items arrive
+without an app release. For example, fetch a winter pack and load it:
+
+```js
+const pack = await (await fetch("https://example.com/sinua/winter-2026.json")).json();
+loadCatalog(pack);   // its "winter-hat" has "season": "winter"; a picker can show it by date
+```
+
+Loading a namespace again replaces it; `unloadCatalog("acme")` forgets it. At most 256 items
+are kept across all packs; a pack over that, or with a bad namespace, loads nothing and says why.
+
+## Fit by capability, not by name
+
+A slot already says where an item can sit: a bow tie needs a `neck` slot, so every character
+with one wears it, a brand's own included, and Cuppa, Bean and Beep (no neck) skip it with the
+reason `no-slot`. For what a slot can't say, a recipe lists `tags` and a cosmetic lists
+`requires`, from a closed list: `has-ears`, `has-arms`, `round`, `tall`, `screen-face`,
+`floats`. A character without a required tag skips the item (reason `missing-tag`); an unknown
+tag warns (the schema lists the known ones). `fits` (character names) stays for a brand's explicit list.
+
+`behind` / `above` (lists of part names, for "a hat behind the ears") are reserved: accepted
+and checked now, drawn from the Studio's fitting room release on.
+
+## A nudge per item
+
+A loadout's `wear` entry may be an object, for drag-to-dress screens:
+
+```json
+{ "loadout": 1, "wear": [{ "id": "party-hat", "offset": [2, -1], "scale": 1.05, "rotate": 5 }] }
+```
+
+The nudge is relative to the slot and bounded (`offset` ±10 units, `scale` 0.8–1.2, `rotate`
+±15°); out of range warns and is clamped. The item still follows the rig: the tilt, the hop, the
+head turn.
+
 ## Next in 1.13
 
 Planned additions on top of this format (not in this release yet):
-- a separate cosmetic **catalog** pack (wardrobe items will be able to name its ids);
-- brand cosmetics in the Studio editor.
+- brand cosmetics in the Studio editor, SVG import with slot guides, and a fitting room (the
+  draggable slot handles and `behind` / `above` drawn);
+- clearer palette slot names and an `iris` slot on every character.

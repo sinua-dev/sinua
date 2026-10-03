@@ -16,6 +16,7 @@
     "slots": "Named anchor points for cosmetics: `at`, and the chain it `follows` (`head`, `body` or `face`), with an optional `scale` and `angle` that size and turn a cosmetic for this character. `headTop`, `face`, `neck` and `chest` are the standard names cosmetics look for.",
     "cosmetics": "Cosmetics the character always wears (FX Spec 1.13): the same objects as an FX Spec file's `cosmetics`. A file's `cosmetics` come after these.",
     "grain": "`{ \"strength\": 0–1 }`: film grain inside every body (FX Spec 1.13, design note 22), a fine, still noise of light and dark specks; 0.08 is a good start. The `grain` option overrides it. Left out at 20 px and under low power; the face stays crisp.",
+    "tags": "What the character can wear beyond its slots (C1, design note 26): tags from the closed list `has-ears`, `has-arms`, `round`, `tall`, `screen-face`, `floats`, which a cosmetic's `requires` names. An unknown tag warns (the schema lists the known ones).",
     "roles": "Which palette slot plays each role, `{ \"primary\": \"<slot>\", \"secondary\": \"<slot>\", \"accent\": \"<slot>\" }` (FX Spec 1.13): a named palette (`\"palette\": \"sunset\"`) or a brand colour (`{ \"primary\": \"#E63946\" }`) reaches the character through it. A role left out isn't repainted."
   },
   "common": {
@@ -260,7 +261,11 @@
     "": "A cosmetic: `body` and `eyes` parts drawn on one of the character's slots, in the slot's local units (the slot point is (0, 0), up is −y; on `headTop` a hat has 40 units of height). It moves with the slot: the pose, the head turn, the hop.",
     "id": "Its name: 1–32 of a–z, 0–9 and -, unique in the list. Its colours are `<id>.<name>` in the palette, so `palette` repaints them.",
     "label": "What it is, for people (\"party hat\").",
-    "category": "What kind of thing it is, for grouping in a picker (FX Spec 1.13, design note 25): `hat`, `glasses`, `scarf`, `badge`, `frame`, `effect` or `other`.",
+    "category": "What kind of thing it is, for grouping in a picker (FX Spec 1.13, design note 25): `hat`, `glasses`, `headphones`, `scarf`, `badge`, `frame`, `effect` or `other`.",
+    "requires": "Capability tags the character must have (C1, design note 26), from the closed list `has-ears`, `has-arms`, `round`, `tall`, `screen-face`, `floats`; a character without them doesn't wear it (reason `missing-tag`). Slots already cover where it sits: a bow tie needs only a `neck` slot.",
+    "behind": "Reserved (FX Spec 1.13, drawn from item 7 on): part names to draw behind (`[\"ears\", \"antenna\"]`).",
+    "above": "Reserved (FX Spec 1.13, drawn from item 7 on): part names to draw in front of.",
+    "season": "A seasonal item (`winter`, `spring`, …), for a picker to show or hide by date. A pack can ship one and drop it later; its id is never reused.",
     "slot": "The slot it sits on: `headTop`, `face`, `neck` or `chest` (or a slot a custom recipe names). A character without that slot doesn't wear it.",
     "palette": "Its own colours, by name, `[hue, saturation, lightness]`. Its parts name them; they hide the character's colour of the same name. Its parts may also name the character's colours.",
     "parts": "What it draws, back to front, on top of the character: `body` (with its layers) and `eyes`, without `space` or `surface`. Left out at 20 px unless `accessories` is on, or a part says `when`.",

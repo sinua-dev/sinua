@@ -371,6 +371,12 @@ no cosmetic; the file carries each one. The guide is
   (`{ "loadout": 1, "wear": [ids], "palette": name, "eyeStyle": name }`) is applied by the
   views (`loadout`) or `applyLoadout`; it only ever warns. A cosmetic may name its `category`.
   See [`character-cosmetics.md`](character-cosmetics.md), *Let end users pick*.
+- **Catalog packs** (design note 26): after `loadCatalog`, `"<namespace>:<id>"` names a pack's
+  cosmetic in `cosmetics` / `wardrobe.cosmetics`, and `"<namespace>:<name>"` a pack's palette in
+  `palette` (a loadout's too). A name not loaded warns and is skipped. A cosmetic may say
+  `slot: "frame"` (round the whole character, behind it), `requires` (capability tags against a
+  recipe's `tags`), `season`, and the reserved `behind` / `above`. A loadout's `wear` entry may
+  carry a bounded nudge. See [`character-cosmetics.md`](character-cosmetics.md).
 - **Registry keys** of a built-in wearing cosmetics hash the character's id and the cosmetics,
   not its recipe text, so an edit to a built-in that draws the same leaves them (and the lock)
   as they were.

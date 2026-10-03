@@ -713,6 +713,20 @@ pub struct LoadoutApplied {
     pub diagnostics: Vec<FxDiagnostic>,
 }
 
+/// Loads a catalog pack (design note 26): `{ "catalog": 1, "namespace": "...",
+/// "cosmetics": [...], "palettes": {...} }`. Files then name its items as
+/// `"<namespace>:<id>"`. Loading a namespace again replaces it; an error loads nothing.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn load_catalog(json: String) -> Vec<FxDiagnostic> {
+    character::catalog::load(&json)
+}
+
+/// Forgets a catalog pack's items; whether it had any.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn unload_catalog(namespace: String) -> bool {
+    character::catalog::unload(&namespace)
+}
+
 /// What a file's wardrobe offers `character`, for a picker (design note 25).
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn cosmetics_for(spec: String, character: String) -> Vec<FxDiagnostic> {
@@ -971,6 +985,16 @@ mod wasm {
             Some(f) => serde_json::to_string(&f).unwrap_or_else(|_| "null".to_string()),
             None => "null".to_string(),
         }
+    }
+
+    #[wasm_bindgen]
+    pub fn load_catalog_json(json: String) -> String {
+        serde_json::to_string(&crate::load_catalog(json)).unwrap_or_else(|_| "[]".to_string())
+    }
+
+    #[wasm_bindgen]
+    pub fn unload_catalog_json(namespace: String) -> bool {
+        crate::unload_catalog(namespace)
     }
 
     #[wasm_bindgen]

@@ -10,6 +10,8 @@
 //! The result is engine opts, `palette.<slot>.h/.s/.l/.w`, so a state change
 //! blends them like any number (`transition.rs` keeps the colour, moves `w`).
 
+use serde_json::Value;
+
 use crate::character::geom::Hsl;
 use crate::character::recipe::Recipe;
 
@@ -22,7 +24,9 @@ include!(concat!(env!("OUT_DIR"), "/themes.rs"));
 
 /// A named palette's roles as (role, colour), light or dark; `None` for an unknown name.
 pub fn theme(name: &str, dark: bool) -> Option<Vec<(String, Hsl)>> {
-    let t = THEMES.iter().find(|t| t.0 == name)?;
+    let Some(t) = THEMES.iter().find(|t| t.0 == name) else {
+        return catalog_theme(name, dark);
+    };
     let roles = if dark { t.2 } else { t.1 };
     Some(
         roles
@@ -33,6 +37,28 @@ pub fn theme(name: &str, dark: bool) -> Option<Vec<(String, Hsl)>> {
             })
             .collect(),
     )
+}
+
+/// A loaded catalog's palette (design note 26), `"<namespace>:<name>"`: its roles as
+/// hex colours, `dark` the dark variant. It acts like a built-in palette.
+#[inline(never)]
+fn catalog_theme(name: &str, dark: bool) -> Option<Vec<(String, Hsl)>> {
+    let v = crate::character::catalog::get(name, true)?;
+    let side = match v.get("dark") {
+        Some(d) if dark => d,
+        _ => &v,
+    };
+    let mut out = Vec::new();
+    for r in ROLES {
+        if let Some(c) = side
+            .get(r)
+            .and_then(Value::as_str)
+            .and_then(crate::fx_spec::hex_to_hsl)
+        {
+            out.push((r.to_string(), crate::character::geom::hsl(c.h, c.s, c.l)));
+        }
+    }
+    Some(out)
 }
 
 /// `given` (slot or role, colour) as slots of `r`: roles first, through the

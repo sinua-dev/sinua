@@ -47,8 +47,9 @@ pub const MAX_PARTS: usize = 48;
 pub const MAX_NUMBER: f64 = 1000.0;
 
 /// The keys a recipe may hold.
-const RECIPE_KEYS: [&str; 16] = [
+const RECIPE_KEYS: [&str; 17] = [
     "$schema",
+    "tags",
     "$comment",
     "recipe",
     "id",
@@ -274,6 +275,9 @@ pub struct Recipe {
     /// Which palette slot plays each role (`primary`, `secondary`, `accent`;
     /// design note 23): a named palette or a brand colour reaches it by role.
     pub roles: Vec<(String, usize)>,
+    /// What the character can wear beyond its slots (design note 26, C1): tags from
+    /// [`crate::character::cosmetic::TAGS`] that a cosmetic's `requires` names.
+    pub tags: Vec<String>,
 }
 
 pub fn hsl_of(v: &Value, at: &str) -> Result<Hsl, String> {
@@ -472,6 +476,7 @@ impl Recipe {
             .map(|(i, p)| parts::parse(p, &format!("/parts/{i}"), &names))
             .collect::<Result<Vec<_>, _>>()?;
         let (mut zoom, mut skipped) = (1.0, Vec::new());
+        let tags = crate::character::cosmetic::tags(r.get("tags"), "/tags", &mut skipped)?;
         if let Some(c) = r.get("cosmetics") {
             crate::character::cosmetic::read(
                 c,
@@ -482,6 +487,7 @@ impl Recipe {
                     parts: &mut parts,
                     zoom: &mut zoom,
                     skipped: &mut skipped,
+                    tags: &tags,
                 },
             )?;
         }
@@ -518,6 +524,7 @@ impl Recipe {
             zoom,
             skipped,
             roles,
+            tags,
             grain: match r.get("grain") {
                 None => 0.0,
                 Some(_) => r.obj("grain")?.f("strength")?.clamp(0.0, 1.0),
@@ -593,6 +600,23 @@ pub fn recipes() -> &'static HashMap<String, Recipe> {
 /// The glossy eye's iris when the recipe names none (design note 24).
 const DEFAULT_IRIS: Hsl = geom::hsl(188.0, 0.75, 0.45);
 
+/// The scale the recipe's eyes are drawn at (their gaze offset is `gx * scale`), 1
+/// without eyes: an `eyes` part's own (a body layer's too) or a face screen's.
+fn eye_scale(parts: &[Part], small: bool) -> f64 {
+    for p in parts {
+        match p.kind {
+            parts::Kind::Eyes => return p.params.nums[if small { 3 } else { 2 }],
+            parts::Kind::FaceScreen => return if small { 1.08 } else { 0.92 },
+            _ => {}
+        }
+        let k = eye_scale(&p.inner, small);
+        if k != 1.0 {
+            return k;
+        }
+    }
+    1.0
+}
+
 /// What a part needs to draw this frame.
 pub struct Ctx<'a> {
     pub o: &'a ModeOpts,
@@ -613,6 +637,9 @@ pub struct Ctx<'a> {
     pub float: f64,
     /// The `eyeStyle` opt (design note 24): 0 = the recipe's, else 1 + `face::Face::style`.
     pub eye_style: u8,
+    /// Where the gaze moves the eyes this frame, design units: a cosmetic on the face
+    /// moves with them (glasses stay on the eyes; design note 26).
+    gaze: (f64, f64),
     /// Each slot's size during a loadout change (design note 25): `wear.<cosmetic id>`
     /// pops a cosmetic in or out; 1 = as drawn. Empty when no `wear.` key is given.
     pops: Vec<f64>,
@@ -668,11 +695,32 @@ impl<'a> Ctx<'a> {
             Space::Slot(i) => {
                 let s = &self.slots[i as usize];
                 let k = s.scale * self.pops.get(i as usize).copied().unwrap_or(1.0);
+                // A cosmetic on the face moves with the gaze, as the eyes do (design note 26).
+                let (gx, gy) = if s.follows == Space::Face {
+                    self.gaze
+                } else {
+                    (0.0, 0.0)
+                };
                 let local = Xf::scale(k, k)
                     .then(Xf::rotate(s.angle))
-                    .then(Xf::translate(s.at.0, s.at.1));
+                    .then(Xf::translate(s.at.0 + gx, s.at.1 + gy));
                 let face = self.surfaces.iter().position(|(n, _)| n == "face");
-                self.place(geom::transform(f, &local), s.follows, face)
+                let mut f = geom::transform(f, &local);
+                // On the head or the body it turns as the parts under it do (B1): through the
+                // `face` surface, like the body's patches, fading as it goes round the back (the
+                // far headphone cup). On the face that happens in `Face`; a frame stays put.
+                let wraps = !matches!(s.follows, Space::Face | Space::Whole);
+                if let (true, Some(i), false) = (wraps, face, self.tn.is_zero()) {
+                    let surf = self.surface(i);
+                    let n = f.points.len().max(1) as f64;
+                    let c = f.points.iter().fold(geom::pt(0.0, 0.0), |a, p| {
+                        geom::pt(a.x + p.x / n, a.y + p.y / n)
+                    });
+                    let front = self.tn.facing(surf, &c);
+                    f = self.tn.map_fill(f, surf);
+                    f.a *= ((front + 0.2) / 0.2).clamp(0.0, 1.0);
+                }
+                self.place(f, s.follows, face)
             }
         }
     }
@@ -809,6 +857,10 @@ fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
         w,
         float,
         eye_style: get(o, "eyeStyle", 0.0).round().clamp(0.0, 4.0) as u8,
+        gaze: {
+            let k = eye_scale(&r.parts, tier.small);
+            (pose.eyes.gx * k, pose.eyes.gy * k)
+        },
         pops: if o.keys().any(|k| k.starts_with("wear.")) {
             r.slots
                 .iter()

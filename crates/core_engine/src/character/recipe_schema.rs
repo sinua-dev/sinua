@@ -284,6 +284,10 @@ pub fn schema() -> Value {
                 "id": { "type": "string", "pattern": "^[a-z0-9-]{1,32}$", "description": c("id") },
                 "label": { "type": "string", "description": c("label") },
                 "category": { "enum": crate::character::cosmetic::CATEGORIES, "description": c("category") },
+                "season": { "type": "string", "description": c("season") },
+                "requires": { "type": "array", "description": c("requires"), "items": { "enum": crate::character::cosmetic::TAGS } },
+                "behind": { "type": "array", "description": c("behind"), "items": { "type": "string" } },
+                "above": { "type": "array", "description": c("above"), "items": { "type": "string" } },
                 "slot": { "type": "string", "description": c("slot") },
                 "palette": { "type": "object", "description": c("palette"), "additionalProperties": nums(3) },
                 "parts": { "type": "array", "description": c("parts"), "minItems": 1, "maxItems": MAX_PARTS,
@@ -367,6 +371,10 @@ pub fn schema() -> Value {
             "cosmetics": {
                 "type": "array", "description": top("cosmetics"),
                 "items": { "$ref": "#/$defs/cosmetic" }
+            },
+            "tags": {
+                "type": "array", "description": top("tags"),
+                "items": { "enum": crate::character::cosmetic::TAGS }
             },
             "roles": {
                 "type": "object", "description": top("roles"), "additionalProperties": false,

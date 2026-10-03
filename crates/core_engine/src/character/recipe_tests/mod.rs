@@ -4,6 +4,7 @@ mod bean;
 mod beep;
 mod buzzy;
 mod cat;
+mod catalog;
 mod chirp;
 mod cosmetics;
 mod cuppa;

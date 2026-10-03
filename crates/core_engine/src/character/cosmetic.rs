@@ -22,19 +22,29 @@ use crate::character::parts::{self, Part};
 use crate::character::recipe::{hsl_of, valid_id, SlotSpec, Space, J};
 
 /// The keys a cosmetic may hold.
-pub const KEYS: [&str; 8] = [
-    "id", "label", "slot", "palette", "parts", "fits", "fit", "category",
+pub const KEYS: [&str; 12] = [
+    "id", "label", "slot", "palette", "parts", "fits", "fit", "category", "season", "requires",
+    "behind", "above",
 ];
 
 /// The kinds a cosmetic's `category` names, for grouping in a picker (design note 25).
-pub const CATEGORIES: [&str; 7] = [
-    "hat", "glasses", "scarf", "badge", "frame", "effect", "other",
+pub const CATEGORIES: [&str; 8] = [
+    "hat",
+    "glasses",
+    "headphones",
+    "scarf",
+    "badge",
+    "frame",
+    "effect",
+    "other",
 ];
 
 /// Local units of room above `headTop` a hat may use (design note 21).
 pub const HEAD_ROOM: f64 = 40.0;
 /// Design units kept free above a hat: the tap hop's lift (9) and a margin.
 const HOP_ROOM: f64 = 11.0;
+/// The `frame` slot's point: the middle of the character's 200-unit box.
+pub const FRAME_AT: (f64, f64) = (100.0, 100.0);
 /// Where a zoomed character stays put: its feet (`Recipe::zoom`).
 pub const FEET: (f64, f64) = (100.0, 192.0);
 
@@ -47,6 +57,49 @@ pub struct Into<'a> {
     pub zoom: &'a mut f64,
     /// (pointer, why) for each cosmetic that doesn't fit this character.
     pub skipped: &'a mut Vec<(String, String)>,
+    /// The character's tags (C1): a cosmetic's `requires` must all be among them.
+    pub tags: &'a [String],
+}
+
+/// The capability tags (design note 26, C1): what a character can wear beyond its
+/// slots. A closed list, so a misspelt tag warns instead of silently never fitting.
+pub const TAGS: [&str; 6] = [
+    "has-ears",
+    "has-arms",
+    "round",
+    "tall",
+    "screen-face",
+    "floats",
+];
+
+/// A `tags` / `requires` list: known tags kept, an unknown one noted and left out
+/// (it can never be met).
+#[inline(never)]
+pub fn tags(
+    v: Option<&Value>,
+    at: &str,
+    notes: &mut Vec<(String, String)>,
+) -> Result<Vec<String>, String> {
+    let mut out = Vec::new();
+    let Some(v) = v else {
+        return Ok(out);
+    };
+    let list = v
+        .as_array()
+        .ok_or_else(|| bad(at, "", "expected a list of tags"))?;
+    for (i, t) in list.iter().enumerate() {
+        let t = t
+            .as_str()
+            .ok_or_else(|| bad(at, &i.to_string(), "expected a tag"))?;
+        if TAGS.contains(&t) {
+            out.push(t.to_string());
+        } else {
+            // The schema's list (and the Studio) suggest the right one; the engine only says so.
+            notes.push((format!("{at}/{i}"), format!("unknown tag `{t}`")));
+            out.push(format!("?{t}"));
+        }
+    }
+    Ok(out)
 }
 
 /// `<at>/<k>: <what>`, the one error and note shape here.
@@ -94,14 +147,37 @@ pub fn read(list: &Value, o: Into) -> Result<(), String> {
                 &format!("one of {}", CATEGORIES.join(", ")),
             ));
         }
+        // `behind` / `above` (depth against named parts) are reserved for item 7: lists.
+        if ["behind", "above"]
+            .iter()
+            .any(|k| get(v, k).is_some_and(|x| !x.is_array()))
+        {
+            return Err(bad(
+                &at,
+                "behind",
+                "`behind` and `above` are lists of part names",
+            ));
+        }
+        let mut notes = Vec::new();
+        let needs = tags(get(v, "requires"), &format!("{at}/requires"), &mut notes)?;
+        let missing = needs.iter().find(|t| !o.tags.contains(t)).cloned();
         let fits = get(v, "fits").map(|f| {
             f.as_array()
                 .is_some_and(|a| a.iter().any(|x| x.as_str() == Some(o.id)))
         });
         let base = o.slots[..own].iter().position(|s| s.name == slot);
-        let skip = match (fits, base) {
-            (Some(false), _) => Some(("fits", format!("`{cid}` isn't made for `{}`", o.id))),
-            (_, None) => Some(("slot", format!("`{}` has no `{slot}` slot", o.id))),
+        // `frame` (design note 26): every character has it, round the whole of it, behind.
+        let frame = slot == "frame";
+        let skip = match (fits, base.is_some() || frame, missing) {
+            (Some(false), _, _) => Some(("fits", format!("`{cid}` isn't made for `{}`", o.id))),
+            (_, false, _) => Some(("slot", format!("`{}` has no `{slot}` slot", o.id))),
+            (_, _, Some(t)) => Some((
+                "requires",
+                match notes.first() {
+                    Some((_, n)) => format!("`{cid}` requires an {n}"),
+                    None => format!("`{cid}` needs a character tagged `{t}`"),
+                },
+            )),
             _ => None,
         };
         if let Some((k, why)) = skip {
@@ -109,8 +185,16 @@ pub fn read(list: &Value, o: Into) -> Result<(), String> {
                 .push((format!("{at}/{k}"), why + ", so it isn't drawn"));
             continue;
         }
-        let base = base.unwrap_or_default();
-        let b = &o.slots[base];
+        let b = &match base {
+            Some(i) => o.slots[i].clone(),
+            None => SlotSpec {
+                name: slot.clone(),
+                at: FRAME_AT,
+                scale: 1.0,
+                angle: 0.0,
+                follows: Space::Whole,
+            },
+        };
         let (mut x, mut y, mut s, mut a, follows) = (b.at.0, b.at.1, b.scale, b.angle, b.follows);
         if let Some(f) = get(v, "fit").and_then(|f| get(f, o.id)) {
             let fat = format!("{at}/fit/{}", o.id);
@@ -159,6 +243,7 @@ pub fn read(list: &Value, o: Into) -> Result<(), String> {
             surfaces: &[],
             slots: &[],
         };
+        let mut behind = 0;
         for (j, p) in c.arr("parts")?.iter().enumerate() {
             let pat = format!("{at}/parts/{j}");
             if !matches!(
@@ -171,8 +256,13 @@ pub fn read(list: &Value, o: Into) -> Result<(), String> {
                     "a cosmetic draws `body` (with its layers) and `eyes`",
                 ));
             }
-            o.parts
-                .push(parts::parse_in(p, &pat, &names, Space::Slot(index))?);
+            let part = parts::parse_in(p, &pat, &names, Space::Slot(index))?;
+            if frame {
+                o.parts.insert(behind, part);
+                behind += 1;
+            } else {
+                o.parts.push(part);
+            }
         }
     }
     Ok(())

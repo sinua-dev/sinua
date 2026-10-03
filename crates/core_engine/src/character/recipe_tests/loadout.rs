@@ -59,10 +59,37 @@ fn the_shared_vectors_hold() {
         // Whatever the loadout said, the file still resolves and draws.
         let r = resolve_full(&spec.to_string(), None, &HashMap::new(), false);
         assert!(r.ok, "{name}: {:?}", r.diagnostics);
+        // A nudge (C2) lands in the cosmetic's `fit` for the drawn character.
+        for (id, want) in c
+            .get("fit")
+            .and_then(Value::as_object)
+            .into_iter()
+            .flatten()
+        {
+            let got = spec["cosmetics"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|x| x["id"] == *id)
+                .unwrap()["fit"]["bean"]
+                .clone();
+            for k in ["scale", "angle"] {
+                let (g, w) = (got[k].as_f64().unwrap(), want[k].as_f64().unwrap());
+                assert!((g - w).abs() < 1e-9, "{name}: {id} {k} {got}");
+            }
+            for i in 0..2 {
+                let (g, w) = (
+                    got["at"][i].as_f64().unwrap(),
+                    want["at"][i].as_f64().unwrap(),
+                );
+                assert!((g - w).abs() < 1e-9, "{name}: {id} at {got}");
+            }
+        }
     }
     for f in v["fits"].as_array().unwrap() {
         let ch = f["character"].as_str().unwrap();
-        let got: HashMap<String, String> = cosmetics_for(SPEC, ch)
+        let own = f.get("spec").map(Value::to_string);
+        let got: HashMap<String, String> = cosmetics_for(own.as_deref().unwrap_or(SPEC), ch)
             .into_iter()
             .map(|d| {
                 assert_eq!(d.message.is_empty(), d.severity == "fits", "{d:?}");

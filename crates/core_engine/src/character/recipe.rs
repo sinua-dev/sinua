@@ -379,7 +379,7 @@ impl Recipe {
             for (k, v) in o {
                 if !crate::character::palette::ROLES.contains(&k.as_str()) {
                     return Err(format!(
-                        "/roles/{k}: not a role (primary, secondary, accent)"
+                        "/roles/{k}: not a role (primary, secondary, accent, iris)"
                     ));
                 }
                 roles.push((k.clone(), colour(v, &format!("/roles/{k}"))?));
@@ -1143,7 +1143,7 @@ mod tests {
         );
         // The crest (part 2) only while listening.
         let r = chirp_with(2, serde_json::json!({ "show": { "listening": 1 } })).unwrap();
-        let teal = r.colour_named("teal").unwrap();
+        let teal = r.colour_named("feathers").unwrap();
         let crest_alpha = |o: &ModeOpts| -> f64 {
             frame_recipe(&r, 64.0, 0.4, o)
                 .fills

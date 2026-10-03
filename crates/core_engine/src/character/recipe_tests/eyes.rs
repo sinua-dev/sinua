@@ -201,6 +201,30 @@ fn the_option_draws_a_style_on_any_character_and_auto_keeps_the_recipes() {
     }
 }
 
+/// E4 (design note 27): every character has an `iris` slot behind the `iris` role; it
+/// colours the glossy eye and nothing else.
+#[test]
+fn the_iris_role_colours_the_glossy_eye_on_every_character_and_only_it() {
+    for id in ["buzzy", "hum", "wisp", "chirp", "cuppa", "bean", "beep"] {
+        let red = crate::palette_overrides(id.into(), r##"{ "iris": "#FF0000" }"##.into());
+        assert!(red.diagnostics.is_empty(), "{id}: {:?}", red.diagnostics);
+        assert_eq!(red.overrides.get("palette.iris.h"), Some(&0.0), "{id}");
+        let with = |extra: &[(&str, f64)]| {
+            let mut o: Vec<(&str, f64)> = red
+                .overrides
+                .iter()
+                .map(|(k, v)| (k.as_str(), *v))
+                .collect();
+            o.extend_from_slice(extra);
+            frame(id, &o)
+        };
+        let glossy = frame(id, &[("eyeStyle", 2.0)]);
+        assert_ne!(glossy, with(&[("eyeStyle", 2.0)]), "{id}: glossy");
+        // The shape eye has no iris: the role is skipped silently.
+        assert_eq!(frame(id, &[]), with(&[]), "{id}: shape");
+    }
+}
+
 fn bean_with(eyes: Value) -> String {
     let text = crate::character::recipe::RECIPES
         .iter()

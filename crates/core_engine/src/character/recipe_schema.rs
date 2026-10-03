@@ -378,7 +378,7 @@ pub fn schema() -> Value {
             },
             "roles": {
                 "type": "object", "description": top("roles"), "additionalProperties": false,
-                "properties": { "primary": colour(), "secondary": colour(), "accent": colour() }
+                "properties": { "primary": colour(), "secondary": colour(), "accent": colour(), "iris": colour() }
             },
             "grain": {
                 "type": "object", "description": top("grain"), "additionalProperties": false,

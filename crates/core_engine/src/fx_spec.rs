@@ -1538,6 +1538,7 @@ pub fn apply_loadout(spec: &str, loadout: &str) -> (String, Vec<FxDiagnostic>) {
         return (spec.to_string(), diag.0);
     };
     let mut worn: Vec<Value> = Vec::new();
+    let mut iris = None;
     for (k, v) in &l {
         let at = format!("/loadout/{k}");
         let name = v.as_str().unwrap_or_default();
@@ -1590,6 +1591,17 @@ pub fn apply_loadout(spec: &str, loadout: &str) -> (String, Vec<FxDiagnostic>) {
                     None => Some(format!("no palette `{name}`; the file's stays")),
                 }
             }
+            // An eye colour by name (design note 27): the wardrobe's `irises`, else a
+            // catalog palette's `iris`. Applied after `palette`, which it joins.
+            "iris" => {
+                iris = entry(&root, "wardrobe")
+                    .and_then(|w| field(w, "irises"))
+                    .and_then(|p| field(p, name))
+                    .cloned()
+                    .or_else(|| catalog_iris(name));
+                iris.is_none()
+                    .then(|| format!("no eye colour `{name}`; the file's stays"))
+            }
             "eyeStyle" if EYE_STYLE_NAMES.contains(&name) => {
                 let mut p = match take(&mut root, "params") {
                     Some(Value::Object(p)) => p,
@@ -1605,6 +1617,19 @@ pub fn apply_loadout(spec: &str, loadout: &str) -> (String, Vec<FxDiagnostic>) {
             diag.warn(&at, why);
         }
     }
+    if let Some(c) = iris {
+        let mut p = match take(&mut root, "palette") {
+            Some(Value::Object(p)) => p,
+            Some(t @ Value::String(_)) => {
+                let mut p = Map::new();
+                put(&mut p, "theme", t);
+                p
+            }
+            _ => Map::new(),
+        };
+        put(&mut p, "iris", c);
+        put(&mut root, "palette", Value::Object(p));
+    }
     if entry(&l, "wear").is_some() {
         take(&mut root, "cosmetics");
         if !worn.is_empty() {
@@ -1612,6 +1637,14 @@ pub fn apply_loadout(spec: &str, loadout: &str) -> (String, Vec<FxDiagnostic>) {
         }
     }
     (Value::Object(root).to_string(), diag.0)
+}
+
+/// A catalog palette's `iris` (the catalog's eye colours are palettes of one role).
+#[inline(never)]
+fn catalog_iris(name: &str) -> Option<Value> {
+    crate::character::catalog::get(name, true)?
+        .get("iris")
+        .cloned()
 }
 
 /// Which character a file draws (its own recipe's id, else `pattern`): the `fit` key
@@ -3947,32 +3980,32 @@ mod tests {
         let f = |minor: &str| {
             format!(
                 r##"{{ "fxSpec": "{minor}", "object": "character", "pattern": "buzzy",
-                    "palette": {{ "shell": "#E63946" }},
-                    "states": {{ "listening": {{ "palette": {{ "amber": "#FFFFFF" }} }} }} }}"##
+                    "palette": {{ "body": "#E63946" }},
+                    "states": {{ "listening": {{ "palette": {{ "accent": "#FFFFFF" }} }} }} }}"##
             )
         };
         let base = resolve(&f("1.12"));
         assert!(base.ok, "{:?}", base.diagnostics);
-        assert_eq!(base.overrides["palette.shell.w"], 1.0);
+        assert_eq!(base.overrides["palette.body.w"], 1.0);
         assert!(
-            base.overrides.contains_key("palette.shellDark.l"),
+            base.overrides.contains_key("palette.bodyDark.l"),
             "the tones follow"
         );
         let listening = resolve_with(&f("1.12"), Some("listening"), &HashMap::new());
-        assert_eq!(listening.overrides["palette.amber.l"], 1.0);
+        assert_eq!(listening.overrides["palette.accent.l"], 1.0);
         assert_eq!(
-            listening.overrides["palette.shell.w"], 1.0,
+            listening.overrides["palette.body.w"], 1.0,
             "merged over the base"
         );
         let unset = resolve_with(
-            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "buzzy", "palette": { "shell": "#E63946" },
-                "states": { "listening": { "palette": { "shell": null } } } }"##,
+            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "buzzy", "palette": { "body": "#E63946" },
+                "states": { "listening": { "palette": { "body": null } } } }"##,
             Some("listening"),
             &HashMap::new(),
         );
         assert!(unset.ok, "{:?}", unset.diagnostics);
         assert!(
-            !unset.overrides.contains_key("palette.shell.w"),
+            !unset.overrides.contains_key("palette.body.w"),
             "null removes a slot"
         );
         assert!(resolve(&f("1.11"))
@@ -3990,19 +4023,19 @@ mod tests {
         );
         assert!(errors(&orb).iter().any(|d| d.path == "/palette"));
         let raw = resolve(
-            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "bean", "params": { "palette.bean.w": 1 } }"##,
+            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "bean", "params": { "palette.body.w": 1 } }"##,
         );
         assert!(errors(&raw)
             .iter()
             .any(|d| d.path.starts_with("/params/palette.")));
-        // An ink given dark on a dark bean: kept, with a warning.
+        // Eyes given dark on a dark bean: kept, with a warning.
         let dark = resolve(
-            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "bean", "palette": { "bean": "#2B1A12", "ink": "#111111" } }"##,
+            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "bean", "palette": { "body": "#2B1A12", "eyes": "#111111" } }"##,
         );
-        assert!(warnings(&dark).iter().any(|d| d.path == "/palette/ink"));
+        assert!(warnings(&dark).iter().any(|d| d.path == "/palette/eyes"));
         // The view's entry point says the same.
-        let v = crate::palette_overrides("bean".into(), r##"{ "bean": "#2B1A12" }"##.into());
-        assert!(v.diagnostics.is_empty() && v.overrides["palette.ink.l"] > 0.8);
+        let v = crate::palette_overrides("bean".into(), r##"{ "body": "#2B1A12" }"##.into());
+        assert!(v.diagnostics.is_empty() && v.overrides["palette.eyes.l"] > 0.8);
     }
 
     #[test]

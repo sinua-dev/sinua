@@ -90,15 +90,16 @@ fn the_dark_opt_picks_the_dark_variant_and_changes_nothing_without_one() {
 fn a_slot_beats_its_role_and_a_role_beats_the_theme() {
     let r = resolve(spec(
         "buzzy",
-        json!({ "theme": "sunset", "primary": "#00FF00", "accent": "#FF00FF", "shell": "#0000FF" }),
+        json!({ "theme": "sunset", "primary": "#00FF00", "accent": "#FF00FF", "body": "#0000FF" }),
     ));
     assert!(r.ok, "{:?}", r.diagnostics);
-    // `shell` is Buzzy's primary: the slot given outright wins.
-    assert!((r.overrides["palette.shell.h"] - 240.0).abs() < 1e-6);
-    // `amber` is its accent: the explicit role beats the theme's.
-    assert!((r.overrides["palette.amber.h"] - 300.0).abs() < 1e-6);
+    // `body` is Buzzy's primary: the slot given outright wins.
+    assert!((r.overrides["palette.body.h"] - 240.0).abs() < 1e-6);
+    // Its accent role is its `accent` slot (a slot named like a role is reached through
+    // the role): the explicit role beats the theme's.
+    assert!((r.overrides["palette.accent.h"] - 300.0).abs() < 1e-6);
     // The dark variant keeps the file's own colours too.
-    assert!((r.overrides["palette.dark.shell.h"] - 240.0).abs() < 1e-6);
+    assert!((r.overrides["palette.dark.body.h"] - 240.0).abs() < 1e-6);
 }
 
 #[test]
@@ -131,7 +132,7 @@ fn a_palette_name_theme_and_dark_need_fx_spec_1_13() {
     for palette in [
         json!("sunset"),
         json!({ "theme": "ocean" }),
-        json!({ "dark": { "bean": "#000000" } }),
+        json!({ "dark": { "body": "#000000" } }),
     ] {
         let mut v = spec("bean", palette.clone());
         v["fxSpec"] = json!("1.12");
@@ -139,7 +140,7 @@ fn a_palette_name_theme_and_dark_need_fx_spec_1_13() {
         assert!(!r.ok, "{palette}: {:?}", r.diagnostics);
     }
     // A 1.12 slot palette is unchanged.
-    let mut v = spec("bean", json!({ "bean": "#E63946" }));
+    let mut v = spec("bean", json!({ "body": "#E63946" }));
     v["fxSpec"] = json!("1.12");
     assert!(resolve(v).ok);
 }
@@ -179,8 +180,8 @@ fn the_views_palette_overrides_carry_the_dark_variant() {
     let r = crate::palette_overrides("bean".into(), json!({ "theme": "night" }).to_string());
     assert!(r.diagnostics.is_empty(), "{:?}", r.diagnostics);
     assert!(
-        r.overrides.contains_key("palette.bean.w")
-            && r.overrides.contains_key("palette.dark.bean.w")
+        r.overrides.contains_key("palette.body.w")
+            && r.overrides.contains_key("palette.dark.body.w")
     );
 }
 
@@ -201,4 +202,55 @@ fn the_fx_spec_schema_lists_the_built_in_palettes() {
         listed, names,
         "spec/fx-spec-1.schema.json's palette names vs spec/palettes.json"
     );
+}
+
+/// Design note 27: slots are named by the part they paint, every built-in has an `iris`
+/// slot behind the `iris` role, and every slot has a label for a colour picker.
+#[test]
+fn every_slot_is_named_by_its_part_and_labelled() {
+    let labels: Value = serde_json::from_str(include_str!(
+        "../../../../../spec/character-slot-labels.json"
+    ))
+    .unwrap();
+    // Colour words and drawing jargon say nothing to someone picking a colour.
+    const UNCLEAR: [&str; 14] = [
+        "red", "amber", "cyan", "teal", "violet", "blue", "gold", "ice", "white", "ink", "line",
+        "off", "steel", "shell",
+    ];
+    for id in CHARACTERS {
+        let r = &recipes()[id];
+        let own = labels[id]
+            .as_object()
+            .unwrap_or_else(|| panic!("{id}: no labels"));
+        // `celebrate` is the engine's own burst colour, not a slot to paint.
+        let slots: Vec<&String> = r
+            .palette
+            .iter()
+            .map(|(s, _)| s)
+            .filter(|s| *s != "celebrate")
+            .collect();
+        for slot in &slots {
+            let slot = slot.as_str();
+            assert!(!UNCLEAR.contains(&slot), "{id}: `{slot}`");
+            let l = &own
+                .get(slot)
+                .unwrap_or_else(|| panic!("{id}: `{slot}` has no label"));
+            for k in ["label", "description"] {
+                assert!(
+                    l[k].as_str().is_some_and(|s| !s.is_empty()),
+                    "{id}.{slot}.{k}"
+                );
+            }
+        }
+        assert_eq!(
+            own.len(),
+            slots.len(),
+            "{id}: a label for a slot it doesn't have"
+        );
+        assert!(r.colour_named("iris").is_some(), "{id}: no iris slot");
+        assert!(
+            r.roles.iter().any(|(k, _)| k == "iris"),
+            "{id}: no iris role"
+        );
+    }
 }

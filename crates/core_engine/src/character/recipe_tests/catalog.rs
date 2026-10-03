@@ -59,7 +59,7 @@ fn every_item_fits_every_character_or_says_which() {
         }
     }
     assert_eq!(ids.len(), 14);
-    assert_eq!(pack["palettes"].as_object().unwrap().len(), 6);
+    assert_eq!(pack["palettes"].as_object().unwrap().len(), 11);
 }
 
 #[test]
@@ -74,11 +74,46 @@ fn a_catalog_palette_paints_like_a_named_one() {
             r.diagnostics
         );
         assert!(
-            r.overrides.contains_key("palette.bean.w")
-                && r.overrides.contains_key("palette.dark.bean.w"),
+            r.overrides.contains_key("palette.body.w")
+                && r.overrides.contains_key("palette.dark.body.w"),
             "{name}"
         );
     }
+}
+
+/// Design note 27: the catalog's eye colours, named by a loadout's `iris`, join the
+/// palette it picks and colour the glossy eye.
+#[test]
+fn a_loadout_picks_a_catalog_eye_colour() {
+    load();
+    let spec = json!({ "fxSpec": "1.13", "object": "character", "pattern": "chirp",
+        "params": { "eyeStyle": "glossy" } })
+    .to_string();
+    let plain = resolve_full(&spec, None, &HashMap::new(), false);
+    for name in ["brown", "blue", "green", "hazel", "violet"] {
+        let l = json!({ "loadout": 1, "palette": "catalog:berry", "iris": format!("catalog:eyes-{name}") });
+        let (s, d) = apply_loadout(&spec, &l.to_string());
+        assert!(d.is_empty(), "{name}: {d:?}");
+        let v: Value = serde_json::from_str(&s).unwrap();
+        assert_eq!(v["palette"]["theme"], "catalog:berry", "{name}");
+        let r = resolve_full(&s, None, &HashMap::new(), false);
+        assert!(
+            r.ok && r.diagnostics.is_empty(),
+            "{name}: {:?}",
+            r.diagnostics
+        );
+        assert!(r.overrides.contains_key("palette.iris.w"), "{name}");
+        let draw = |r: &crate::fx_spec::FxSpecResolved| {
+            crate::frame_with_overrides(r.state.clone(), 64, 1.0, r.overrides.clone()).unwrap()
+        };
+        assert_ne!(draw(&r), draw(&plain), "{name}");
+    }
+    // A colour palette never carries an eye colour by accident.
+    let (_, d) = apply_loadout(
+        &spec,
+        &json!({ "loadout": 1, "iris": "catalog:berry" }).to_string(),
+    );
+    assert_eq!(d.len(), 1, "{d:?}");
 }
 
 #[test]

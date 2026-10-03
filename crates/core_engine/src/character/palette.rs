@@ -1,5 +1,5 @@
 //! A character's palette, overridden in part (FX Spec 1.12, design note 19):
-//! `palette: { "shell": "#E63946" }` repaints those slots (the recipe's palette
+//! `palette: { "body": "#E63946" }` repaints those slots (the recipe's palette
 //! names) and leaves the rest as drawn. A slot's `Light` / `Dark` tones follow
 //! it, keeping the recipe's own offsets, unless they are given too. Overrides
 //! land after `hue`, so a given colour is never turned. Where the recipe pairs
@@ -16,7 +16,7 @@ use crate::character::geom::Hsl;
 use crate::character::recipe::Recipe;
 
 /// The roles a recipe may map to its slots (design note 23).
-pub const ROLES: [&str; 3] = ["primary", "secondary", "accent"];
+pub const ROLES: [&str; 4] = ["primary", "secondary", "accent", "iris"];
 
 // `THEMES`: the named palettes (name, light roles, dark roles), from
 // `spec/palettes.json` by build.rs.
@@ -224,23 +224,23 @@ mod tests {
     #[test]
     fn tones_follow_their_slot_and_a_given_tone_wins() {
         let r = buzzy();
-        let shell = r.colour_named("shell").unwrap();
-        let light = r.colour_named("shellLight").unwrap();
-        let (o, _) = resolve(&r, &[("shell".into(), hsl(0.0, 0.8, 0.5))]).unwrap();
-        assert_eq!(get(&o, "palette.shell.w"), Some(1.0));
-        let dl = light.l - shell.l;
-        assert!((get(&o, "palette.shellLight.l").unwrap() - (0.5 + dl)).abs() < 1e-12);
+        let body = r.colour_named("body").unwrap();
+        let light = r.colour_named("bodyLight").unwrap();
+        let (o, _) = resolve(&r, &[("body".into(), hsl(0.0, 0.8, 0.5))]).unwrap();
+        assert_eq!(get(&o, "palette.body.w"), Some(1.0));
+        let dl = light.l - body.l;
+        assert!((get(&o, "palette.bodyLight.l").unwrap() - (0.5 + dl)).abs() < 1e-12);
         let (o, _) = resolve(
             &r,
             &[
-                ("shell".into(), hsl(0.0, 0.8, 0.5)),
-                ("shellLight".into(), hsl(60.0, 1.0, 0.9)),
+                ("body".into(), hsl(0.0, 0.8, 0.5)),
+                ("bodyLight".into(), hsl(60.0, 1.0, 0.9)),
             ],
         )
         .unwrap();
-        assert_eq!(get(&o, "palette.shellLight.h"), Some(60.0));
+        assert_eq!(get(&o, "palette.bodyLight.h"), Some(60.0));
         assert!(
-            get(&o, "palette.amber.w").is_none(),
+            get(&o, "palette.accent.w").is_none(),
             "the rest is the recipe's"
         );
     }
@@ -256,24 +256,24 @@ mod tests {
 
     #[test]
     fn an_unknown_slot_says_what_it_meant() {
-        let e = resolve(&buzzy(), &[("shel".into(), hsl(0.0, 1.0, 0.5))]).unwrap_err();
-        assert_eq!(e.0, "shel");
-        assert!(e.1.contains("did you mean `shell`"), "{}", e.1);
+        let e = resolve(&buzzy(), &[("bdy".into(), hsl(0.0, 1.0, 0.5))]).unwrap_err();
+        assert_eq!(e.0, "bdy");
+        assert!(e.1.contains("did you mean `body`"), "{}", e.1);
     }
 
     #[test]
     fn a_dark_ground_lifts_the_ink_unless_the_ink_is_given() {
         let bean = crate::character::recipe::recipes()["bean"].clone();
         let dark = hsl(20.0, 0.4, 0.12);
-        let (o, w) = resolve(&bean, &[("bean".into(), dark)]).unwrap();
-        assert_eq!(get(&o, "palette.ink.l"), Some(0.9));
+        let (o, w) = resolve(&bean, &[("body".into(), dark)]).unwrap();
+        assert_eq!(get(&o, "palette.eyes.l"), Some(0.9));
         assert!(w.is_empty());
         let (o, w) = resolve(
             &bean,
-            &[("bean".into(), dark), ("ink".into(), hsl(0.0, 0.0, 0.1))],
+            &[("body".into(), dark), ("eyes".into(), hsl(0.0, 0.0, 0.1))],
         )
         .unwrap();
-        assert_eq!(get(&o, "palette.ink.l"), Some(0.1));
+        assert_eq!(get(&o, "palette.eyes.l"), Some(0.1));
         assert_eq!(w.len(), 1);
         assert!(w[0].1.contains("hard to read"));
     }

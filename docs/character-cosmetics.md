@@ -22,18 +22,18 @@ This page builds a party hat (`spec/examples/party-hat.fxspec.json`). Every fiel
     "slot": "headTop",
     "palette": {
       "felt": [330, 0.72, 0.62], "feltDark": [326, 0.62, 0.48],
-      "trim": [48, 0.95, 0.62], "line": [330, 0.5, 0.2]
+      "trim": [48, 0.95, 0.62], "outline": [330, 0.5, 0.2]
     },
     "parts": [
       { "part": "body",
         "shape": { "path": "M-20 2 L0 -33 L20 2 Q0 8 -20 2 Z" },
         "light": { "linear": [-20, 0, 20, 0], "stops": [[0, "felt"], [1, "feltDark"]] },
         "inner": [{ "part": "band", "shape": { "roundRect": [-24, -6, 48, 6, 0, 4] }, "color": "trim" }],
-        "outline": { "width": 2.5, "color": "line" } },
+        "outline": { "width": 2.5, "color": "outline" } },
       { "part": "body",
         "shape": { "ellipse": [0, -35, 5, 5, 0, 20] },
         "light": { "radial": [-1.5, -36.5, 7], "stops": [[0, "trim"], [1, "trim"]] },
-        "outline": { "width": 2, "color": "line" } }
+        "outline": { "width": 2, "color": "outline" } }
     ]
   }]
 }
@@ -136,17 +136,23 @@ launch (`spec/examples/wardrobe-bean.fxspec.json`).
 "cosmetics": [ { "id": "party-hat", "category": "hat", ... } ],
 "wardrobe": {
   "cosmetics": [ { "id": "round-glasses", "category": "glasses", "slot": "face", ... } ],
-  "palettes": { "mint": { "primary": "#3FBF9F", "accent": "#FFD166" } }
+  "palettes": { "mint": { "primary": "#3FBF9F", "accent": "#FFD166" } },
+  "irises": { "hazel": "#9C7A3C", "violet": "#7A4BD6" }
 }
 ```
 
 ```json
-{ "loadout": 1, "wear": ["round-glasses"], "palette": "mint", "eyeStyle": "glossy" }
+{ "loadout": 1, "wear": ["round-glasses"], "palette": "mint", "iris": "hazel", "eyeStyle": "glossy" }
 ```
 
 - `wear`: ids from the wardrobe or the file's `cosmetics`, one per slot (a later one replaces
   an earlier one); `[]` wears nothing. Without a loadout the file wears its own `cosmetics`.
 - `palette`: a `wardrobe.palettes` name or a built-in palette (`sunset`, `ocean`, …), by name only.
+- `iris` (design note 27): an eye colour, a `wardrobe.irises` name or a catalog one
+  (`catalog:eyes-brown`, `-blue`, `-green`, `-hazel`, `-violet`), by name only. It joins the
+  palette (`palette` still picks the rest) and colours the `iris` slot, which the glossy eye
+  draws; the other eye styles have no iris. A free colour is the brand's, through the file's
+  `palette: { "iris": … }`.
 - `eyeStyle`: `auto`, `shape`, `glossy`, `pixel` or `dot`.
 - **Never an error.** A loadout lives for months; when it names something the wardrobe no
   longer has, a newer format, or an unknown key, that part warns and is skipped, and the
@@ -179,7 +185,7 @@ current character, a click to wear it (with the same soft change), and *Copy loa
 
 Sinua ships a free catalog (`spec/catalog/catalog-1.json`): 14 cosmetics (hats, glasses,
 headphones whose pads glow while the character speaks, a scarf, a bow tie, badges, two frames)
-and 6 palettes. It is data, never part of the engine, so only an app that loads it carries it.
+and 11 palettes (6 colour palettes and 5 eye colours, `catalog:eyes-brown`, `-blue`, `-green`, `-hazel`, `-violet`). It is data, never part of the engine, so only an app that loads it carries it.
 
 ```js
 import { loadSinuaCatalog } from "@sinua/web/catalog";     // Web; React Native: SINUA_CATALOG + the `catalogs` prop

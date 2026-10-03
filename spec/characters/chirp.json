@@ -5,18 +5,19 @@
   "id": "chirp",
   "tags": ["round"],
   "palette": {
+    "iris": [188, 0.75, 0.45],
     "body": [11.9, 1.0, 0.675],
     "bodyLight": [14.6, 1.0, 0.767],
     "bodyDark": [11.6, 0.691, 0.518],
     "belly": [27.8, 1.0, 0.92],
-    "teal": [174.8, 0.707, 0.416],
+    "feathers": [174.8, 0.707, 0.416],
     "beak": [41.4, 1.0, 0.614],
     "beakDark": [39.3, 1.0, 0.425],
-    "line": [11.4, 0.643, 0.176],
+    "outline": [11.4, 0.643, 0.176],
     "eyes": [10.0, 0.273, 0.129]
   },
   "hue": { "base": 12.0, "turns": ["body", "bodyLight", "bodyDark"] },
-  "roles": {"primary": "body", "secondary": "belly", "accent": "beak"},
+  "roles": {"iris": "iris", "primary": "body", "secondary": "belly", "accent": "beak"},
   "contrast": [["eyes", "body"]],
   "rig": { "kind": "pivot", "pivot": [100.0, 170.0], "lean": 0.5 },
   "surfaces": {
@@ -34,7 +35,7 @@
       "base": [100.0, 56.0], "spread": [-9.0, 0.0, 9.0], "mid": 1,
       "root": 0.5, "ctrl": [1.4, 36.0, 10.0, 6.0], "tip": [2.2, 4.0, 34.0, 12.0, 8.0],
       "lift": { "ears": [0.3, 0.5], "talk": [0.2, 0.4], "dots": 0.4 },
-      "turnShift": 20.0, "segments": 10, "width": 5.0, "color": "teal"
+      "turnShift": 20.0, "segments": 10, "width": 5.0, "color": "feathers"
     },
     {
       "part": "body", "space": "body",
@@ -44,28 +45,28 @@
       "inner": [
         { "part": "patch", "shape": { "ellipse": [100.0, 146.0, 40.0, 32.0, 0.0, 40] }, "surface": "face", "color": "belly" }
       ],
-      "outline": { "width": 3.5, "color": "line" }
+      "outline": { "width": 3.5, "color": "outline" }
     },
     {
       "part": "wings", "space": "body", "x": 100.0, "at": [54.0, 118.0], "size": [11.0, 22.0], "angle": 0.5,
       "segments": 24, "flutter": { "rate": 14.0, "gain": "flutterGain" }, "surface": "ball",
-      "turn": { "near": 0.25, "far": 0.6 }, "color": "teal", "outline": { "width": 3.0, "color": "line" }
+      "turn": { "near": 0.25, "far": 0.6 }, "color": "feathers", "outline": { "width": 3.0, "color": "outline" }
     },
-    { "part": "eyes", "space": "face", "surface": "face", "at": [100.0, 96.0], "scale": [0.82, 0.95], "ink": "eyes", "glow": 0.0 },
+    { "part": "eyes", "iris": "iris", "space": "face", "surface": "face", "at": [100.0, 96.0], "scale": [0.82, 0.95], "ink": "eyes", "glow": 0.0 },
     {
       "part": "beak", "space": "face", "surface": "face",
       "lower": [[90.0, 118.0], [110.0, 118.0], [100.0, 122.0]], "drop": 14.0,
       "upper": { "quad": [[89.0, 118.0], [100.0, 108.0], [111.0, 118.0]], "segments": 10, "tip": [100.0, 127.0], "rise": 2.0 },
       "open": { "effect": 0.45, "rest": 0.05 },
-      "colors": ["beakDark", "beak"], "outline": { "width": 2.5, "color": "line" }
+      "colors": ["beakDark", "beak"], "outline": { "width": 2.5, "color": "outline" }
     },
     {
       "part": "notes", "space": "whole", "count": 3, "rate": 0.8,
-      "from": [146.0, 70.0], "travel": [26.0, 40.0], "stagger": 6.0, "scale": [1.0, 0.8], "floor": 0.3, "color": "teal",
+      "from": [146.0, 70.0], "travel": [26.0, 40.0], "stagger": 6.0, "scale": [1.0, 0.8], "floor": 0.3, "color": "feathers",
       "dots": { "at": [146.0, 44.0], "step": [10.0, 6.0], "r": [3.5, 1.0], "segments": 16, "rate": 2.2, "base": 0.3, "gain": 0.7 }
     }
   ],
-  "burst": { "at": [100.0, 104.0], "r": 82.0, "colors": ["celebrate", "beak", "teal"] },
+  "burst": { "at": [100.0, 104.0], "r": 82.0, "colors": ["celebrate", "beak", "feathers"] },
   "slots": {
     "headTop": { "at": [100.0, 52.0], "scale": 1.0, "follows": "head" },
     "face": { "at": [100.0, 100.0], "follows": "face" },

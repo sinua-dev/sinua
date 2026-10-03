@@ -4252,6 +4252,9 @@
         "accent": {
           "$ref": "#/$defs/colour"
         },
+        "iris": {
+          "$ref": "#/$defs/colour"
+        },
         "primary": {
           "$ref": "#/$defs/colour"
         },

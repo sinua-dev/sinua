@@ -704,10 +704,10 @@ carry on underneath.
   talking mouth. It is never announced.
 
 **Palette** (FX Spec 1.12, design note 19): a character's `palette` prop, slot -> hex (Web /
-React / RN `{ shell: "#E63946" }`, SwiftUI `["shell": "#E63946"]`, Compose
-`mapOf("shell" to "#E63946")`; on `<sinua-character>` a property).
+React / RN `{ body: "#E63946" }`, SwiftUI `["body": "#E63946"]`, Compose
+`mapOf("body" to "#E63946")`; on `<sinua-character>` a property).
 - **Over the spec:** it wins over a spec's `palette`, slot by slot through the engine's own
-  rules (tones follow, a dark ground lifts the ink). See [`character.md`](character.md), *Palette*.
+  rules (tones follow, a dark ground lifts the eyes). See [`character.md`](character.md), *Palette*.
 - **A change is immediate**, no easing. An unknown slot draws nothing new (Web: `onError`).
 
 **Tap to hop** (FX Spec 1.12, design note 15).

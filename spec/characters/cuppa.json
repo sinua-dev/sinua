@@ -4,6 +4,7 @@
   "recipe": 1,
   "id": "cuppa",
   "palette": {
+    "iris": [188, 0.75, 0.45],
     "mug": [12, 0.7, 0.6],
     "mugLight": [16, 0.82, 0.76],
     "mugDark": [8, 0.58, 0.44],
@@ -13,25 +14,25 @@
     "sleeveDark": [34, 0.35, 0.66],
     "heart": [352, 0.75, 0.62],
     "shine": [20, 1.0, 0.96],
-    "cheek": [352, 0.8, 0.72],
+    "cheeks": [352, 0.8, 0.72],
     "saucer": [40, 0.3, 0.92],
     "saucerDark": [36, 0.18, 0.72],
-    "line": [10, 0.45, 0.18],
-    "ink": [10, 0.4, 0.12],
+    "outline": [10, 0.45, 0.18],
+    "eyes": [10, 0.4, 0.12],
     "steam": [25, 0.12, 0.74]
   },
   "hue": {"base": 12, "turns": ["mug", "mugLight", "mugDark"]},
-  "roles": {"primary": "mug", "secondary": "sleeve", "accent": "heart"},
-  "contrast": [["ink", "mug"]],
+  "roles": {"iris": "iris", "primary": "mug", "secondary": "sleeve", "accent": "heart"},
+  "contrast": [["eyes", "mug"]],
   "rig": {"kind": "pivot", "pivot": [92, 176], "lean": 0.5, "squash": true},
   "surfaces": {"face": {"c": [90, 110], "r": 58, "depth": 0.4, "cylinder": true}},
   "parts": [
     {"part": "shadow", "space": "ground", "at": [96, 188], "r": [66, 5]},
-    {"part": "stand", "space": "whole", "under": [96, 184, 66, 9], "foot": [96, 180, 66, 9], "segments": 48, "stem": [86, 170, 20, 12, 3, 2], "dark": "saucerDark", "color": "saucer", "outline": {"width": 2.5, "color": "line"}},
+    {"part": "stand", "space": "whole", "under": [96, 184, 66, 9], "foot": [96, 180, 66, 9], "segments": 48, "stem": [86, 170, 20, 12, 3, 2], "dark": "saucerDark", "color": "saucer", "outline": {"width": 2.5, "color": "outline"}},
     {"part": "steam", "space": "body", "at": [90, 46], "count": 3, "spread": 16, "rise": 28, "width": 6, "sway": 4, "rate": 0.45, "blur": 1.8, "color": "steam", "alpha": 0.9},
-    {"part": "body", "space": "body", "shape": {"path": "M44 54 C44 42 136 42 136 54 V70 C180 70 180 140 136 140 V156 C136 170 126 176 116 176 H64 C54 176 44 170 44 156 Z M136 86 C160 86 160 124 136 124 Z"}, "light": {"radial": [66, 70, 120], "stops": [[0, "mugLight"], [0.55, "mug"], [1, "mugDark"]]}, "turnLight": [-14, 10], "inner": [{"part": "patch", "shape": {"ellipse": [90, 52, 40, 7, 0, 40]}, "color": "coffee"}, {"part": "patch", "shape": {"ellipse": [84, 50, 18, 3, 0, 24]}, "color": "crema"}, {"part": "glints", "at": [[66, 56]], "rect": [54, 6, 3, 2], "color": "shine", "alpha": 0.35}, {"part": "band", "shape": {"roundRect": [30, 128, 160, 24, 0, 4]}, "color": "sleeve"}, {"part": "stripes", "at": [132, 147], "rect": [30, 160, 1.6, 0.8, 2], "color": "sleeveDark", "alpha": 0.7}, {"part": "patch", "shape": {"path": "M90 148 C78 140 80 131 86 132 C88 132 90 134 90 136 C90 134 92 132 94 132 C100 131 102 140 90 148 Z"}, "surface": "face", "color": "heart"}, {"part": "patch", "shape": {"ellipse": [64, 112, 8, 5, 0, 24]}, "surface": "face", "color": "cheek"}, {"part": "patch", "shape": {"ellipse": [116, 112, 8, 5, 0, 24]}, "surface": "face", "color": "cheek"}], "outline": {"width": 3.5, "color": "line"}},
-    {"part": "eyes", "space": "face", "surface": "face", "at": [90, 94], "scale": [0.95, 1.05], "ink": "ink", "glow": 0.0},
-    {"part": "ovalMouth", "space": "face", "surface": "face", "at": [90, 94], "scale": [0.95, 1.05], "halfWidth": 11.0, "ink": "ink"}
+    {"part": "body", "space": "body", "shape": {"path": "M44 54 C44 42 136 42 136 54 V70 C180 70 180 140 136 140 V156 C136 170 126 176 116 176 H64 C54 176 44 170 44 156 Z M136 86 C160 86 160 124 136 124 Z"}, "light": {"radial": [66, 70, 120], "stops": [[0, "mugLight"], [0.55, "mug"], [1, "mugDark"]]}, "turnLight": [-14, 10], "inner": [{"part": "patch", "shape": {"ellipse": [90, 52, 40, 7, 0, 40]}, "color": "coffee"}, {"part": "patch", "shape": {"ellipse": [84, 50, 18, 3, 0, 24]}, "color": "crema"}, {"part": "glints", "at": [[66, 56]], "rect": [54, 6, 3, 2], "color": "shine", "alpha": 0.35}, {"part": "band", "shape": {"roundRect": [30, 128, 160, 24, 0, 4]}, "color": "sleeve"}, {"part": "stripes", "at": [132, 147], "rect": [30, 160, 1.6, 0.8, 2], "color": "sleeveDark", "alpha": 0.7}, {"part": "patch", "shape": {"path": "M90 148 C78 140 80 131 86 132 C88 132 90 134 90 136 C90 134 92 132 94 132 C100 131 102 140 90 148 Z"}, "surface": "face", "color": "heart"}, {"part": "patch", "shape": {"ellipse": [64, 112, 8, 5, 0, 24]}, "surface": "face", "color": "cheeks"}, {"part": "patch", "shape": {"ellipse": [116, 112, 8, 5, 0, 24]}, "surface": "face", "color": "cheeks"}], "outline": {"width": 3.5, "color": "outline"}},
+    {"part": "eyes", "iris": "iris", "space": "face", "surface": "face", "at": [90, 94], "scale": [0.95, 1.05], "ink": "eyes", "glow": 0.0},
+    {"part": "ovalMouth", "space": "face", "surface": "face", "at": [90, 94], "scale": [0.95, 1.05], "halfWidth": 11.0, "ink": "eyes"}
   ],
   "burst": {"at": [90, 110], "r": 84, "colors": ["celebrate", "mug", "heart"]},
   "slots": {"headTop": {"at": [90, 40], "scale": 0.95, "follows": "head"}, "face": {"at": [90, 100], "follows": "face"}, "chest": {"at": [90, 140], "follows": "body"}}

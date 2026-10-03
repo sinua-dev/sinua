@@ -11,22 +11,22 @@
     "recipe": 1,
     "id": "buzzy-rich",
     "palette": {
-      "shell": [
+      "body": [
         231.9,
         0.566,
         0.461
       ],
-      "shellLight": [
+      "bodyLight": [
         231.3,
         1.0,
         0.718
       ],
-      "shellDark": [
+      "bodyDark": [
         234.1,
         0.631,
         0.255
       ],
-      "line": [
+      "outline": [
         234.1,
         0.662,
         0.151
@@ -36,27 +36,27 @@
         0.61,
         0.061
       ],
-      "amber": [
+      "accent": [
         36.1,
         1.0,
         0.616
       ],
-      "cyan": [
+      "glow": [
         185.0,
         1.0,
         0.716
       ],
-      "glass": [
+      "visor": [
         203.0,
         1.0,
         0.873
       ],
-      "glassEdge": [
+      "visorEdge": [
         200.0,
         1.0,
         0.91
       ],
-      "white": [
+      "shine": [
         0.0,
         0.0,
         1.0
@@ -75,16 +75,16 @@
     "hue": {
       "base": 232.0,
       "turns": [
-        "shell",
-        "shellLight",
-        "shellDark",
-        "line",
+        "body",
+        "bodyLight",
+        "bodyDark",
+        "outline",
         "screen"
       ]
     },
     "contrast": [
       [
-        "cyan",
+        "glow",
         "screen"
       ]
     ],
@@ -122,13 +122,13 @@
         "part": "torso",
         "space": "body",
         "shades": [
-          "shellLight",
-          "shell",
-          "shellDark"
+          "bodyLight",
+          "body",
+          "bodyDark"
         ],
         "outline": {
           "width": 3.5,
-          "color": "line"
+          "color": "outline"
         }
       },
       {
@@ -140,7 +140,7 @@
         "light": "none",
         "outline": {
           "width": 0,
-          "color": "line"
+          "color": "outline"
         },
         "inner": [
           {
@@ -240,8 +240,8 @@
         ],
         "colors": [
           "screen",
-          "amber",
-          "cyan"
+          "accent",
+          "glow"
         ]
       },
       {
@@ -249,20 +249,20 @@
         "space": "body",
         "x": 100.0,
         "reach": 62.0,
-        "pod": "shellDark",
-        "line": "line",
-        "chevron": "amber",
-        "arcs": "cyan"
+        "pod": "bodyDark",
+        "line": "outline",
+        "chevron": "accent",
+        "arcs": "glow"
       },
       {
         "part": "helmet",
         "space": "body",
         "shades": [
-          "shellLight",
-          "shell",
-          "shellDark"
+          "bodyLight",
+          "body",
+          "bodyDark"
         ],
-        "line": "line"
+        "line": "outline"
       },
       {
         "part": "body",
@@ -273,7 +273,7 @@
         "light": "none",
         "outline": {
           "width": 0,
-          "color": "line"
+          "color": "outline"
         },
         "inner": [
           {
@@ -338,12 +338,12 @@
               "stops": [
                 [
                   0,
-                  "shellLight",
+                  "bodyLight",
                   0.45
                 ],
                 [
                   1,
-                  "shellLight",
+                  "bodyLight",
                   0
                 ]
               ]
@@ -372,17 +372,17 @@
               "stops": [
                 [
                   0,
-                  "white",
+                  "shine",
                   0.8
                 ],
                 [
                   0.45,
-                  "white",
+                  "shine",
                   0.3
                 ],
                 [
                   1,
-                  "white",
+                  "shine",
                   0
                 ]
               ]
@@ -406,27 +406,27 @@
         "front": true,
         "x": 100.0,
         "reach": 62.0,
-        "pod": "shellDark",
-        "line": "line",
-        "chevron": "amber",
-        "arcs": "cyan"
+        "pod": "bodyDark",
+        "line": "outline",
+        "chevron": "accent",
+        "arcs": "glow"
       },
       {
         "part": "fin",
         "space": "body",
-        "color": "amber",
-        "line": "line"
+        "color": "accent",
+        "line": "outline"
       },
       {
         "part": "faceScreen",
         "space": "face",
         "surface": "face",
         "screen": "screen",
-        "ink": "cyan",
-        "line": "line",
-        "glass": "glass",
-        "glassEdge": "glassEdge",
-        "glint": "white"
+        "ink": "glow",
+        "line": "outline",
+        "glass": "visor",
+        "glassEdge": "visorEdge",
+        "glint": "shine"
       }
     ],
     "burst": {
@@ -438,8 +438,8 @@
       "r": 80.0,
       "colors": [
         "celebrate",
-        "amber",
-        "cyan"
+        "accent",
+        "glow"
       ]
     },
     "slots": {

@@ -262,7 +262,7 @@ and mouth, with heavier lines.
 
 | Key | Default | Meaning |
 |---|---|---|
-| `hue` | 232 | turns the shell (and its line and screen tints); the eyes and amber stay |
+| `hue` | 232 | turns the body (and its outline and screen tints); the eyes and accent stay |
 | `mouth` | 1 | 0 = eyes only |
 | `accessories` | 1 | 0 drops the crest, chevrons and listening arcs |
 | `look` | 1 | how much the eyes glance around on their own (0 = at the viewer) |
@@ -274,16 +274,22 @@ and mouth, with heavier lines.
 ## Palette (FX Spec 1.12, design note 19)
 
 `palette` repaints some of a character's colours and leaves the rest as drawn:
-`"palette": { "shell": "#E63946", "amber": "#FFFFFF" }` in an FX Spec (base and `states`), or
+`"palette": { "body": "#E63946", "accent": "#FFFFFF" }` in an FX Spec (base and `states`), or
 the `palette` prop on a view.
-- **Slots** are the recipe's palette names (`characterRecipe(id).palette` on the Web). An unknown slot is an error with a "did you mean".
+- **Slots** are the recipe's palette names (`characterRecipe(id).palette` on the Web), named by
+  the part they paint, never by colour (design note 27): `body` is every character's main
+  colour, `outline`, `cheeks`, `shine` and `iris` mean the same everywhere, and the eyes are
+  `eyes` on a body face and `glow` on a screen face. An unknown slot is an error with a "did you mean".
+- **Labels:** `spec/character-slot-labels.json` gives every slot a label and a one-line
+  description for a colour picker (`{ "buzzy": { "body": { "label": "Body", "description": … } } }`),
+  in English, with the localization key `sinua.slot.<character>.<slot>`.
 - **Colours** are hex or DTCG, as everywhere in the FX Spec.
-- **Tones follow:** given `shell`, the recipe's `shellLight` and `shellDark` move with it and keep
+- **Tones follow:** given `body`, the recipe's `bodyLight` and `bodyDark` move with it and keep
   their own offset in hue, saturation and lightness. A tone given outright wins.
 - **After `hue`:** `hue` still turns the slots it turns; a colour given in `palette` is never
   turned.
 - **Contrast:** a recipe names the ink each face part sits on (`contrast`, e.g.
-  `[["ink", "bean"]]`). When a new ground comes within 0.35 lightness of an ink left as drawn,
+  `[["eyes", "body"]]`). When a new ground comes within 0.35 lightness of an ink left as drawn,
   the ink moves to the far side (0.9 on dark, 0.12 on light). An ink given outright is kept,
   with a warning at `/palette/<ink>`. The outline stays as drawn.
 - **Blending:** the override is engine keys (`palette.<slot>.h/.s/.l/.w`, set only through
@@ -292,18 +298,21 @@ the `palette` prop on a view.
 
 | Character | Slots (a `+Light/Dark` slot's tones follow it) |
 |---|---|
-| buzzy | shell (+Light/Dark), line, screen, amber, cyan, glass, glassEdge, white |
-| hum | body (+Light/Dark), brass (+Dark), grille, glow, line, tallyRed, tallyAmber, tallyOff, white |
-| wisp | violet, blue, teal, line, eyes, gold, ice, white |
-| chirp | body (+Light/Dark), belly, teal, beak (+Dark), line, eyes |
-| cuppa | mug (+Light/Dark), coffee, crema, sleeve (+Dark), heart, shine, cheek, saucer (+Dark), line, ink, steam |
-| bean | bean (+Light/Dark), groove, grooveEdge, shine, cheek, aroma, foam, line, ink |
-| beep | steel (+Light/Dark), panel, screen, glow, accent (+Dark), off, red, amber, line, rivet, cheek |
+| buzzy | body (+Light/Dark), outline, screen, accent, glow, visor, visorEdge, shine, iris |
+| hum | body (+Light/Dark), stand (+Dark), grille, glow, outline, tallyListening, tallyThinking, tallyOff, shine, iris |
+| wisp | body, bodyMid, tail, outline, eyes, sparkles, twinkles, shine, iris |
+| chirp | body (+Light/Dark), belly, feathers, beak (+Dark), outline, eyes, iris |
+| cuppa | mug (+Light/Dark), coffee, crema, sleeve (+Dark), heart, shine, cheeks, saucer (+Dark), outline, eyes, steam, iris |
+| bean | body (+Light/Dark), groove, grooveEdge, shine, cheeks, aroma, foam, outline, eyes, iris |
+| beep | body (+Light/Dark), arms, screen, glow, accent, tallyOff, tallyListening, tallyThinking, outline, rivets, cheeks, iris |
+
+`iris` colours the glossy eye (`eyeStyle: glossy`); the other eye styles have no iris and
+ignore it. Beep's `arms` paints only its arms.
 
 ### Named palettes and roles (FX Spec 1.13, design note 23)
 
 A palette can also be written over **roles**, so one palette fits every character: each
-recipe's `roles` maps `primary`, `secondary` and `accent` to its own slots.
+recipe's `roles` maps `primary`, `secondary`, `accent` and `iris` to its own slots.
 - `"palette": "sunset"` (or `{ "theme": "sunset" }`) applies a built-in named palette:
   `sunset`, `ocean`, `forest`, `candy`, `mono`, `night`.
 - `{ "primary": "#E63946" }` paints by role, without knowing the slot names.
@@ -315,16 +324,22 @@ recipe's `roles` maps `primary`, `secondary` and `accent` to its own slots.
   and the engine picks the variant, so no re-resolve is needed. A character without a variant
   draws the same in both themes, as before.
 - On a view, the `palette` prop takes the same keys (`{ theme: "ocean", accent: "#FF6B6B" }`).
+- **A slot named like a role:** Buzzy's and Beep's accent role is their `accent` slot, and every
+  character's `iris` role is its `iris` slot, so `{ "accent": "#FF6B6B" }` paints the same slot
+  either way. The precedence only matters when a role points elsewhere: on Hum,
+  `{ "accent": … }` paints `tallyListening`.
+- **Eye colour (E4):** `{ "iris": "#7A4BD6" }` gives any character purple glossy eyes; a theme
+  or a catalog palette may carry `iris` too.
 
-| Character | primary | secondary | accent |
-|---|---|---|---|
-| buzzy | shell | — | amber |
-| hum | body | — | tallyRed |
-| wisp | violet | blue | teal |
-| chirp | body | belly | beak |
-| cuppa | mug | sleeve | heart |
-| bean | bean | — | aroma |
-| beep | steel | panel | accent |
+| Character | primary | secondary | accent | iris |
+|---|---|---|---|---|
+| buzzy | body | — | accent | iris |
+| hum | body | — | tallyListening | iris |
+| wisp | body | bodyMid | tail | iris |
+| chirp | body | belly | beak | iris |
+| cuppa | mug | sleeve | heart | iris |
+| bean | body | — | aroma | iris |
+| beep | body | arms | accent | iris |
 
 | Palette | primary · secondary · accent (light) | dark |
 |---|---|---|

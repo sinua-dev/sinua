@@ -11,17 +11,17 @@
     "recipe": 1,
     "id": "bean-rich",
     "palette": {
-      "bean": [
+      "body": [
         24,
         0.52,
         0.42
       ],
-      "beanLight": [
+      "bodyLight": [
         28,
         0.6,
         0.6
       ],
-      "beanDark": [
+      "bodyDark": [
         20,
         0.52,
         0.27
@@ -41,7 +41,7 @@
         1.0,
         0.95
       ],
-      "cheek": [
+      "cheeks": [
         6,
         0.75,
         0.64
@@ -56,12 +56,12 @@
         0.8,
         0.88
       ],
-      "line": [
+      "outline": [
         18,
         0.45,
         0.15
       ],
-      "ink": [
+      "eyes": [
         18,
         0.45,
         0.1
@@ -80,16 +80,16 @@
     "hue": {
       "base": 24,
       "turns": [
-        "bean",
-        "beanLight",
-        "beanDark",
+        "body",
+        "bodyLight",
+        "bodyDark",
         "groove"
       ]
     },
     "contrast": [
       [
-        "ink",
-        "bean"
+        "eyes",
+        "body"
       ]
     ],
     "rig": {
@@ -134,7 +134,7 @@
           184
         ],
         "width": 4.5,
-        "color": "beanDark"
+        "color": "bodyDark"
       },
       {
         "part": "body",
@@ -153,15 +153,15 @@
           "stops": [
             [
               0,
-              "beanLight"
+              "bodyLight"
             ],
             [
               0.35,
-              "bean"
+              "body"
             ],
             [
               0.75,
-              "beanDark"
+              "bodyDark"
             ],
             [
               1,
@@ -236,12 +236,12 @@
               "stops": [
                 [
                   0,
-                  "beanLight",
+                  "bodyLight",
                   0.5
                 ],
                 [
                   1,
-                  "beanLight",
+                  "bodyLight",
                   0
                 ]
               ]
@@ -341,17 +341,17 @@
               "stops": [
                 [
                   0,
-                  "cheek",
+                  "cheeks",
                   0.85
                 ],
                 [
                   0.55,
-                  "cheek",
+                  "cheeks",
                   0.45
                 ],
                 [
                   1,
-                  "cheek",
+                  "cheeks",
                   0
                 ]
               ]
@@ -381,17 +381,17 @@
               "stops": [
                 [
                   0,
-                  "cheek",
+                  "cheeks",
                   0.85
                 ],
                 [
                   0.55,
-                  "cheek",
+                  "cheeks",
                   0.45
                 ],
                 [
                   1,
-                  "cheek",
+                  "cheeks",
                   0
                 ]
               ]
@@ -410,7 +410,7 @@
         ],
         "outline": {
           "width": 3.5,
-          "color": "line"
+          "color": "outline"
         }
       },
       {
@@ -425,7 +425,7 @@
           0.95,
           1.05
         ],
-        "ink": "ink",
+        "ink": "eyes",
         "glow": 0.0
       },
       {
@@ -441,7 +441,7 @@
           1.05
         ],
         "halfWidth": 11.0,
-        "ink": "ink"
+        "ink": "eyes"
       },
       {
         "part": "sparkles",
@@ -465,8 +465,8 @@
       "r": 86,
       "colors": [
         "celebrate",
-        "bean",
-        "cheek"
+        "body",
+        "cheeks"
       ]
     },
     "slots": {

@@ -45,7 +45,7 @@
         1.0,
         0.425
       ],
-      "line": [
+      "outline": [
         184.0,
         0.7,
         0.16
@@ -224,7 +224,7 @@
         ],
         "outline": {
           "width": 3.5,
-          "color": "line"
+          "color": "outline"
         }
       },
       {
@@ -253,7 +253,7 @@
         "color": "coral",
         "outline": {
           "width": 3.0,
-          "color": "line"
+          "color": "outline"
         }
       },
       {
@@ -322,7 +322,7 @@
         ],
         "outline": {
           "width": 2.5,
-          "color": "line"
+          "color": "outline"
         }
       },
       {

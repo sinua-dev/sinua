@@ -1,5 +1,5 @@
 {
-  "$comment": "Loadout rules (FX Spec 1.13, design note 25), checked on every platform against the engine's applyLoadout / cosmeticsFor: spec/examples/wardrobe-bean.fxspec.json with each loadout. `wear`: the ids worn after applying it; `palette`: the file's `palette` after it (null = none); `eyeStyle`: `params.eyeStyle` (null = none); `warnings`: the warning paths, sorted. `fits`: cosmeticsFor's reason per character and id. A wear entry may be an object with a bounded nudge (C2): `fit` lists the cosmetic's resulting `fit` for the drawn character. A `fits` entry may carry its own `spec`.",
+  "$comment": "Loadout rules (FX Spec 1.13, design note 25), checked on every platform against the engine's applyLoadout / cosmeticsFor: spec/examples/wardrobe-bean.fxspec.json with each loadout. `wear`: the ids worn after applying it; `palette`: the file's `palette` after it (null = none; an `iris` name, design note 27, joins it); `eyeStyle`: `params.eyeStyle` (null = none); `warnings`: the warning paths, sorted. `fits`: cosmeticsFor's reason per character and id. A wear entry may be an object with a bounded nudge (C2): `fit` lists the cosmetic's resulting `fit` for the drawn character. A `fits` entry may carry its own `spec`.",
   "spec": "examples/wardrobe-bean.fxspec.json",
   "cases": [
     {
@@ -281,6 +281,86 @@
           "angle": 0
         }
       }
+    },
+    {
+      "name": "an eye colour from the wardrobe",
+      "loadout": {
+        "loadout": 1,
+        "iris": "hazel"
+      },
+      "wear": [
+        "party-hat"
+      ],
+      "palette": {
+        "iris": "#9C7A3C"
+      },
+      "eyeStyle": null,
+      "warnings": []
+    },
+    {
+      "name": "an eye colour joins a wardrobe palette",
+      "loadout": {
+        "loadout": 1,
+        "palette": "mint",
+        "iris": "violet"
+      },
+      "wear": [
+        "party-hat"
+      ],
+      "palette": {
+        "primary": "#3FBF9F",
+        "accent": "#FFD166",
+        "iris": "#7A4BD6"
+      },
+      "eyeStyle": null,
+      "warnings": []
+    },
+    {
+      "name": "an eye colour over a built-in palette",
+      "loadout": {
+        "loadout": 1,
+        "palette": "sunset",
+        "iris": "hazel"
+      },
+      "wear": [
+        "party-hat"
+      ],
+      "palette": {
+        "theme": "sunset",
+        "iris": "#9C7A3C"
+      },
+      "eyeStyle": null,
+      "warnings": []
+    },
+    {
+      "name": "an eye colour is a name, never a colour",
+      "loadout": {
+        "loadout": 1,
+        "iris": "#FF0000"
+      },
+      "wear": [
+        "party-hat"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": [
+        "/loadout/iris"
+      ]
+    },
+    {
+      "name": "an unknown eye colour keeps the file's",
+      "loadout": {
+        "loadout": 1,
+        "iris": "gold"
+      },
+      "wear": [
+        "party-hat"
+      ],
+      "palette": null,
+      "eyeStyle": null,
+      "warnings": [
+        "/loadout/iris"
+      ]
     }
   ],
   "fits": [

@@ -1,0 +1,357 @@
+{
+  "$comment": "Human labels for every built-in character's palette slots (design note 27), for colour pickers: English by default; translate by the key sinua.slot.<character>.<slot>. Every slot has one (a test checks).",
+  "buzzy": {
+    "iris": {
+      "label": "Iris",
+      "description": "The coloured part of a glossy eye (eye style: glossy)."
+    },
+    "body": {
+      "label": "Body",
+      "description": "The main colour."
+    },
+    "bodyLight": {
+      "label": "Body highlight",
+      "description": "The lit side of the body; follows Body."
+    },
+    "bodyDark": {
+      "label": "Body shadow",
+      "description": "The shaded side of the body; follows Body."
+    },
+    "outline": {
+      "label": "Outline",
+      "description": "The line around every shape."
+    },
+    "screen": {
+      "label": "Face screen",
+      "description": "The dark screen behind the face."
+    },
+    "accent": {
+      "label": "Accent",
+      "description": "The crest, the ear chevrons and the chest core's trim."
+    },
+    "glow": {
+      "label": "Glow",
+      "description": "The eyes and mouth on the screen, the ear arcs and the chest core."
+    },
+    "visor": {
+      "label": "Visor",
+      "description": "The glass over the face screen."
+    },
+    "visorEdge": {
+      "label": "Visor rim",
+      "description": "The visor's edge."
+    },
+    "shine": {
+      "label": "Shine",
+      "description": "The small glints of light."
+    }
+  },
+  "hum": {
+    "iris": {
+      "label": "Iris",
+      "description": "The coloured part of a glossy eye (eye style: glossy)."
+    },
+    "body": {
+      "label": "Body",
+      "description": "The main colour."
+    },
+    "bodyLight": {
+      "label": "Body highlight",
+      "description": "The lit side of the body; follows Body."
+    },
+    "bodyDark": {
+      "label": "Body shadow",
+      "description": "The shaded side of the body; follows Body."
+    },
+    "stand": {
+      "label": "Stand",
+      "description": "The yoke and the stand."
+    },
+    "standDark": {
+      "label": "Stand shadow",
+      "description": "The stand's shaded side; follows Stand."
+    },
+    "grille": {
+      "label": "Grille",
+      "description": "The grille band the face sits on."
+    },
+    "glow": {
+      "label": "Glow",
+      "description": "The eyes and the lit grille slots."
+    },
+    "outline": {
+      "label": "Outline",
+      "description": "The line around every shape."
+    },
+    "tallyListening": {
+      "label": "Tally: listening",
+      "description": "The tally light while it listens."
+    },
+    "tallyThinking": {
+      "label": "Tally: thinking",
+      "description": "The tally light while it thinks."
+    },
+    "tallyOff": {
+      "label": "Tally: off",
+      "description": "The tally light at rest."
+    },
+    "shine": {
+      "label": "Shine",
+      "description": "The small glints of light."
+    }
+  },
+  "wisp": {
+    "iris": {
+      "label": "Iris",
+      "description": "The coloured part of a glossy eye (eye style: glossy)."
+    },
+    "body": {
+      "label": "Body",
+      "description": "The top of the spirit."
+    },
+    "bodyMid": {
+      "label": "Body middle",
+      "description": "The middle of the spirit, between the head and the tail."
+    },
+    "tail": {
+      "label": "Tail",
+      "description": "The smoke tail."
+    },
+    "outline": {
+      "label": "Outline",
+      "description": "The line around every shape."
+    },
+    "eyes": {
+      "label": "Eyes",
+      "description": "The eyes and the mouth."
+    },
+    "sparkles": {
+      "label": "Sparkles",
+      "description": "Every other sparkle."
+    },
+    "twinkles": {
+      "label": "Twinkles",
+      "description": "The sparkles in between."
+    },
+    "shine": {
+      "label": "Shine",
+      "description": "The small glints of light."
+    }
+  },
+  "chirp": {
+    "iris": {
+      "label": "Iris",
+      "description": "The coloured part of a glossy eye (eye style: glossy)."
+    },
+    "body": {
+      "label": "Body",
+      "description": "The main colour."
+    },
+    "bodyLight": {
+      "label": "Body highlight",
+      "description": "The lit side of the body; follows Body."
+    },
+    "bodyDark": {
+      "label": "Body shadow",
+      "description": "The shaded side of the body; follows Body."
+    },
+    "belly": {
+      "label": "Belly",
+      "description": "The belly patch."
+    },
+    "feathers": {
+      "label": "Feathers",
+      "description": "The crest, the wings and the music notes."
+    },
+    "beak": {
+      "label": "Beak",
+      "description": "The beak and the feet."
+    },
+    "beakDark": {
+      "label": "Beak shadow",
+      "description": "The beak's shaded side; follows Beak."
+    },
+    "outline": {
+      "label": "Outline",
+      "description": "The line around every shape."
+    },
+    "eyes": {
+      "label": "Eyes",
+      "description": "The eyes and the mouth."
+    }
+  },
+  "cuppa": {
+    "iris": {
+      "label": "Iris",
+      "description": "The coloured part of a glossy eye (eye style: glossy)."
+    },
+    "mug": {
+      "label": "Mug",
+      "description": "The cup."
+    },
+    "mugLight": {
+      "label": "Mug highlight",
+      "description": "The lit side of the cup; follows Mug."
+    },
+    "mugDark": {
+      "label": "Mug shadow",
+      "description": "The shaded side of the cup; follows Mug."
+    },
+    "coffee": {
+      "label": "Coffee",
+      "description": "The coffee in the cup."
+    },
+    "crema": {
+      "label": "Crema",
+      "description": "The foam on the coffee."
+    },
+    "sleeve": {
+      "label": "Sleeve",
+      "description": "The sleeve around the cup."
+    },
+    "sleeveDark": {
+      "label": "Sleeve shadow",
+      "description": "The sleeve's shaded side; follows Sleeve."
+    },
+    "heart": {
+      "label": "Heart",
+      "description": "The heart on the sleeve."
+    },
+    "shine": {
+      "label": "Shine",
+      "description": "The small glints of light."
+    },
+    "cheeks": {
+      "label": "Cheeks",
+      "description": "The blush on the cheeks."
+    },
+    "saucer": {
+      "label": "Saucer",
+      "description": "The saucer."
+    },
+    "saucerDark": {
+      "label": "Saucer shadow",
+      "description": "The saucer's shaded side; follows Saucer."
+    },
+    "outline": {
+      "label": "Outline",
+      "description": "The line around every shape."
+    },
+    "eyes": {
+      "label": "Eyes",
+      "description": "The eyes and the mouth."
+    },
+    "steam": {
+      "label": "Steam",
+      "description": "The steam above the cup."
+    }
+  },
+  "bean": {
+    "iris": {
+      "label": "Iris",
+      "description": "The coloured part of a glossy eye (eye style: glossy)."
+    },
+    "body": {
+      "label": "Body",
+      "description": "The main colour."
+    },
+    "bodyLight": {
+      "label": "Body highlight",
+      "description": "The lit side of the body; follows Body."
+    },
+    "bodyDark": {
+      "label": "Body shadow",
+      "description": "The shaded side of the body; follows Body."
+    },
+    "groove": {
+      "label": "Groove",
+      "description": "The S-shaped groove."
+    },
+    "grooveEdge": {
+      "label": "Groove edge",
+      "description": "The lit edge along the groove."
+    },
+    "shine": {
+      "label": "Shine",
+      "description": "The small glints of light."
+    },
+    "cheeks": {
+      "label": "Cheeks",
+      "description": "The blush on the cheeks."
+    },
+    "aroma": {
+      "label": "Aroma",
+      "description": "The larger aroma sparkles."
+    },
+    "foam": {
+      "label": "Foam",
+      "description": "The smaller sparkles."
+    },
+    "outline": {
+      "label": "Outline",
+      "description": "The line around every shape."
+    },
+    "eyes": {
+      "label": "Eyes",
+      "description": "The eyes and the mouth."
+    }
+  },
+  "beep": {
+    "iris": {
+      "label": "Iris",
+      "description": "The coloured part of a glossy eye (eye style: glossy)."
+    },
+    "body": {
+      "label": "Body",
+      "description": "The main colour."
+    },
+    "bodyLight": {
+      "label": "Body highlight",
+      "description": "The lit side of the body; follows Body."
+    },
+    "bodyDark": {
+      "label": "Body shadow",
+      "description": "The shaded side of the body; follows Body."
+    },
+    "arms": {
+      "label": "Arms",
+      "description": "The arms (only the arms)."
+    },
+    "screen": {
+      "label": "Face screen",
+      "description": "The screen behind the face and the chest panel."
+    },
+    "glow": {
+      "label": "Glow",
+      "description": "The eyes, the mouth and the chest light."
+    },
+    "accent": {
+      "label": "Accent",
+      "description": "The hands, the band and the chest core."
+    },
+    "tallyOff": {
+      "label": "Antenna: off",
+      "description": "The antenna light at rest."
+    },
+    "tallyListening": {
+      "label": "Antenna: listening",
+      "description": "The antenna light while it listens."
+    },
+    "tallyThinking": {
+      "label": "Antenna: thinking",
+      "description": "The antenna light while it thinks."
+    },
+    "outline": {
+      "label": "Outline",
+      "description": "The line around every shape."
+    },
+    "rivets": {
+      "label": "Rivets",
+      "description": "The rivets on the body."
+    },
+    "cheeks": {
+      "label": "Cheeks",
+      "description": "The blush on the cheeks."
+    }
+  }
+}

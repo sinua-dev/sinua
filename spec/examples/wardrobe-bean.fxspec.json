@@ -59,7 +59,7 @@
           0.95,
           0.62
         ],
-        "line": [
+        "outline": [
           330,
           0.5,
           0.2
@@ -107,7 +107,7 @@
           ],
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -141,7 +141,7 @@
           },
           "outline": {
             "width": 2,
-            "color": "line"
+            "color": "outline"
           }
         }
       ]
@@ -369,6 +369,10 @@
         "primary": "#3FBF9F",
         "accent": "#FFD166"
       }
+    },
+    "irises": {
+      "hazel": "#9C7A3C",
+      "violet": "#7A4BD6"
     }
   }
 }

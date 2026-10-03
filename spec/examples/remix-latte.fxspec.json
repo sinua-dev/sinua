@@ -55,7 +55,7 @@
         1.0,
         0.96
       ],
-      "cheek": [
+      "cheeks": [
         352,
         0.8,
         0.72
@@ -70,12 +70,12 @@
         0.18,
         0.72
       ],
-      "line": [
+      "outline": [
         10,
         0.45,
         0.18
       ],
-      "ink": [
+      "eyes": [
         10,
         0.4,
         0.12
@@ -96,7 +96,7 @@
     },
     "contrast": [
       [
-        "ink",
+        "eyes",
         "mug"
       ]
     ],
@@ -278,7 +278,7 @@
               ]
             },
             "surface": "face",
-            "color": "cheek"
+            "color": "cheeks"
           },
           {
             "part": "patch",
@@ -293,12 +293,12 @@
               ]
             },
             "surface": "face",
-            "color": "cheek"
+            "color": "cheeks"
           }
         ],
         "outline": {
           "width": 3.5,
-          "color": "line"
+          "color": "outline"
         }
       },
       {
@@ -313,7 +313,7 @@
           0.95,
           1.05
         ],
-        "ink": "ink",
+        "ink": "eyes",
         "glow": 0.0
       },
       {
@@ -329,7 +329,7 @@
           1.05
         ],
         "halfWidth": 11.0,
-        "ink": "ink"
+        "ink": "eyes"
       }
     ],
     "burst": {

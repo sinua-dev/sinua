@@ -63,7 +63,7 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   your own (`recipe` in an FX Spec 1.12 file). `@sinua/snippets` adds `fitPath` (any SVG path,
   arcs included, fitted into the recipe's 200-unit box) and `svgPaths`.
 - Palettes: a character takes `palette`, a few of its colours by name
-  (`{ shell: "#E63946" }`), as a view prop or an FX Spec 1.12 key in the base and in `states`.
+  (`{ body: "#E63946" }`), as a view prop or an FX Spec 1.12 key in the base and in `states`.
   Light and dark tones follow; a dark body lifts the eyes; `hue` never turns a given colour.
   `characterRecipe(id)` gives a built-in's recipe, whose palette names are the slots. Snippets print it as the `palette` prop.
 - Tap to hop: a tap on a character plays the new `hop` effect. It hops, smiles, and glances
@@ -138,13 +138,23 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 - FX Spec 1.13: catalog packs (`docs/character-cosmetics.md`, *Catalog packs*). Sinua's free
   catalog (14 cosmetics, among them headphones that glow while speaking and a seasonal winter
-  hat, and 6 palettes) loads as data: `@sinua/web/catalog`, `SinuaCatalog` on iOS and Android,
+  hat, 6 palettes and 5 eye colours) loads as data: `@sinua/web/catalog`, `SinuaCatalog` on iOS and Android,
   `SINUA_CATALOG` + the `catalogs` prop on React Native. Files name items as `"catalog:<id>"`;
   a brand loads its own pack (from a file or a URL) under its own namespace.
   - Fit by capability: a slot is enough (a bow tie needs a `neck`), and `requires` / recipe
     `tags` cover the rest; a new `frame` slot draws round the whole character.
   - A loadout entry may carry a bounded nudge (`offset`, `scale`, `rotate`).
   - The Studio's Wardrobe group lists the catalog beside the file's own items.
+
+- Palette slots are named by the part they paint, never by colour (design note 27): every
+  character's main colour is `body`, and `outline`, `cheeks`, `shine` and `iris` mean the same
+  everywhere (Buzzy's `shell` / `amber` / `cyan` are now `body` / `accent` / `glow`; the full
+  table is in `docs/character.md`, *Palette*). `spec/character-slot-labels.json` gives every
+  slot a label and a one-line description for colour pickers; the Studio shows them and keeps
+  the light / dark tones behind *Advanced*.
+  - Eye colour on every character: an `iris` slot and role (`palette: { "iris": "#7A4BD6" }`)
+    colours the glossy eye; a loadout's `iris` picks one by name from `wardrobe.irises` or the
+    catalog (`catalog:eyes-hazel`).
 
 ### Changed
 

@@ -318,7 +318,7 @@ no cosmetic; the file carries each one. The guide is
 ```json
 { "fxSpec": "1.13", "object": "character", "pattern": "bean",
   "cosmetics": [{ "id": "party-hat", "label": "party hat", "slot": "headTop",
-    "palette": { "felt": [330, 0.72, 0.62], "trim": [48, 0.95, 0.62], "line": [330, 0.5, 0.2] },
+    "palette": { "felt": [330, 0.72, 0.62], "trim": [48, 0.95, 0.62], "outline": [330, 0.5, 0.2] },
     "parts": [{ "part": "body", "shape": { "path": "M-20 2 L0 -33 L20 2 Q0 8 -20 2 Z" }, … }] }] }
 ```
 (`spec/examples/party-hat.fxspec.json`)
@@ -367,8 +367,9 @@ no cosmetic; the file carries each one. The guide is
   [`character.md`](character.md), *Eye styles*; `spec/examples/glossy-bean.fxspec.json`,
   `pixel-beep.fxspec.json`, `dot-hum.fxspec.json`.
 - **Wardrobe and loadout** (design note 25): the top-level `wardrobe` (`object: character`)
-  holds what an end user may pick (`cosmetics`, named `palettes`). A loadout
-  (`{ "loadout": 1, "wear": [ids], "palette": name, "eyeStyle": name }`) is applied by the
+  holds what an end user may pick (`cosmetics`, named `palettes`, named eye colours
+  `irises`, design note 27). A loadout
+  (`{ "loadout": 1, "wear": [ids], "palette": name, "iris": name, "eyeStyle": name }`) is applied by the
   views (`loadout`) or `applyLoadout`; it only ever warns. A cosmetic may name its `category`.
   See [`character-cosmetics.md`](character-cosmetics.md), *Let end users pick*.
 - **Catalog packs** (design note 26): after `loadCatalog`, `"<namespace>:<id>"` names a pack's

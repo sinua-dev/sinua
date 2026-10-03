@@ -131,7 +131,7 @@ fun SinuaView(
      */
     expression: String? = null,
     /**
-     * A character's palette, in part (design note 19): slot -> hex, e.g. mapOf("shell" to "#E63946").
+     * A character's palette, in part (design note 19): slot -> hex, e.g. mapOf("body" to "#E63946").
      * The slots' tones follow; it wins over a spec's `palette`. A change is immediate.
      */
     palette: Map<String, String> = emptyMap(),
@@ -196,7 +196,7 @@ fun SinuaView(
      */
     expression: String? = null,
     /**
-     * A character's palette, in part (design note 19): slot -> hex, e.g. mapOf("shell" to "#E63946").
+     * A character's palette, in part (design note 19): slot -> hex, e.g. mapOf("body" to "#E63946").
      * The slots' tones follow; it wins over a spec's `palette`. A change is immediate.
      */
     palette: Map<String, String> = emptyMap(),

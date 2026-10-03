@@ -925,11 +925,11 @@ test("palette: repaints a character, and the prop wins over the spec's", () => {
   const { step } = env();
   const a = canvas(100);
   const b = canvas(100);
-  const red = mount(a.el, { pattern: "buzzy", palette: { shell: "#E63946" }, reducedMotion: "always" });
+  const red = mount(a.el, { pattern: "buzzy", palette: { body: "#E63946" }, reducedMotion: "always" });
   const plain = mount(b.el, { pattern: "buzzy", reducedMotion: "always" });
   step(2);
   const fills = (calls) => calls.filter((x) => x[0] === "fill").map((x) => JSON.stringify(x[1]));
-  assert.notDeepEqual(fills(a.calls), fills(b.calls), "the shell is another colour");
+  assert.notDeepEqual(fills(a.calls), fills(b.calls), "the body is another colour");
   red.destroy();
   plain.destroy();
 

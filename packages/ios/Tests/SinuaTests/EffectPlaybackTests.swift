@@ -94,11 +94,11 @@ final class EffectPlaybackTests: XCTestCase {
     func testThePaletteResolvesThroughTheEngineAndFollowsThePattern() {
         let m = FxModel()
         XCTAssertEqual(m.paletteKeys(pattern: "buzzy", [:]), [:], "empty: the character's own")
-        let red = m.paletteKeys(pattern: "buzzy", ["shell": "#E63946"])
-        XCTAssertEqual(red["palette.shell.w"], 1)
-        XCTAssertNotNil(red["palette.shellDark.l"], "the tones follow")
-        let bean = m.paletteKeys(pattern: "bean", ["bean": "#2B1A12"])
-        XCTAssertGreaterThan(bean["palette.ink.l"] ?? 0, 0.8, "a dark ground lifts the ink")
-        XCTAssertEqual(m.paletteKeys(pattern: "bean", ["beam": "#000000"]), [:], "an unknown slot adds nothing")
+        let red = m.paletteKeys(pattern: "buzzy", ["body": "#E63946"])
+        XCTAssertEqual(red["palette.body.w"], 1)
+        XCTAssertNotNil(red["palette.bodyDark.l"], "the tones follow")
+        let bean = m.paletteKeys(pattern: "bean", ["body": "#2B1A12"])
+        XCTAssertGreaterThan(bean["palette.eyes.l"] ?? 0, 0.8, "a dark ground lifts the eyes")
+        XCTAssertEqual(m.paletteKeys(pattern: "bean", ["bdy": "#000000"]), [:], "an unknown slot adds nothing")
     }
 }

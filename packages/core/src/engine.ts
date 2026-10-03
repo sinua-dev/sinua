@@ -224,7 +224,9 @@ export function conversationSample(name: string): string | null {
  * An end user's choice for a character (FX Spec 1.13, design note 25): small, so the
  * app stores it in its own account and hands it back next launch. `wear`: ids from the
  * spec's `wardrobe` (or its `cosmetics`), one per slot; `palette`: a `wardrobe.palettes`
- * name or a built-in palette (`sunset`, `ocean`, ...); `eyeStyle`: an eye style.
+ * name or a built-in palette (`sunset`, `ocean`, ...); `iris`: an eye colour by name, a
+ * `wardrobe.irises` name or a catalog one (`catalog:eyes-hazel`, design note 27), joining the
+ * palette; `eyeStyle`: an eye style.
  */
 export interface Loadout {
   /** The loadout format, 1. */
@@ -236,6 +238,8 @@ export interface Loadout {
    */
   wear?: (string | { id: string; offset?: [number, number]; scale?: number; rotate?: number })[];
   palette?: string;
+  /** An eye colour by name (never a colour): it colours the glossy eye. */
+  iris?: string;
   eyeStyle?: "auto" | "shape" | "glossy" | "pixel" | "dot";
 }
 

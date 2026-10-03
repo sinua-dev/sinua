@@ -36,7 +36,7 @@ export const SINUA_CATALOG = {
           0.95,
           0.62
         ],
-        "line": [
+        "outline": [
           330,
           0.5,
           0.2
@@ -84,7 +84,7 @@ export const SINUA_CATALOG = {
           ],
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -118,7 +118,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2,
-            "color": "line"
+            "color": "outline"
           }
         }
       ]
@@ -149,7 +149,7 @@ export const SINUA_CATALOG = {
           0,
           0.97
         ],
-        "line": [
+        "outline": [
           210,
           0.45,
           0.2
@@ -181,7 +181,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -216,7 +216,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -250,7 +250,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2,
-            "color": "line"
+            "color": "outline"
           }
         }
       ]
@@ -276,7 +276,7 @@ export const SINUA_CATALOG = {
           0.75,
           0.55
         ],
-        "line": [
+        "outline": [
           35,
           0.6,
           0.22
@@ -324,7 +324,7 @@ export const SINUA_CATALOG = {
           ],
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -358,7 +358,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 1.5,
-            "color": "line"
+            "color": "outline"
           }
         }
       ]
@@ -400,7 +400,7 @@ export const SINUA_CATALOG = {
           0.4,
           0.95
         ],
-        "line": [
+        "outline": [
           355,
           0.45,
           0.2
@@ -432,7 +432,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -569,7 +569,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -603,7 +603,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2,
-            "color": "line"
+            "color": "outline"
           }
         }
       ]
@@ -939,7 +939,7 @@ export const SINUA_CATALOG = {
           0.9,
           0.6
         ],
-        "line": [
+        "outline": [
           220,
           0.3,
           0.12
@@ -971,7 +971,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -1006,7 +1006,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -1041,7 +1041,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -1252,7 +1252,7 @@ export const SINUA_CATALOG = {
           0.6,
           0.4
         ],
-        "line": [
+        "outline": [
           8,
           0.5,
           0.22
@@ -1291,7 +1291,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         },
         {
@@ -1319,7 +1319,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 2.5,
-            "color": "line"
+            "color": "outline"
           }
         }
       ]
@@ -1340,7 +1340,7 @@ export const SINUA_CATALOG = {
           0.85,
           0.45
         ],
-        "line": [
+        "outline": [
           35,
           0.6,
           0.25
@@ -1371,7 +1371,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 1.8,
-            "color": "line"
+            "color": "outline"
           }
         }
       ]
@@ -1392,7 +1392,7 @@ export const SINUA_CATALOG = {
           0.7,
           0.45
         ],
-        "line": [
+        "outline": [
           350,
           0.6,
           0.25
@@ -1423,7 +1423,7 @@ export const SINUA_CATALOG = {
           },
           "outline": {
             "width": 1.8,
-            "color": "line"
+            "color": "outline"
           }
         }
       ]
@@ -1786,6 +1786,21 @@ export const SINUA_CATALOG = {
         "secondary": "#4D6E73",
         "accent": "#FF80AB"
       }
+    },
+    "eyes-brown": {
+      "iris": "#7A4A2A"
+    },
+    "eyes-blue": {
+      "iris": "#3A7BD5"
+    },
+    "eyes-green": {
+      "iris": "#3E9E5B"
+    },
+    "eyes-hazel": {
+      "iris": "#9C7A3C"
+    },
+    "eyes-violet": {
+      "iris": "#7A4BD6"
     }
   }
 } as const;

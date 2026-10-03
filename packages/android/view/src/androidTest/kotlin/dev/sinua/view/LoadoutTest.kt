@@ -44,6 +44,9 @@ class LoadoutTest {
             assertTrue(name, r.diagnostics.all { it.severity == "warning" })
             val eye = out.optJSONObject("params")?.optString("eyeStyle")?.ifEmpty { null }
             assertEquals("$name: eyeStyle", if (c.isNull("eyeStyle")) null else c.getString("eyeStyle"), eye)
+            // An eye colour by name joins the palette (design note 27).
+            val iris = { p: JSONObject? -> p?.optString("iris")?.ifEmpty { null } }
+            assertEquals("$name: iris", iris(c.optJSONObject("palette")), iris(out.optJSONObject("palette")))
             assertTrue("$name: still draws", resolveFxSpec(r.spec).ok)
         }
         val fits = v.getJSONArray("fits")
@@ -58,6 +61,7 @@ class LoadoutTest {
     @Test fun aThumbnailIsAStillImage() {
         val spec = read("wardrobe-bean.fxspec.json")
         val lo = SinuaLoadout(wear = listOf("round-glasses"))
+        assertEquals("catalog:eyes-hazel", JSONObject(SinuaLoadout(iris = "catalog:eyes-hazel").toJson()).getString("iris"))
         val bmp = SinuaThumbnail.bitmap(spec, lo, px = 128)
         assertNotNull(bmp)
         assertEquals(128, bmp!!.width)

@@ -54,7 +54,7 @@ export type SinuaViewProps = ViewProps & {
   tap?: boolean;
   /** A character's expression (design note 16): "happy" | "surprised" | "thoughtful" | "sad" | "sleepy" | "none"; unset = the spec's. */
   expression?: string | null;
-  /** A character's palette, in part (design note 19): slot -> hex, e.g. `{ shell: "#E63946" }`. Wins over the spec's; a change is immediate. */
+  /** A character's palette, in part (design note 19): slot -> hex, e.g. `{ body: "#E63946" }`. Wins over the spec's; a change is immediate. */
   palette?: Record<string, string> | null;
   /**
    * An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a `wardrobe`:
@@ -62,7 +62,7 @@ export type SinuaViewProps = ViewProps & {
    * your app and pass it back next launch. A change eases (a hat pops in, colours blend). What
    * the spec no longer offers is skipped with a native log warning, and the rest applies.
    */
-  loadout?: { loadout?: number; wear?: string[]; palette?: string; eyeStyle?: "auto" | "shape" | "glossy" | "pixel" | "dot" } | null;
+  loadout?: { loadout?: number; wear?: string[]; palette?: string; iris?: string; eyeStyle?: "auto" | "shape" | "glossy" | "pixel" | "dot" } | null;
   /**
    * Catalog packs to load into the native engine (FX Spec 1.13, design note 26): Sinua's own
    * (`SINUA_CATALOG` from `@sinua/react-native/catalog`) or a brand's. A spec may then name

@@ -98,11 +98,11 @@ class EffectPlaybackTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             val m = FxModel(FxInput.State("bean", 64u, emptyMap(), 1.0), null, null)
             assertTrue("empty: the character's own", m.paletteKeys().isEmpty())
-            m.palette = mapOf("bean" to "#2B1A12")
-            assertEquals(1.0, m.paletteKeys()["palette.bean.w"]!!, 0.0)
-            assertTrue("the tones follow", m.paletteKeys().containsKey("palette.beanDark.l"))
-            assertTrue("a dark ground lifts the ink", m.paletteKeys()["palette.ink.l"]!! > 0.8)
-            m.palette = mapOf("beam" to "#000000")
+            m.palette = mapOf("body" to "#2B1A12")
+            assertEquals(1.0, m.paletteKeys()["palette.body.w"]!!, 0.0)
+            assertTrue("the tones follow", m.paletteKeys().containsKey("palette.bodyDark.l"))
+            assertTrue("a dark ground lifts the eyes", m.paletteKeys()["palette.eyes.l"]!! > 0.8)
+            m.palette = mapOf("bdy" to "#000000")
             assertTrue("an unknown slot adds nothing", m.paletteKeys().isEmpty())
         }
     }

@@ -77,9 +77,9 @@ test("a recipe needs 1.12 and its errors point into it", () => {
 
 test("paletteOverrides: the FX Spec's rules, for a built-in and for a file's recipe", async () => {
   const { paletteOverrides, characterRecipe } = await import("../dist/index.js");
-  const red = paletteOverrides("buzzy", { shell: "#E63946" });
-  assert.equal(red.overrides["palette.shell.w"], 1);
-  assert.ok("palette.shellDark.l" in red.overrides, "the tones follow");
+  const red = paletteOverrides("buzzy", { body: "#E63946" });
+  assert.equal(red.overrides["palette.body.w"], 1);
+  assert.ok("palette.bodyDark.l" in red.overrides, "the tones follow");
   assert.deepEqual(red.diagnostics, []);
   const typo = paletteOverrides("cuppa", { mugg: "#000000" });
   assert.deepEqual(typo.overrides, {});
@@ -87,7 +87,7 @@ test("paletteOverrides: the FX Spec's rules, for a built-in and for a file's rec
   const recipe = JSON.parse(readFileSync(new URL("../../../spec/examples/custom-character.fxspec.json", import.meta.url), "utf8")).recipe;
   const bean = characterRecipe("bean");
   assert.equal(bean.id, "bean");
-  assert.ok("bean" in bean.palette, "the recipe's palette names are the slots");
+  assert.ok("body" in bean.palette, "the recipe's palette names are the slots");
   assert.equal(characterRecipe("working"), null);
   const own = Object.keys(recipe.palette)[0];
   const r = paletteOverrides(recipe.id, { [own]: "#123456" }, recipe);

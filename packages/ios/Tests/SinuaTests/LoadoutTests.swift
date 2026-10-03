@@ -37,6 +37,9 @@ final class LoadoutTests: XCTestCase {
             XCTAssertTrue(r.diagnostics.allSatisfy { $0.severity == "warning" }, name)
             let eye = (out["params"] as? [String: Any])?["eyeStyle"] as? String
             XCTAssertEqual(eye, c["eyeStyle"] as? String, "\(name): eyeStyle")
+            // An eye colour by name joins the palette (design note 27).
+            let iris = { (p: Any?) in (p as? [String: Any])?["iris"] as? String }
+            XCTAssertEqual(iris(out["palette"]), iris(c["palette"]), "\(name): iris")
             XCTAssertTrue(resolveFxSpec(json: r.spec).ok, "\(name): still draws")
         }
         for f in try XCTUnwrap(v["fits"] as? [[String: Any]]) {
@@ -51,6 +54,8 @@ final class LoadoutTests: XCTestCase {
         let l = try JSONDecoder().decode(SinuaLoadout.self, from: Data(#"{"wear":["party-hat"]}"#.utf8))
         XCTAssertEqual(l, SinuaLoadout(wear: ["party-hat"]))
         XCTAssertEqual(try JSONDecoder().decode(SinuaLoadout.self, from: Data(l.json.utf8)), l)
+        let eyes = SinuaLoadout(palette: "sunset", iris: "catalog:eyes-hazel")
+        XCTAssertEqual(try JSONDecoder().decode(SinuaLoadout.self, from: Data(eyes.json.utf8)), eyes)
     }
 
     @available(iOS 16.0, *)

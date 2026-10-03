@@ -318,7 +318,7 @@ struct FxConfig {
     /// A character's expression (design note 16): "happy", "surprised", "thoughtful", "sad",
     /// "sleepy", or "none". It wins over a spec's `expression`; nil lets the spec decide.
     var expression: String?
-    /// A character's palette, in part (design note 19): slot -> hex, e.g. ["shell": "#E63946"].
+    /// A character's palette, in part (design note 19): slot -> hex, e.g. ["body": "#E63946"].
     /// The slots' tones follow; it wins over a spec's `palette`. A change is immediate.
     var palette: [String: String] = [:]
     /// An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a `wardrobe`.

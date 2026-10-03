@@ -152,7 +152,7 @@ export interface SinuaViewOptions {
   expression?: string | null;
   /**
    * A character's palette, in part (design note 19): slot -> hex or DTCG colour, e.g.
-   * `{ shell: "#E63946" }`. The slots' tones follow; it wins over a spec's `palette`.
+   * `{ body: "#E63946" }`. The slots' tones follow; it wins over a spec's `palette`.
    * FX Spec 1.13 (design note 23): role names (`primary`, `secondary`, `accent`), a
    * named palette (`{ theme: "sunset" }`) and a `dark` variant, picked in a dark theme.
    * A change is immediate. Problems (an unknown slot) go to `onError`.
@@ -160,7 +160,7 @@ export interface SinuaViewOptions {
   palette?: Record<string, unknown> | null;
   /**
    * An end user's loadout (FX Spec 1.13, design note 25), with a `spec` that has a
-   * `wardrobe`: `{ loadout: 1, wear: ["party-hat"], palette: "sunset", eyeStyle: "glossy" }`.
+   * `wardrobe`: `{ loadout: 1, wear: ["party-hat"], palette: "sunset", iris: "hazel", eyeStyle: "glossy" }`.
    * Store it in your app and pass it back next launch. A change eases (a hat pops in,
    * colours blend, a new eye style swaps in a blink; a cut under reduced motion). What
    * the spec no longer offers is skipped with a console warning, and the rest applies.

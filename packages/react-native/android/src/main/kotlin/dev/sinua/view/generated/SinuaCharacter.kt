@@ -253,7 +253,7 @@ fun SinuaCharacter(
     tap: Boolean = true,
     /** The expression (design note 16): "happy", "surprised", "thoughtful", "sad", "sleepy" or "none"; null = the spec's. */
     expression: String? = null,
-    /** The palette, in part (design note 19): slot -> hex, e.g. mapOf("shell" to "#E63946"); empty = the character's own. */
+    /** The palette, in part (design note 19): slot -> hex, e.g. mapOf("body" to "#E63946"); empty = the character's own. */
     palette: Map<String, String> = emptyMap(),
 ) {
     val overrides = SinuaCharacterProps(pattern = pattern, size = size, accessories = accessories, eyeStyle = eyeStyle, grain = grain, hue = hue, ink = ink, mouth = mouth, shading = shading, look = look, seed = seed, turn = turn, eyeAsym = eyeAsym, eyeH = eyeH, eyeR = eyeR, eyeSmile = eyeSmile, eyeTilt = eyeTilt, eyeW = eyeW, lid = lid, mouthDots = mouthDots, mouthTalk = mouthTalk, gazeX = gazeX, gazeY = gazeY, lean = lean, tilt = tilt, turnBlink = turnBlink, turnNod = turnNod, turnPitch = turnPitch, turnWander = turnWander, turnYaw = turnYaw, bounceGain = bounceGain, breath = breath, earGain = earGain, mouthGain = mouthGain, squashGain = squashGain, swayGain = swayGain, curlGain = curlGain, flutterGain = flutterGain, arms = arms, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
@@ -300,7 +300,7 @@ fun SinuaCharacter(
     tap: Boolean = true,
     /** The expression (design note 16): "happy", "surprised", "thoughtful", "sad", "sleepy" or "none"; null = the spec's. */
     expression: String? = null,
-    /** The palette, in part (design note 19): slot -> hex, e.g. mapOf("shell" to "#E63946"); empty = the character's own. */
+    /** The palette, in part (design note 19): slot -> hex, e.g. mapOf("body" to "#E63946"); empty = the character's own. */
     palette: Map<String, String> = emptyMap(),
     /** An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a `wardrobe`; null = the file as it is. */
     loadout: SinuaLoadout? = null,

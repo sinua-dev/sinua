@@ -18,15 +18,23 @@ import uniffi.core_engine.frameStill
  * An end user's choice for a character (FX Spec 1.13, design note 25): small, so the app
  * stores it in its own account and passes it back next launch. [wear]: ids from the spec's
  * `wardrobe` (or its `cosmetics`), one per slot; [palette]: a `wardrobe.palettes` name or a
- * built-in palette (`sunset`, `ocean`, ...); [eyeStyle]: `auto`, `shape`, `glossy`, `pixel`, `dot`.
+ * built-in palette (`sunset`, `ocean`, ...); [eyeStyle]: `auto`, `shape`, `glossy`, `pixel`, `dot`;
+ * [iris]: an eye colour by name, a `wardrobe.irises` name or a catalog one (`catalog:eyes-hazel`,
+ * design note 27).
  */
-data class SinuaLoadout(val wear: List<String>? = null, val palette: String? = null, val eyeStyle: String? = null) {
+data class SinuaLoadout(
+    val wear: List<String>? = null,
+    val palette: String? = null,
+    val eyeStyle: String? = null,
+    val iris: String? = null,
+) {
     /** The loadout as JSON (what the engine reads, and what to store). */
     fun toJson(): String {
         val o = JSONObject().put("loadout", 1)
         wear?.let { o.put("wear", JSONArray(it)) }
         palette?.let { o.put("palette", it) }
         eyeStyle?.let { o.put("eyeStyle", it) }
+        iris?.let { o.put("iris", it) }
         return o.toString()
     }
 

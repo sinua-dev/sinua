@@ -4,19 +4,23 @@ import SwiftUI
 /// An end user's choice for a character (FX Spec 1.13, design note 25): small, so the app
 /// stores it in its own account and passes it back next launch. `wear`: ids from the spec's
 /// `wardrobe` (or its `cosmetics`), one per slot; `palette`: a `wardrobe.palettes` name or a
-/// built-in palette (`sunset`, `ocean`, ...); `eyeStyle`: `auto`, `shape`, `glossy`, `pixel`, `dot`.
+/// built-in palette (`sunset`, `ocean`, ...); `iris`: an eye colour by name, a `wardrobe.irises`
+/// name or a catalog one (`catalog:eyes-hazel`, design note 27); `eyeStyle`: `auto`, `shape`,
+/// `glossy`, `pixel`, `dot`.
 public struct SinuaLoadout: Codable, Equatable, Sendable {
     /// The loadout format, 1.
     public var loadout: Int
     public var wear: [String]?
     public var palette: String?
     public var eyeStyle: String?
+    public var iris: String?
 
-    public init(wear: [String]? = nil, palette: String? = nil, eyeStyle: String? = nil) {
+    public init(wear: [String]? = nil, palette: String? = nil, eyeStyle: String? = nil, iris: String? = nil) {
         loadout = 1
         self.wear = wear
         self.palette = palette
         self.eyeStyle = eyeStyle
+        self.iris = iris
     }
 
     /// A stored loadout read back: every field may be missing (an older or newer app wrote it).
@@ -26,6 +30,7 @@ public struct SinuaLoadout: Codable, Equatable, Sendable {
         wear = try? c.decodeIfPresent([String].self, forKey: .wear)
         palette = try? c.decodeIfPresent(String.self, forKey: .palette)
         eyeStyle = try? c.decodeIfPresent(String.self, forKey: .eyeStyle)
+        iris = try? c.decodeIfPresent(String.self, forKey: .iris)
     }
 
     /// The loadout as JSON (what the engine reads, and what to store).

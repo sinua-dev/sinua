@@ -124,7 +124,7 @@ function emitComponent(m, naming) {
   const passArgs = ["pattern", "size", ...flat.map((p) => id(p.name)), ...m.groups.map((g) => id(g.name))].map((n) => `${n} = ${n}`).join(", ");
   // Tap to hop (design note 15): characters only, on by default.
   const tapOn = m.object === "character";
-  const tapParam = tapOn ? "\n    /** Tap to hop: a tap plays `hop`, glancing toward it (design note 15). On by default. */\n    tap: Boolean = true,\n    /** The expression (design note 16): \"happy\", \"surprised\", \"thoughtful\", \"sad\", \"sleepy\" or \"none\"; null = the spec's. */\n    expression: String? = null,\n    /** The palette, in part (design note 19): slot -> hex, e.g. mapOf(\"shell\" to \"#E63946\"); empty = the character's own. */\n    palette: Map<String, String> = emptyMap()," : "";
+  const tapParam = tapOn ? "\n    /** Tap to hop: a tap plays `hop`, glancing toward it (design note 15). On by default. */\n    tap: Boolean = true,\n    /** The expression (design note 16): \"happy\", \"surprised\", \"thoughtful\", \"sad\", \"sleepy\" or \"none\"; null = the spec's. */\n    expression: String? = null,\n    /** The palette, in part (design note 19): slot -> hex, e.g. mapOf(\"body\" to \"#E63946\"); empty = the character's own. */\n    palette: Map<String, String> = emptyMap()," : "";
   const tapParamSpec = tapOn ? `${tapParam}\n    /** An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a \`wardrobe\`; null = the file as it is. */\n    loadout: SinuaLoadout? = null,` : "";
   // A loadout picks from a spec's wardrobe: the spec path only.
   const tapArgPlain = tapOn ? " tap = tap, expression = expression, palette = palette," : "";

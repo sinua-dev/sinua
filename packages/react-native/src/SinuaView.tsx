@@ -63,6 +63,12 @@ export type SinuaViewProps = ViewProps & {
    * the spec no longer offers is skipped with a native log warning, and the rest applies.
    */
   loadout?: { loadout?: number; wear?: string[]; palette?: string; eyeStyle?: "auto" | "shape" | "glossy" | "pixel" | "dot" } | null;
+  /**
+   * Catalog packs to load into the native engine (FX Spec 1.13, design note 26): Sinua's own
+   * (`SINUA_CATALOG` from `@sinua/react-native/catalog`) or a brand's. A spec may then name
+   * their items as `"<namespace>:<id>"`. Loading again is harmless.
+   */
+  catalogs?: object[] | null;
   theme?: "auto" | "light" | "dark";
   paused?: boolean;
   reducedMotion?: "auto" | "always" | "never";
@@ -90,11 +96,12 @@ export function nativeLabels(p: Pick<SinuaViewProps, "spec" | "pattern" | "state
   return { state: p.pattern ?? p.state, specState: p.specState };
 }
 
-export function SinuaView({ spec, pattern, state, specState, overrides, inputs, onFrame, accessibilityLabel, maxFps, voice, labels: words, announce, effect, expression, palette, loadout, ...rest }: SinuaViewProps) {
+export function SinuaView({ spec, pattern, state, specState, overrides, inputs, onFrame, accessibilityLabel, maxFps, voice, labels: words, announce, effect, expression, palette, loadout, catalogs, ...rest }: SinuaViewProps) {
   const labels = nativeLabels({ spec, pattern, state, specState });
   const specText = React.useMemo(() => (spec == null ? undefined : typeof spec === "string" ? spec : JSON.stringify(spec)), [spec]);
   const overridesJson = React.useMemo(() => (overrides ? JSON.stringify(overrides) : undefined), [overrides]);
   const inputsJson = React.useMemo(() => (inputs ? JSON.stringify(inputs) : undefined), [inputs]);
+  const catalogsJson = React.useMemo(() => (catalogs?.length ? JSON.stringify(catalogs) : ""), [catalogs]);
   const a11y = React.useMemo(() => a11yNativeProps(words, announce), [words, announce]);
   const handler = React.useCallback((e: NativeSyntheticEvent<FrameEvent>) => onFrame?.(e.nativeEvent), [onFrame]);
   // A handle is bound by id through the native registry; the shorthands stay as they were.
@@ -116,6 +123,7 @@ export function SinuaView({ spec, pattern, state, specState, overrides, inputs, 
       expression={expression === undefined ? "" : (expression ?? "none")}
       paletteJson={palette ? JSON.stringify(palette) : ""}
       loadoutJson={loadout ? JSON.stringify({ loadout: 1, ...loadout }) : ""}
+      catalogsJson={catalogsJson}
       maxFps={maxFps ?? 0}
       label={accessibilityLabel}
       accessibilityLabel={accessibilityLabel}

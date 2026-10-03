@@ -21,6 +21,11 @@ final class LoadoutTests: XCTestCase {
     func testTheSharedLoadoutVectorsHold() throws {
         let v = try XCTUnwrap(json("loadout-vectors.json") as? [String: Any])
         let spec = try String(contentsOf: specURL(try XCTUnwrap(v["spec"] as? String)), encoding: .utf8)
+        // A `fits` entry may carry its own spec (the capability-tag cases).
+        func own(_ f: [String: Any]) throws -> String {
+            guard let o = f["spec"] else { return spec }
+            return String(decoding: try JSONSerialization.data(withJSONObject: o), as: UTF8.self)
+        }
         for c in try XCTUnwrap(v["cases"] as? [[String: Any]]) {
             let name = c["name"] as? String ?? "?"
             let lo = try JSONSerialization.data(withJSONObject: c["loadout"] as Any, options: [.fragmentsAllowed])
@@ -37,7 +42,7 @@ final class LoadoutTests: XCTestCase {
         for f in try XCTUnwrap(v["fits"] as? [[String: Any]]) {
             let ch = try XCTUnwrap(f["character"] as? String)
             let got = Dictionary(
-                uniqueKeysWithValues: SinuaCosmeticFit.list(spec: spec, character: ch).map { ($0.id, $0.reason) })
+                uniqueKeysWithValues: SinuaCosmeticFit.list(spec: try own(f), character: ch).map { ($0.id, $0.reason) })
             XCTAssertEqual(got, f["expect"] as? [String: String], ch)
         }
     }
@@ -74,5 +79,22 @@ final class LoadoutTests: XCTestCase {
         tr.wear()
         tr.cancel()
         XCTAssertFalse(tr.wearing || tr.active)
+    }
+
+    /// Sinua's catalog pack (design note 26): the bundled resource is spec/catalog/catalog-1.json,
+    /// it loads, and a spec wears and paints from it.
+    func testTheBundledCatalogLoadsAndIsTheSpecFile() throws {
+        let bundled = try XCTUnwrap(SinuaCatalog.json)
+        let a = try JSONSerialization.jsonObject(with: Data(bundled.utf8)) as? NSDictionary
+        let b = try XCTUnwrap(json("catalog/catalog-1.json") as? NSDictionary)
+        XCTAssertEqual(a, b)
+        XCTAssertEqual(SinuaCatalog.load(), [])
+        let r = resolveFxSpec(
+            json:
+                #"{"fxSpec":"1.13","object":"character","pattern":"bean","cosmetics":["catalog:crown"],"palette":"catalog:berry"}"#
+        )
+        XCTAssertTrue(r.ok && r.diagnostics.isEmpty, "\(r.diagnostics)")
+        XCTAssertTrue(r.state.hasPrefix("recipe:bean:"))
+        XCTAssertTrue(unloadCatalog(namespace: "catalog"))
     }
 }

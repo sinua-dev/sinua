@@ -21,11 +21,18 @@ test("the shared loadout vectors hold", () => {
     assert.deepEqual(r.diagnostics.map((d) => d.path).sort(), c.warnings, `${c.name}: warnings`);
     assert.ok(r.diagnostics.every((d) => d.severity === "warning"));
     assert.ok(resolveFxSpec(r.spec).ok, `${c.name}: still draws`);
+    // A nudge (C2) lands in the cosmetic's `fit` for the drawn character.
+    for (const [id, want] of Object.entries(c.fit ?? {})) {
+      const got = out.cosmetics.find((x) => x.id === id).fit.bean;
+      for (const k of ["scale", "angle"]) assert.ok(Math.abs(got[k] - want[k]) < 1e-9, `${c.name}: ${id} ${k}`);
+      for (const i of [0, 1]) assert.ok(Math.abs(got.at[i] - want.at[i]) < 1e-9, `${c.name}: ${id} at`);
+    }
   }
   for (const f of vectors.fits) {
-    const got = Object.fromEntries(cosmeticsFor(spec, f.character).map((x) => [x.id, x.reason]));
+    const own = f.spec ? JSON.stringify(f.spec) : spec;
+    const got = Object.fromEntries(cosmeticsFor(own, f.character).map((x) => [x.id, x.reason]));
     assert.deepEqual(got, f.expect, f.character);
-    for (const x of cosmeticsFor(spec, f.character)) assert.equal(x.fits, x.why === "", x.id);
+    for (const x of cosmeticsFor(own, f.character)) assert.equal(x.fits, x.why === "", x.id);
   }
 });
 

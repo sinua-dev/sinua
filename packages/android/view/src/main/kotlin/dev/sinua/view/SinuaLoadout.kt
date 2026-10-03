@@ -80,3 +80,21 @@ object SinuaThumbnail {
         return img.asAndroidBitmap()
     }
 }
+
+/**
+ * Sinua's catalog pack (FX Spec 1.13, design note 26): ready cosmetics and palettes, free with
+ * the runtime (an asset of this library). After [load] a spec may say
+ * `"cosmetics": ["catalog:crown"]` or `"palette": "catalog:berry"`. A brand loads its own pack
+ * with `loadCatalog(json)`, from a bundled file or a URL.
+ */
+object SinuaCatalog {
+    /** The pack's JSON, or null where the asset isn't bundled. */
+    fun json(context: android.content.Context): String? =
+        runCatching { context.assets.open("catalog-1.json").bufferedReader().use { it.readText() } }.getOrNull()
+
+    /** Loads the pack into the engine (again is harmless: it replaces itself). Problems, if any. */
+    fun load(context: android.content.Context): List<FxDiagnostic> {
+        val json = json(context) ?: return listOf(FxDiagnostic("error", "", "the catalog asset isn't bundled"))
+        return uniffi.core_engine.loadCatalog(json)
+    }
+}

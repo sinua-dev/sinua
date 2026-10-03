@@ -83,3 +83,29 @@ public enum SinuaThumbnail {
         return r.cgImage
     }
 }
+
+/// Sinua's catalog pack (FX Spec 1.13, design note 26): ready cosmetics and palettes, free
+/// with the runtime. After `SinuaCatalog.load()` a spec may say `"cosmetics": ["catalog:crown"]`
+/// or `"palette": "catalog:berry"`. A brand loads its own pack with `loadCatalog(json:)`, from a
+/// bundled file or a URL.
+public enum SinuaCatalog {
+    /// The pack's JSON (a resource of this package; nil where it isn't bundled, e.g. React
+    /// Native, whose apps pass the pack from JS).
+    public static var json: String? {
+        #if SWIFT_PACKAGE
+            guard let url = Bundle.module.url(forResource: "catalog-1", withExtension: "json") else { return nil }
+            return try? String(contentsOf: url, encoding: .utf8)
+        #else
+            return nil
+        #endif
+    }
+
+    /// Loads the pack into the engine (again is harmless: it replaces itself). Problems, if any.
+    @discardableResult
+    public static func load() -> [FxDiagnostic] {
+        guard let json else {
+            return [FxDiagnostic(severity: "error", path: "", message: "the catalog resource isn't bundled")]
+        }
+        return loadCatalog(json: json)
+    }
+}

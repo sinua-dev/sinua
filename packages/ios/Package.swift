@@ -41,7 +41,9 @@ let package = Package(
         .target(
             name: "Sinua",
             dependencies: ["CoreEngine", "SinuaVoiceTypes"],
-            path: "Sources/Sinua"
+            path: "Sources/Sinua",
+            // Sinua's catalog pack (design note 26), read with Bundle.module.
+            resources: [.copy("Resources/catalog-1.json")]
         ),
         .target(
             name: "SinuaGeminiLive",

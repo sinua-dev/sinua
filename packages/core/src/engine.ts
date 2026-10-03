@@ -31,6 +31,8 @@ import {
   apply_loadout_json,
   cosmetics_for_json,
   frame_still_json,
+  load_catalog_json,
+  unload_catalog_json,
 } from "../pkg/sinua_core_inline.js";
 import { frameWithOverridesPacked, unpackFrame } from "./packed.js";
 import type {
@@ -227,7 +229,12 @@ export function conversationSample(name: string): string | null {
 export interface Loadout {
   /** The loadout format, 1. */
   loadout?: number;
-  wear?: string[];
+  /**
+   * Ids, or `{ id, offset, scale, rotate }` for a bounded nudge relative to the slot
+   * (C2: `offset` ±10 units, `scale` 0.8–1.2, `rotate` ±15°; out of range warns and is
+   * clamped). It still follows the rig.
+   */
+  wear?: (string | { id: string; offset?: [number, number]; scale?: number; rotate?: number })[];
   palette?: string;
   eyeStyle?: "auto" | "shape" | "glossy" | "pixel" | "dot";
 }
@@ -252,8 +259,12 @@ export function applyLoadout(spec: FxSpec | string, loadout: Loadout | unknown):
 export interface CosmeticFit {
   id: string;
   fits: boolean;
-  /** A key to translate: `fits`, `no-slot` (the character has no such slot) or `not-made-for` (its `fits` leaves it out). */
-  reason: "fits" | "no-slot" | "not-made-for";
+  /**
+   * A key to translate: `fits`, `no-slot` (the character has no such slot),
+   * `not-made-for` (its `fits` leaves it out) or `missing-tag` (it `requires` a tag the
+   * character lacks).
+   */
+  reason: "fits" | "no-slot" | "not-made-for" | "missing-tag";
   /** The reason in English ("" when it fits). */
   why: string;
 }
@@ -281,4 +292,21 @@ export function frameStill(
 ): OrbFrame | null {
   const lo = opts.loadout ? JSON.stringify(opts.loadout) : "";
   return JSON.parse(frame_still_json(specText(spec), lo, size, opts.turnYaw ?? 0)) as OrbFrame | null;
+}
+
+/**
+ * Loads a catalog pack (FX Spec 1.13, design note 26): ready cosmetics and palettes as
+ * data, `{ "catalog": 1, "namespace": "...", "cosmetics": [...], "palettes": {...} }`.
+ * Specs then name its items as `"<namespace>:<id>"` in `cosmetics`, `wardrobe.cosmetics`
+ * and `palette` (a loadout's too). Loading a namespace again replaces it; an error loads
+ * nothing. Sinua's own pack is `@sinua/web/catalog`; a brand loads its own the same way,
+ * from a bundled file or a URL.
+ */
+export function loadCatalog(pack: string | object): FxDiagnostic[] {
+  return JSON.parse(load_catalog_json(typeof pack === "string" ? pack : JSON.stringify(pack))) as FxDiagnostic[];
+}
+
+/** Forgets a catalog pack's items; whether it had any. */
+export function unloadCatalog(namespace: string): boolean {
+  return unload_catalog_json(namespace);
 }

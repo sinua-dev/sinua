@@ -51,7 +51,7 @@ class LoadoutTest {
             val f = fits.getJSONObject(i)
             val ch = f.getString("character")
             val want = f.getJSONObject("expect").let { o -> o.keys().asSequence().associateWith { o.getString(it) } }
-            assertEquals(ch, want, SinuaCosmeticFit.list(spec, ch).associate { it.id to it.reason })
+            assertEquals(ch, want, SinuaCosmeticFit.list(f.optJSONObject("spec")?.toString() ?: spec, ch).associate { it.id to it.reason })
         }
     }
 
@@ -90,5 +90,24 @@ class LoadoutTest {
             m.frame(t, running = true, reduced = false)
         }
         assertTrue("the hat is worn", m.frame(t + 20_000_000L, running = true, reduced = false)!!.frame.fills.size > bare)
+    }
+
+    /** Sinua's catalog pack (design note 26): the asset is spec/catalog/catalog-1.json, it loads, and a spec wears from it. */
+    @Test fun theBundledCatalogLoadsAndIsTheSpecFile() {
+        val ctx = InstrumentationRegistry.getInstrumentation().context
+        val bundled = assertNotNullAnd(SinuaCatalog.json(ctx))
+        assertEquals(JSONObject(read("catalog/catalog-1.json")).toString(), JSONObject(bundled).toString())
+        assertTrue(SinuaCatalog.load(ctx).isEmpty())
+        val r = resolveFxSpec(
+            """{"fxSpec":"1.13","object":"character","pattern":"bean","cosmetics":["catalog:crown"],"palette":"catalog:berry"}""",
+        )
+        assertTrue(r.diagnostics.toString(), r.ok && r.diagnostics.isEmpty())
+        assertTrue(r.state.startsWith("recipe:bean:"))
+        assertTrue(uniffi.core_engine.unloadCatalog("catalog"))
+    }
+
+    private fun assertNotNullAnd(s: String?): String {
+        assertNotNull("the catalog asset is bundled", s)
+        return s!!
     }
 }

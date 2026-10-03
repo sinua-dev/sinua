@@ -79,6 +79,12 @@ class SinuaViewManager : SimpleViewManager<FxHostView>(), SinuaViewManagerInterf
         val o = value?.ifEmpty { null }?.let { runCatching { org.json.JSONObject(it) }.getOrNull() }
         view.palette = o?.keys()?.asSequence()?.associateWith { o.optString(it) } ?: emptyMap()
     }
+    override fun setCatalogsJson(view: FxHostView, value: String?) {
+        // Catalog packs (design note 26): each loads into the engine once per change.
+        val packs = value?.ifEmpty { null }?.let { runCatching { org.json.JSONArray(it) }.getOrNull() } ?: return
+        for (i in 0 until packs.length()) uniffi.core_engine.loadCatalog(packs.get(i).toString())
+    }
+
     override fun setLoadoutJson(view: FxHostView, value: String?) {
         val o = value?.ifEmpty { null }?.let { runCatching { org.json.JSONObject(it) }.getOrNull() }
         view.loadout = o?.let {

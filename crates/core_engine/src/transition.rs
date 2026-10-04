@@ -67,6 +67,11 @@ pub struct TransitionMix {
     pub structural_to: HashMap<String, f64>,
     /// `params`: the weight of the `structural_to` frame, `0..1`.
     pub swap: f64,
+    /// Accumulated rate key (`pulsePeriodCycles`, ...) → its rate now, per second of
+    /// engine time (design note 31, TS1). The view adds `rate × dt` to each and passes
+    /// the sums with the overrides, so a rate that changes mid-session doesn't make the
+    /// motion jump. Empty when the design sets no rate key.
+    pub rates: HashMap<String, f64>,
 }
 
 /// The duration (seconds) and CSS keyword curve of one state change.
@@ -76,6 +81,10 @@ pub struct TransitionMix {
 pub struct FxTransition {
     pub duration: f64,
     pub curve: String,
+    /// The spec's author wrote `curve` for this change (design note 31): a view
+    /// keeps that curve, carrying the motion's velocity into it. Otherwise the view
+    /// uses its own transition clock and `curve` is the 0.6 s default's name.
+    pub authored: bool,
 }
 
 impl Default for FxTransition {
@@ -83,6 +92,7 @@ impl Default for FxTransition {
         FxTransition {
             duration: DEFAULT_DURATION,
             curve: DEFAULT_CURVE.to_string(),
+            authored: false,
         }
     }
 }
@@ -141,67 +151,253 @@ pub fn mix(
     } else {
         from.speed + (to.speed - from.speed) * w
     };
-    let mut out = TransitionMix {
+    let out = TransitionMix {
         technique: tech.to_string(),
         weight: w,
         speed,
         overrides: HashMap::new(),
         structural_to: HashMap::new(),
         swap: 0.0,
+        rates: HashMap::new(),
     };
     if tech != "params" {
         crate::resolve_state(&from.state, size)?;
         crate::resolve_state(&to.state, size)?;
         return Some(out);
     }
-    let (mode, preset) = crate::resolve_state(&to.state, size)?;
-    let mut keys: Vec<&String> = from.overrides.keys().chain(to.overrides.keys()).collect();
-    keys.sort();
-    keys.dedup();
-    for key in keys {
-        // A palette colour (design note 19) missing on one side takes the other
-        // side's: only its weight `.w` blends, so the hue never sweeps from 0.
-        let colour = key.starts_with("palette.") && !key.ends_with(".w");
-        let other = |o: &HashMap<String, f64>| if colour { o.get(key).copied() } else { None };
-        let a = from
-            .overrides
-            .get(key)
-            .copied()
-            .or_else(|| other(&to.overrides))
-            .unwrap_or_else(|| effective(&preset, mode, key));
-        let b = to
-            .overrides
-            .get(key)
-            .copied()
-            .or_else(|| other(&from.overrides))
-            .unwrap_or_else(|| effective(&preset, mode, key));
-        if colour && key.ends_with(".h") {
-            out.overrides.insert(key.clone(), lerp_hue(a, b, w));
-            continue;
-        }
-        if catalog::arrives_at_once(mode, key) {
-            // An arrival value (a character's `turnBlink`): the new state's, at once.
-            out.overrides.insert(key.clone(), b);
-        } else if is_structural(mode, key) {
-            out.overrides.insert(key.clone(), a);
-            if a != b {
-                out.structural_to.insert(key.clone(), b);
-            }
-        } else if is_hue(key) {
-            out.overrides.insert(key.clone(), lerp_hue(a, b, w));
-        } else {
-            out.overrides.insert(key.clone(), a + (b - a) * w);
+    let mut m = blend_core(&[from.clone(), to.clone()], &[1.0 - w, w], 1, size, true)?;
+    m.technique = out.technique;
+    m.weight = w;
+    m.speed = speed;
+    Some(m)
+}
+
+/// The rate keys (design note 31, TS1): the key, the accumulated key a mode reads in
+/// place of `t × rate` ([`crate::primitives::cycles`]), and whether the key is a period
+/// (rate = 1 / value). `warp` multiplies two of them: see [`rates`].
+static RATES: &[(&str, &str, bool)] = &[
+    ("pulsePeriod", "pulsePeriodCycles", true),
+    ("noiseSpeed", "noiseSpeedCycles", false),
+    ("holoSpeed", "holoSpeedCycles", false),
+    ("spin", "spinCycles", false),
+    ("scanMul", "scanMulCycles", false),
+    ("holdDuration", "holdDurationCycles", true),
+    ("surfaceSpeed", "surfaceSpeedCycles", false),
+    ("hueSpeed", "hueSpeedCycles", false),
+    ("jumpSpeed", "jumpSpeedCycles", false),
+    ("period", "periodCycles", true),
+];
+
+/// The layout key of a count `mode` draws as a density (design note 31, TS7): its
+/// elements fade in and out instead of the whole set being laid out again.
+fn density_layout(mode: &str, key: &str) -> Option<&'static str> {
+    match (mode, key) {
+        ("aurora" | "chladni" | "eclipse", "nodeCount") => Some("nodeCountLayout"),
+        ("spectrum", "barCount") => Some("barCountLayout"),
+        ("sonar", "echoCount") => Some("echoCountLayout"),
+        _ => None,
+    }
+}
+
+/// The weighted sum of the sides' values of `key`.
+#[inline(never)]
+fn weighted(
+    sides: &[TransitionSide],
+    w: &[f64],
+    preset: &HashMap<String, f64>,
+    mode: &str,
+    key: &str,
+) -> f64 {
+    sides
+        .iter()
+        .zip(w)
+        .map(|(s, w)| side_value(s, sides, preset, mode, key) * w)
+        .sum()
+}
+
+/// A side's value of `key`: its own, else the preset's / catalog's. A palette colour
+/// (design note 19) a side lacks is another side's, so only its weight `.w` blends and
+/// the hue never sweeps from 0.
+#[inline(never)]
+fn side_value(
+    s: &TransitionSide,
+    sides: &[TransitionSide],
+    preset: &HashMap<String, f64>,
+    mode: &str,
+    key: &str,
+) -> f64 {
+    if let Some(v) = s.overrides.get(key) {
+        return *v;
+    }
+    if key.starts_with("palette.") && !key.ends_with(".w") {
+        if let Some(v) = sides.iter().find_map(|o| o.overrides.get(key)) {
+            return *v;
         }
     }
-    // Endpoints are exact: at the end the structural keys are the to side's.
-    if w >= 1.0 {
+    effective(preset, mode, key)
+}
+
+/// The weighted mix of one pattern's sides (`weights` ≥ 0, one per side; `target` is the
+/// state the view is heading to). `None`
+/// when the sides draw different patterns or a state doesn't resolve.
+#[inline(never)]
+pub fn blend(
+    sides: &[TransitionSide],
+    weights: &[f64],
+    target: usize,
+    size: u32,
+) -> Option<TransitionMix> {
+    let total: f64 = weights.iter().map(|w| w.max(0.0)).sum::<f64>().max(1e-12);
+    let w: Vec<f64> = weights.iter().map(|x| x.max(0.0) / total).collect();
+    blend_core(sides, &w, target, size, false)
+}
+
+/// [`blend`] and [`mix`]'s `params` in one key loop. `pair` is a two-sided state change
+/// (`mix`): counts and choices stay the from side's with the to side's dissolved in by
+/// the eased progress `w[1]`, numbers interpolate `a + (b − a) × w` (exact at the ends),
+/// and densities swap like any count. Otherwise (a voice-state blend) counts and choices
+/// come from the heaviest side and densities blend with their layout.
+#[inline(never)]
+fn blend_core(
+    sides: &[TransitionSide],
+    w: &[f64],
+    target: usize,
+    size: u32,
+    pair: bool,
+) -> Option<TransitionMix> {
+    let first = sides.first()?;
+    if sides.len() != w.len()
+        || target >= sides.len()
+        || sides.iter().any(|s| s.state != first.state)
+    {
+        return None;
+    }
+    let (mode, preset) = crate::resolve_state(&first.state, size)?;
+    // The two heaviest sides (counts and choices come from them); a pair: from, to.
+    let (mut i1, mut i2) = (0, if pair { 1 } else { usize::MAX });
+    if !pair {
+        for i in 1..w.len() {
+            if w[i] > w[i1] {
+                i2 = i1;
+                i1 = i;
+            } else if i2 == usize::MAX || w[i] > w[i2] {
+                i2 = i;
+            }
+        }
+    }
+    let mut keys: Vec<&String> = sides.iter().flat_map(|s| s.overrides.keys()).collect();
+    keys.sort();
+    keys.dedup();
+    let mut out = TransitionMix {
+        technique: "params".to_string(),
+        weight: w[i1],
+        speed: sides.iter().zip(w).map(|(s, w)| s.speed * w).sum(),
+        overrides: HashMap::new(),
+        structural_to: HashMap::new(),
+        swap: 0.0,
+        rates: HashMap::new(),
+    };
+    for key in keys {
+        let val = |s: &TransitionSide| side_value(s, sides, &preset, mode, key);
+        let v = if let (false, Some(layout)) = (pair, density_layout(mode, key)) {
+            // A count the mode draws as a density (TS7): blended like any number, laid
+            // out once for the largest side.
+            // Only when the sides' counts differ: one count keeps its plain layout.
+            let max = sides.iter().map(val).fold(f64::MIN, f64::max);
+            if sides.iter().any(|s| val(s) != max) {
+                out.overrides.insert(layout.to_string(), max);
+            }
+            weighted(sides, w, &preset, mode, key)
+        } else if catalog::arrives_at_once(mode, key) {
+            // An arrival value (a character's `turnBlink`): the new state's, at once.
+            val(&sides[target])
+        } else if is_structural(mode, key) {
+            let a = val(&sides[i1]);
+            if i2 != usize::MAX {
+                let b = val(&sides[i2]);
+                if a != b {
+                    out.structural_to.insert(key.clone(), b);
+                }
+            }
+            a
+        } else if is_hue(key) || (key.starts_with("palette.") && key.ends_with(".h")) {
+            // Folded shortest-way blends: exact for two sides, close for three.
+            let (mut h, mut seen) = (0.0, 0.0);
+            for (s, w) in sides.iter().zip(w) {
+                if *w > 0.0 {
+                    let x = val(s);
+                    h = if seen == 0.0 {
+                        x
+                    } else {
+                        lerp_hue(h, x, w / (seen + w))
+                    };
+                    seen += w;
+                }
+            }
+            if seen == 0.0 {
+                val(&sides[i1])
+            } else {
+                h
+            }
+        } else if pair {
+            let (a, b) = (val(&sides[0]), val(&sides[1]));
+            a + (b - a) * w[1]
+        } else {
+            weighted(sides, w, &preset, mode, key)
+        };
+        out.overrides.insert(key.clone(), v);
+    }
+    if pair && w[1] >= 1.0 {
+        // Endpoints are exact: at the end the counts and choices are the to side's.
         for (k, v) in out.structural_to.drain() {
             out.overrides.insert(k, v);
         }
     } else if !out.structural_to.is_empty() {
-        out.swap = ((w - SWAP_START) / (SWAP_END - SWAP_START)).clamp(0.0, 1.0);
+        let share = if pair {
+            w[1]
+        } else {
+            w[i2] / (w[i1] + w[i2]).max(1e-12)
+        };
+        out.swap = ((share - SWAP_START) / (SWAP_END - SWAP_START)).clamp(0.0, 1.0);
     }
+    out.rates = rates(mode, &out.overrides);
     Some(out)
+}
+
+/// The rate of every rate key the design sets (see [`RATES`]).
+#[inline(never)]
+fn rates(mode: &str, o: &HashMap<String, f64>) -> HashMap<String, f64> {
+    let mut out = HashMap::new();
+    let warp = mode == "warp";
+    for &(key, acc, period) in RATES {
+        let v = if warp && key == "period" {
+            // warp's stars run at `warpSpeed / period`.
+            match (o.get("warpSpeed"), o.get("period")) {
+                (Some(s), Some(p)) => Some(s / p.max(0.05)),
+                _ => None,
+            }
+        } else {
+            o.get(key)
+                .map(|v| if period { 1.0 / v.max(0.05) } else { *v })
+        };
+        if let Some(v) = v {
+            put(
+                &mut out,
+                if warp && key == "period" {
+                    "warpCycles"
+                } else {
+                    acc
+                },
+                v,
+            );
+        }
+    }
+    out
+}
+
+#[inline(never)]
+fn put(out: &mut HashMap<String, f64>, key: &str, v: f64) {
+    out.insert(key.to_string(), v);
 }
 
 #[cfg(test)]
@@ -420,5 +616,235 @@ mod tests {
                 "generic profile key {k} unknown to the catalog"
             );
         }
+    }
+
+    /// The rate-key detector (design note 31): a key whose small change moves the frame
+    /// far more at t = 300 s than at t = 10 s multiplies time, so a view changing it
+    /// mid-session would make the motion jump. Every such key must be in [`RATES`]
+    /// (accumulated by the view); a new pattern can't bring TS1 back unnoticed.
+    #[test]
+    fn every_key_that_multiplies_time_is_a_rate_key() {
+        let cat: serde_json::Value =
+            serde_json::from_str(include_str!("../../../spec/parameters.json")).unwrap();
+        let defs = cat["definitions"].as_object().unwrap();
+        // Materials on, so their keys are exercised too.
+        let materials = [
+            ("pulseStrength", 0.6),
+            ("noiseStrength", 1.0),
+            ("holoStrength", 1.0),
+        ];
+        let known: Vec<&str> = RATES.iter().map(|r| r.0).chain(["warpSpeed"]).collect();
+        let shift = |f: &crate::OrbFrame, g: &crate::OrbFrame| -> Option<f64> {
+            if f.dots.len() != g.dots.len()
+                || f.lines.len() != g.lines.len()
+                || f.polylines.len() != g.polylines.len()
+            {
+                return None;
+            }
+            let mut d = 0.0;
+            for (a, b) in f.dots.iter().zip(&g.dots) {
+                d += (a.x - b.x).abs() + (a.y - b.y).abs() + (a.a - b.a).abs() + (a.r - b.r).abs();
+            }
+            for (a, b) in f.lines.iter().zip(&g.lines) {
+                d += (a.x1 - b.x1).abs()
+                    + (a.y1 - b.y1).abs()
+                    + (a.x2 - b.x2).abs()
+                    + (a.y2 - b.y2).abs()
+                    + (a.a - b.a).abs();
+            }
+            for (a, b) in f.polylines.iter().zip(&g.polylines) {
+                if a.points.len() != b.points.len() {
+                    return None;
+                }
+                d += a
+                    .points
+                    .iter()
+                    .zip(&b.points)
+                    .map(|(p, q)| (p.x - q.x).abs() + (p.y - q.y).abs())
+                    .sum::<f64>();
+                d += (a.a - b.a).abs();
+            }
+            Some(d)
+        };
+        let mut offenders = Vec::new();
+        for &state in crate::orbs::presets::STATES {
+            let Some((mode, preset)) = crate::resolve_state(state, 64) else {
+                continue;
+            };
+            for (id, def) in defs {
+                let (key, scope) = id.split_once('@').unwrap();
+                if def["type"] != "number"
+                    || (scope != mode && scope != "shared")
+                    || known.contains(&key)
+                {
+                    continue;
+                }
+                let base = effective(&preset, mode, key);
+                let v = if base == 0.0 { 0.5 } else { base };
+                let at = |t: f64, x: f64| {
+                    let mut o: HashMap<String, f64> =
+                        materials.iter().map(|(k, v)| (k.to_string(), *v)).collect();
+                    o.insert(key.to_string(), x);
+                    crate::frame_with_overrides(state.to_string(), 64, t, o)
+                };
+                // Averaged over 3 s, so where a cycle happens to be doesn't decide.
+                let sens = |t0: f64| -> Option<f64> {
+                    (0..12)
+                        .map(|k| t0 + k as f64 * 0.25)
+                        .try_fold(0.0, |acc, t| {
+                            Some(acc + shift(&at(t, v)?, &at(t, v * 1.002)?)?)
+                        })
+                };
+                let (Some(s10), Some(s300)) = (sens(10.0), sens(300.0)) else {
+                    continue;
+                };
+                if s300 > 1e-3 && s300 > 8.0 * s10 + 1e-6 {
+                    offenders.push(format!(
+                        "{state}/{key} ({s10:.4} at 10 s, {s300:.4} at 300 s)"
+                    ));
+                }
+            }
+        }
+        assert!(
+            offenders.is_empty(),
+            "keys that multiply time but aren't rate keys: {offenders:#?}"
+        );
+    }
+
+    /// TS2 / TS7: between voice states only a count a mode draws as a density may
+    /// change (it fades); any other count or choice would swap the whole frame.
+    #[test]
+    fn voice_states_change_no_count_but_a_density() {
+        let prof: serde_json::Value =
+            serde_json::from_str(include_str!("../../../spec/voice-state-profile.json")).unwrap();
+        let mut bad = Vec::new();
+        for (pattern, entry) in prof["patterns"].as_object().unwrap() {
+            let Some((mode, _)) = crate::resolve_state(pattern, 64) else {
+                continue;
+            };
+            let Some(states) = entry["states"].as_object() else {
+                continue;
+            };
+            let mut keys: Vec<&String> = states
+                .values()
+                .filter_map(|s| s["overrides"].as_object())
+                .flat_map(|o| o.keys())
+                .collect();
+            keys.sort();
+            keys.dedup();
+            for key in keys {
+                if !is_structural(mode, key) || density_layout(mode, key).is_some() {
+                    continue;
+                }
+                let vals: Vec<String> = crate::voice_state::VOICE_STATES
+                    .iter()
+                    .map(|s| {
+                        states
+                            .get(*s)
+                            .and_then(|e| e["overrides"].get(key.as_str()))
+                            .map_or("-".into(), |v| v.to_string())
+                    })
+                    .collect();
+                let set: std::collections::HashSet<&String> =
+                    vals.iter().filter(|v| *v != "-").collect();
+                if set.len() > 1 {
+                    bad.push(format!("{pattern}/{key}: {vals:?}"));
+                }
+            }
+        }
+        assert!(
+            bad.is_empty(),
+            "counts or choices that change between voice states: {bad:#?}"
+        );
+    }
+
+    #[test]
+    fn accumulated_cycles_equal_to_t_times_rate_draw_the_same_frame() {
+        // The view's sums start at `t × rate`, so taking over from the old formula is seamless.
+        for (state, key, acc, rate) in [
+            ("concluding", "period", "periodCycles", 1.0 / 6.0),
+            ("glowing", "surfaceSpeed", "surfaceSpeedCycles", 0.1),
+        ] {
+            let t = 123.4;
+            let mut o: HashMap<String, f64> = HashMap::new();
+            o.insert(key.into(), if key == "period" { 6.0 } else { 0.1 });
+            let plain = crate::frame_with_overrides(state.into(), 64, t, o.clone()).unwrap();
+            o.insert(acc.into(), t * rate);
+            let acc_f = crate::frame_with_overrides(state.into(), 64, t, o).unwrap();
+            let d: f64 = plain
+                .dots
+                .iter()
+                .zip(&acc_f.dots)
+                .map(|(a, b)| (a.x - b.x).abs() + (a.y - b.y).abs())
+                .sum();
+            assert!(d < 1e-6 * plain.dots.len().max(1) as f64, "{state}: {d}");
+        }
+    }
+
+    #[test]
+    fn a_voice_blend_at_one_weight_is_that_side_and_reports_rates() {
+        let idle = side("concluding", 0.6, &[("period", 6.0), ("ink", 0.72)]);
+        let speaking = side("concluding", 1.15, &[("period", 4.0), ("ink", 1.0)]);
+        let m = blend(&[idle.clone(), speaking.clone()], &[1.0, 0.0], 1, 64).unwrap();
+        assert_eq!(
+            (m.overrides["period"], m.overrides["ink"], m.speed),
+            (6.0, 0.72, 0.6)
+        );
+        assert!((m.rates["periodCycles"] - 1.0 / 6.0).abs() < 1e-12);
+        let half = blend(&[idle, speaking], &[0.5, 0.5], 1, 64).unwrap();
+        assert!(
+            (half.overrides["period"] - 5.0).abs() < 1e-12 && (half.speed - 0.875).abs() < 1e-12
+        );
+        assert!(blend(
+            &[side("glowing", 1.0, &[]), side("buzzy", 1.0, &[])],
+            &[1.0, 0.0],
+            0,
+            64
+        )
+        .is_none());
+    }
+
+    #[test]
+    fn a_voice_blend_takes_arrival_keys_from_the_target_and_lays_out_densities() {
+        let listening = side("buzzy", 1.0, &[("turnBlink", 0.0)]);
+        let thinking = side("buzzy", 1.0, &[("turnBlink", 1.0)]);
+        // Barely started towards thinking: the blink is already thinking's.
+        let m = blend(&[listening, thinking], &[0.95, 0.05], 1, 64).unwrap();
+        assert_eq!(m.overrides["turnBlink"], 1.0);
+        let a = side("glowing", 1.0, &[("nodeCount", 220.0)]);
+        let b = side("glowing", 1.0, &[("nodeCount", 340.0)]);
+        let m = blend(&[a, b], &[0.5, 0.5], 1, 64).unwrap();
+        assert_eq!(
+            (m.overrides["nodeCount"], m.overrides["nodeCountLayout"]),
+            (280.0, 340.0)
+        );
+        assert!(m.structural_to.is_empty(), "a density never swaps");
+        let f = crate::frame_with_overrides("glowing".into(), 64, 3.0, m.overrides).unwrap();
+        assert_eq!(f.dots.len(), 280);
+    }
+
+    #[test]
+    fn voice_state_changes_take_the_profiles_time_unless_the_file_says() {
+        let t = crate::fx_spec::transition_for("{}", "listening", "speaking");
+        assert_eq!((t.duration, t.authored), (0.25, false));
+        assert_eq!(
+            crate::fx_spec::transition_for("{}", "speaking", "idle").duration,
+            0.9
+        );
+        assert_eq!(
+            crate::fx_spec::transition_for("{}", "thinking", "speaking").duration,
+            0.3
+        );
+        assert_eq!(
+            crate::fx_spec::transition_for("{}", "ok", "error").duration,
+            DEFAULT_DURATION
+        );
+        let own =
+            r#"{"transitions":{"default":{"duration":0.7},"*->speaking":{"curve":"easeOut"}}}"#;
+        let t = crate::fx_spec::transition_for(own, "listening", "speaking");
+        assert_eq!(
+            (t.duration, t.curve.as_str(), t.authored),
+            (0.7, "easeOut", true)
+        );
     }
 }

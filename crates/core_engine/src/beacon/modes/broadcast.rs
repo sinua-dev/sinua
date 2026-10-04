@@ -20,6 +20,7 @@
 //! number in the additive modes. A short cross-fade between steps (0.15 of
 //! a step) keeps it from strobing. Stateless: a pure function of `t`.
 
+use crate::primitives::cycles;
 use crate::primitives::{arc_polyline, finalize_frame, Dot, ModeOpts, OrbFrame, Polyline};
 
 fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
@@ -83,7 +84,9 @@ pub fn frame_broadcast(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
 
     // Where in the lighting sequence we are, `s` in [0, n + 1).
     let steps = (n + 1) as f64;
-    let u = (t / period).rem_euclid(1.0);
+    let u = cycles(o, "periodCycles")
+        .unwrap_or(t / period)
+        .rem_euclid(1.0);
     let pass = if reversing {
         if u < 0.5 {
             2.0 * u

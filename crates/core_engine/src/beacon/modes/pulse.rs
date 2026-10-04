@@ -13,6 +13,7 @@
 //! steady dot with all four segments lit -- so one state covers the whole
 //! reconnect ramp without a state switch.
 
+use crate::primitives::cycles;
 use crate::primitives::{
     arc_polyline, finalize_frame, pulse_wave, Dot, ModeOpts, OrbFrame, Polyline,
 };
@@ -46,7 +47,7 @@ pub fn frame_pulse(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let amp = 1.0 - quality;
     // How far into the dip the pulse is: `0` at the ends of a period, `1` at
     // the midpoint -- Tailwind's pulse curve, shared with `apply_pulse`.
-    let d = pulse_wave((t / period).fract()) * amp;
+    let d = pulse_wave(cycles(o, "periodCycles").unwrap_or(t / period).fract()) * amp;
     let dot = Dot {
         x: cx,
         y: cy,

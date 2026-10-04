@@ -12,8 +12,9 @@
 //! ring, not a steady field), adapted to a stateless-`t` API. No golden
 //! vector -- same tradeoff as `aurora`/`webflow`/`spectrum`.
 
-use crate::orbs::core::{finalize_frame, radius_scale, Dot, OrbFrame, Proj};
+use crate::orbs::core::{finalize_frame, radius_scale, Density, Dot, OrbFrame, Proj};
 use crate::orbs::profiles::ModeOpts;
+use crate::primitives::cycles;
 use std::f64::consts::PI;
 
 fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
@@ -29,7 +30,7 @@ pub fn frame_sonar(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
 
     let period = get(o, "period", 1.6).max(0.05);
     let ring_n = get(o, "ringCount", 48.0) as i64;
-    let echoes = get(o, "echoCount", 2.0) as i64;
+    let echoes = Density::read(o, "echoCount", "echoCountLayout", 2.0);
     let echo_gap = get(o, "echoSpacing", 0.18);
     let core_r = get(o, "coreSize", 1.3);
 
@@ -48,13 +49,16 @@ pub fn frame_sonar(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
         ..Default::default()
     });
 
-    for e in 0..echoes.max(1) {
+    for e in 0..echoes.n.max(1) {
         let e_f = e as f64;
-        let phase = ((t - e_f * echo_gap).rem_euclid(period)) / period;
+        let phase = cycles(o, "periodCycles")
+            .map_or(((t - e_f * echo_gap).rem_euclid(period)) / period, |c| {
+                (c - e_f * echo_gap / period).rem_euclid(1.0)
+            });
         let radius_now = r * phase;
         // Brighten then fade across the expansion (a half sine over
         // [0, 1]), with a little extra fade as it nears the silhouette edge.
-        let alpha = (phase * PI).sin().max(0.0) * (1.0 - 0.15 * phase);
+        let alpha = (phase * PI).sin().max(0.0) * (1.0 - 0.15 * phase) * echoes.fade(e);
         if alpha < 0.02 {
             continue;
         }

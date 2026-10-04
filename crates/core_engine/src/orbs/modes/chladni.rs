@@ -11,9 +11,10 @@
 //! file's siblings.
 
 use crate::orbs::core::{
-    fib_dir, finalize_frame, hash_d, radius_scale, Dot, LatticeSample, OrbFrame, Proj,
+    finalize_frame, hash_d, lattice_dir, radius_scale, Density, Dot, LatticeSample, OrbFrame, Proj,
 };
 use crate::orbs::profiles::ModeOpts;
+use crate::primitives::cycles;
 
 fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
     *o.get(key).unwrap_or(&default)
@@ -52,9 +53,10 @@ pub(crate) fn lattice_sample(
 
     let node_r = get(o, "nodeSize", 0.9);
     let hold_time = get(o, "holdDuration", 2.5).max(0.1);
-    let (m, n_lon) = mode_numbers(t, hold_time);
+    let (m, n_lon) = cycles(o, "holdDurationCycles")
+        .map_or(mode_numbers(t, hold_time), |c| mode_numbers(c, 1.0));
 
-    let (dx, dy, dz) = fib_dir(i as f64, node_n as f64);
+    let (dx, dy, dz) = lattice_dir(i, node_n, o.get("nodeCountLayout").map_or(0, |&l| l as i64));
     let lat = dy.acos();
     let lon = dz.atan2(dx);
     let wave = (m * lat).cos() * (n_lon * lon).cos();
@@ -79,7 +81,8 @@ pub fn frame_chladni(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let cy = size / 2.0;
     let r = (size / 2.0) * 0.82;
     let pt = Proj::new(t * CAMERA.0, CAMERA.1, cx, cy, 1.0);
-    let node_n = get(o, "nodeCount", 260.0) as i64;
+    let density = Density::read(o, "nodeCount", "nodeCountLayout", 260.0);
+    let node_n = density.n;
 
     // Snap (not drift) to a new low-order mode pair every `holdDuration`
     // seconds -- the "kaleidoscope-like snap between discrete symmetric
@@ -87,6 +90,7 @@ pub fn frame_chladni(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let mut dots: Vec<Dot> = Vec::with_capacity(node_n.max(0) as usize);
     for i in 0..node_n {
         let s = lattice_sample(i, node_n, t, o, size);
+        let fade = density.fade(i);
         let (px, py, z) = pt.project(
             s.dir.0 * r * s.radius_frac,
             s.dir.1 * r * s.radius_frac,
@@ -98,7 +102,7 @@ pub fn frame_chladni(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
             z,
             r: s.dot_r,
             white: s.white,
-            a: s.alpha,
+            a: s.alpha * fade,
             ..Default::default()
         });
     }

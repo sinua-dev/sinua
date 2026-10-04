@@ -54,6 +54,112 @@ pub fn fib_dir(i: f64, n: f64) -> (f64, f64, f64) {
     (rad * a.cos(), y, rad * a.sin())
 }
 
+/// How many of a count-driven set to draw, and how strongly (design note 31, TS7).
+/// Without `<key>Layout` the count is read as before (truncated) and every element
+/// draws in full. A view blending voice states whose counts differ passes the largest
+/// as `<key>Layout`: the set is laid out once for it, the count becomes a density, and
+/// element `i` draws at `fade(i)` = `clamp(count − i, 0, 1)`, so a count change fades
+/// elements in or out and nothing moves.
+pub struct Density {
+    /// Elements to visit.
+    pub n: i64,
+    count: f64,
+    /// The layout size, or 0 for the old one-count layout.
+    pub layout: i64,
+}
+
+impl Density {
+    #[inline(never)]
+    pub fn read(
+        o: &std::collections::HashMap<String, f64>,
+        key: &str,
+        layout_key: &str,
+        default: f64,
+    ) -> Density {
+        let count = o.get(key).copied().unwrap_or(default);
+        match o.get(layout_key) {
+            Some(&l) if l >= count && count >= 0.0 => Density {
+                n: count.ceil() as i64,
+                count,
+                layout: l as i64,
+            },
+            _ => Density {
+                n: count as i64,
+                count,
+                layout: 0,
+            },
+        }
+    }
+
+    pub fn fade(&self, i: i64) -> f64 {
+        if self.layout == 0 {
+            1.0
+        } else {
+            (self.count - i as f64).clamp(0.0, 1.0)
+        }
+    }
+}
+
+/// Dot `i` of a lattice of `n` (design note 31, TS7): the Fibonacci lattice of `n`,
+/// or with a `layout` the Fibonacci lattice of `layout` points visited in an order
+/// whose every prefix covers the sphere evenly (farthest point first). At the layout
+/// size it is the same set of points as the plain lattice.
+#[inline(never)]
+pub fn lattice_dir(i: i64, n: i64, layout: i64) -> (f64, f64, f64) {
+    if layout <= 0 {
+        return fib_dir(i as f64, n as f64);
+    }
+    let k = ranked(layout as usize, i as usize);
+    fib_dir(k as f64, layout as f64)
+}
+
+/// The `i`-th point of the farthest-point order over the Fibonacci lattice of `n`
+/// (computed once per `n`, O(n²)).
+#[inline(never)]
+fn ranked(n: usize, i: usize) -> usize {
+    use std::cell::RefCell;
+    thread_local! {
+        static ORDERS: RefCell<Vec<(usize, Vec<u32>)>> = const { RefCell::new(Vec::new()) };
+    }
+    ORDERS.with(|o| {
+        let mut o = o.borrow_mut();
+        if let Some((_, order)) = o.iter().find(|(m, _)| *m == n) {
+            return order.get(i).map_or(i, |&k| k as usize);
+        }
+        let pts: Vec<(f64, f64, f64)> = (0..n).map(|k| fib_dir(k as f64, n as f64)).collect();
+        let d2 = |a: (f64, f64, f64), b: (f64, f64, f64)| {
+            (a.0 - b.0).powi(2) + (a.1 - b.1).powi(2) + (a.2 - b.2).powi(2)
+        };
+        let mut dist: Vec<f64> = pts.iter().map(|&p| d2(p, pts[0])).collect();
+        let mut order = Vec::with_capacity(n);
+        if n > 0 {
+            order.push(0u32);
+            dist[0] = -1.0;
+        }
+        for _ in 1..n {
+            let mut best = 0;
+            for k in 0..n {
+                if dist[k] > dist[best] {
+                    best = k;
+                }
+            }
+            order.push(best as u32);
+            dist[best] = -1.0;
+            for k in 0..n {
+                if dist[k] >= 0.0 {
+                    dist[k] = dist[k].min(d2(pts[k], pts[best]));
+                }
+            }
+        }
+        if o.len() >= 4 {
+            o.remove(0);
+        }
+        let k = order.get(i).map_or(i, |&k| k as usize);
+        o.push((n, order));
+        k
+    })
+}
+
 /// Shared spin + tilt + orthographic projection.
 ///
 /// A struct instead of upstream's boxed closure — same math, no per-call

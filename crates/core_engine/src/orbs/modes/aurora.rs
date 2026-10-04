@@ -14,9 +14,10 @@
 //! Studio's knob ranges.
 
 use crate::orbs::core::{
-    fib_dir, finalize_frame, perlin3, radius_scale, Dot, LatticeSample, OrbFrame, Proj,
+    finalize_frame, lattice_dir, perlin3, radius_scale, Density, Dot, LatticeSample, OrbFrame, Proj,
 };
 use crate::orbs::profiles::ModeOpts;
+use crate::primitives::cycles;
 
 fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
     *o.get(key).unwrap_or(&default)
@@ -46,6 +47,7 @@ pub(crate) fn lattice_sample(
     let node_r = get(o, "nodeSize", 1.1);
     let noise_scale = get(o, "surfaceScale", 1.4);
     let flow_speed = get(o, "surfaceSpeed", 0.25);
+    let flow = cycles(o, "surfaceSpeedCycles").unwrap_or(t * flow_speed);
     let hue_spread = get(o, "hueSpread", 140.0);
     let hue_offset = get(o, "hueOffset", 0.0);
     let hue_speed = get(o, "hueSpeed", 12.0);
@@ -54,15 +56,15 @@ pub(crate) fn lattice_sample(
     // for every dot. Only the tone: size and alpha keep the depth.
     let depth_tone = get(o, "depthTone", 1.0).clamp(0.0, 1.0);
 
-    let (nx, ny, nz) = fib_dir(i as f64, node_n as f64);
+    let (nx, ny, nz) = lattice_dir(i, node_n, o.get("nodeCountLayout").map_or(0, |&l| l as i64));
 
     // Real gradient noise flowing over time along the sphere's surface --
     // the thing this mode exists to prove out, vs. every ported mode's
     // `vnoise`. `n` is roughly in [-1, 1] (see `perlin3`'s doc comment).
     let n = perlin3(
-        nx * noise_scale + t * flow_speed,
+        nx * noise_scale + flow,
         ny * noise_scale,
-        nz * noise_scale + t * flow_speed * 0.7,
+        nz * noise_scale + flow * 0.7,
     );
 
     let bulge = 1.0 + 0.18 * n;
@@ -71,7 +73,10 @@ pub(crate) fn lattice_sample(
     // `shaded + (mid - shaded) * 0` is `shaded` exactly, so 1 changes no pixel.
     let shaded = 0.35 + 0.4 * depth;
     let white = shaded + (0.55 - shaded) * (1.0 - depth_tone);
-    let hue = (hue_spread * (0.5 + 0.5 * n) + hue_offset + t * hue_speed).rem_euclid(360.0);
+    let hue = (hue_spread * (0.5 + 0.5 * n)
+        + hue_offset
+        + cycles(o, "hueSpeedCycles").unwrap_or(t * hue_speed))
+    .rem_euclid(360.0);
 
     LatticeSample {
         dir: (nx, ny, nz),
@@ -89,11 +94,13 @@ pub fn frame_aurora(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let cy = size / 2.0;
     let r = (size / 2.0) * 0.82;
     let pt = Proj::new(t * CAMERA.0, CAMERA.1, cx, cy, 1.0);
-    let node_n = get(o, "nodeCount", 260.0) as i64;
+    let density = Density::read(o, "nodeCount", "nodeCountLayout", 260.0);
+    let node_n = density.n;
 
     let mut dots: Vec<Dot> = Vec::with_capacity(node_n.max(0) as usize);
     for i in 0..node_n {
         let s = lattice_sample(i, node_n, t, o, size);
+        let fade = density.fade(i);
         let (px, py, z) = pt.project(
             s.dir.0 * r * s.radius_frac,
             s.dir.1 * r * s.radius_frac,
@@ -105,7 +112,7 @@ pub fn frame_aurora(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
             z,
             r: s.dot_r,
             white: s.white,
-            a: s.alpha,
+            a: s.alpha * fade,
             saturation: s.saturation,
             hue: s.hue,
         });

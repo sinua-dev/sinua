@@ -23,7 +23,7 @@
 //! which read as a spinning two-tone ball rather than progress.
 
 use crate::orbs::core::{
-    fib_dir, finalize_frame, radius_scale, Dot, LatticeSample, OrbFrame, Proj,
+    finalize_frame, lattice_dir, radius_scale, Density, Dot, LatticeSample, OrbFrame, Proj,
 };
 use crate::orbs::profiles::ModeOpts;
 
@@ -52,7 +52,7 @@ pub(crate) fn lattice_sample(
     let progress = get(o, "progress", 0.5).clamp(0.0, 1.0);
     let boundary = 1.0 - 2.0 * progress;
 
-    let (dx, dy, dz) = fib_dir(i as f64, node_n as f64);
+    let (dx, dy, dz) = lattice_dir(i, node_n, o.get("nodeCountLayout").map_or(0, |&l| l as i64));
     // Screen-space x after the camera's yaw (`Proj::project`'s `x1`),
     // negated so the lit side starts at the left.
     let yaw = t * CAMERA.0;
@@ -87,7 +87,8 @@ pub fn frame_eclipse(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let cy = size / 2.0;
     let r = (size / 2.0) * 0.82;
     let pt = Proj::new(t * CAMERA.0, CAMERA.1, cx, cy, 1.0);
-    let node_n = get(o, "nodeCount", 260.0) as i64;
+    let density = Density::read(o, "nodeCount", "nodeCountLayout", 260.0);
+    let node_n = density.n;
 
     // `sweep` (a dot's position along the screen's terminator axis, -1..1) compared
     // against `boundary`: at progress=0 the boundary sits past +1 (nothing
@@ -96,6 +97,7 @@ pub fn frame_eclipse(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let mut dots: Vec<Dot> = Vec::with_capacity(node_n.max(0) as usize);
     for i in 0..node_n {
         let s = lattice_sample(i, node_n, t, o, size);
+        let fade = density.fade(i);
         let (px, py, z) = pt.project(
             s.dir.0 * r * s.radius_frac,
             s.dir.1 * r * s.radius_frac,
@@ -107,7 +109,7 @@ pub fn frame_eclipse(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
             z,
             r: s.dot_r,
             white: s.white,
-            a: s.alpha,
+            a: s.alpha * fade,
             ..Default::default()
         });
     }

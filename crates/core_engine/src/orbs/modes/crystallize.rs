@@ -24,6 +24,7 @@
 
 use crate::orbs::core::{finalize_frame, radius_scale, vnoise, Dot, Line, OrbFrame, Proj};
 use crate::orbs::profiles::ModeOpts;
+use crate::primitives::cycles;
 
 fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
     *o.get(key).unwrap_or(&default)
@@ -122,14 +123,15 @@ pub fn frame_crystallize(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let dot_r = get(o, "dotSize", 1.1);
     let line_w = get(o, "lineWidth", 0.7);
 
-    let cycle_index = (t / cycle).floor();
+    let c = cycles(o, "periodCycles").unwrap_or(t / cycle);
+    let cycle_index = c.floor();
     let use_octa = (cycle_index.rem_euclid(2.0)) as i64 == 1;
     let (base, k) = if use_octa {
         (octahedron_vertices(), 4)
     } else {
         (icosahedron_vertices(), 5)
     };
-    let local_phase = (t / cycle) - cycle_index;
+    let local_phase = c - cycle_index;
     let rigidity = rigidity_at(local_phase);
 
     let mut positions: Vec<Vec3> = Vec::with_capacity(base.len());

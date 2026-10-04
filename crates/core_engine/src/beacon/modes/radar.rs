@@ -26,6 +26,7 @@
 //! is per-dot color" move `primitives::apply_gradient` makes. The leading edge is a
 //! crisp `Polyline`. Stateless: a pure function of `t`.
 
+use crate::primitives::cycles;
 use std::f64::consts::PI;
 
 use crate::primitives::{
@@ -109,7 +110,10 @@ pub fn frame_radar(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     // The scope dots' radius: `dot_r`, capped by the ring gap (see `SPACING`).
     let field_r = dot_r.min(r_max / rings as f64 / SPACING);
     let white = 0.15;
-    let theta = 360.0 * (t / period).rem_euclid(1.0);
+    let theta = 360.0
+        * cycles(o, "periodCycles")
+            .unwrap_or(t / period)
+            .rem_euclid(1.0);
 
     let mut dots: Vec<Dot> = Vec::new();
     // The scope: `rings` range rings of dots, spaced `SPACING` radii apart,

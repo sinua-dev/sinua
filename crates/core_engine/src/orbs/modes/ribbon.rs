@@ -12,6 +12,7 @@
 
 use crate::orbs::core::{fib_dir, finalize_frame, radius_scale, Dot, OrbFrame, Proj};
 use crate::orbs::profiles::ModeOpts;
+use crate::primitives::cycles;
 
 fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
     *o.get(key).unwrap_or(&default)
@@ -29,7 +30,13 @@ pub fn frame_ribbon(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     // leaving only the traveling undulation
     let spin = get(o, "spin", 1.0);
     let cam_tilt = 0.3;
-    let pt = Proj::new(t * 0.1 * spin, cam_tilt, cx, cy, 1.0);
+    let pt = Proj::new(
+        cycles(o, "spinCycles").map_or(t * 0.1 * spin, |c| 0.1 * c),
+        cam_tilt,
+        cx,
+        cy,
+        1.0,
+    );
     let rs = radius_scale(size, get(o, "rsPow", 0.6));
     let face = face_on(o);
 

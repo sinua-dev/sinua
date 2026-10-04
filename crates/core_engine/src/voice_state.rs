@@ -47,6 +47,20 @@ fn source() -> &'static Value {
     })
 }
 
+/// Seconds the change `from` → `to` takes when the FX Spec has no rule for it
+/// (design note 31): the profile's `transitions`, the exact pair, then `from->*`,
+/// then `*->to`. `None` for a pair the table doesn't cover (the caller's 0.6 s).
+pub fn transition_duration(from: &str, to: &str) -> Option<f64> {
+    let t = source().get("transitions")?;
+    [
+        format!("{from}->{to}"),
+        format!("{from}->*"),
+        format!("*->{to}"),
+    ]
+    .iter()
+    .find_map(|k| t.get(k.as_str()).and_then(Value::as_f64))
+}
+
 /// One state's behaviour on one pattern.
 #[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 #[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]

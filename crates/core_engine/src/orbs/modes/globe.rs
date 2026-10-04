@@ -4,6 +4,7 @@
 
 use crate::orbs::core::{angle_delta, finalize_frame, radius_scale, Dot, OrbFrame, Proj};
 use crate::orbs::profiles::ModeOpts;
+use crate::primitives::cycles;
 use std::f64::consts::PI;
 
 fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
@@ -19,7 +20,9 @@ pub fn frame_globe(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let pt = Proj::new(t * spin, tilt, cx, cy, radius);
     // scan sweeps relative to the spin; scanMul scales that relative rate
     let scan_mul = get(o, "scanMul", 1.0);
-    let scan = t * (spin + (1.7 - spin) * scan_mul);
+    let scan = cycles(o, "scanMulCycles").map_or(t * (spin + (1.7 - spin) * scan_mul), |c| {
+        t * spin + (1.7 - spin) * c
+    });
     let rs = radius_scale(size, get(o, "rsPow", 0.6));
     let dim_base = get(o, "dimBase", 1.0);
 

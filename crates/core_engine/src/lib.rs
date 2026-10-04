@@ -414,6 +414,23 @@ pub(crate) fn resolve_state(
 
 pub use transition::{FxTransition, TransitionMix, TransitionSide};
 
+/// The voice states' weighted mix of one pattern (design note 31): `sides` are the
+/// pattern's voice-state sides (profile merged under the app's overrides), `weights`
+/// one per side (the view moves them with its transition clock), `target` the index
+/// of the state it is heading to (arrival keys take its value at once). Continuous
+/// keys blend by weight (hues the short way round); counts and choices come from the
+/// heaviest side, with the second's in `structural_to` dissolved by `swap`. `rates`
+/// is filled as in [`transition_mix`]. `None` if the sides draw different patterns.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn voice_blend(
+    sides: Vec<TransitionSide>,
+    weights: Vec<f64>,
+    target: u32,
+    size: u32,
+) -> Option<TransitionMix> {
+    transition::blend(&sides, &weights, target as usize, size)
+}
+
 /// What to draw at `progress` (`0..1` of the transition's duration, linear)
 /// of a state change -- the one transition system every view uses
 /// (docs/fx-spec.md, *Transitions*). `technique` says how: `params` (same
@@ -989,6 +1006,22 @@ mod wasm {
     #[wasm_bindgen]
     pub fn conversation_sample_json(name: String) -> String {
         crate::conversation_sample(name).unwrap_or_else(|| "null".to_string())
+    }
+
+    #[wasm_bindgen]
+    pub fn voice_blend_json(
+        sides_json: String,
+        weights: Vec<f64>,
+        target: u32,
+        size: u32,
+    ) -> String {
+        let Ok(sides) = serde_json::from_str::<Vec<crate::TransitionSide>>(&sides_json) else {
+            return "null".to_string();
+        };
+        match crate::voice_blend(sides, weights, target, size) {
+            Some(m) => serde_json::to_string(&m).unwrap_or_else(|_| "null".to_string()),
+            None => "null".to_string(),
+        }
     }
 
     #[wasm_bindgen]

@@ -33,6 +33,7 @@
 
 use crate::orbs::core::{fib_dir, finalize_frame, lerp, radius_scale, Dot, OrbFrame, Proj};
 use crate::orbs::profiles::ModeOpts;
+use crate::primitives::cycles;
 use std::f64::consts::PI;
 
 fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
@@ -59,7 +60,11 @@ pub fn frame_hush(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
 
     // Slow breathing: the whole shell swells and settles by `pulseAmplitude`
     // every `period` seconds. Zero amplitude = a static frame.
-    let breathe = 1.0 + pulse_amp * (2.0 * PI * t / pulse_period).sin();
+    let breathe = 1.0
+        + pulse_amp
+            * cycles(o, "periodCycles")
+                .map_or(2.0 * PI * t / pulse_period, |c| 2.0 * PI * c)
+                .sin();
 
     let mut dots: Vec<Dot> = Vec::with_capacity(node_n.max(0) as usize);
     for i in 0..node_n {

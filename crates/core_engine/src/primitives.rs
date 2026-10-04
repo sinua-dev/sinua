@@ -38,6 +38,15 @@ use std::collections::HashMap;
 /// `orbs` for something this generic.
 pub type ModeOpts = HashMap<String, f64>;
 
+/// A rate key's accumulated cycles (design note 31, TS1). A view that changes a rate
+/// key while it runs (a voice-state change) passes `∫ rate dt` of engine time as
+/// `<key>Cycles`, and the mode reads it in place of `t × rate`, so the motion stays
+/// continuous however long the session has run. Without it, the old formula.
+#[inline(never)]
+pub fn cycles(o: &ModeOpts, acc: &str) -> Option<f64> {
+    o.get(acc).copied()
+}
+
 /// Builds a `ModeOpts` from literal pairs -- a test convenience today
 /// (only `signal::modes::bar`'s tests use it; `orbs::profiles::opts` is the
 /// same one-liner, used by real preset-building code there too, so it
@@ -1313,7 +1322,10 @@ pub fn apply_pulse(mut frame: OrbFrame, t: f64, opts: &HashMap<String, f64>) -> 
         .unwrap_or(0.0)
         .clamp(0.0, 1.0);
     let phase = opts.get("pulsePhase").copied().unwrap_or(0.0);
-    let k = strength * pulse_wave((t / period + phase).rem_euclid(1.0));
+    let k = strength
+        * pulse_wave(
+            (cycles(opts, "pulsePeriodCycles").unwrap_or(t / period) + phase).rem_euclid(1.0),
+        );
     let center = match frame_centroid(&frame) {
         Some(c) => c,
         None => return frame,
@@ -1412,6 +1424,22 @@ pub fn apply_decay(mut frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame
 /// draw count for nothing. Runs after `apply_gradient` so a halo inherits
 /// its source's final color, and before `apply_interrupt`/`apply_muted` so
 /// those still have the last word over the halo too.
+/// A glow layer's alpha. Below 0.02 a layer used to vanish at once; now it fades out
+/// linearly towards 0.01, so a glow strength that changes mid-transition doesn't pop a
+/// layer in or out (design note 31), and what would draw below 0.005 (invisible) is
+/// still culled. At 0.02 and above the alpha is unchanged.
+fn faint(a: f64) -> f64 {
+    if a >= 0.02 {
+        return a;
+    }
+    let f = (a - 0.01) * 2.0;
+    if f < 0.005 {
+        0.0
+    } else {
+        f
+    }
+}
+
 pub fn apply_glow(frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame {
     let strength = opts
         .get("glowStrength")
@@ -1444,7 +1472,6 @@ pub fn apply_glow(frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame {
         .copied()
         .unwrap_or(200.0)
         .rem_euclid(360.0);
-    const MIN_A: f64 = 0.02;
 
     // (scale, alpha factor) per layer, innermost first. The Gaussian is
     // evaluated in sigmas: the outermost layer sits two sigmas out.
@@ -1466,8 +1493,8 @@ pub fn apply_glow(frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame {
     let mut dots = Vec::with_capacity(frame.dots.len() * (layers + 1));
     for d in frame.dots {
         for &(s, af) in &profile {
-            let a = d.a * af;
-            if a < MIN_A {
+            let a = faint(d.a * af);
+            if a <= 0.0 {
                 continue;
             }
             let (saturation, hue) = color(d.saturation, d.hue);
@@ -1484,8 +1511,8 @@ pub fn apply_glow(frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame {
     let mut lines = Vec::with_capacity(frame.lines.len() * (layers + 1));
     for l in frame.lines {
         for &(s, af) in &profile {
-            let a = l.a * af;
-            if a < MIN_A {
+            let a = faint(l.a * af);
+            if a <= 0.0 {
                 continue;
             }
             let (saturation, hue) = color(l.saturation, l.hue);
@@ -1502,8 +1529,8 @@ pub fn apply_glow(frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame {
     let mut polylines = Vec::with_capacity(frame.polylines.len() * (layers + 1));
     for p in frame.polylines {
         for &(s, af) in &profile {
-            let a = p.a * af;
-            if a < MIN_A {
+            let a = faint(p.a * af);
+            if a <= 0.0 {
                 continue;
             }
             let (saturation, hue) = color(p.saturation, p.hue);
@@ -1572,7 +1599,6 @@ fn glow_blurred(
     let grow = 1.0 + (radius - 1.0) * 0.5;
     let spread = (radius - 1.0) * 0.5 * blur_scale;
     let peak = (0.6 * strength).min(1.0);
-    const MIN_A: f64 = 0.02;
     let color = |sat: f64, h: f64| -> (f64, f64) {
         if tint > 0.0 {
             (lerp(sat, 0.9 * tint, tint), hue)
@@ -1583,8 +1609,8 @@ fn glow_blurred(
 
     let mut halos: Vec<Dot> = Vec::new();
     for d in &frame.dots {
-        let a = d.a * peak;
-        if a >= MIN_A {
+        let a = faint(d.a * peak);
+        if a > 0.0 {
             let (saturation, hue) = color(d.saturation, d.hue);
             halos.push(Dot {
                 r: d.r * grow,
@@ -1610,8 +1636,8 @@ fn glow_blurred(
 
     let mut halos: Vec<Line> = Vec::new();
     for l in &frame.lines {
-        let a = l.a * peak;
-        if a >= MIN_A {
+        let a = faint(l.a * peak);
+        if a > 0.0 {
             let (saturation, hue) = color(l.saturation, l.hue);
             halos.push(Line {
                 w: l.w * grow,
@@ -1637,8 +1663,8 @@ fn glow_blurred(
 
     let mut halos: Vec<Polyline> = Vec::new();
     for p in &frame.polylines {
-        let a = p.a * peak;
-        if a >= MIN_A {
+        let a = faint(p.a * peak);
+        if a > 0.0 {
             let (saturation, hue) = color(p.saturation, p.hue);
             halos.push(Polyline {
                 w: p.w * grow,
@@ -1731,7 +1757,7 @@ pub fn apply_noise(
     let speed = opts.get("noiseSpeed").copied().unwrap_or(0.4);
     let seed = opts.get("noiseSeed").copied().unwrap_or(0.0);
     let f = scale / size;
-    let z = t * speed + seed;
+    let z = cycles(opts, "noiseSpeedCycles").unwrap_or(t * speed) + seed;
     let shift = |x: f64, y: f64| -> (f64, f64) {
         (
             amp * perlin3(x * f, y * f, z),
@@ -2038,7 +2064,7 @@ pub fn apply_holo(mut frame: OrbFrame, size: f64, t: f64, opts: &HashMap<String,
     let hsat = get("holoSaturation", 0.7).clamp(0.0, 1.0);
     let wd = get("holoDepth", 0.5).clamp(0.0, 1.0);
     let wf = get("holoFacing", 0.5).clamp(0.0, 1.0);
-    let turns = get("holoSpeed", 0.05) * t;
+    let turns = cycles(opts, "holoSpeedCycles").unwrap_or(get("holoSpeed", 0.05) * t);
     let drift = 360.0 * turns;
     let c = size * 0.5;
     // The view point circles the centre at half the frame's half-width --

@@ -31,10 +31,19 @@ fn ik(s: (f64, f64), h: (f64, f64), a: f64, b: f64, out: f64) -> ((f64, f64), (f
         )
     };
     let (e1, e2) = (elbow(1.0), elbow(-1.0));
-    // Out on its own side and a little down (it hangs): a choice that changes
-    // smoothly as the hand moves, so the elbow never flips mid-gesture.
+    // Out on its own side and a little down (it hangs). Where the two are about
+    // as good (a hand straight out to the side) the elbow eases from one to the
+    // other instead of flipping in one frame (design note 31); elsewhere the better.
     let score = |e: (f64, f64)| e.0 * out + 0.6 * e.1;
-    let e = if score(e1) >= score(e2) { e1 } else { e2 };
+    let k = (0.5 + (score(e1) - score(e2)) / 12.0).clamp(0.0, 1.0);
+    let e = if k >= 1.0 {
+        e1
+    } else if k <= 0.0 {
+        e2
+    } else {
+        let k = k * k * (3.0 - 2.0 * k);
+        (e2.0 + (e1.0 - e2.0) * k, e2.1 + (e1.1 - e2.1) * k)
+    };
     (e, hand)
 }
 

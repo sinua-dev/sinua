@@ -7,6 +7,7 @@
 //! rests on the baseline for the second, brightening slightly at the top so
 //! the wave reads on a low-contrast surface too.
 
+use crate::primitives::cycles;
 use crate::primitives::{cubic_bezier, finalize_frame, Dot, ModeOpts, OrbFrame};
 use std::f64::consts::PI;
 
@@ -29,6 +30,8 @@ pub fn bounce(t: f64, k: usize, period: f64, delay: f64) -> f64 {
 pub fn frame_dots(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let count = get(o, "dotCount", 3.0).clamp(1.0, 6.0) as usize;
     let period = get(o, "period", 1.2).max(0.05);
+    // The bounce clock: accumulated cycles (design note 31) back in seconds.
+    let tb = cycles(o, "periodCycles").map_or(t, |c| c * period);
     let delay = get(o, "delay", 0.2).max(0.0);
     let dot_r = size * get(o, "dotSize", 0.06).clamp(0.01, 0.3);
     let spacing = size * get(o, "spacing", 0.22).clamp(0.02, 0.5);
@@ -39,7 +42,7 @@ pub fn frame_dots(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
 
     let mut dots: Vec<Dot> = Vec::with_capacity(count);
     for k in 0..count {
-        let h = bounce(t, k, period, delay);
+        let h = bounce(tb, k, period, delay);
         dots.push(Dot {
             x: cx + (k as f64 - (count as f64 - 1.0) * 0.5) * spacing,
             y: cy - amp * h,

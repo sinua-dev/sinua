@@ -3178,10 +3178,15 @@ fn check_transitions(t: &Value, state_keys: &[String], strict: bool, diag: &mut 
 
 /// The transition for `from` → `to` (state keys; `""` = the base design):
 /// the exact pair, then `from->*`, then `*->to`, then `default`, each field
-/// falling back separately to the next match and finally to 0.6 s
-/// `easeInOut`. An invalid value is skipped (the resolver reports it).
+/// falling back separately to the next match and finally to the voice-state
+/// profile's time for the pair (design note 31), else 0.6 s, and `easeInOut`
+/// (`authored` false). An invalid value is skipped (the resolver reports it).
 pub fn transition_for(json: &str, from: &str, to: &str) -> crate::FxTransition {
     let mut out = crate::FxTransition::default();
+    // Without a rule of the file's own, a voice-state change takes the profile's time.
+    if let Some(d) = crate::voice_state::transition_duration(from, to) {
+        out.duration = d;
+    }
     let Ok(doc) = serde_json::from_str::<Value>(json) else {
         return out;
     };
@@ -3211,6 +3216,7 @@ pub fn transition_for(json: &str, from: &str, to: &str) -> crate::FxTransition {
     }
     if let Some(c) = find("curve").and_then(|v| v.as_str().map(str::to_string)) {
         out.curve = c;
+        out.authored = true;
     }
     out
 }

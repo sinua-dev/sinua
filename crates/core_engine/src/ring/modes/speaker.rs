@@ -126,7 +126,9 @@ pub fn frame_speaker(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
             SHIMMER_SWEEP,
             l.w,
             white,
-            base_a + (PEAK_ALPHA - base_a) * shimmer,
+            // Scaled by `shimmer` too, so the arc grows from nothing instead of
+            // appearing at the ring's own alpha (design note 31); unchanged at 1.
+            (base_a + (PEAK_ALPHA - base_a) * shimmer) * shimmer,
             saturation,
             hue,
         ));

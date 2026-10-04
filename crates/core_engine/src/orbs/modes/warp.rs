@@ -17,6 +17,7 @@ use crate::orbs::core::{
     fib_dir, finalize_frame, frac, hash_d, lerp, radius_scale, Dot, Line, OrbFrame, Proj,
 };
 use crate::orbs::profiles::ModeOpts;
+use crate::primitives::cycles;
 
 fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
     *o.get(key).unwrap_or(&default)
@@ -44,7 +45,7 @@ pub fn frame_warp(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
         // stable per-star phase offset so stars don't all warp in sync.
         let (dx, dy, dz) = fib_dir(i_f, star_n as f64);
         let phase = hash_d(i_f * 3.7 + 11.0, 0.0);
-        let life = frac((t * warp_speed) / period + phase);
+        let life = frac(cycles(o, "warpCycles").unwrap_or((t * warp_speed) / period) + phase);
 
         let radius_here = r * life;
         let (px, py, z) = pt.project(dx * radius_here, dy * radius_here, dz * radius_here);

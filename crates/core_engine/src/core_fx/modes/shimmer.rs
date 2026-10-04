@@ -18,6 +18,7 @@
 //! highlight enters from off-track on the left and leaves off-track on the
 //! right, exactly like the CSS `-100%..100%` sweep.
 
+use crate::primitives::cycles;
 use std::f64::consts::PI;
 
 use crate::primitives::{
@@ -122,7 +123,9 @@ fn frame_shimmer_fill(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
             ..Default::default()
         });
     }
-    let center = (x0 - highlight * 0.5) + (length + highlight) * sweep_position(t, period);
+    let center = (x0 - highlight * 0.5)
+        + (length + highlight)
+            * sweep_position(cycles(o, "periodCycles").map_or(t, |c| c * period), period);
     let peak = 1.0 - (1.0 - LAYER_ALPHA).powi(LAYERS as i32);
     let stop = |offset: f64, a: f64| GradientStop {
         offset,
@@ -182,7 +185,9 @@ pub fn frame_shimmer(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
 
     // Center travels from one highlight-length before the track to one
     // after it, so the glow fully enters and fully leaves.
-    let center = (x0 - highlight * 0.5) + (length + highlight) * sweep_position(t, period);
+    let center = (x0 - highlight * 0.5)
+        + (length + highlight)
+            * sweep_position(cycles(o, "periodCycles").map_or(t, |c| c * period), period);
     for k in 0..LAYERS {
         // Outermost layer first (longest), innermost last (shortest).
         let half = highlight * 0.5 * (1.0 - k as f64 / LAYERS as f64);

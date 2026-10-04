@@ -12,6 +12,7 @@
 //! fill this engine already has); it's given `z = -1` so `finalize_frame`'s
 //! far-to-near z-sort draws it under the dot without any special casing.
 
+use crate::primitives::cycles;
 use crate::primitives::{
     arc_polyline, cubic_bezier, finalize_frame, lerp, Dot, ModeOpts, OrbFrame,
 };
@@ -61,7 +62,7 @@ pub fn frame_halo(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
 
     // The same ease-out ripple as `ping`, but reaching only the halo's
     // edge and taking a full, slower period to fade.
-    let u = (t / period).fract();
+    let u = cycles(o, "periodCycles").unwrap_or(t / period).fract();
     let e = cubic_bezier(0.0, 0.0, 0.2, 1.0, u);
     let ring_r = dot_r + (halo_r - dot_r).max(0.0) * e;
     let ring = arc_polyline(

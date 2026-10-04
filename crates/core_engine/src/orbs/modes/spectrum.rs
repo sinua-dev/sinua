@@ -7,12 +7,53 @@
 //! this. No golden vector -- same tradeoff as `aurora`/`webflow`, see their
 //! header comments.
 
-use crate::orbs::core::{audio_band, finalize_frame, hash_d, radius_scale, Dot, OrbFrame, Proj};
+use crate::orbs::core::{
+    audio_band, finalize_frame, hash_d, radius_scale, Density, Dot, OrbFrame, Proj,
+};
 use crate::orbs::profiles::ModeOpts;
+use crate::primitives::cycles;
 use std::f64::consts::PI;
 
 fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
     *o.get(key).unwrap_or(&default)
+}
+
+/// The angle of every bar (by join order) at the continuous count `c`: at a whole count
+/// `n` the bars are evenly spaced in their order round the ring; bar `n` joins after a
+/// spread-out position (golden ratio), and between `n` and `n + 1` every angle moves
+/// straight towards its next one.
+#[inline(never)]
+fn chain_angles(c: f64) -> Vec<f64> {
+    let n = c.floor().max(1.0) as usize;
+    let s = c - n as f64;
+    // Angular order at count m: bar ids round the ring.
+    let order = |m: usize| -> Vec<usize> {
+        let mut ring = vec![0usize];
+        for id in 1..m {
+            // Insert after a spread-out position (golden ratio round the ring).
+            let at = ((id as f64 * 0.618_033_988_75).fract() * ring.len() as f64) as usize;
+            ring.insert(at + 1, id);
+        }
+        ring
+    };
+    let angles = |m: usize| -> Vec<f64> {
+        let ring = order(m);
+        let mut a = vec![0.0; m];
+        for (k, &id) in ring.iter().enumerate() {
+            a[id] = k as f64 / m as f64 * 2.0 * PI;
+        }
+        a
+    };
+    let a0 = angles(n);
+    let a1 = angles(n + 1);
+    let mut out = vec![0.0; n + 1];
+    for id in 0..=n {
+        // The newcomer starts where it will be (it fades in).
+        let from = if id < n { a0[id] } else { a1[id] };
+        let d = (a1[id] - from + PI).rem_euclid(2.0 * PI) - PI;
+        out[id] = from + d * s;
+    }
+    out
 }
 
 pub fn frame_spectrum(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
@@ -26,7 +67,18 @@ pub fn frame_spectrum(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let pt = Proj::new(SWAY * (t * 0.15 / SWAY).sin(), 0.3, cx, cy, 1.0);
     let rs = radius_scale(size, get(o, "rsPow", 0.6));
 
-    let bars = get(o, "barCount", 24.0) as i64;
+    // With a layout (design note 31, TS7) the count is a density: bars join one at a
+    // time into gaps spread round the ring, the newest fading in and the others sliding
+    // at most half a gap, so every whole count is evenly spaced. A bar keeps its id (and
+    // its height pattern) throughout.
+    let density = Density::read(o, "barCount", "barCountLayout", 24.0);
+    let bars = density.n;
+    let chain = if density.layout > 0 {
+        Some(chain_angles(o["barCount"]))
+    } else {
+        None
+    };
+    let spacing = bars as f64;
     let bar_dots = get(o, "barDotCount", 6.0) as i64;
     let jump_rate = get(o, "jumpSpeed", 4.0);
     let dot_r = get(o, "dotSize", 1.0);
@@ -37,7 +89,9 @@ pub fn frame_spectrum(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     // jump percussively to a new height instead of drifting smoothly the
     // way every noise-driven mode does. Only used for the fallback
     // (no-audio-connected) pattern below.
-    let step = (t * jump_rate).floor();
+    let step = cycles(o, "jumpSpeedCycles")
+        .unwrap_or(t * jump_rate)
+        .floor();
 
     // If a caller (e.g. the Studio's VoiceSource pipeline) has supplied
     // real audio band data, use it instead of the synthetic hash-driven
@@ -49,9 +103,18 @@ pub fn frame_spectrum(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let mut dots: Vec<Dot> = Vec::with_capacity((bars * bar_dots) as usize);
     for i in 0..bars {
         let i_f = i as f64;
-        let ang = i_f / bars as f64 * 2.0 * PI;
+        let ang = match &chain {
+            Some(c) => c[i as usize],
+            None => i_f / spacing * 2.0 * PI,
+        };
         let raw = if audio_band_count > 0 {
-            let band_idx = ((i_f / bars as f64) * audio_band_count as f64) as usize;
+            // Bands go round the ring by angle (a chained bar's id isn't its place).
+            let share = if chain.is_some() {
+                ang / (2.0 * PI)
+            } else {
+                i_f / spacing
+            };
+            let band_idx = (share * audio_band_count as f64) as usize;
             audio_band(o, band_idx.min(audio_band_count - 1))
                 .unwrap_or(0.0)
                 .clamp(0.0, 1.0)
@@ -80,7 +143,7 @@ pub fn frame_spectrum(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
                 z,
                 r: dot_r * rs * (1.0 - 0.3 * frac_along),
                 white: 0.25 + 0.35 * depth,
-                a: 0.55 + 0.45 * depth,
+                a: (0.55 + 0.45 * depth) * density.fade(i),
                 saturation,
                 hue,
             });

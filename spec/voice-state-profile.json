@@ -82,6 +82,27 @@
     }
   },
   "patterns": {
+    "silhouette": {
+      "$comment": "Design note 32: one head of dots; each state moves it by its own key (breath, glints, waves in, eye-line flicker, waves from the mouth). No dot glow (the outline has its own; glow on ~1,500 dots is heavy) and no pulse (the silhouette breathes itself).",
+      "states": {
+        "initializing": {
+          "speed": 0.8,
+          "overrides": { "breath": 0.5, "glint": 0, "inward": 0, "neuron": 0, "speech": 0, "ink": 0.7, "glowStrength": 0, "pulseStrength": 0 }
+        },
+        "idle": {
+          "overrides": { "breath": 1, "glint": 1, "inward": 0, "neuron": 0, "speech": 0, "ink": 0.8, "glowStrength": 0, "pulseStrength": 0 }
+        },
+        "listening": {
+          "overrides": { "breath": 0.3, "glint": 0, "inward": 1, "neuron": 0, "speech": 0, "glowStrength": 0, "pulseStrength": 0 }
+        },
+        "thinking": {
+          "overrides": { "breath": 0.3, "glint": 0, "inward": 0, "neuron": 1, "speech": 0, "glowStrength": 0, "pulseStrength": 0 }
+        },
+        "speaking": {
+          "overrides": { "breath": 0.2, "glint": 0, "inward": 0, "neuron": 0, "speech": 1, "glowStrength": 0, "pulseStrength": 0 }
+        }
+      }
+    },
     "glowing": {
       "$comment": "Showcase base (aurora): the colour field flowing across the sphere is its own signal, so each state drives the flow speed, not just the tempo.",
       "states": {
@@ -1187,6 +1208,11 @@
       "status": "fixed",
       "was": "aurora cycles its own hue, so the states drifted pink/blue",
       "now": "the showcase pins the colour; states differ by texture and energy (29/10 - 86/75 - 47/31 - 126/139)"
+    },
+    "silhouette": {
+      "status": "fixed",
+      "was": "new in 1.13 (design note 32): the generic glow and pulse would make ~1,500 dots heavy and breathe twice",
+      "now": "a tuned entry: one key per state, no dot glow, no pulse"
     },
     "muted": {
       "status": "fixed",

@@ -327,6 +327,36 @@ How state changes animate, per pair. Optional. Without a rule for a pair, a voic
 - **Diagnostics:** a key that isn't `default` or `a->b` is an error; a state name that isn't in `states` is a warning (the entry never applies); an unknown curve or an out-of-range duration is an error.
 - `fxSpecTransition(spec, from, to)` returns `{ duration, curve, authored }` for a pair; the players call it on every state change. `authored` says the file wrote `curve` for this change: a view keeps that curve (carrying the motion's velocity into it); otherwise it uses its own transition clock, which reaches ~95 % of the way in `duration`. The technique (interpolate / morph / cross-fade) isn't in the file: the engine picks it from the pair (see *Caller loop*).
 
+## v1.13: silhouettes
+
+`pattern: "silhouette"` (an `orb`) is a front-facing head and shoulders made of evenly
+spread dots that lives with the voice (design note 32). One shape stays on screen; the
+voice states only change how it moves, so a state change never adds or drops a dot.
+
+```json
+{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette", "silhouette": "helmet",
+  "params": { "hologram": 1, "scanlines": 0.6, "saturation": 0.5, "hue": 190 } }
+```
+
+- **`silhouette`** (top level, file-wide): `"human"` (default) or `"helmet"`, or a file's
+  own `{ "path", "eyes": [left x, right x, y], "mouth": [x, y] }`. The path is SVG path
+  data in a 200 × 200 box, with the path's own limits (design note 13). Start and end it
+  below the shoulders: the bottom stays open and fades. Thinking flickers along the eye
+  line; speaking waves spread from the mouth. A bad shape is an error and the human is drawn.
+- **Dots:** ~1,500 at 64 px, ~380 at 32 px, the outline alone at 20 px, always a prefix of
+  one farthest-point order, so they stay evenly spread at every size. Under low power
+  (`performance.lowPower`) the first 800 are drawn.
+- **Voice keys** (the voice-state profile sets them): `breath` and `glint` (idle),
+  `inward` (listening, with the mic level), `neuron` (thinking), `speech` (speaking, with
+  the agent's level). `waveSpeed`, `period` and `scanSpeed` are rate keys: a transition
+  accumulates them (design note 31).
+- **Look:** `turnYaw` turns the head (−1..1; the shoulders stay), `rim` the outline and its
+  glow, `hologram` the hologram look (a bright rim, now and then a thin band sliding
+  sideways), `scanlines`, `wire` (links between neighbours), `dotSize`, `saturation`/`hue`.
+- **Cost:** medium (`estimateCost`); the voice-state profile turns the dot glow and the
+  pulse off for it. Glow material on every dot makes it heavy.
+- A 1.12 file that names the pattern or the key gets an error.
+
 ## v1.13: cosmetics
 
 A character can **wear things**: a hat, glasses, a badge. The new top-level key

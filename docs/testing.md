@@ -200,7 +200,8 @@ Every binding checks the frozen file itself. The rules mirror the Rust checker: 
 `node scripts/transitions/check.mjs` (CI, after the packages build; `--quick` while
 iterating) holds the transition contract (design note 31, sinua-studio):
 
-- **Every pattern** (30 orb patterns, 7 characters) through every voice-state pair and
+- **Every pattern** (31 orb patterns, 7 characters; the script stops if the catalog has an
+  orb or character pattern its lists miss) through every voice-state pair and
   `initializing -> idle`, at 10 s and at 300 s into the session, plus an interruption, on
   the real view clock (`StateTransition`) and engine. Each frame is rasterized and two
   numbers judge the change (1 = ideal): *peak*, the worst frame over what a smooth change

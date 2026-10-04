@@ -146,6 +146,18 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   - A loadout entry may carry a bounded nudge (`offset`, `scale`, `rotate`).
   - The Studio's Wardrobe group lists the catalog beside the file's own items.
 
+- FX Spec 1.13: the `silhouette` pattern (`docs/fx-spec.md`, *v1.13: silhouettes*), a head
+  and shoulders of ~1,500 evenly spread dots (64 px; ~380 at 32 px, the outline alone at
+  20 px) that lives with the voice: waves come in from the outline while it listens, dots
+  flicker along the eye line while it thinks, and waves spread from the mouth with the
+  agent's level while it speaks. The dots never change between states.
+  - Two built-ins, `human` and `helmet`, or a file's own outline with its eye line and mouth
+    (`"silhouette": { "path", "eyes", "mouth" }`).
+  - `turnYaw` turns the head (the shoulders stay); `hologram` gives a hologram look (a bright
+    rim, now and then a band sliding sideways), `scanlines` and `wire` add texture.
+  - Medium cost; under low power (`performance.lowPower`) it draws the first 800 dots,
+    spread just as evenly.
+
 - Palette slots are named by the part they paint, never by colour (design note 27): every
   character's main colour is `body`, and `outline`, `cheeks`, `shine` and `iris` mean the same
   everywhere (Buzzy's `shell` / `amber` / `cyan` are now `body` / `accent` / `glow`; the full

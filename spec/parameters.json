@@ -434,6 +434,29 @@
       "uiMin": 0,
       "unit": null
     },
+    "breath@silhouette": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "How much the silhouette breathes (idle).",
+      "fallback": 1,
+      "group": "style",
+      "if": null,
+      "key": "breath",
+      "label": "Breath",
+      "max": 1,
+      "min": 0,
+      "path": "breath",
+      "scope": "silhouette",
+      "specPath": "/params/breath",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "colorHue@shared": {
       "aliases": [],
       "category": "material",
@@ -929,6 +952,29 @@
       "type": "number",
       "uiMax": 0.05,
       "uiMin": 0.008,
+      "unit": "fraction"
+    },
+    "dotSize@silhouette": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Dot size, relative to the default.",
+      "fallback": 1,
+      "group": "style",
+      "if": null,
+      "key": "dotSize",
+      "label": "Dot size",
+      "max": 4,
+      "min": 0,
+      "path": "dotSize",
+      "scope": "silhouette",
+      "specPath": "/params/dotSize",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 2,
+      "uiMin": 0.4,
       "unit": "fraction"
     },
     "dotSize@spectrum": {
@@ -1644,6 +1690,29 @@
       "type": "number",
       "unit": null
     },
+    "glint@silhouette": {
+      "aliases": [],
+      "category": "energy",
+      "choices": null,
+      "deprecated": null,
+      "description": "Dots that catch the light now and then (idle).",
+      "fallback": 1,
+      "group": "style",
+      "if": null,
+      "key": "glint",
+      "label": "Glints",
+      "max": 1,
+      "min": 0,
+      "path": "glint",
+      "scope": "silhouette",
+      "specPath": "/params/glint",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "glowBlend@shared": {
       "aliases": [],
       "category": "material",
@@ -2279,6 +2348,29 @@
       "uiMin": 0,
       "unit": "fraction"
     },
+    "hologram@silhouette": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "A brighter rim and, now and then, a thin band sliding sideways.",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "hologram",
+      "label": "Hologram",
+      "max": 1,
+      "min": 0,
+      "path": "hologram",
+      "scope": "silhouette",
+      "specPath": "/params/hologram",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "hue@arc": {
       "aliases": [],
       "category": "appearance",
@@ -2785,6 +2877,29 @@
       "uiMin": 0,
       "unit": "deg"
     },
+    "hue@silhouette": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Hue of the tint.",
+      "fallback": 200,
+      "group": "style",
+      "if": null,
+      "key": "hue",
+      "label": "Tint hue",
+      "max": 360,
+      "min": 0,
+      "path": "hue",
+      "scope": "silhouette",
+      "specPath": "/params/hue",
+      "step": 1,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 360,
+      "uiMin": 0,
+      "unit": "deg"
+    },
     "hue@speaker": {
       "aliases": [],
       "category": "appearance",
@@ -3182,6 +3297,29 @@
       "type": "number",
       "uiMax": 0.42,
       "uiMin": 0.2,
+      "unit": "fraction"
+    },
+    "inward@silhouette": {
+      "aliases": [],
+      "category": "energy",
+      "choices": null,
+      "deprecated": null,
+      "description": "Waves travelling in from the outline, stronger with the mic level (listening).",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "inward",
+      "label": "Listening waves",
+      "max": 1,
+      "min": 0,
+      "path": "inward",
+      "scope": "silhouette",
+      "specPath": "/params/inward",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
       "unit": "fraction"
     },
     "jumpSpeed@spectrum": {
@@ -4134,6 +4272,29 @@
       "type": "integer",
       "unit": null
     },
+    "neuron@silhouette": {
+      "aliases": [],
+      "category": "energy",
+      "choices": null,
+      "deprecated": null,
+      "description": "Dots flickering along the eye line (thinking).",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "neuron",
+      "label": "Thinking flicker",
+      "max": 1,
+      "min": 0,
+      "path": "neuron",
+      "scope": "silhouette",
+      "specPath": "/params/neuron",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "nodeCount@aurora": {
       "aliases": [],
       "category": "appearance",
@@ -5080,6 +5241,29 @@
       "uiMin": 0.5,
       "unit": "s"
     },
+    "period@silhouette": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Seconds per breath.",
+      "fallback": 4,
+      "group": "style",
+      "if": null,
+      "key": "period",
+      "label": "Breath period",
+      "max": 30,
+      "min": 0.05,
+      "path": "period",
+      "scope": "silhouette",
+      "specPath": "/params/period",
+      "step": 0.1,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 10,
+      "uiMin": 1,
+      "unit": "s"
+    },
     "period@sonar": {
       "aliases": [],
       "category": "motion",
@@ -5855,6 +6039,29 @@
       "uiMin": 0,
       "unit": null
     },
+    "rim@silhouette": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Strength of the outline and its glow.",
+      "fallback": 0.7,
+      "group": "style",
+      "if": null,
+      "key": "rim",
+      "label": "Outline",
+      "max": 1,
+      "min": 0,
+      "path": "rim",
+      "scope": "silhouette",
+      "specPath": "/params/rim",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "ringCount@nested": {
       "aliases": [],
       "category": "appearance",
@@ -6458,6 +6665,29 @@
       "uiMin": 0,
       "unit": "fraction"
     },
+    "saturation@silhouette": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Colour strength of the dots and outline (0 = grey ink).",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "saturation",
+      "label": "Tint",
+      "max": 1,
+      "min": 0,
+      "path": "saturation",
+      "scope": "silhouette",
+      "specPath": "/params/saturation",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "saturation@speaker": {
       "aliases": [],
       "category": "appearance",
@@ -6572,6 +6802,52 @@
       "uiMax": 8,
       "uiMin": 0.5,
       "unit": "x"
+    },
+    "scanSpeed@silhouette": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Scanline bands per second.",
+      "fallback": 0.3,
+      "group": "style",
+      "if": null,
+      "key": "scanSpeed",
+      "label": "Scanline speed",
+      "max": 4,
+      "min": 0,
+      "path": "scanSpeed",
+      "scope": "silhouette",
+      "specPath": "/params/scanSpeed",
+      "step": 0.05,
+      "tier": "advanced",
+      "type": "number",
+      "uiMax": 1.5,
+      "uiMin": 0,
+      "unit": "Hz"
+    },
+    "scanlines@silhouette": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Bands moving down over the dots.",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "scanlines",
+      "label": "Scanlines",
+      "max": 1,
+      "min": 0,
+      "path": "scanlines",
+      "scope": "silhouette",
+      "specPath": "/params/scanlines",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
     },
     "seed@character": {
       "aliases": [],
@@ -6928,6 +7204,29 @@
       "uiMax": 2,
       "uiMin": 0,
       "unit": "x"
+    },
+    "speech@silhouette": {
+      "aliases": [],
+      "category": "energy",
+      "choices": null,
+      "deprecated": null,
+      "description": "Waves spreading from the mouth with the voice's level (speaking).",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "speech",
+      "label": "Speaking waves",
+      "max": 1,
+      "min": 0,
+      "path": "speech",
+      "scope": "silhouette",
+      "specPath": "/params/speech",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
     },
     "spin@ribbon": {
       "aliases": [],
@@ -7775,6 +8074,29 @@
       "uiMin": -1,
       "unit": null
     },
+    "turnYaw@silhouette": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Where the head faces, sideways (-1..1; negative = the viewer's left). The shoulders stay.",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "turnYaw",
+      "label": "Turn sideways",
+      "max": 1,
+      "min": -1,
+      "path": "turnYaw",
+      "scope": "silhouette",
+      "specPath": "/params/turnYaw",
+      "step": 0.05,
+      "tier": "advanced",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": -1,
+      "unit": null
+    },
     "turns@braid": {
       "aliases": [],
       "category": "appearance",
@@ -7867,6 +8189,29 @@
       "uiMin": 1,
       "unit": null
     },
+    "waveSpeed@silhouette": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Waves per second for the listening, thinking and speaking motion.",
+      "fallback": 0.8,
+      "group": "style",
+      "if": null,
+      "key": "waveSpeed",
+      "label": "Wave speed",
+      "max": 4,
+      "min": 0,
+      "path": "waveSpeed",
+      "scope": "silhouette",
+      "specPath": "/params/waveSpeed",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 2,
+      "uiMin": 0.1,
+      "unit": "Hz"
+    },
     "waveSweep@broadcast": {
       "aliases": [],
       "category": "appearance",
@@ -7886,6 +8231,29 @@
       "tier": "advanced",
       "type": "number",
       "unit": "deg"
+    },
+    "wire@silhouette": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "Thin links between neighbouring dots.",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "wire",
+      "label": "Wireframe",
+      "max": 1,
+      "min": 0,
+      "path": "wire",
+      "scope": "silhouette",
+      "specPath": "/params/wire",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
     },
     "wobMul@ribbon": {
       "aliases": [],
@@ -7973,7 +8341,9 @@
     "decayDuration",
     "decayCurve",
     "decayScale",
-    "blurScale"
+    "blurScale",
+    "silhouetteId",
+    "silhouetteDots"
   ],
   "materials": [
     {
@@ -9889,6 +10259,184 @@
                 "64": 0.6
               },
               "ref": "yaw@hush"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1
+        },
+        {
+          "description": "A head and shoulders of evenly spread dots that lives with the voice: waves come in while it listens, flicker at the eyes while it thinks and spread from the mouth while it speaks.",
+          "id": "silhouette",
+          "label": "Silhouette",
+          "materialDefaults": {
+            "liquid": {},
+            "particles": {
+              "particleAudio": 0,
+              "particleCount": 28,
+              "particleLife": 4.5,
+              "particleSize": 0.8,
+              "particleSpread": 0.18,
+              "particleStyle": 0,
+              "particleSync": 0
+            }
+          },
+          "mode": "silhouette",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "dotSize@silhouette"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "hologram@silhouette"
+            },
+            {
+              "default": {
+                "20": 200,
+                "32": 200,
+                "64": 200
+              },
+              "ref": "hue@silhouette"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 0.7,
+                "32": 0.7,
+                "64": 0.7
+              },
+              "ref": "rim@silhouette"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "saturation@silhouette"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "scanlines@silhouette"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "wire@silhouette"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "breath@silhouette"
+            },
+            {
+              "default": {
+                "20": 4,
+                "32": 4,
+                "64": 4
+              },
+              "ref": "period@silhouette"
+            },
+            {
+              "default": {
+                "20": 0.8,
+                "32": 0.8,
+                "64": 0.8
+              },
+              "ref": "waveSpeed@silhouette"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "glint@silhouette"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "inward@silhouette"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "neuron@silhouette"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "speech@silhouette"
+            },
+            {
+              "default": {
+                "20": 0.3,
+                "32": 0.3,
+                "64": 0.3
+              },
+              "ref": "rMin@shared"
+            },
+            {
+              "default": {
+                "20": null,
+                "32": null,
+                "64": null
+              },
+              "ref": "rsPow@shared"
+            },
+            {
+              "default": {
+                "20": 0.3,
+                "32": 0.3,
+                "64": 0.3
+              },
+              "ref": "scanSpeed@silhouette"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnYaw@silhouette"
             }
           ],
           "sizes": [

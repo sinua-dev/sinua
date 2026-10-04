@@ -24,6 +24,7 @@ The orb is a sphere of dots: the most expressive object, made for voice agents a
 <Demo object="orb" pattern="progressing" />
 <Demo object="orb" pattern="concluding" />
 <Demo object="orb" pattern="muted" />
+<Demo object="orb" pattern="silhouette" />
 </div>
 
 <GalleryLink family="orb" />
@@ -49,7 +50,22 @@ The orb is a sphere of dots: the most expressive object, made for voice agents a
 | [Calibrating](#calibrating) | `calibrating` | Settling, tuning: dots forming standing-wave patterns. |
 | [Progressing](#progressing) | `progressing` | Progress on a round object: an eclipse that advances with `progress`. |
 | [Concluding](#concluding) | `concluding` | Wrapping up: dots scattering and crystallizing into a lattice. |
+| [Silhouette](#silhouette) | `silhouette` | A voice agent with a presence: a head and shoulders of glowing dots. See [below](#a-head-and-shoulders). |
 | [Muted](#muted) | `muted` | Muted or paused: a dimmed, slowly breathing sphere with an optional warning tint. |
+
+## A head and shoulders
+
+`silhouette` draws a front-facing head and shoulders from evenly spread dots that live with the voice. One shape stays on screen; the voice states only change how it moves: it breathes at rest, draws in while you talk, flickers along the eye line while thinking, and sends waves out from the mouth while speaking.
+
+- **Which head:** `silhouette` in an FX Spec is `"human"` (the default) or `"helmet"`, or your own outline: `{ "path": "M… Z", "eyes": [left x, right x, y], "mouth": [x, y] }` in a 200 × 200 box. Start and end the path below the shoulders; the bottom stays open and fades.
+- **Looks:** `hologram` (a bright rim and a thin band sliding now and then), `scanlines`, `wire` (links between neighbours), `turnYaw` (the head turns, the shoulders stay), `rim`, `dotSize`, `saturation` and `hue`.
+- **Dots:** about 1,500 at 64 px, 380 at 32 px, the outline alone at 20 px. Under low power it draws 800.
+- **Cost:** medium. Glow on every dot makes it heavy, so the voice states leave the dot glow off.
+
+```json
+{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette", "silhouette": "helmet",
+  "params": { "hologram": 1, "scanlines": 0.6, "saturation": 0.5, "hue": 190 } }
+```
 
 ## Props
 

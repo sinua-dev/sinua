@@ -237,30 +237,57 @@ for (const m of catalog.materials) {
   files.set("diagnostics.mdx", s);
 }
 
-// ---- character-recipe.mdx
-// docs/character-recipe.md from "The box and the spaces" on. Its part tables are themselves
-// generated from the engine (recipe_schema.rs + spec/character-recipe-descriptions.json, kept
-// current by a Rust test), so the site page and the repo's reference are one source.
+// ---- character docs: character-recipe.mdx, cosmetics.mdx, character-svg.mdx
+// The site's pages for these repo docs are the docs themselves (from a given heading on),
+// so the two can't disagree. character-recipe.md's part tables are in turn generated from
+// the engine (recipe_schema.rs + spec/character-recipe-descriptions.json, kept current by a
+// Rust test). A link to another repo doc needs a site page in PAGES, or gen fails by name.
 {
-  const md = readFileSync(join(root, "docs/character-recipe.md"), "utf8");
-  const start = md.indexOf("## The box and the spaces");
-  if (start < 0 || !md.includes("<!-- generated:parts")) throw new Error("docs/character-recipe.md: sections moved; update gen.mjs");
-  const LINKS = {
+  const PAGES = {
     "character-remix.md#a-body-from-a-drawing": "/docs/catalog/own-character#4-a-body-from-a-drawing",
     "character-remix.md": "/docs/catalog/own-character",
     "character.md": "/docs/catalog/character",
+    "character-recipe.md": "/docs/reference/character-recipe",
+    "character-cosmetics.md": "/docs/catalog/cosmetics",
+    "character-svg-guides.md": "/docs/catalog/character-svg",
     "fx-spec.md": "/docs/reference/fx-spec",
   };
-  const body = md
-    .slice(start)
-    .replace(/<!-- \/?generated:parts[^>]*-->\n?/g, "")
-    .replace(/\]\(([^)#]+\.md(?:#[^)]*)?)\)/g, (all, target) => {
-      const to = LINKS[target];
-      if (!to) throw new Error(`docs/character-recipe.md: no site page for the link ${target}; add it to LINKS`);
-      return `](${to})`;
-    })
-    .replace(/\]\((\.\.\/[^)]+)\)/g, (_, path) => `](https://github.com/sinua-dev/sinua/blob/main/${path.slice(3)})`);
-  files.set("character-recipe.mdx", HEADER("docs/character-recipe.md") + body.trim() + "\n");
+  const fromDoc = (doc, first, { stopAt } = {}) => {
+    const md = readFileSync(join(root, doc), "utf8");
+    const start = md.indexOf(first);
+    if (start < 0) throw new Error(`${doc}: no "${first}" heading; update gen.mjs`);
+    const stop = stopAt ? md.indexOf(stopAt, start) : -1;
+    return md
+      .slice(start, stop < 0 ? undefined : stop)
+      .replace(/<!-- \/?generated:parts[^>]*-->\n?/g, "")
+      .replace(/\]\(([^)#]+\.md)(#[^)]*)?\)/g, (all, file, hash = "") => {
+        const to = PAGES[file + hash] ?? (PAGES[file] && PAGES[file] + hash);
+        if (!to) throw new Error(`${doc}: no site page for the link ${file}${hash}; add it to PAGES`);
+        return `](${to})`;
+      })
+      .replace(/\]\((\.\.\/[^)]+)\)/g, (_, path) => `](https://github.com/sinua-dev/sinua/blob/main/${path.slice(3)})`)
+      .trim();
+  };
+  if (!readFileSync(join(root, "docs/character-recipe.md"), "utf8").includes("<!-- generated:parts"))
+    throw new Error("docs/character-recipe.md: the generated part tables moved; update gen.mjs");
+  files.set("character-recipe.mdx", HEADER("docs/character-recipe.md") + fromDoc("docs/character-recipe.md", "## The box and the spaces") + "\n");
+  // "Next in …" is the families' own to-do list, not something an app developer can use.
+  files.set("cosmetics.mdx", HEADER("docs/character-cosmetics.md") + fromDoc("docs/character-cosmetics.md", "## A hat in one file", { stopAt: "\n## Next in" }) + "\n");
+  files.set("character-svg.mdx", HEADER("docs/character-svg-guides.md") + fromDoc("docs/character-svg-guides.md", "## Export settings") + "\n");
+}
+
+// ---- public text
+// The engine's descriptions and the repo docs cite families' design notes ("design note 22"),
+// which live in a private repo; the site drops those citations.
+for (const [name, text] of files) {
+  files.set(
+    name,
+    text
+      .replace(/ before design note \d+/g, " before 1.13")
+      .replace(/ \(design note\s+\d+\)/g, "")
+      .replace(/[,;] design note\s+\d+/g, "")
+      .replace(/\(design note\s+\d+; /g, "("),
+  );
 }
 
 // ---- write or check

@@ -22,6 +22,7 @@ The orb component is `SinuaOrb`. Pick a look with `pattern`; each pattern reads 
 | Progressing (`progressing`) | `eclipse` | 1× | `progress` |
 | Concluding (`concluding`) | `crystallize` | 1× | — |
 | Muted (`muted`) | `hush` | 1× | — |
+| Silhouette (`silhouette`) | `silhouette` | 1× | — |
 
 ### Working [#working]
 
@@ -454,5 +455,39 @@ The orb component is `SinuaOrb`. Pick a look with `pattern`; each pattern reads 
 | `rMin` | Appearance | number | 0–4 px | 0.3 | Dots are never drawn smaller than this, in engine units, so far-side dots stay visible at small sizes. |
 | `rsPow` | Appearance | number | 0–2 | 0.6 | How dot radii scale with the frame size: radius x (size / 64)^rsPow; lower keeps small sizes chunkier. |
 | `yaw` | Motion | number | -4–4 | 0.6 | Slow turning speed of the sphere. |
+
+</details>
+
+### Silhouette [#silhouette]
+
+`pattern: "silhouette"` · mode `silhouette` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `dotSize` | Appearance | number | 0–4 (UI 0.4–2) fraction | 1 | Dot size, relative to the default. |
+| `hologram` | Appearance | number | 0–1 fraction | 0 | A brighter rim and, now and then, a thin band sliding sideways. |
+| `hue` | Appearance | number | 0–360 deg | 200 | Hue of the tint. |
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `rim` | Appearance | number | 0–1 fraction | 0.7 | Strength of the outline and its glow. |
+| `saturation` | Appearance | number | 0–1 fraction | 0 | Colour strength of the dots and outline (0 = grey ink). |
+| `scanlines` | Appearance | number | 0–1 fraction | 0 | Bands moving down over the dots. |
+| `wire` | Appearance | number | 0–1 fraction | 0 | Thin links between neighbouring dots. |
+| `breath` | Motion | number | 0–1 fraction | 1 | How much the silhouette breathes (idle). |
+| `period` | Motion | number | 0.05–30 (UI 1–10) s | 4 | Seconds per breath. |
+| `waveSpeed` | Motion | number | 0–4 (UI 0.1–2) Hz | 0.8 | Waves per second for the listening, thinking and speaking motion. |
+| `glint` | Energy | number | 0–1 fraction | 1 | Dots that catch the light now and then (idle). |
+| `inward` | Energy | number | 0–1 fraction | 0 | Waves travelling in from the outline, stronger with the mic level (listening). |
+| `neuron` | Energy | number | 0–1 fraction | 0 | Dots flickering along the eye line (thinking). |
+| `speech` | Energy | number | 0–1 fraction | 0 | Waves spreading from the mouth with the voice's level (speaking). |
+
+<details>
+<summary>Advanced props (4)</summary>
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `rMin` | Appearance | number | 0–4 px | 0.3 | Dots are never drawn smaller than this, in engine units, so far-side dots stay visible at small sizes. |
+| `rsPow` | Appearance | number | 0–2 |  | How dot radii scale with the frame size: radius x (size / 64)^rsPow; lower keeps small sizes chunkier. |
+| `scanSpeed` | Motion | number | 0–4 (UI 0–1.5) Hz | 0.3 | Scanline bands per second. |
+| `turnYaw` | Motion | number | -1–1 | 0 | Where the head faces, sideways (-1..1; negative = the viewer's left). The shoulders stay. |
 
 </details>

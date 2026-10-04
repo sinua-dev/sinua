@@ -30,17 +30,23 @@ parts sit on, so they wrap round when the head turns. A shallower `depth` turns 
 | `surfaces` | optional | Named surfaces for face parts. |
 | `parts` | required | What is drawn, back to front. |
 | `burst` | required | The celebrate burst: `at`, `r`, three `colors`, optional `space`. |
-| `slots` | optional | Anchor points for cosmetics (1.13): `at`, `follows` (`head` / `body` / `face`), `scale`, `angle`. |
+| `slots` | optional | Anchor points for cosmetics: `at`, `follows` (`head` / `body` / `face`), `scale`, `angle`. See *Slots and cosmetics*. |
+| `cosmetics` | optional | Cosmetics the character always wears (FX Spec 1.13): the same objects as a file's `cosmetics`. See *Slots and cosmetics*. |
+| `grain` | optional | `{ "strength": 0–1 }`: film grain inside every body (FX Spec 1.13). See *The richer look*. |
+| `roles` | optional | `{ "primary": "<slot>", "secondary": "<slot>", "accent": "<slot>" }` (FX Spec 1.13): the slots a named palette (`"palette": "sunset"`) or a role colour (`{ "primary": "#E63946" }`) repaints. A role left out isn't repainted. |
 
 Every part has `part` (its kind) and `space` (a body layer inside `inner` may leave it out), and
-may have `when` (`notSmallOrAccessories`: left out at 20 px with `accessories` off) and `show`
-(`{ idle, listening, thinking, speaking }`, 0–1: how visible it is per voice state).
+may have `when` (`notSmallOrAccessories`: left out at 20 px with `accessories` off), `show`
+(`{ idle, listening, thinking, speaking }`, 0–1: how visible it is per voice state) and `role`
+(what it is: `head`, `ears`, `arms`…; a cosmetic's `behind` / `above` draws against it, design
+note 28).
 
 ## Limits
 
 Over a limit is an error, never trimmed: a file from outside can't make the engine slow.
 
-- The recipe: at most 64 KB; at most 48 parts, a body's layers included.
+- The recipe: at most 64 KB; at most 96 parts, a body's layers included (48 before 1.13); at most 4,096
+  points in all its path shapes together, after flattening.
 - Lists (feathers, bars, stripes, glints, stops, layers): at most 32 entries.
 - `segments`: 3–128. `count`: 1–24. Rounding steps: at least 1.
 - Every number within ±1000.
@@ -56,8 +62,80 @@ A `shape` is one of:
 - `{ "roundRect": [x, y, w, h, radius, step] }`
 - `{ "path": "M… Z" }`
 
-A body's `light` is `{ "radial": [cx, cy, r] }` or `{ "linear": [x0, y0, x1, y1] }`, with
-`stops` `[[offset 0–1, colour], …]`.
+A body's `light` is `{ "radial": [cx, cy, r] }`, an elliptical `{ "radial": [cx, cy, rx, ry, angle] }`
+(radians), or `{ "linear": [x0, y0, x1, y1] }`, with `stops` `[[offset 0–1, colour], …]`. A stop may
+carry an alpha, `[offset, colour, alpha]`, and a light takes any number of stops.
+
+## The richer look (FX Spec 1.13)
+
+Airbrushed shading, rim light and film grain on today's 2D painter, with no blur (`spec/examples/rich-bean.fxspec.json` and `rich-buzzy.fxspec.json` show all of it):
+
+- **`shade`** (a body layer): its own `shape` and `light`, clipped to the body. Give the light
+  stops that fade to alpha 0 and it is a soft mass: a core shadow, light bounced from below, a
+  highlight, a head's soft shadow on the body, or, with `"surface": "face"`, a blush that turns
+  with the face. Draw the shape round the light's ellipse; outside it the light is transparent
+  anyway, and a smaller shape paints less.
+- **`rim`** (a body layer): the body minus itself moved by `offset`, the edge the light reaches
+  first, in `color` at `alpha`; `fade` thins it out round the sides.
+- **`"light": "none"`** on a body: no fill of its own, only its layers, grain and outline. Use
+  it as an overlay to add soft layers over a part that has none (BUZZY's helmet), with outline
+  width 0.
+- **`grain`**: `{ "strength": 0.08 }` lays a still noise of light and dark specks inside every
+  body, under its outline; the face stays crisp. The same tile on every platform.
+- **Options:** `grain` (0–1) and `shading` (on/off) on the view or in an FX Spec's `params`.
+  Grain and rims are left out at 20 px.
+- **Low power:** an FX Spec resolved under low power turns off the grain and the soft layers
+  of a character that has them, so it is "light" again. Plain characters are untouched.
+- **Cost:** soft layers and grain add coverage; the showcases are "medium" at 64 px (BEAN
+  1.10, BUZZY 1.53 of the medium line).
+
+## Slots and cosmetics
+
+A **slot** is where a cosmetic (FX Spec 1.13) sits. Four names are standard, and cosmetics look
+for them:
+
+| Slot | Where | Follows |
+|---|---|---|
+| `headTop` | the top of the head, at its middle | `head`: the pose, the hop |
+| `face` | between the eyes | `face`: the pose and the head turn (wrapped on the `face` surface) |
+| `neck` | where the head meets the body | `body` |
+| `chest` | the middle of the chest | `body` |
+
+`at` is the slot point in the 200-unit box; `scale` and `angle` (radians) size and turn every
+cosmetic on it. A character without a slot simply doesn't wear cosmetics made for it. The
+built-ins:
+
+| id | `headTop` | `face` | `neck` | `chest` |
+|---|---|---|---|---|
+| `buzzy` | (100, 40) × 1.0 | (100, 92) | (100, 146) | (100, 168) |
+| `hum` | (100, 22) × 0.9 | (100, 96) | (100, 150) | (100, 130) |
+| `wisp` | (100, 38) × 0.9 | (100, 88) | (100, 128) | (100, 140) |
+| `chirp` | (100, 52) × 1.0 | (100, 100) | (100, 150) | (100, 140) |
+| `cuppa` | (90, 40) × 0.95 | (90, 100) | — | (90, 140) |
+| `bean` | (100, 34) × 0.85 | (100, 114) | — | (100, 150) |
+| `beep` | (100, 30) × 0.85 | (100, 72) | — | (100, 140) |
+
+**A cosmetic's units:** its parts are drawn in the slot's local units. The slot point is
+(0, 0) and up is −y. One unit is one box unit times the slot's `scale`. On `headTop` a hat is
+drawn for a head about 80 units wide and has **40 units of height**; each character's
+`headTop.scale` makes that fit its head. A cosmetic on `headTop` zooms the whole character
+out about its feet, just enough that the hat and the tap hop fit in the box. The other slots
+have scale 1 in this version.
+
+A cosmetic is an object:
+
+| Key | | Meaning |
+|---|---|---|
+| `id` | required | 1–32 of a–z, 0–9 and -, unique in the list. |
+| `label` | optional | What it is, for people ("party hat"). |
+| `slot` | required | The slot it sits on. |
+| `palette` | optional | Its own colours; in the character's palette they are `<id>.<name>`, so `palette` repaints them. |
+| `parts` | required | `body` (with its layers) and `eyes`, without `space` or `surface`; drawn on top of the character. |
+| `fits` | optional | The characters it is made for. |
+| `fit` | optional | Per character: `at` (local units), `scale`, `angle` on top of the slot. |
+
+Its parts are left out at 20 px unless `accessories` is on, like `when: notSmallOrAccessories`.
+The guide with a worked hat is `docs/character-cosmetics.md`.
 
 ## The built-in characters
 
@@ -86,14 +164,14 @@ The soft shadow under the character.
 
 ### `body`
 
-A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns.
+A shape filled with its light, its inner layers clipped to it, and an outline. `turnLight` `[dx, k]` moves a radial light as the body turns. `"light": "none"` (and no stops) draws only the layers: an overlay that adds soft layers over a part that has none (BUZZY's helmet).
 
 | Field | Type | | Meaning |
 |---|---|---|---|
 | `shape` | shape | required | A shape: `{ "ellipse": [cx, cy, rx, ry, rotation, segments] }`, `{ "roundRect": [x, y, w, h, radius, step] }` or `{ "path": "M… Z" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes). |
-| `light` | light | required | `{ "radial": [cx, cy, r] }` (the centre stays put while the body turns under it) or `{ "linear": [x0, y0, x1, y1] }`. |
-| `light.stops` | [[offset, colour], …] | required | The light's gradient: `[[offset 0–1, colour], …]`. |
-| `inner` | [layers] | optional | Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille` or `eyes`. |
+| `light` | light | required | `{ "radial": [cx, cy, r] }`, or an ellipse `[cx, cy, rx, ry, angle]` (radians; the centre stays put while the body turns under it), `{ "linear": [x0, y0, x1, y1] }`, or `"none"` (an overlay: no fill). |
+| `light.stops` | [[offset, colour, alpha?], …] | required | The light's gradient: `[[offset 0–1, colour], …]`, each with an optional alpha `[offset, colour, alpha]`; any number of stops. |
+| `inner` | [layers] | optional | Layers clipped to the body: `patch`, `band`, `stripes`, `glints`, `grille`, `shade`, `rim` or `eyes`. |
 | `outline.width` | number | required | The outline width (scaled with the character's line weight). |
 | `outline.color` | colour | required | The outline colour (a palette name). |
 
@@ -108,6 +186,9 @@ The shared eyes: they blink, look round, follow the voice state and take the exp
 | `ink` | colour | required | The ink colour (a palette name); effects tint it. |
 | `glow` | number or [2 numbers] | required | A glow round the eyes, 0–1: one number, or `[at 64 and 32 px, at 20 px]`. |
 | `surface` | surface | optional | The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat. |
+| `style` | shape / glossy / pixel / dot | optional | The eye style: `shape` (the default, a solid shape), `glossy` (a lens, an iris and pupil that follow the gaze, highlights and a lid line), `pixel` (a grid of glowing cells; on a `faceScreen` the mouth too) or `dot` (a soft point). The `eyeStyle` option overrides it. |
+| `iris` | colour | optional | The glossy eye's iris colour (a palette name). Absent: teal. |
+| `sclera` | true / false | optional | The glossy eye has a white sclera and a dark lid line instead of a dark lens. |
 
 ### `feet`
 
@@ -270,7 +351,7 @@ A spirit's body: a round head flowing into a tail that curls (with `curlGain`), 
 | Field | Type | | Meaning |
 |---|---|---|---|
 | `head` | [3 numbers] | required | The head `[x, y, radius]`. |
-| `stops` | [[offset, colour], …] | required | The body's gradient `[[offset 0–1, colour], …]`. |
+| `stops` | [[offset, colour, alpha?], …] | required | The body's gradient `[[offset 0–1, colour], …]`. |
 | `line` | colour | required | The outline colour (a palette name). |
 | `smoke` | colour | required | The smoke puffs' colour. |
 | `shine` | colour | required | The head's shine colour. |
@@ -365,6 +446,9 @@ A face screen: the eyes and mouth on it (clipped to it), its rim, and a glass vi
 | `glassEdge` | colour | required | The visor rim's colour. |
 | `glint` | colour | required | The reflection's colour. |
 | `surface` | surface | optional | The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat. |
+| `style` | shape / glossy / pixel / dot | optional | The eye style: `shape` (the default, a solid shape), `glossy` (a lens, an iris and pupil that follow the gaze, highlights and a lid line), `pixel` (a grid of glowing cells; on a `faceScreen` the mouth too) or `dot` (a soft point). The `eyeStyle` option overrides it. |
+| `iris` | colour | optional | The glossy eye's iris colour (a palette name). Absent: teal. |
+| `sclera` | true / false | optional | The glossy eye has a white sclera and a dark lid line instead of a dark lens. |
 
 ### `steam`
 
@@ -459,3 +543,25 @@ A body layer and a mouth: slots that light with the voice while speaking and one
 | `step` | number | required | The slots' rounding step (at least 1). |
 | `ink` | colour | required | The ink colour (a palette name); effects tint it. |
 | `surface` | surface | optional | The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat. |
+
+### `shade` *(body layer: inside a body's `inner`)*
+
+A soft mass clipped to the body (FX Spec 1.13): its own `light`, usually an ellipse whose stops fade to alpha 0, so it needs no blur. An airbrushed shadow or highlight, light bounced from below, a head's soft shadow on the body, or (on the `face` surface) a blush. Left out when `shading` is off and under low power.
+
+| Field | Type | | Meaning |
+|---|---|---|---|
+| `shape` | shape | required | A shape: `{ "ellipse": [cx, cy, rx, ry, rotation, segments] }`, `{ "roundRect": [x, y, w, h, radius, step] }` or `{ "path": "M… Z" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes). |
+| `surface` | surface | optional | The surface it is drawn on (a `surfaces` name), so it wraps when the head turns. Absent: flat. |
+| `light` | light | required | Its light: `{ "radial": [cx, cy, r] }` or `[cx, cy, rx, ry, angle]`, or `{ "linear": [x0, y0, x1, y1] }`. Draw the `shape` round the light's ellipse: outside it the light is transparent anyway, and a smaller shape paints less. |
+| `light.stops` | [[offset, colour, alpha?], …] | required | `[[offset, colour, alpha], …]`: fade the last stop to 0 for a soft edge. |
+
+### `rim` *(body layer: inside a body's `inner`)*
+
+A rim of light along the edge the light reaches first (FX Spec 1.13): the body minus itself moved by `offset`. Left out at 20 px, when `shading` is off and under low power.
+
+| Field | Type | | Meaning |
+|---|---|---|---|
+| `offset` | [2 numbers] | required | `[dx, dy]`: the body moved away from the light; the rim is as wide as the move (`[6, 7]` lights the top-left edge). |
+| `color` | colour | required | Its colour (a palette name). |
+| `alpha` | number | required | Its opacity, 0–1. |
+| `fade` | number | required | How far (box units) it fades out against the offset, so it thins round the sides; 0 = even. |

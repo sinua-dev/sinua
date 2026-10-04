@@ -35,6 +35,30 @@ Voice sources for LiveKit, OpenAI Realtime, Gemini Live and ElevenLabs are separ
 
 No bundler configuration on the web: the engine's WebAssembly is inlined into `@sinua/core`, so it works in Vite, webpack, Angular CLI (with Zone.js or zoneless), a plain `<script type="module">` and Node. Pages with a Content Security Policy need `'wasm-unsafe-eval'` in `script-src`.
 
+## Android: 16 KB pages and JNA
+
+Sinua's native libraries are 16 KB aligned, so they run on Android 15+ devices with 16 KB memory pages, as Google Play requires. Sinua uses JNA 5.19.1.
+
+JNA also carries its loader for `armeabi`, `mips` and `mips64`, which makes Play offer your app to devices the engine doesn't support. Leave them out in your app module (the bundle gets about 138 KB smaller; a library can't do this for you):
+
+```kotlin
+android {
+    packaging {
+        jniLibs { excludes += listOf("lib/armeabi/**", "lib/mips/**", "lib/mips64/**") }
+    }
+}
+```
+
+## Web: dev tools in `@sinua/core/dev`
+
+What only a studio, a dev tool, a test or a demo needs lives in its own entry, so your app doesn't ship it: `estimateCost`, `fxSpecCost`, `liquidSuitability`, `parameterCatalog`, `checkOverrides`, the conversation samples and `SimulatedVoiceSource`.
+
+```ts
+import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev";
+```
+
+`@sinua/core/dev` also re-exports everything in `@sinua/core`. A tool that loads catalog packs or recipes should import everything from it, so it runs one engine. On iOS and Android these functions are only in development builds, not in the published packages.
+
 ## From source
 
 To build the packages yourself (or React Native, which isn't on npm yet), clone the repository and build them for your platform. Each package's build script regenerates the bindings from the engine.

@@ -8,8 +8,8 @@ export function Assistant({ voice }: { voice: VoiceSource }) {
     <SinuaCharacter
       pattern="buzzy"
       voice={voice}
-      hue={190} // turns the shell; the eyes and accents keep their colours
-      palette={{ amber: "#FFFFFF" }} // repaint a slot outright
+      hue={190} // turns the body; the eyes and accents keep their colours
+      palette={{ accent: "#FFFFFF" }} // repaint a slot outright
       expression="happy" // a mood your app picks; the voice state still moves it
       label="Buzzy"
       labels={{ listening: "Buzzy is listening", speaking: "Buzzy is speaking" }}

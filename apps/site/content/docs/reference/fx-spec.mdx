@@ -9,7 +9,7 @@ An **FX Spec** is a small JSON file that describes a visual completely: the obje
 
 ## Structure
 
-- **`fxSpec`** (required): the version, `"1.12"`.
+- **`fxSpec`** (required): the version, `"1.13"`.
 - **`object`** (required) and **`pattern`** (required): what to draw. See the [catalog](/docs/catalog).
 - **`size`** (20 · 32 · 64) and **`speed`**: see [Speed & size](/docs/look/speed-and-size).
 - **`ink`** (1.8): how present the visual is, `0` to `1` (default `1`). It fades everything, halos included, and a state can patch it — an assistant rests below full ink when idle and comes to full ink when it listens.
@@ -28,7 +28,24 @@ Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor com
 
 ## Versioning
 
-`fxSpec` is `"1.12"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.12"` and use whatever this page documents. An older file stays valid and renders the same, with one exception: [`object: "edge"`](#removed-the-edge-object) was removed during the beta.
+`fxSpec` is `"1.13"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.13"` and use whatever this page documents. An older file stays valid and renders the same, with one exception: [`object: "edge"`](#removed-the-edge-object) was removed during the beta.
+
+### 1.13: cosmetics, wardrobes and silhouettes
+
+<div className="demo-gallery">
+<Demo spec="examples/party-hat.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }]} />
+<Demo spec="examples/wardrobe-bean.fxspec.json" />
+</div>
+
+- **`cosmetics`** (character): things a character wears, as data drawn on its slots (`headTop`, `face`, `neck`, `chest`, `frame`). Needs `"fxSpec": "1.13"`; file-wide. A cosmetic it can't wear is a warning and isn't drawn. See [Cosmetics](/docs/catalog/cosmetics).
+- **`wardrobe`** (character): what your users may pick: cosmetics, named palettes and eye colours. A view's `loadout` (what they picked) applies it and only ever warns.
+- **Catalog packs:** after `loadCatalog`, `"<namespace>:<id>"` names a pack's cosmetic or palette.
+- **`palette`** also takes roles (`primary`, `secondary`, `accent`, `iris`), a built-in palette by name (`"palette": "sunset"`) and a `dark` variant. See [Named palettes](/docs/catalog/character#named-palettes-and-roles).
+- **`params`** on a character take `eyeStyle` (`auto`, `shape`, `glossy`, `pixel`, `dot`), `grain` (0–1) and `shading` (0/1). Under low power, grain and the soft shading turn off.
+- **`silhouette`** (orb, `pattern: "silhouette"`): `"human"`, `"helmet"` or your own `{ path, eyes, mouth }`. See [Silhouette](/docs/catalog/orb#a-head-and-shoulders).
+- **Voice states without `states`:** in a 1.13 file, a voice state the file has no entry for takes the built-in voice behaviour, so a character file with no `states` still listens, thinks and speaks.
+- **Recipe limits:** 96 parts (was 48) and 4,096 path points in all, cosmetics included.
+- 1.8–1.12 files resolve exactly as before.
 
 ### 1.12: character recipes
 

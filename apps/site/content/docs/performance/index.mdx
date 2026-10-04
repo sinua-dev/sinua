@@ -62,6 +62,19 @@ A frame-rate cap:
 </Tab>
 </Tabs>
 
+## What Sinua adds to your app
+
+Measured on the release build of 0.1.0-beta.8:
+
+| Platform | What ships | Size |
+|---|---|---|
+| Web | `@sinua/core` (engine inlined) | 511,877 bytes, 384,034 gzipped |
+| Android (arm64) | the engine library | +1.02 MB to download, +2.42 MB installed |
+| iOS | the engine library | about +1.07 MB to download, +2.52 MB installed |
+| Voice (iOS, Android) | WebRTC, only with a voice package that uses it | about +5.8 MB more |
+
+The dev tools live in `@sinua/core/dev` on the web and in development builds on iOS and Android, so they aren't in these numbers. The npm package is larger (about 870 KB) because it carries both engines; that's install size, not what your app ships.
+
 ## Measure on your devices
 
 The cost class is a guide, not a measurement. The **bench** apps run a fixed set of visuals on a real device and report frame times, dropped frames, the hitch ratio (Apple's ms-per-second measure) and CPU, at normal and low power. Run them on your slowest supported phone. The repository's `docs/bench.md` has the steps for iPhone, Android and the web.

@@ -7,7 +7,7 @@ struct Assistant: View {
 
     var body: some View {
         // It looks at you while you talk, looks away while it thinks, and its mouth
-        // follows the agent's voice. `hue` turns the shell; the eyes keep their colour.
+        // follows the agent's voice. `hue` turns the body; the eyes keep their colour.
         SinuaCharacter(
             pattern: .buzzy,
             hue: 190,
@@ -15,7 +15,7 @@ struct Assistant: View {
             accessibilityLabel: "Buzzy",
             labels: ["listening": "Buzzy is listening", "speaking": "Buzzy is speaking"],
             expression: "happy",          // a mood your app picks
-            palette: ["amber": "#FFFFFF"]  // repaint a slot outright
+            palette: ["accent": "#FFFFFF"]  // repaint a slot outright
         )
         .frame(width: 160, height: 160)
     }

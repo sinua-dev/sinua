@@ -9,6 +9,8 @@
     "beacon",
     "character",
     "own-character",
+    "cosmetics",
+    "character-svg",
     "..."
   ]
 }

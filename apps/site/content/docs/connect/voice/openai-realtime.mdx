@@ -35,6 +35,13 @@ To keep tools and transcripts on your server, let it open the call: point `calls
 
 The credential then goes to your endpoint, not OpenAI's: your own short-lived token, in any shape, but never a raw `sk-…` key. With OpenAI's default endpoint it stays an `ek_…`. React Native doesn't pass a `callsUrl` yet.
 
+## Requests, errors and audio
+
+- **Web, your request:** `headers` adds headers to the call to your endpoint, as an object or a function called per request (for a CSRF token, say), and `fetch` replaces the `fetch` it uses.
+- **Web, errors:** a failed request rejects with a `VoiceHttpError` that carries the `status` and the response `body`, so you can tell a 401 from a 500.
+- **iOS, the audio session:** Sinua sets the session up before the call. `audioSession: .speaker` (the default) plays through the speaker, `.receiver` through the earpiece, and `.unmanaged` leaves the session to your app.
+- **When speaking ends:** after a short reply the agent counts as speaking for about 0.7 s more, after a long answer up to 1.7 s, so the state doesn't flicker between phrases. Talking over it (barge-in) is still instant.
+
 ## Packages
 
 | Platform | Package |

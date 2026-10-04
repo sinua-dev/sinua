@@ -129,8 +129,24 @@ fn the_part_and_point_limits_hold_and_the_worst_case_stays_bounded() {
     // with a gradient and an outline: never "heavy". Before the point limit, 48 parts of
     // 512 points each (24,576) could reach "heavy".
     let worst = recipe(96, 6, 17.0);
-    let points = Recipe::parse(&worst.to_string()).map(|_| ()).err();
+    // Long gradients too, toward the 64 KB limit: the most a recipe can make the parser do.
+    let mut worst = worst;
+    let stops: Vec<Value> = (0..8)
+        .map(|i| json!([f64::from(i) / 7.0, if i % 2 == 0 { "a" } else { "b" }, 0.5]))
+        .collect();
+    for p in worst["parts"].as_array_mut().unwrap() {
+        p["light"] = json!({ "radial": [80, 70, 30, 40, 0.3], "stops": stops });
+    }
+    let text = worst.to_string();
+    let t0 = std::time::Instant::now();
+    let points = Recipe::parse(&text).map(|_| ()).err();
+    let ms = t0.elapsed().as_secs_f64() * 1000.0;
+    println!("worst-case parse: {ms:.2} ms, {} KB", text.len() / 1024);
     assert_eq!(points, None);
+    // Measured 0.76 ms (release) / 3.3 ms (debug) natively, design note 28 (B3); a
+    // registered text is parsed once, so this is a one-off per recipe. ~10x headroom.
+    let bound = if cfg!(debug_assertions) { 40.0 } else { 8.0 };
+    assert!(ms < bound, "parsing the worst recipe took {ms:.1} ms");
     let text = worst.to_string();
     assert!(text.len() < 64 * 1024);
     let spec =

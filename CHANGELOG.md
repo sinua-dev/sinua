@@ -163,6 +163,8 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   a character.
 - A 1.13 file without `states` (or missing some) now reacts to the voice: each voice state
   takes the voice profile. 1.8–1.12 files resolve as before.
+- Resolving a file with a large recipe again (a picker's thumbnails, an imported character)
+  no longer re-parses the recipe: the engine finds it by its text, guarded by a second hash.
 
 ### Changed
 

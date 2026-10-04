@@ -17,9 +17,24 @@ use crate::primitives::{ModeOpts, OrbFrame};
 
 /// How many recipes the registry keeps.
 pub const CAPACITY: usize = 32;
-
 /// The prefix of every registered key.
 pub const PREFIX: &str = "recipe:";
+
+/// A recipe text already read (design note 28, B3): reading the same text again (a
+/// picker's thumbnails resolve one file over and over) finds its recipe without parsing.
+/// The length and a second hash guard against a crafted fnv64 collision (a recipe can
+/// come from a server). A thumbnail's entry has the key [`PREVIEW_KEY`].
+struct Seen {
+    len: usize,
+    h1: u64,
+    h2: u64,
+    key: &'static str,
+    recipe: Arc<Recipe>,
+    skipped: Vec<(String, String)>,
+}
+
+/// How many texts `seen` remembers: the live recipes and a picker's thumbnails.
+const SEEN: usize = 48;
 
 struct Registry {
     /// Most recently used last.
@@ -29,13 +44,41 @@ struct Registry {
     preview: Option<Arc<Recipe>>,
     /// Every key ever made, so a recipe that comes back reuses its key.
     keys: Vec<&'static str>,
+    /// The texts read lately (most recently used last), so a repeat skips the parse.
+    seen: Vec<Seen>,
 }
 
 static REGISTRY: Mutex<Registry> = Mutex::new(Registry {
     live: Vec::new(),
     preview: None,
     keys: Vec::new(),
+    seen: Vec::new(),
 });
+
+/// A second hash, independent of [`fnv64`] (multiply-rotate, as FxHash), for the
+/// collision guard.
+#[inline(never)]
+fn hash2(s: &str) -> u64 {
+    s.bytes().fold(0x9e37_79b9_7f4a_7c15, |h, b| {
+        (h.rotate_left(5) ^ u64::from(b)).wrapping_mul(0x517c_c1b7_2722_0a95)
+    })
+}
+
+/// [`fnv64`], or a forced value in a test (to stage a collision).
+fn hash1(s: &str) -> u64 {
+    #[cfg(test)]
+    if let Some(h) = FORCE_H1.with(Cell::get) {
+        return h;
+    }
+    fnv64(s)
+}
+
+#[cfg(test)]
+thread_local! {
+    static FORCE_H1: Cell<Option<u64>> = const { Cell::new(None) };
+    /// Parses on this thread (tests: does a repeat skip it?).
+    static PARSES: Cell<usize> = const { Cell::new(0) };
+}
 
 fn fnv64(s: &str) -> u64 {
     s.bytes().fold(0xcbf2_9ce4_8422_2325, |h, b| {
@@ -64,37 +107,84 @@ pub fn register_with(
     basis: Option<&str>,
     skipped: &mut Vec<(String, String)>,
 ) -> Result<&'static str, String> {
-    let mut recipe = Recipe::parse(text)?;
-    *skipped = std::mem::take(&mut recipe.skipped);
-    if PREVIEWING.with(Cell::get) {
-        lock().preview = Some(Arc::new(recipe));
-        return Ok(PREVIEW_KEY);
-    }
-    let name = format!(
-        "{PREFIX}{}:{:016x}",
-        recipe.id,
-        fnv64(basis.unwrap_or(text))
-    );
-    let mut reg = lock();
-    if let Some(i) = reg.live.iter().position(|(k, _)| *k == name) {
-        let e = reg.live.remove(i);
-        let key = e.0;
-        reg.live.push(e);
+    let previewing = PREVIEWING.with(Cell::get);
+    let (len, h1, h2) = (text.len(), hash1(text), hash2(text));
+    if let Some(key) = recall(len, h1, h2, previewing, skipped) {
         return Ok(key);
     }
-    let key = match reg.keys.iter().find(|k| **k == name) {
-        Some(k) => *k,
-        None => {
-            let k: &'static str = Box::leak(name.into_boxed_str());
-            reg.keys.push(k);
-            k
+    #[cfg(test)]
+    PARSES.with(|p| p.set(p.get() + 1));
+    let mut recipe = Recipe::parse(text)?;
+    *skipped = std::mem::take(&mut recipe.skipped);
+    let recipe = Arc::new(recipe);
+    let mut reg = lock();
+    let key = if previewing {
+        reg.preview = Some(recipe.clone());
+        PREVIEW_KEY
+    } else {
+        let name = format!("{PREFIX}{}:{:016x}", recipe.id, basis.map_or(h1, fnv64));
+        let key = match reg.keys.iter().find(|k| **k == name) {
+            Some(k) => *k,
+            None => {
+                let k: &'static str = Box::leak(name.into_boxed_str());
+                reg.keys.push(k);
+                k
+            }
+        };
+        // The same key from another text (the fnv64 collided, or the text left `seen`):
+        // what was just read wins, so a text never draws another's character.
+        reg.live.retain(|(k, _)| *k != key);
+        reg.seen.retain(|e| e.key != key);
+        reg.live.push((key, recipe.clone()));
+        if reg.live.len() > CAPACITY {
+            reg.live.remove(0);
         }
+        key
     };
-    reg.live.push((key, Arc::new(recipe)));
-    if reg.live.len() > CAPACITY {
-        reg.live.remove(0);
+    reg.seen.push(Seen {
+        len,
+        h1,
+        h2,
+        key,
+        recipe,
+        skipped: skipped.clone(),
+    });
+    if reg.seen.len() > SEEN {
+        reg.seen.remove(0);
     }
     Ok(key)
+}
+
+/// A text read before (by its digest): its key, the recipe made current again, and its
+/// skipped cosmetics. `None`: parse it.
+#[inline(never)]
+fn recall(
+    len: usize,
+    h1: u64,
+    h2: u64,
+    preview: bool,
+    skipped: &mut Vec<(String, String)>,
+) -> Option<&'static str> {
+    let mut reg = lock();
+    let i = reg
+        .seen
+        .iter()
+        .position(|e| (e.len, e.h1, e.h2) == (len, h1, h2) && (e.key == PREVIEW_KEY) == preview)?;
+    let e = reg.seen.remove(i);
+    if preview {
+        reg.preview = Some(e.recipe.clone());
+    } else {
+        // Live again, at the recent end; or, if it left the registry, back in.
+        reg.live.retain(|(k, _)| *k != e.key);
+        reg.live.push((e.key, e.recipe.clone()));
+        if reg.live.len() > CAPACITY {
+            reg.live.remove(0);
+        }
+    }
+    skipped.clone_from(&e.skipped);
+    let key = e.key;
+    reg.seen.push(e);
+    Some(key)
 }
 
 /// The key a recipe of `id` hashed from `basis` gets (tests: was it registered?).
@@ -190,6 +280,56 @@ mod tests {
         assert!(frame(first, 64.0, 0.0, &ModeOpts::new()).is_none());
         // It comes back under the same key.
         assert_eq!(register(&with_id("reg-first")).unwrap(), first);
+    }
+
+    fn parses() -> usize {
+        PARSES.with(Cell::get)
+    }
+
+    #[test]
+    fn a_text_read_before_is_not_parsed_again_live_or_as_a_thumbnail() {
+        let _one = ONE.lock().unwrap_or_else(|e| e.into_inner());
+        let text = with_id("reg-again");
+        let n = parses();
+        let a = register(&text).unwrap();
+        let b = register(&text).unwrap();
+        assert_eq!((a, parses()), (b, n + 1), "parsed once");
+        let p = parses();
+        for _ in 0..3 {
+            assert_eq!(preview(|| register(&text)).unwrap(), PREVIEW_KEY);
+        }
+        assert_eq!(parses(), p + 1, "a thumbnail parsed once too");
+        assert!(get(PREVIEW_KEY).is_some());
+        // Another text is parsed (one byte more).
+        register(&format!("{text} ")).unwrap();
+        assert_eq!(parses(), p + 2);
+    }
+
+    #[test]
+    fn a_crafted_collision_never_draws_the_other_texts_character() {
+        let _one = ONE.lock().unwrap_or_else(|e| e.into_inner());
+        // Two texts with the same fnv64 (forced): the second is parsed and drawn as
+        // itself, not served from the first's entry; and back again.
+        let a = with_id("reg-clash");
+        let b = a.replacen("\"base\":", "\"base\": ", 1);
+        assert_ne!(a, b);
+        FORCE_H1.with(|h| h.set(Some(0xdead_beef)));
+        let n = parses();
+        let ka = register(&a).unwrap();
+        let ra = get(ka).unwrap();
+        let kb = register(&b).unwrap();
+        assert_eq!(ka, kb, "the same key: the collision is real");
+        assert_eq!(
+            parses(),
+            n + 2,
+            "the second text was parsed, not served from the first"
+        );
+        let rb = get(kb).unwrap();
+        assert!(!Arc::ptr_eq(&ra, &rb));
+        register(&a).unwrap();
+        assert_eq!(parses(), n + 3);
+        assert!(!Arc::ptr_eq(&get(ka).unwrap(), &rb));
+        FORCE_H1.with(|h| h.set(None));
     }
 
     #[test]

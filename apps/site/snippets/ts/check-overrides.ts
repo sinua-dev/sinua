@@ -1,4 +1,4 @@
-import { checkOverrides } from "@sinua/core";
+import { checkOverrides } from "@sinua/core/dev";
 
 // Warnings only: the frame still renders, and the engine clamps out-of-range values.
 const warnings = checkOverrides("breathing", 64, { lanse: 6 });

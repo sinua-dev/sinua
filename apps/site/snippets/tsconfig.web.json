@@ -13,6 +13,7 @@
     "baseUrl": ".",
     "paths": {
       "@sinua/core": ["../../../packages/core/dist/index.d.ts"],
+      "@sinua/core/dev": ["../../../packages/core/dist-dev/dev-entry.d.ts"],
       "@sinua/web": ["../../../packages/web/dist/index.d.ts"],
       "@sinua/web/react": ["../../../packages/web/dist/react.d.ts"],
       "@sinua/web/voice-button": ["../../../packages/web/dist/voice-button.d.ts"],

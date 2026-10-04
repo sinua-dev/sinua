@@ -1,5 +1,5 @@
 import { mount } from "@sinua/web";
-import { SimulatedVoiceSource } from "@sinua/core";
+import { SimulatedVoiceSource } from "@sinua/core/dev";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#orb")!;
 const caption = document.querySelector<HTMLParagraphElement>("#caption")!;

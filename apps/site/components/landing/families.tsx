@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { StillVisual } from "../still-visual";
 import Link from "next/link";
-import { parameterCatalog } from "@sinua/core";
+import { parameterCatalog } from "@/lib/catalog";
 import { LiveVisual } from "./live-visual";
 import { TINT } from "./swatches";
 

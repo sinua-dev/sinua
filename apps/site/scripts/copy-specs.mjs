@@ -2,7 +2,10 @@
 // - public/spec: the snippets' spec files, which <Demo spec="spec/x.fxspec.json"> fetches;
 // - public/schema: the JSON Schemas at the URLs their `$id`s and every example's `$schema`
 //   name (https://sinua.dev/schema/<name>.json), so editors can complete and check a file;
-// - public/examples: example files a page offers for download or draws with <Demo>.
+// - public/examples: example files a page offers for download or draws with <Demo>;
+// - lib/generated/parameters.json: the engine's parameter catalog (spec/parameters.json, the
+//   same data as `parameterCatalog()` from @sinua/core/dev, plus descriptions), so the landing
+//   and the gallery read it as data instead of loading the dev entry's wasm.
 import { cpSync, mkdirSync, rmSync } from "node:fs";
 
 const site = (p) => new URL(`../${p}`, import.meta.url);
@@ -22,3 +25,6 @@ cpSync(repo("spec/character-recipe-1.schema.json"), site("public/schema/characte
 
 fresh("public/examples/");
 cpSync(repo("spec/examples/remix-latte.fxspec.json"), site("public/examples/remix-latte.fxspec.json"));
+
+fresh("lib/generated/");
+cpSync(repo("spec/parameters.json"), site("lib/generated/parameters.json"));

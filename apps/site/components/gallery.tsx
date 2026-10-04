@@ -13,7 +13,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { parameterCatalog, type OrbSize } from "@sinua/core";
+import type { OrbSize } from "@sinua/core";
+import { parameterCatalog } from "@/lib/catalog";
 import { buildSnippets, buildTypedSnippets, toTypedProps } from "@sinua/snippets";
 import type { FxHandle } from "@sinua/web";
 import { Icon, PgSlider, PgTabs, Snippet } from "@sinua/design";

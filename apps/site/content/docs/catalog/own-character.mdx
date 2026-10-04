@@ -71,7 +71,7 @@ The engine takes the commands `M L H V C S Q T Z`, and later subpaths are holes 
 
 - **Mistakes come back with their place:** `/recipe/parts/2/rise: expected a number`. `resolveFxSpec` returns them, and the views report them through `onError`.
 - **Limits** (an error, never trimmed): 64 KB, 48 parts, lists of 32, numbers within ±1000; a path at most 16 KB and 512 commands.
-- **Look at it** in all four voice states and at 20 px, and ask `fxSpecCost` for its cost class.
+- **Look at it** in all four voice states and at 20 px, and ask `fxSpecCost` (from `@sinua/core/dev`) for its cost class.
 
 ## 7. Ship it
 

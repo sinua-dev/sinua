@@ -12,7 +12,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import type { FxHandle } from "@sinua/web";
-import type { SimulatedVoiceSource } from "@sinua/core";
+import type { SimulatedVoiceSource } from "@sinua/core/dev";
 import { useSiteTheme } from "@/lib/use-site-theme";
 
 const SAMPLES = ["calendar", "quick-answer", "long-answer", "barge-in"] as const;
@@ -44,7 +44,7 @@ export function VoiceDemo({ pattern = "glowing", sample = "calendar", samples, b
     let live = true;
     let buttonEl: HTMLElement | null = null;
     (async () => {
-      const [{ mount }, { SimulatedVoiceSource }] = await Promise.all([import("@sinua/web"), import("@sinua/core")]);
+      const [{ mount }, { SimulatedVoiceSource }] = await Promise.all([import("@sinua/web"), import("@sinua/core/dev")]);
       if (!live || !canvas.current) return;
       const voice = effects ? null : new SimulatedVoiceSource(picked);
       voiceRef.current = voice;

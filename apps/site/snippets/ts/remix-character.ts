@@ -1,4 +1,5 @@
-import { characterRecipe, fxSpecCost, resolveFxSpec } from "@sinua/core";
+import { characterRecipe, resolveFxSpec } from "@sinua/core";
+import { fxSpecCost } from "@sinua/core/dev"; // tools and checks; your app doesn't ship it
 import { fitPath, pathBox, svgPaths } from "@sinua/snippets";
 
 declare const svgFileText: string; // an SVG exported from your drawing tool

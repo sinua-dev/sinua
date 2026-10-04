@@ -16,6 +16,6 @@ Sinua has six **objects**. Each has a set of **patterns**: the looks it can take
 
 Every object takes the same [materials](/docs/look/materials), [colour](/docs/look/color-and-theme) and [speed & size](/docs/look/speed-and-size) props. The tables on each object's page are generated from the engine's parameter catalog, so they are always current.
 
-You can read that catalog yourself — `parameterCatalog()` returns the same data these tables are built from, so a tool of your own can list a pattern's props, their ranges and their defaults without hard-coding anything:
+You can read that catalog yourself — `parameterCatalog()` from `@sinua/core/dev` returns the same data these tables are built from, so a tool of your own can list a pattern's props, their ranges and their defaults without hard-coding anything. `@sinua/core/dev` is the entry for tools, previews and tests; your app doesn't ship it unless you import it.
 
 <include lang="ts" meta='title="parameter-catalog.ts"'>../../../snippets/ts/parameter-catalog.ts</include>

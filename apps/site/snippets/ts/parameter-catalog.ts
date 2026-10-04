@@ -1,4 +1,4 @@
-import { parameterCatalog } from "@sinua/core";
+import { parameterCatalog } from "@sinua/core/dev";
 
 const catalog = parameterCatalog();
 const orb = catalog.objects.find((o) => o.id === "orb")!;

@@ -3,7 +3,7 @@
  * (@sinua/snippets): the typed component where the exporter has one (React,
  * React Native), the generic view elsewhere (JavaScript, SwiftUI, Compose).
  */
-import { parameterCatalog } from "@sinua/core";
+import { parameterCatalog } from "./catalog";
 import { buildSnippets, buildTypedSnippets, toTypedProps } from "@sinua/snippets";
 import type { SnippetTab } from "@sinua/design";
 

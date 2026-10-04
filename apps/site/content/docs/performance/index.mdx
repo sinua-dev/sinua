@@ -32,7 +32,7 @@ On iOS and Android, `lowPower` follows the system by default; force it with `.on
 
 ## Know the cost
 
-Every pattern and material combination has an estimated cost class (**light**, **medium**, **heavy**) from the number of elements it draws, how much of the canvas they cover, and how much blur they need. `estimateCost(pattern, size, overrides)` returns it (the third argument takes engine keys, as the Studio exports them), and the Studio shows it as a badge. Glow is by far the biggest multiplier. Liquid is the exception: it computes a lot while drawing little, so the badge can rank it too low.
+Every pattern and material combination has an estimated cost class (**light**, **medium**, **heavy**) from the number of elements it draws, how much of the canvas they cover, and how much blur they need. `estimateCost(pattern, size, overrides)` from `@sinua/core/dev` returns it (the third argument takes engine keys, as the Studio exports them), and the Studio shows it as a badge. Glow is by far the biggest multiplier. Liquid is the exception: it computes a lot while drawing little, so the badge can rank it too low.
 
 Low power:
 

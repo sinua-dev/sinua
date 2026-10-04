@@ -34,11 +34,11 @@ const TOTAL = SCRIPT.reduce((s, t) => s + t.seconds, 0);
 const STARTS = SCRIPT.map((_, i) => SCRIPT.slice(0, i).reduce((s, t) => s + t.seconds, 0));
 const JSON_TEXT = JSON.stringify(calendar);
 
-type Engine = typeof import("@sinua/core");
+type Engine = typeof import("@sinua/core/dev");
 let engine: Engine | null = null;
 let loading: Promise<void> | null = null;
 function loadEngine() {
-  loading ??= import("@sinua/core").then((m) => {
+  loading ??= import("@sinua/core/dev").then((m) => {
     engine = m;
   });
   return loading;

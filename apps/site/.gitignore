@@ -8,3 +8,4 @@ next-env.d.ts
 /content/changelog.generated.mdx
 /public/schema
 /public/examples
+/lib/generated

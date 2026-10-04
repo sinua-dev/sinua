@@ -9,7 +9,8 @@
  * engine at run time, so the file describes the design and the view is handed
  * the state (`state: "listening"`), live.
  */
-import { parameterCatalog, type OrbSize } from "@sinua/core";
+import type { OrbSize } from "@sinua/core";
+import { parameterCatalog } from "./catalog";
 
 type Json = Record<string, unknown>;
 

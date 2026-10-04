@@ -1,4 +1,4 @@
-import { SimulatedVoiceSource, type ConversationScript } from "@sinua/core";
+import { SimulatedVoiceSource, type ConversationScript } from "@sinua/core/dev";
 
 // Your own conversation: the same JSON shape on every platform.
 const script: ConversationScript = {

@@ -5,7 +5,7 @@
 import { brand } from "@/lib/brand";
 import { VERSION } from "@/lib/prompt";
 import { source } from "@/lib/source";
-import { parameterCatalog } from "@sinua/core";
+import { parameterCatalog } from "@/lib/catalog";
 
 export const dynamic = "force-static";
 

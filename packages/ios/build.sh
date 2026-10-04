@@ -6,11 +6,16 @@ set -euo pipefail
 cd "$(dirname "$0")"
 ROOT="$(cd ../.. && pwd)"
 BINDINGS="$ROOT/bindings/swift"
+# The Studio / dev exports (cargo feature `dev`, design note 34: cost, liquid suitability,
+# the parameter catalog, override checks) are in development builds -- the tests and the
+# Studios use them -- and left out of what is published: the release workflow sets
+# SINUA_NATIVE_RELEASE=1.
+if [ "${SINUA_NATIVE_RELEASE:-0}" = 1 ]; then DEV=(); else DEV=(--features core_engine/dev); fi
 
 rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios >/dev/null
 
 echo "==> building host dylib (for bindgen introspection)"
-(cd "$ROOT" && cargo build -p core_engine -p uniffi-bindgen)
+(cd "$ROOT" && cargo build -p core_engine -p uniffi-bindgen ${DEV[@]+"${DEV[@]}"})
 
 echo "==> generating Swift bindings"
 rm -rf "$BINDINGS"
@@ -25,7 +30,7 @@ cp "$BINDINGS/core_engine.swift" Sources/CoreEngine/
 
 echo "==> building iOS device + simulator static libs"
 for target in aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios; do
-  (cd "$ROOT" && cargo build -p core_engine --release --target "$target")
+  (cd "$ROOT" && cargo build -p core_engine --release --target "$target" ${DEV[@]+"${DEV[@]}"})
 done
 
 echo "==> lipo-ing simulator slices into a universal lib"

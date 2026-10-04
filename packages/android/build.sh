@@ -7,11 +7,16 @@ cd "$(dirname "$0")"
 ROOT="$(cd ../.. && pwd)"
 : "${ANDROID_NDK_HOME:=/opt/homebrew/share/android-commandlinetools/ndk/27.0.12077973}"
 export ANDROID_NDK_HOME
+# The Studio / dev exports (cargo feature `dev`, design note 34: cost, liquid suitability,
+# the parameter catalog, override checks) are in development builds -- the tests and the
+# Studios use them -- and left out of what is published: the release workflow sets
+# SINUA_NATIVE_RELEASE=1.
+if [ "${SINUA_NATIVE_RELEASE:-0}" = 1 ]; then DEV=(); else DEV=(--features core_engine/dev); fi
 
 rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android >/dev/null
 
 echo "==> building host library (for bindgen introspection)"
-(cd "$ROOT" && cargo build -p core_engine -p uniffi-bindgen)
+(cd "$ROOT" && cargo build -p core_engine -p uniffi-bindgen ${DEV[@]+"${DEV[@]}"})
 # The host cdylib is .dylib on macOS, .so on Linux (the CI android job runs on ubuntu).
 case "$(uname -s)" in
   Darwin) HOST_LIB=libcore_engine.dylib ;;
@@ -40,6 +45,6 @@ cargo ndk \
   -t arm64-v8a -t armeabi-v7a -t x86_64 -t x86 \
   -o src/main/jniLibs \
   --platform 24 \
-  build --release --manifest-path "$ROOT/crates/core_engine/Cargo.toml"
+  build --release --manifest-path "$ROOT/crates/core_engine/Cargo.toml" ${DEV[@]+"${DEV[@]}"}
 
 echo "==> done. Try: ./gradlew testDebugUnitTest"

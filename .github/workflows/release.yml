@@ -106,6 +106,9 @@ jobs:
           tool: cargo-ndk@4.1.2
       - uses: gradle/actions/setup-gradle@v6
       - name: Build the bindings + jniLibs
+        # The published variant: no Studio / dev exports (design note 34).
+        env:
+          SINUA_NATIVE_RELEASE: "1"
         run: packages/android/build.sh
       - name: Stage (signed when SIGNING_KEY is set)
         env:
@@ -162,6 +165,9 @@ jobs:
       - name: Install toolchain from rust-toolchain.toml
         run: rustup show active-toolchain || rustup toolchain install
       - name: Build the xcframework
+        # The published variant: no Studio / dev exports (design note 34).
+        env:
+          SINUA_NATIVE_RELEASE: "1"
         run: packages/ios/build.sh
       - name: Zip, checksum, distribution trees
         run: scripts/release/build.sh --only swift

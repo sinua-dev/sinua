@@ -132,6 +132,10 @@ fn part(d: &Value, name: &str, k: Kind, layer: bool) -> Value {
         "when".into(),
         json!({ "enum": ["notSmallOrAccessories"], "description": d["common"]["when"] }),
     );
+    props.insert(
+        "role".into(),
+        json!({ "enum": crate::character::parts::ROLES, "description": d["common"]["role"] }),
+    );
     let state = json!({ "type": "number", "minimum": 0, "maximum": 1 });
     props.insert(
         "show".into(),
@@ -286,8 +290,8 @@ pub fn schema() -> Value {
                 "category": { "enum": crate::character::cosmetic::CATEGORIES, "description": c("category") },
                 "season": { "type": "string", "description": c("season") },
                 "requires": { "type": "array", "description": c("requires"), "items": { "enum": crate::character::cosmetic::TAGS } },
-                "behind": { "type": "array", "description": c("behind"), "items": { "type": "string" } },
-                "above": { "type": "array", "description": c("above"), "items": { "type": "string" } },
+                "behind": { "type": "array", "description": c("behind"), "items": { "enum": crate::character::parts::ROLES } },
+                "above": { "type": "array", "description": c("above"), "items": { "enum": crate::character::parts::ROLES } },
                 "slot": { "type": "string", "description": c("slot") },
                 "palette": { "type": "object", "description": c("palette"), "additionalProperties": nums(3) },
                 "parts": { "type": "array", "description": c("parts"), "minItems": 1, "maxItems": MAX_PARTS,

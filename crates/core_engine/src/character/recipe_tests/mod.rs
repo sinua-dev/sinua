@@ -8,6 +8,7 @@ mod catalog;
 mod chirp;
 mod cosmetics;
 mod cuppa;
+mod depth;
 mod eyes;
 mod hum;
 mod loadout;

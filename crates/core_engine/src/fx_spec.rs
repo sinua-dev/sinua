@@ -2963,6 +2963,11 @@ pub fn resolve_full(
                 let (_, b, r) = entries.swap_remove(i);
                 (k.to_string(), b, r)
             }
+            // 1.13 (B2, design note 28): a voice state the file doesn't write is an
+            // empty entry, so it takes the voice profile (one shape, four states).
+            None if minor >= 13 && crate::voice_state::VOICE_STATES.contains(&k) => {
+                (k.to_string(), base_block, Vec::new())
+            }
             None => {
                 if !entries.is_empty() || root.contains_key("states") {
                     diag.warn(
@@ -3691,6 +3696,54 @@ mod tests {
         let own = resolve_with(json, Some("recording"), &HashMap::new());
         assert!(!own.overrides.contains_key("ink"));
         assert_eq!(own.speed, 1.0);
+    }
+
+    #[test]
+    fn a_1_13_file_without_states_takes_the_voice_profile_and_a_1_12_one_keeps_its_base() {
+        // B2 (design note 28): with no `states`, every voice state resolved to the base
+        // design, so a recipe file never reacted to the voice.
+        let file = |v: &str| {
+            format!(r##"{{ "fxSpec": "{v}", "object": "character", "pattern": "buzzy" }}"##)
+        };
+        let states = ["idle", "listening", "thinking", "speaking"];
+        let new: Vec<_> = states
+            .iter()
+            .map(|s| resolve_with(&file("1.13"), Some(s), &HashMap::new()))
+            .collect();
+        for (r, s) in new.iter().zip(states) {
+            assert!(r.ok && r.diagnostics.is_empty(), "{s}: {:?}", r.diagnostics);
+            assert_eq!(r.state_key, s);
+        }
+        for i in 0..4 {
+            for j in i + 1..4 {
+                assert_ne!(
+                    new[i].overrides, new[j].overrides,
+                    "{} vs {}",
+                    states[i], states[j]
+                );
+            }
+        }
+        // The base (no state) never takes a profile; a key that isn't a voice state warns.
+        assert!(!resolve(&file("1.13")).overrides.contains_key("look"));
+        let odd = resolve_with(&file("1.13"), Some("dancing"), &HashMap::new());
+        assert!(odd.state_key.is_empty());
+        // A partial `states`: the missing voice states take the profile, without a warning.
+        let partial = r##"{ "fxSpec": "1.13", "object": "character", "pattern": "buzzy",
+            "states": { "idle": { "params": { "turn": 0 } } } }"##;
+        let l = resolve_with(partial, Some("listening"), &HashMap::new());
+        assert!(
+            l.diagnostics.is_empty() && l.state_key == "listening",
+            "{:?}",
+            l.diagnostics
+        );
+        // 1.12 and earlier resolve as they always did (minors only add).
+        let old: Vec<_> = states
+            .iter()
+            .map(|s| resolve_with(&file("1.12"), Some(s), &HashMap::new()))
+            .collect();
+        assert!(old
+            .iter()
+            .all(|r| r.state_key.is_empty() && r.overrides == old[0].overrides));
     }
 
     #[test]

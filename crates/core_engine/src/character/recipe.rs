@@ -41,8 +41,12 @@ pub const RECIPE_VERSION: u64 = 1;
 /// The limits on any recipe (design note 12): a file from outside can't make
 /// the engine slow. A recipe over one is an error, never quietly trimmed.
 pub const MAX_BYTES: usize = 64 * 1024;
-/// Parts, a body's inner layers included.
-pub const MAX_PARTS: usize = 48;
+/// Parts, a body's inner layers included (96 since design note 28: an imported
+/// drawing needs 78–88).
+pub const MAX_PARTS: usize = 96;
+/// Points of every path shape in a recipe together, after flattening (design note 28):
+/// with [`MAX_PARTS`] and [`MAX_BYTES`], a recipe from outside stays bounded.
+pub const MAX_PATH_POINTS: usize = 4096;
 /// Every number in a recipe lies within ±this.
 pub const MAX_NUMBER: f64 = 1000.0;
 
@@ -301,6 +305,31 @@ pub fn valid_id(id: &str) -> bool {
             .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
 }
 
+/// [`MAX_PATH_POINTS`] over every path shape, a body's layers included. Its own
+/// function, so the count isn't inlined into the parser (wasm size).
+#[inline(never)]
+fn path_points(parts: &[parts::Part]) -> Result<(), String> {
+    let mut n = 0;
+    for p in parts {
+        for q in std::iter::once(p).chain(&p.inner) {
+            for s in &q.params.shapes {
+                if s.path {
+                    n += s.outer.len();
+                    for h in &s.holes {
+                        n += h.len();
+                    }
+                }
+            }
+        }
+    }
+    if n > MAX_PATH_POINTS {
+        return Err(format!(
+            "/parts: {n} path points, at most {MAX_PATH_POINTS}"
+        ));
+    }
+    Ok(())
+}
+
 impl Recipe {
     #[inline(never)]
     pub fn parse(text: &str) -> Result<Recipe, String> {
@@ -495,6 +524,7 @@ impl Recipe {
         if count > MAX_PARTS {
             return Err(format!("/parts: {count} parts, at most {MAX_PARTS}"));
         }
+        path_points(&parts)?;
         let burst = r.obj("burst")?;
         let bc = burst.arr("colors")?;
         let name = |i: usize| -> Result<usize, String> {

@@ -412,6 +412,9 @@ pub struct Params {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Part {
     pub kind: Kind,
+    /// What the part is (design note 28), 1 + its index in [`ROLES`]; 0 = unnamed.
+    /// A cosmetic's `behind` / `above` draws against it.
+    pub role: u8,
     pub space: Space,
     pub when: When,
     /// How visible the part is in each voice state (idle, listening, thinking,
@@ -422,6 +425,12 @@ pub struct Part {
     /// A body's inner layers.
     pub inner: Vec<Part>,
 }
+
+/// The roles a part may name (N1's shared vocabulary, design note 28).
+pub const ROLES: [&str; 15] = [
+    "head", "face", "ears", "arms", "legs", "antenna", "hair", "tail", "eyes", "mouth", "nose",
+    "cheeks", "neck", "shadow", "body",
+];
 
 /// What a recipe's parts resolve names against.
 pub struct Names<'a> {
@@ -793,7 +802,7 @@ fn field(
 
 /// May a part of kind `k` hold the dotted key `path`?
 fn allowed(path: &str, k: Kind) -> bool {
-    matches!(path, "part" | "space" | "when" | "show")
+    matches!(path, "part" | "space" | "when" | "show" | "role")
         || (k == Kind::Body && path == "turnLight")
         || schema(k)
             .iter()
@@ -881,6 +890,15 @@ fn parse_any(
             Some(w)
         }
     };
+    let role = match o.get("role") {
+        None => 0,
+        Some(r) => {
+            1 + ROLES
+                .iter()
+                .position(|x| Some(*x) == r.as_str())
+                .ok_or_else(|| format!("{at}/role: not a role"))? as u8
+        }
+    };
     let mut params = Params::default();
     let mut inner = Vec::new();
     for (f, ty) in schema(kind) {
@@ -891,6 +909,7 @@ fn parse_any(
     }
     Ok(Part {
         kind,
+        role,
         space,
         when,
         show,

@@ -61,6 +61,19 @@ pub struct Into<'a> {
     pub tags: &'a [String],
 }
 
+/// `behind` / `above`, when given, are lists of part roles (design note 28). Its own
+/// function, so it isn't inlined into the recipe parser (wasm size).
+#[inline(never)]
+fn depth_ok(v: &Value) -> bool {
+    ["behind", "above"].iter().all(|k| match get(v, k) {
+        None => true,
+        Some(Value::Array(a)) => a
+            .iter()
+            .all(|r| r.as_str().is_some_and(|r| parts::ROLES.contains(&r))),
+        Some(_) => false,
+    })
+}
+
 /// The capability tags (design note 26, C1): what a character can wear beyond its
 /// slots. A closed list, so a misspelt tag warns instead of silently never fitting.
 pub const TAGS: [&str; 6] = [
@@ -147,15 +160,12 @@ pub fn read(list: &Value, o: Into) -> Result<(), String> {
                 &format!("one of {}", CATEGORIES.join(", ")),
             ));
         }
-        // `behind` / `above` (depth against named parts) are reserved for item 7: lists.
-        if ["behind", "above"]
-            .iter()
-            .any(|k| get(v, k).is_some_and(|x| !x.is_array()))
-        {
+        // `behind` / `above` (depth against the character's part roles, design note 28): lists.
+        if !depth_ok(v) {
             return Err(bad(
                 &at,
                 "behind",
-                "`behind` and `above` are lists of part names",
+                "`behind` and `above` are lists of part roles",
             ));
         }
         let mut notes = Vec::new();
@@ -243,7 +253,23 @@ pub fn read(list: &Value, o: Into) -> Result<(), String> {
             surfaces: &[],
             slots: &[],
         };
-        let mut behind = 0;
+        // Depth (design note 28): before the first part with a `behind` role, after the
+        // last with an `above` role; else on top (a frame: under everything).
+        let has = |k: &str, p: &Part| {
+            get(v, k).and_then(Value::as_array).is_some_and(|a| {
+                a.iter()
+                    .any(|r| p.role > 0 && r.as_str() == Some(parts::ROLES[p.role as usize - 1]))
+            })
+        };
+        let at0 = if frame {
+            0
+        } else if let Some(i) = o.parts.iter().position(|p| has("behind", p)) {
+            i
+        } else if let Some(i) = o.parts.iter().rposition(|p| has("above", p)) {
+            i + 1
+        } else {
+            o.parts.len()
+        };
         for (j, p) in c.arr("parts")?.iter().enumerate() {
             let pat = format!("{at}/parts/{j}");
             if !matches!(
@@ -257,12 +283,7 @@ pub fn read(list: &Value, o: Into) -> Result<(), String> {
                 ));
             }
             let part = parts::parse_in(p, &pat, &names, Space::Slot(index))?;
-            if frame {
-                o.parts.insert(behind, part);
-                behind += 1;
-            } else {
-                o.parts.push(part);
-            }
+            o.parts.insert(at0 + j, part);
         }
     }
     Ok(())

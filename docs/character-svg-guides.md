@@ -49,8 +49,11 @@ any style (they are never drawn), and name them:
 | `slot-chest` | an ellipse on the chest | badges |
 | `eye-left`, `eye-right` | a circle per eye | where Sinua draws the eyes, for a character drawn without eyes |
 
-A character without guides still imports (a hat goes on the topmost point), and the Studio's
-fitting room places the rest by hand.
+Without guides the Studio guesses them from the drawing (design note 29): the head's top, the
+narrowest row between head and body (the neck), between the eyes (the face), and the chest
+below the neck. A guess it isn't sure of is left out, never put in the wrong place, and every
+guess is marked "estimated, check" in the fitting room until you confirm or move it. Guides are
+still the reliable way: an antenna, a raised hand or a tilted head can mislead a guess.
 
 ## Depth
 

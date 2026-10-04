@@ -256,6 +256,16 @@ The nudge is relative to the slot and bounded (`offset` ±10 units, `scale` 0.8�
 ±15°); out of range warns and is clamped. The item still follows the rig: the tilt, the hop, the
 head turn.
 
+## Drag to dress: snapping a dropped item
+
+`characterSlots(state, size, t, overrides)` (`@sinua/core`; `characterSlots` on iOS and Android)
+gives a character's slots where it draws them at `t`: `{ name, x, y, scale, angle }` in frame
+units at `size`, following the pose and the head turn. `state` is a built-in or the registry key
+`resolveFxSpec` returns for a recipe file. A drag-to-dress screen scales the units to its view
+and snaps a dropped item to the nearest slot it fits (`nearestSlot(slots, x, y, { names: [item.slot] })`
+on the Web); the drop's offset from the slot becomes the item's bounded nudge in the loadout
+(*A nudge per item*).
+
 ## Next in 1.13
 
 Planned additions on top of this format (not in this release yet):

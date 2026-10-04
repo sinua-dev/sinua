@@ -165,6 +165,10 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   takes the voice profile. 1.8–1.12 files resolve as before.
 - Resolving a file with a large recipe again (a picker's thumbnails, an imported character)
   no longer re-parses the recipe: the engine finds it by its text, guarded by a second hash.
+- Drag to dress (design note 29): `characterSlots` gives a character's cosmetic slots where it
+  draws them (frame units, following the pose), and `nearestSlot` picks the one a dropped item
+  snaps to. Thumbnails of a recipe file are about 3× faster: whether a character is heavy to draw
+  is now measured once per character, not on every resolve.
 
 ### Changed
 

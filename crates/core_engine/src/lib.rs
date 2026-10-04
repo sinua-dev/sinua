@@ -733,6 +733,50 @@ pub fn cosmetics_for(spec: String, character: String) -> Vec<FxDiagnostic> {
     fx_spec::cosmetics_for(&spec, &character)
 }
 
+/// A cosmetic slot this frame (design note 29, C2): where a dragged item snaps.
+#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]
+#[derive(Clone, Debug, PartialEq)]
+pub struct CharacterSlot {
+    pub name: String,
+    pub x: f64,
+    pub y: f64,
+    pub scale: f64,
+    pub angle: f64,
+}
+
+/// `state`'s cosmetic slots at `t` (a built-in character or a recipe's registry key), in
+/// frame units at `size`, following the pose as the drawing does: an app snaps a dropped
+/// item to the nearest. Empty for anything that isn't a character.
+#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+pub fn character_slots(
+    state: String,
+    size: u32,
+    t: f64,
+    overrides: HashMap<String, f64>,
+) -> Vec<CharacterSlot> {
+    let Some(resolved) = resolve_any(&state, size) else {
+        return Vec::new();
+    };
+    let mut opts = resolved.opts;
+    opts.extend(overrides);
+    let mode = resolved.mode;
+    let slots = character::registry::get(mode)
+        .map(|r| character::recipe::slots_recipe(&r, f64::from(size), t, &opts))
+        .or_else(|| character::recipe::slots(mode, f64::from(size), t, &opts))
+        .unwrap_or_default();
+    slots
+        .into_iter()
+        .map(|s| CharacterSlot {
+            name: s.name,
+            x: s.x,
+            y: s.y,
+            scale: s.scale,
+            angle: s.angle,
+        })
+        .collect()
+}
+
 /// A thumbnail (design note 25): the spec with `loadout` (may be empty) drawn
 /// once in a still pose (no glance, no blink) at `turn_yaw` (radians, 0 =
 /// facing), without touching the live characters' registry.
@@ -1006,6 +1050,18 @@ mod wasm {
     #[wasm_bindgen]
     pub fn cosmetics_for_json(spec: String, character: String) -> String {
         serde_json::to_string(&crate::cosmetics_for(spec, character))
+            .unwrap_or_else(|_| "[]".to_string())
+    }
+
+    #[wasm_bindgen]
+    pub fn character_slots_json(
+        state: String,
+        size: u32,
+        t: f64,
+        overrides_json: String,
+    ) -> String {
+        let o: HashMap<String, f64> = serde_json::from_str(&overrides_json).unwrap_or_default();
+        serde_json::to_string(&crate::character_slots(state, size, t, o))
             .unwrap_or_else(|_| "[]".to_string())
     }
 

@@ -13,7 +13,7 @@ use crate::primitives::OrbFrame;
 use crate::transition::TransitionSide;
 
 /// The slots a recipe has of its own; any other slot name is a cosmetic's id.
-const OWN: [&str; 4] = ["headTop", "face", "neck", "chest"];
+pub(crate) const OWN: [&str; 4] = ["headTop", "face", "neck", "chest"];
 
 /// Ease out with a small overshoot (easeOutBack, `c1` 1.2).
 fn pop(w: f64) -> f64 {

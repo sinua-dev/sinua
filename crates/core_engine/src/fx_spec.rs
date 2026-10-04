@@ -991,8 +991,8 @@ fn use_recipe(root: &mut Map<String, Value>, r: &Value, object: Option<&str>, di
             format!("no `pattern` names `{id}`, so the recipe isn't drawn"),
         );
     }
-    if let Some(c) = crate::cost::estimate(key, 64, &HashMap::new()) {
-        if c.class == "heavy" {
+    if let Some(c) = heavy(key) {
+        {
             diag.warn(
                 "/recipe",
                 format!(
@@ -1002,6 +1002,24 @@ fn use_recipe(root: &mut Map<String, Value>, r: &Value, object: Option<&str>, di
             );
         }
     }
+}
+
+/// `key`'s cost when it is "heavy" to draw, measured once per key: sampling frames on
+/// every resolve made a picker's thumbnails slow (design note 29).
+#[inline(never)]
+fn heavy(key: &'static str) -> Option<crate::FxCost> {
+    type Seen = Vec<(&'static str, Option<crate::FxCost>)>;
+    static SEEN: std::sync::Mutex<Seen> = std::sync::Mutex::new(Vec::new());
+    let mut seen = SEEN.lock().unwrap_or_else(|e| e.into_inner());
+    if let Some((_, c)) = seen.iter().find(|(k, _)| *k == key) {
+        return c.clone();
+    }
+    let c = crate::cost::estimate(key, 64, &HashMap::new()).filter(|c| c.class == "heavy");
+    seen.push((key, c.clone()));
+    if seen.len() > 64 {
+        seen.remove(0);
+    }
+    c
 }
 
 /// Registers a recipe's JSON: its key and how many cosmetics didn't fit (each

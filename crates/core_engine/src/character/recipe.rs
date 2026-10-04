@@ -965,11 +965,12 @@ pub struct SlotAt {
 /// Every slot of `r` this frame. A slot follows its chain: `head`/`body` take
 /// the rig's pose (tilt, bob, lean, squash, sway); `face` is also wrapped onto
 /// the recipe's `face` surface when the head turns. Never drawn in 1.12.
-#[allow(dead_code)]
 pub fn slots_recipe(r: &Recipe, size: f64, t: f64, o: &ModeOpts) -> Vec<SlotAt> {
     let ctx = setup(r, size, t, o);
+    // The recipe's own slots; a worn cosmetic's placement (named by its id) isn't one.
     r.slots
         .iter()
+        .filter(|s| crate::character::wear::OWN.contains(&s.name.as_str()))
         .map(|s| {
             let at = geom::pt(s.at.0, s.at.1);
             let face = r.surfaces.iter().find(|(n, _)| n == "face").map(|(_, f)| f);
@@ -998,7 +999,6 @@ pub fn slots_recipe(r: &Recipe, size: f64, t: f64, o: &ModeOpts) -> Vec<SlotAt> 
 }
 
 /// The built-in character `mode`'s slots (None when it isn't one).
-#[allow(dead_code)]
 pub fn slots(mode: &str, size: f64, t: f64, o: &ModeOpts) -> Option<Vec<SlotAt>> {
     recipes().get(mode).map(|r| slots_recipe(r, size, t, o))
 }

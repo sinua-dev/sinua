@@ -201,8 +201,9 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   - iOS `OpenAILiveVoiceSource` / `OpenAIRealtimeVoiceSource` set up the audio session
     (`.videoChat` on the loudspeaker, Bluetooth; `audioSession: .receiver` / `.unmanaged`).
     Before, GPT-Live on iOS sent no mic audio and played nothing.
-  - OpenAI sources on every platform leave `speaking` after ~1 s of quiet instead of
-    ~300 ms, so a pause between phrases no longer flips the state; a barge-in stays instant.
+  - OpenAI sources on every platform leave `speaking` after an adaptive quiet tail: 0.7 s
+    for a short reply, growing with the answer up to 1.7 s, so no pause inside an answer
+    flips the state (it was ~300 ms); a barge-in stays instant.
   - Web: `headers` and `fetch` options on the OpenAI sources; a failed request throws with
     `status` and `body` (`FatalConnectError` / `VoiceHttpError`).
 

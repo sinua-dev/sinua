@@ -204,7 +204,7 @@ reference in May 2025 per their community forum, Azure's reference lists
 it, one current reference page only shows `output_audio_buffer.clear`/
 `cleared`), so the adapter treats it as optional: until one has been seen
 in a session, `speaking` is entered when the remote track's level rises
-during an active response and left ~1 s after it falls following
+during an active response and left after the same adaptive tail as GPT-Live once it falls following
 `response.done` (design note 30). Once any `output_audio_buffer.*` event arrives, the
 energy fallback stands down for the rest of the session.
 
@@ -323,10 +323,14 @@ developers.openai.com `guides/voice-webrtc?api=live`, `guides/live-migration`,
 `response.created/done`, no `output_audio_buffer.*`. OpenAI's migration guide says to drive
 the speaking indicator from the player. `OpenAILiveSession` (`openaiLive.ts`, ported to
 SinuaVoice / `dev.sinua.voice`, all held to `spec/openai-live-cases.json`) does this:
-- **speaking:** the remote track's level is above 0.05. It ends after ~1 s of quiet, so a
-  pause between phrases doesn't flip the state (each flip would restart a 0.6 s transition;
-  design note 30). The level is measured where the audio plays, so buffered audio still
-  counts as speaking.
+- **speaking:** the remote track's level is above 0.05. It ends after a quiet tail that grows
+  with how long the agent has been speaking (design note 31, V7; telephony's variable
+  hangover): 0.7 s, plus 0.13 s per second of the stretch so far, at most 1.7 s. A short reply
+  hands back in ~0.8 s; a long answer survives the pauses people leave (up to 1.5 s, 6 s in).
+  Each flip would restart a transition, so none happen inside an answer. The level is measured
+  where the audio plays, so buffered audio still counts as speaking. Chosen on the transition
+  suite's 8 conversations (scripts/transitions): one speaking stretch per answer, and on average
+  0.68 s (at most 1.67 s) from an answer's last sound to listening.
 - **thinking:** an open delegation while the model is quiet.
   - It opens on `session.delegation.created` or a nested `response.created` inside a
     `response.event`.

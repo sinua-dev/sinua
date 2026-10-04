@@ -205,7 +205,7 @@ iterating) holds the transition contract (design note 31, sinua-studio):
   the real view clock (`StateTransition`) and engine. Each frame is rasterized and two
   numbers judge the change (1 = ideal): *peak*, the worst frame over what a smooth change
   of that size and duration would show, and *path*, how far the picture travels during
-  the change over what it needs to. Bounds: peak <= 2.5 and path <= 2.6, with named
+  the change over what it needs to. Bounds: peak <= 2.7 and path <= 2.25 (about 12 % over the measured worst), with named
   exceptions in the script for motion that is meant to travel (the spectrum's joining bars,
   muted's turn, crystallize's cycle, the rings' thinking pulse, step patterns) and
   calibrating's snap (a smoothing is the next step).

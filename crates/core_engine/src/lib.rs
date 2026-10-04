@@ -267,6 +267,12 @@ struct AnyResolved {
     opts: primitives::ModeOpts,
 }
 
+/// A state's preset speed: the factor between its engine time and the wall-clock
+/// seconds its post-processes run in (see [`render`]).
+pub(crate) fn preset_speed(state: &str, size: u32) -> f64 {
+    resolve_any(state, size).map_or(1.0, |r| r.speed)
+}
+
 fn resolve_any(state: &str, size: u32) -> Option<AnyResolved> {
     if let Some(r) = orbs::presets::resolve_preset(state, size) {
         return Some(AnyResolved {

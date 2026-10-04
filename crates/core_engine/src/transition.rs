@@ -365,15 +365,26 @@ fn blend_core(
         };
         out.swap = ((share - SWAP_START) / (SWAP_END - SWAP_START)).clamp(0.0, 1.0);
     }
-    out.rates = rates(mode, &out.overrides);
+    out.rates = rates(
+        mode,
+        &out.overrides,
+        crate::preset_speed(&first.state, size),
+    );
     Some(out)
 }
 
 /// The rate of every rate key the design sets (see [`RATES`]).
 #[inline(never)]
-fn rates(mode: &str, o: &HashMap<String, f64>) -> HashMap<String, f64> {
+fn rates(mode: &str, o: &HashMap<String, f64>, preset_speed: f64) -> HashMap<String, f64> {
     let mut out = HashMap::new();
     let warp = mode == "warp";
+    // The pulse, the noise and the holographic drift run in wall-clock seconds (engine
+    // time over the preset speed): their cycles per second of engine time are scaled.
+    let wall = if preset_speed > 0.0 {
+        1.0 / preset_speed
+    } else {
+        1.0
+    };
     for &(key, acc, period) in RATES {
         let v = if warp && key == "period" {
             // warp's stars run at `warpSpeed / period`.
@@ -382,8 +393,13 @@ fn rates(mode: &str, o: &HashMap<String, f64>) -> HashMap<String, f64> {
                 _ => None,
             }
         } else {
+            let k = if matches!(key, "pulsePeriod" | "noiseSpeed" | "holoSpeed") {
+                wall
+            } else {
+                1.0
+            };
             o.get(key)
-                .map(|v| if period { 1.0 / v.max(0.05) } else { *v })
+                .map(|v| k * if period { 1.0 / v.max(0.05) } else { *v })
         };
         if let Some(v) = v {
             put(
@@ -890,5 +906,49 @@ mod tests {
             (t.duration, t.curve.as_str(), t.authored),
             (0.7, "easeOut", true)
         );
+    }
+
+    /// Every rate sum a view starts from `t × rate` draws exactly what the engine's own
+    /// formula draws, on every pattern and voice state (design note 31): the moment a
+    /// view takes over the sums can't move the picture (the pulse once did: it runs in
+    /// wall-clock seconds, so its rate is over the preset speed).
+    #[test]
+    fn taking_over_the_sums_moves_nothing_on_any_pattern() {
+        let mut bad = Vec::new();
+        for &pattern in crate::orbs::presets::STATES {
+            for state in ["idle", "listening", "thinking", "speaking"] {
+                let Some(p) = crate::voice_state::profile(pattern, state) else {
+                    continue;
+                };
+                let s = TransitionSide {
+                    state: pattern.into(),
+                    speed: p.speed,
+                    overrides: p.overrides,
+                };
+                let m = blend(std::slice::from_ref(&s), &[1.0], 0, 64).unwrap();
+                let t = 37.3;
+                let plain = crate::frame_with_overrides(pattern.into(), 64, t, s.overrides.clone())
+                    .unwrap();
+                let mut o = s.overrides.clone();
+                o.extend(m.rates.iter().map(|(k, r)| (k.clone(), t * r)));
+                let summed = crate::frame_with_overrides(pattern.into(), 64, t, o).unwrap();
+                let d = plain
+                    .dots
+                    .iter()
+                    .zip(&summed.dots)
+                    .map(|(a, b)| (a.x - b.x).abs() + (a.y - b.y).abs() + (a.a - b.a).abs())
+                    .fold(0.0, f64::max)
+                    + plain
+                        .polylines
+                        .iter()
+                        .zip(&summed.polylines)
+                        .map(|(a, b)| (a.a - b.a).abs())
+                        .fold(0.0, f64::max);
+                if plain.dots.len() != summed.dots.len() || d > 1e-6 {
+                    bad.push(format!("{pattern}/{state}: {d}"));
+                }
+            }
+        }
+        assert!(bad.is_empty(), "{bad:#?}");
     }
 }

@@ -5,11 +5,15 @@
 //! is that key, so a view draws it every frame like any other mode, and the
 //! same recipe gives the same key (and the same frames) everywhere.
 //!
-//! The registry holds the last [`CAPACITY`] recipes used (registered or drawn).
+//! The registry holds the last [`CAPACITY`] recipes used (registered or drawn), and
+//! finds any of the last [`SEEN`] texts read (their recipes are kept with them). Each
+//! thread also keeps the last [`RECENT`] recipes it registered (design note 31, B5), so
+//! a view that resolves a spec draws it at once even while other threads register
+//! dozens of others (a Studio grid, an app with many characters).
 //! A key is a `&'static str` like every other mode: each distinct recipe's key
 //! is leaked once (about 40 bytes) and reused when it comes back.
 
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::sync::{Arc, Mutex};
 
 use crate::character::recipe::{frame_recipe, Recipe};
@@ -34,7 +38,32 @@ struct Seen {
 }
 
 /// How many texts `seen` remembers: the live recipes and a picker's thumbnails.
-const SEEN: usize = 48;
+pub const SEEN: usize = 48;
+/// How many recipes each thread keeps from its own last registrations.
+pub const RECENT: usize = 8;
+
+thread_local! {
+    /// This thread's last registered recipes (most recent last).
+    static MINE: RefCell<Vec<(&'static str, Arc<Recipe>)>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Remembers `key` as one this thread just registered.
+#[inline(never)]
+fn mine(key: &'static str, recipe: &Arc<Recipe>) {
+    MINE.with(|m| {
+        let mut m = m.borrow_mut();
+        m.retain(|(k, _)| *k != key);
+        m.push((key, recipe.clone()));
+        if m.len() > RECENT {
+            m.remove(0);
+        }
+    });
+}
+
+/// This thread's own recent recipe for `key`.
+fn mine_get(key: &str) -> Option<(&'static str, Arc<Recipe>)> {
+    MINE.with(|m| m.borrow().iter().rev().find(|(k, _)| *k == key).cloned())
+}
 
 struct Registry {
     /// Most recently used last.
@@ -139,6 +168,7 @@ pub fn register_with(
         if reg.live.len() > CAPACITY {
             reg.live.remove(0);
         }
+        mine(key, &recipe);
         key
     };
     reg.seen.push(Seen {
@@ -180,6 +210,7 @@ fn recall(
         if reg.live.len() > CAPACITY {
             reg.live.remove(0);
         }
+        mine(e.key, &e.recipe);
     }
     skipped.clone_from(&e.skipped);
     let key = e.key;
@@ -209,19 +240,34 @@ pub fn preview<T>(f: impl FnOnce() -> T) -> T {
     out
 }
 
-/// The recipe registered as `key` (and marks it used), if it is still kept.
+/// The recipe registered as `key` (and marks it used), if it is still kept: this
+/// thread's own recent ones first, then the live ones, then the texts read lately (a
+/// recipe found there is live again).
 pub fn get(key: &str) -> Option<Arc<Recipe>> {
     if !key.starts_with(PREFIX) {
         return None;
+    }
+    if key != PREVIEW_KEY {
+        if let Some((_, r)) = mine_get(key) {
+            return Some(r);
+        }
     }
     let mut reg = lock();
     if key == PREVIEW_KEY {
         return reg.preview.clone();
     }
-    let i = reg.live.iter().position(|(k, _)| *k == key)?;
-    let e = reg.live.remove(i);
-    let r = e.1.clone();
-    reg.live.push(e);
+    if let Some(i) = reg.live.iter().position(|(k, _)| *k == key) {
+        let e = reg.live.remove(i);
+        let r = e.1.clone();
+        reg.live.push(e);
+        return Some(r);
+    }
+    let e = reg.seen.iter().rev().find(|e| e.key == key)?;
+    let (k, r) = (e.key, e.recipe.clone());
+    reg.live.push((k, r.clone()));
+    if reg.live.len() > CAPACITY {
+        reg.live.remove(0);
+    }
     Some(r)
 }
 
@@ -230,11 +276,20 @@ pub fn key(key: &str) -> Option<&'static str> {
     if !key.starts_with(PREFIX) {
         return None;
     }
+    if key != PREVIEW_KEY {
+        if let Some((k, _)) = mine_get(key) {
+            return Some(k);
+        }
+    }
     let reg = lock();
     if key == PREVIEW_KEY {
         return reg.preview.as_ref().map(|_| PREVIEW_KEY);
     }
-    reg.live.iter().find(|(k, _)| *k == key).map(|(k, _)| *k)
+    reg.live
+        .iter()
+        .find(|(k, _)| *k == key)
+        .map(|(k, _)| *k)
+        .or_else(|| reg.seen.iter().find(|e| e.key == key).map(|e| e.key))
 }
 
 /// A registered recipe's frame (`None` once it has left the registry).
@@ -270,16 +325,46 @@ mod tests {
     }
 
     #[test]
-    fn keeps_the_last_32() {
+    fn keeps_what_it_read_lately() {
         let _one = ONE.lock().unwrap_or_else(|e| e.into_inner());
-        let first = register(&with_id("reg-first")).unwrap();
+        // Registered on another thread, so this one's own recent recipes don't hold it.
+        let first = std::thread::spawn(|| register(&with_id("reg-first")).unwrap())
+            .join()
+            .unwrap();
         for i in 0..CAPACITY {
+            register(&with_id(&format!("reg-{i}"))).unwrap();
+        }
+        assert!(
+            get(first).is_some(),
+            "out of the live 32, still among the texts read"
+        );
+        // That use made it live again: it leaves after enough newer ones than both keep.
+        for i in CAPACITY..CAPACITY + SEEN + 1 {
             register(&with_id(&format!("reg-{i}"))).unwrap();
         }
         assert!(get(first).is_none(), "the oldest left");
         assert!(frame(first, 64.0, 0.0, &ModeOpts::new()).is_none());
         // It comes back under the same key.
         assert_eq!(register(&with_id("reg-first")).unwrap(), first);
+    }
+
+    /// B5: two threads each register more recipes than the registry keeps and draw each
+    /// one at once; none goes missing between its resolve and its draw.
+    #[test]
+    fn a_thread_draws_what_it_just_registered_whatever_other_threads_do() {
+        let _one = ONE.lock().unwrap_or_else(|e| e.into_inner());
+        let run = |tag: &'static str| {
+            std::thread::spawn(move || {
+                for i in 0..(SEEN + 8) {
+                    let k = register(&with_id(&format!("b5-{tag}-{i}"))).unwrap();
+                    assert!(frame(k, 64.0, 0.5, &ModeOpts::new()).is_some(), "{tag} {i}");
+                    assert_eq!(key(k), Some(k));
+                }
+            })
+        };
+        let (a, b) = (run("a"), run("b"));
+        a.join().unwrap();
+        b.join().unwrap();
     }
 
     fn parses() -> usize {

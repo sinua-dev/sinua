@@ -1425,18 +1425,14 @@ pub fn apply_decay(mut frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame
 /// its source's final color, and before `apply_interrupt`/`apply_muted` so
 /// those still have the last word over the halo too.
 /// A glow layer's alpha. Below 0.02 a layer used to vanish at once; now it fades out
-/// linearly towards 0.01, so a glow strength that changes mid-transition doesn't pop a
-/// layer in or out (design note 31), and what would draw below 0.005 (invisible) is
-/// still culled. At 0.02 and above the alpha is unchanged.
+/// linearly to nothing at 0.013, so a glow strength that changes mid-transition never
+/// pops a layer in or out (design note 31), and a nearly invisible element still gets no
+/// halos. At 0.02 and above the alpha is unchanged.
 fn faint(a: f64) -> f64 {
     if a >= 0.02 {
-        return a;
-    }
-    let f = (a - 0.01) * 2.0;
-    if f < 0.005 {
-        0.0
+        a
     } else {
-        f
+        ((a - 0.013) * (0.02 / 0.007)).max(0.0)
     }
 }
 

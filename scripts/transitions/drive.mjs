@@ -5,11 +5,13 @@
 import { raster, diff } from "./raster.mjs";
 
 export const core = await import(new URL("../../packages/core/dist/index.js", import.meta.url).href);
+// The catalog is a dev API (@sinua/core/dev); the frames stay on the default build.
+const { parameterCatalog } = await import(new URL("../../packages/core/dist-dev/dev-entry.js", import.meta.url).href);
 export const ORBS = core.ORB_STATES ?? "working searching solving listening connecting weaving composing breathing shaping glowing drifting speaking confirming initializing calibrating progressing concluding muted silhouette signaling waveform scrolling metering playing completing loading tracking stepping measuring talking notifying".split(" ");
 export const CHARACTERS = "bean beep buzzy chirp cuppa hum wisp".split(" ");
 // A new orb or character pattern must join the lists above (the silhouette once didn't).
 for (const [object, list] of [["orb", ORBS], ["character", CHARACTERS]]) {
-  const missing = core.parameterCatalog().objects.find((o) => o.id === object).patterns.map((p) => p.id).filter((id) => !list.includes(id));
+  const missing = parameterCatalog().objects.find((o) => o.id === object).patterns.map((p) => p.id).filter((id) => !list.includes(id));
   if (missing.length) throw new Error(`transitions: ${object} patterns missing from scripts/transitions/drive.mjs: ${missing.join(", ")}`);
 }
 export const VOICE = ["initializing", "idle", "listening", "thinking", "speaking"];

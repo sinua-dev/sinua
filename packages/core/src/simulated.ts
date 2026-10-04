@@ -9,7 +9,7 @@
 //   mount(el, { pattern: "glowing", voice });
 //   await voice.connect();                                // plays and loops
 
-import { conversationAt, conversationSample } from "./engine.js";
+import { conversationAt, conversationSample } from "./conversation.js";
 import type { ConversationFrame, ConversationScript } from "./index.js";
 import type { AgentState, VoiceMetrics, VoiceSource } from "./voice.js";
 

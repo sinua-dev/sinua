@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { parameterCatalog, checkOverrides, frameWithOverrides } from "../dist/index.js";
+import { parameterCatalog, checkOverrides, frameWithOverrides } from "../dist-dev/dev-entry.js";
 
 const full = JSON.parse(readFileSync(fileURLToPath(new URL("../../../spec/parameters.json", import.meta.url)), "utf8"));
 // The runtime carries the catalog without its words (design note 10).

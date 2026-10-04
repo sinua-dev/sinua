@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { SimulatedVoiceSource, conversationAt, conversationSample, conversationSampleNames } from "../dist/index.js";
+import { SimulatedVoiceSource, conversationAt, conversationSample, conversationSampleNames } from "../dist-dev/dev-entry.js";
 
 const vectors = JSON.parse(readFileSync(fileURLToPath(new URL("../../../spec/conversation-vectors.json", import.meta.url)), "utf8"));
 

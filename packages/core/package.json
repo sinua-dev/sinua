@@ -31,19 +31,26 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./dev": {
+      "types": "./dist-dev/dev-entry.d.ts",
+      "default": "./dist-dev/dev-entry.js"
     }
   },
   "files": [
     "dist",
     "pkg/*.js",
     "pkg/*.d.ts",
+    "dist-dev",
+    "pkg-dev/*.js",
+    "pkg-dev/*.d.ts",
     "NOTICE",
     "THIRD_PARTY_LICENSES",
     "README.md"
   ],
   "scripts": {
-    "build:wasm": "cd ../../crates/core_engine && wasm-pack build --target web --out-dir ../../packages/core/pkg --out-name sinua_core && cd ../../packages/core && node scripts/inline-wasm.mjs",
-    "build": "rm -rf dist && npm run build:wasm && tsc -p tsconfig.json",
+    "build:wasm": "node scripts/build-wasm.mjs",
+    "build": "rm -rf dist dist-dev && npm run build:wasm && tsc -p tsconfig.json && node scripts/dev-entry.mjs",
     "test": "node --test \"test/**/*.test.mjs\""
   },
   "devDependencies": {
@@ -55,6 +62,7 @@
     "node": ">=20"
   },
   "sideEffects": [
-    "./pkg/sinua_core_inline.js"
+    "./pkg/sinua_core_inline.js",
+    "./pkg-dev/sinua_core_inline.js"
   ]
 }

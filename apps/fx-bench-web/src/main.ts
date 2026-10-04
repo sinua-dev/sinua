@@ -2,7 +2,8 @@
 // runs through @sinua/web's mount() twice -- lowPower off, then on --
 // for warmup + measure seconds; the per-frame onFrame stats become one
 // result per spec/bench/result.schema.json. `?seconds=3&cases=a,b&auto=1`.
-import { estimateCost, type OrbState } from "@sinua/core";
+import type { OrbState } from "@sinua/core";
+import { estimateCost } from "@sinua/core/dev";
 import { DEFAULT_LOW_POWER, mount } from "@sinua/web";
 import benchJson from "../../../spec/bench/cases.json";
 import { summarize } from "./metrics";

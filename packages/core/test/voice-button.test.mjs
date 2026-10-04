@@ -10,7 +10,7 @@ import {
   VOICE_BUTTON_INITIAL,
   VoiceButtonController,
   voiceButtonStep,
-} from "../dist/index.js";
+} from "../dist-dev/dev-entry.js";
 
 const table = JSON.parse(readFileSync(new URL("../../../spec/voice-button-cases.json", import.meta.url), "utf8"));
 

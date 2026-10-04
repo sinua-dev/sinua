@@ -76,7 +76,7 @@ test("hasLifecycle: only a non-empty states / bindings / performance block", () 
 });
 
 // ---- Typed components: the catalog-driven prop form ----------------------
-import { parameterCatalog } from "@sinua/core";
+import { parameterCatalog } from "@sinua/core/dev";
 import { buildTypedSnippets, toTypedProps } from "../dist/index.js";
 
 const catalog = parameterCatalog();

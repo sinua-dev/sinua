@@ -3,7 +3,7 @@
 //   node bench/transport.mjs            (after `npm run build`)
 // Prints median ms/frame per case. Not a test: numbers vary by machine;
 // the LOG and docs/platforms/web.md record the reference run.
-import { frameWithOverridesViaJson as frameWithOverrides, frameWithOverridesPacked, unpackFrame, readPacked } from "../dist/index.js";
+import { frameWithOverridesViaJson as frameWithOverrides, frameWithOverridesPacked, unpackFrame, readPacked } from "../dist-dev/dev-entry.js";
 
 const CASES = [
   ["working", {}],

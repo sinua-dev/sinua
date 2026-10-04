@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parameterCatalog } from "../dist/index.js";
+import { parameterCatalog } from "../dist-dev/dev-entry.js";
 
 test("OrbState lists exactly the catalog's patterns", () => {
   const src = readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");

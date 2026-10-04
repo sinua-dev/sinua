@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { parameterCatalog, resolveFxSpec, voiceStateProfile, VOICE_STATES } from "../dist/index.js";
+import { parameterCatalog, resolveFxSpec, voiceStateProfile, VOICE_STATES } from "../dist-dev/dev-entry.js";
 
 const file = JSON.parse(
   readFileSync(fileURLToPath(new URL("../../../spec/voice-state-profile.json", import.meta.url)), "utf8"),

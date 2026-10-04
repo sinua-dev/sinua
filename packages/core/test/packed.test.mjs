@@ -13,8 +13,10 @@ import {
   frameViaJson as frame, frameWithOverridesViaJson as frameWithOverrides,
   frameFromFxSpecViaJson as frameFromFxSpec, resolveFxSpec,
   framePacked, frameWithOverridesPacked, frameFromFxSpecPacked, unpackFrame, readPacked,
-} from "../dist/index.js";
+} from "../dist-dev/dev-entry.js";
 
+// The default entry: its own wasm (no dev exports), so this also proves the two
+// builds draw the same frames (design note 33).
 import * as pub from "../dist/index.js";
 
 const here = (p) => fileURLToPath(new URL(p, import.meta.url));

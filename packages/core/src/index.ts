@@ -8,17 +8,9 @@
 // `spec/orbs-golden.json` in `crates/core_engine/tests/golden.rs`.
 
 import {
-  frame_json,
-  frame_json_with_overrides,
-  frame_transition_json,
-  frame_from_fx_spec_json,
+  frame_transition_packed,
   fx_color_to_hsl_json,
-  estimate_cost_json,
-  fx_spec_cost_json,
-  liquid_suitability_json,
   particle_defaults_json,
-  parameter_catalog_json,
-  check_overrides_json,
   voice_state_profile_json,
   expression_overrides_json,
   character_recipe_json,
@@ -29,11 +21,12 @@ import type { ReactiveTarget } from "./reactive.js";
 import type { AgentState } from "./voice.js";
 // Frames cross the wasm boundary packed (one Float64Array), not as JSON:
 // 8-18x faster in node (bench/transport.mjs), bit-identical
-// (test/packed.test.mjs). The `*_json` exports stay for compatibility.
-import { framePacked, frameFromFxSpecPacked, unpackFrame } from "./packed.js";
+// (test/packed.test.mjs). The JSON bridges are in `@sinua/core/dev` (./dev.ts), for
+// the parity tests and benchmarks only.
+import { asPacked, framePacked, frameFromFxSpecPacked, unpackFrame } from "./packed.js";
 // The shared wasm wrappers. They live in their own module so `fxPlayer.ts` can
 // import them without looping back through this barrel (test/no-import-cycles).
-import { resolveFxSpec, specText } from "./engine.js";
+import { resolveFxSpec } from "./engine.js";
 export * from "./engine.js";
 
 // The voice -> overrides DX layer (`VoiceSource`, `AgentState`,
@@ -277,27 +270,6 @@ export function frame(state: OrbState, size: OrbSize, t: number): OrbFrame | nul
 }
 
 /**
- * `frame` through the old JSON bridge.
- * @deprecated Use `frame` (the packed bridge: same frame, no JSON round trip). Kept only so the parity tests (`test/packed.test.mjs`) and `bench/transport.mjs` can compare the two bridges.
- */
-export function frameViaJson(state: OrbState, size: OrbSize, t: number): OrbFrame | null {
-  return JSON.parse(frame_json(state, size, t)) as OrbFrame | null;
-}
-
-/**
- * `frameWithOverrides` through the old JSON bridge.
- * @deprecated Use `frameWithOverrides` (the packed bridge: same frame, no JSON round trip). Kept only so the parity tests (`test/packed.test.mjs`) and `bench/transport.mjs` can compare the two bridges.
- */
-export function frameWithOverridesViaJson(
-  state: OrbState,
-  size: OrbSize,
-  t: number,
-  overrides: Partial<Record<string, number>>
-): OrbFrame | null {
-  return JSON.parse(frame_json_with_overrides(state, size, t, JSON.stringify(overrides))) as OrbFrame | null;
-}
-
-/**
  * Real point-by-point morph between two states -- only supported for the
  * one trio that shares the same underlying point lattice: `"glowing"`,
  * `"calibrating"`, `"progressing"` (see
@@ -314,7 +286,7 @@ export function frameTransition(
   t: number,
   blend: number
 ): OrbFrame | null {
-  return JSON.parse(frame_transition_json(fromState, toState, size, t, blend)) as OrbFrame | null;
+  return unpackFrame(asPacked(frame_transition_packed(fromState, toState, size, t, blend)));
 }
 
 /** One side of a state change (`core_engine::TransitionSide`). */
@@ -554,14 +526,6 @@ export function frameFromFxSpec(spec: FxSpec | string, elapsed: number, ctx: FxC
   return unpackFrame(frameFromFxSpecPacked(spec, elapsed, ctx));
 }
 
-/**
- * `frameFromFxSpec` through the old JSON bridge.
- * @deprecated Use `frameFromFxSpec` (the packed bridge: same frame, no JSON round trip). Kept only so the parity tests (`test/packed.test.mjs`) and `bench/transport.mjs` can compare the two bridges.
- */
-export function frameFromFxSpecViaJson(spec: FxSpec | string, elapsed: number, ctx: FxContext = {}): OrbFrame | null {
-  return JSON.parse(frame_from_fx_spec_json(specText(spec), elapsed, JSON.stringify(ctx))) as OrbFrame | null;
-}
-
 /** A spec color as HSL, via the same conversion the resolver uses. `null` if it doesn't parse. */
 export function fxColorToHsl(color: FxColor): FxHsl | null {
   const text = typeof color === "string" ? color : JSON.stringify(color);
@@ -570,7 +534,6 @@ export function fxColorToHsl(color: FxColor): FxHsl | null {
 
 export * from "./fxPlayer.js";
 export * from "./transition.js";
-export * from "./simulated.js";
 export * from "./shared.js";
 export * from "./voiceButton.js";
 export * from "./packed.js";
@@ -603,15 +566,6 @@ export interface FxCost {
   blurLoad: number;
 }
 
-/** Cost of `(state, size)` with `overrides` (e.g. the Studio's live knobs). */
-export function estimateCost(state: OrbState, size: OrbSize, overrides: Partial<Record<string, number>> = {}): FxCost | null {
-  return JSON.parse(estimate_cost_json(state, size, JSON.stringify(overrides))) as FxCost | null;
-}
-
-/** Cost of an FX Spec as resolved for `ctx` (state, inputs, lowPower). `null` if it has errors. */
-export function fxSpecCost(spec: FxSpec | string, ctx: FxContext = {}): FxCost | null {
-  return JSON.parse(fx_spec_cost_json(specText(spec), JSON.stringify(ctx))) as FxCost | null;
-}
 
 // ---------------------------------------------------------------- liquid --
 
@@ -624,10 +578,6 @@ export interface LiquidSuitability {
   defaults: Record<string, number>;
 }
 
-/** Per-state liquid suitability for a Studio badge; `null` for an unknown state. */
-export function liquidSuitability(state: OrbState): LiquidSuitability | null {
-  return JSON.parse(liquid_suitability_json(state)) as LiquidSuitability | null;
-}
 
 // ------------------------------------------------------------- particles --
 
@@ -750,27 +700,6 @@ export interface ParameterCatalog {
   internalKeys: string[];
 }
 
-let catalogCache: ParameterCatalog | null = null;
-
-/**
- * The parameter catalog: every object, pattern and tunable, with labels,
- * valid/UI ranges, groups, paths and per-size defaults. Rust owns it; this is
- * `spec/parameters.json` without the descriptions (they stay out of the
- * runtime; they are in that file, the components' doc comments and on
- * sinua.dev). Parsed once.
- */
-export function parameterCatalog(): ParameterCatalog {
-  return (catalogCache ??= JSON.parse(parameter_catalog_json()) as ParameterCatalog);
-}
-
-/**
- * Validates engine overrides for a pattern against the catalog. Warnings
- * only (unknown key with a did-you-mean, out of range, fractional value for
- * a whole-number key, renamed key); the frame renders regardless.
- */
-export function checkOverrides(pattern: OrbState, size: OrbSize, overrides: Partial<Record<string, number>>): FxDiagnostic[] {
-  return JSON.parse(check_overrides_json(pattern, size, JSON.stringify(overrides))) as FxDiagnostic[];
-}
 
 /** The five agent states the voice-state profile knows, in lifecycle order. */
 export const VOICE_STATES = ["initializing", "idle", "listening", "thinking", "speaking"] as const;

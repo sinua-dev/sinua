@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { estimateCost, fxSpecCost, resolveFxSpec, liquidSuitability, particleDefaults } from "../dist/index.js";
+import { estimateCost, fxSpecCost, resolveFxSpec, liquidSuitability, particleDefaults } from "../dist-dev/dev-entry.js";
 
 const power = readFileSync(fileURLToPath(new URL("../../../spec/examples/status-beacon-power.fxspec.json", import.meta.url)), "utf8");
 

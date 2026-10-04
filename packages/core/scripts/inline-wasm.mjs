@@ -11,14 +11,15 @@
 //     and would otherwise ship no wasm at all;
 //   - pkg/package.json is removed: its `sideEffects` list let bundlers tree-shake
 //     the inline module's initSync() away.
-// Run by `npm run build:wasm`. docs/fx-view.md, *Bundlers*.
+// Run by scripts/build-wasm.mjs for pkg/ and pkg-dev/ (the dir is the argument;
+// pkg/ by default). docs/fx-view.md, *Bundlers*.
 import { readFileSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { deflateRawSync } from "node:zlib";
 import { buildSync } from "esbuild";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const PKG = join(dirname(fileURLToPath(import.meta.url)), "../pkg");
+const PKG = process.argv[2] ? resolve(process.argv[2]) : join(dirname(fileURLToPath(import.meta.url)), "../pkg");
 const NAME = "sinua_core";
 
 const gluePath = join(PKG, `${NAME}.js`);

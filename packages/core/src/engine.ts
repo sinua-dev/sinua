@@ -18,11 +18,8 @@ import {
   resolve_fx_spec_json,
   transition_mix_json,
   voice_blend_json,
-  frame_transition_with_overrides_json,
+  frame_transition_with_overrides_packed,
   fx_spec_transition_json,
-  conversation_at_json,
-  conversation_samples_json,
-  conversation_sample_json,
   fx_spec_derive_state_json,
   fx_spec_accessibility_json,
   a11y_accessible_name_json,
@@ -31,12 +28,12 @@ import {
   effect_info_json,
   apply_loadout_json,
   cosmetics_for_json,
-  frame_still_json,
+  frame_still_packed,
   character_slots_json,
   load_catalog_json,
   unload_catalog_json,
 } from "../pkg/sinua_core_inline.js";
-import { frameWithOverridesPacked, unpackFrame } from "./packed.js";
+import { asPacked, frameWithOverridesPacked, unpackFrame } from "./packed.js";
 import type {
   FxContext,
   FxSpec,
@@ -48,7 +45,6 @@ import type {
   ResolvedPreset,
   TransitionMix,
   TransitionSide,
-  ConversationFrame,
   FxAccessibility,
   AnnouncerState,
   AnnounceStep,
@@ -135,9 +131,9 @@ export function frameTransitionWithOverrides(
   t: number,
   blend: number
 ): OrbFrame | null {
-  return JSON.parse(
-    frame_transition_with_overrides_json(JSON.stringify(from), JSON.stringify(to), size, t, blend)
-  ) as OrbFrame | null;
+  return unpackFrame(
+    asPacked(frame_transition_with_overrides_packed(JSON.stringify(from), JSON.stringify(to), size, t, blend))
+  );
 }
 
 /**
@@ -147,15 +143,6 @@ export function frameTransitionWithOverrides(
  */
 export function fxSpecTransition(spec: FxSpec | string, from: string | undefined, to: string | undefined): FxTransition {
   return JSON.parse(fx_spec_transition_json(specText(spec), from ?? "", to ?? "")) as FxTransition;
-}
-
-/**
- * A simulated conversation at `t` seconds: the agent state and a speech-like
- * level and `bands` bands, from a script of turns (docs/audio-pipeline.md,
- * *Simulated conversations*). Mirrors `core_engine::conversation_at`.
- */
-export function conversationAt(script: string, t: number, bands = 16): ConversationFrame {
-  return JSON.parse(conversation_at_json(script, t, bands)) as ConversationFrame;
 }
 
 /**
@@ -221,17 +208,6 @@ export interface EffectInfo {
 /** `success`, `error` or `celebrate`; `null` for an unknown name. Mirrors `core_engine::effect_info`. */
 export function effectInfo(name: string): EffectInfo | null {
   return JSON.parse(effect_info_json(name)) as EffectInfo | null;
-}
-
-/** The built-in sample conversations: `calendar`, `quick-answer`, `long-answer`, `barge-in`. */
-export function conversationSampleNames(): string[] {
-  return JSON.parse(conversation_samples_json()) as string[];
-}
-
-/** A built-in sample conversation's script (JSON text), or `null`. */
-export function conversationSample(name: string): string | null {
-  const s = conversation_sample_json(name);
-  return s === "null" ? null : s;
 }
 
 /**
@@ -309,7 +285,7 @@ export function frameStill(
   opts: { loadout?: Loadout; turnYaw?: number } = {}
 ): OrbFrame | null {
   const lo = opts.loadout ? JSON.stringify(opts.loadout) : "";
-  return JSON.parse(frame_still_json(specText(spec), lo, size, opts.turnYaw ?? 0)) as OrbFrame | null;
+  return unpackFrame(asPacked(frame_still_packed(specText(spec), lo, size, opts.turnYaw ?? 0)));
 }
 
 /** A character's cosmetic slot this frame (design note 29), in frame units. */

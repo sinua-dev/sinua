@@ -61,6 +61,22 @@ pub fn transition_duration(from: &str, to: &str) -> Option<f64> {
     .find_map(|k| t.get(k.as_str()).and_then(Value::as_f64))
 }
 
+/// The largest value `key` takes across `pattern`'s voice states in the profile, when
+/// the states don't all agree (design note 31, TS7: a count drawn as a density is laid
+/// out once for it, so the layout is the same in every state and no change pops).
+pub fn varying_max(pattern: &str, key: &str) -> Option<f64> {
+    let states = source()["patterns"]
+        .get(pattern)?
+        .get("states")?
+        .as_object()?;
+    let vals: Vec<f64> = states
+        .values()
+        .filter_map(|s| s.get("overrides")?.get(key)?.as_f64())
+        .collect();
+    let max = vals.iter().copied().fold(f64::MIN, f64::max);
+    (vals.len() > 1 && vals.iter().any(|v| *v != max)).then_some(max)
+}
+
 /// One state's behaviour on one pattern.
 #[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 #[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]
@@ -104,6 +120,9 @@ pub const PARTICLE_FREE_FROM_MINOR: u64 = 10;
 /// the particles its voice states had (`before1_10`), so its meaning doesn't change.
 /// Order: the generic state, the old generic values, the pattern's own entry, its
 /// old entry -- so a pattern that turned particles off keeps them off.
+/// The first FX Spec minor whose voice states draw varying counts as densities (TS7).
+pub const DENSITY_FROM_MINOR: u64 = 13;
+
 pub fn profile_for_minor(pattern: &str, state: &str, minor: u64) -> Option<VoiceStateProfile> {
     // A recipe from the file (1.12): the built-in character it names, else the
     // shared `character` language.
@@ -137,6 +156,20 @@ pub fn profile_for_minor(pattern: &str, state: &str, minor: u64) -> Option<Voice
             .and_then(|p| p["states"].get(state))
             .and_then(|o| o.get("overrides"));
         overrides.extend(numbers(old_own));
+    }
+    // FX Spec 1.13+: a count the pattern varies across its voice states is laid out once
+    // for the largest (design note 31, TS7), in every state, so a change fades instead
+    // of swapping. Older files keep the swap.
+    if minor >= DENSITY_FROM_MINOR {
+        for (key, layout) in [
+            ("nodeCount", "nodeCountLayout"),
+            ("barCount", "barCountLayout"),
+            ("echoCount", "echoCountLayout"),
+        ] {
+            if let Some(max) = varying_max(pattern, key) {
+                overrides.insert(layout.to_string(), max);
+            }
+        }
     }
     let speed = own
         .and_then(|o| o["speed"].as_f64())

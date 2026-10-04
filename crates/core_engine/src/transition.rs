@@ -298,15 +298,20 @@ fn blend_core(
         rates: HashMap::new(),
     };
     for key in keys {
+        if key.ends_with("Layout") && out.overrides.contains_key(key.as_str()) {
+            continue;
+        }
         let val = |s: &TransitionSide| side_value(s, sides, &preset, mode, key);
-        let v = if let (false, Some(layout)) = (pair, density_layout(mode, key)) {
-            // A count the mode draws as a density (TS7): blended like any number, laid
-            // out once for the largest side.
-            // Only when the sides' counts differ: one count keeps its plain layout.
-            let max = sides.iter().map(val).fold(f64::MIN, f64::max);
-            if sides.iter().any(|s| val(s) != max) {
-                out.overrides.insert(layout.to_string(), max);
-            }
+        // A count the mode draws as a density (TS7), when the sides carry its layout
+        // (the profile adds it for 1.13+): blended like any number. Otherwise it swaps.
+        let layout = density_layout(mode, key)
+            .filter(|l| !pair && sides.iter().any(|s| s.overrides.contains_key(*l)));
+        let v = if let Some(layout) = layout {
+            let max = sides
+                .iter()
+                .flat_map(|s| [val(s), s.overrides.get(layout).copied().unwrap_or(0.0)])
+                .fold(f64::MIN, f64::max);
+            out.overrides.insert(layout.to_string(), max);
             weighted(sides, w, &preset, mode, key)
         } else if catalog::arrives_at_once(mode, key) {
             // An arrival value (a character's `turnBlink`): the new state's, at once.
@@ -811,16 +816,55 @@ mod tests {
         // Barely started towards thinking: the blink is already thinking's.
         let m = blend(&[listening, thinking], &[0.95, 0.05], 1, 64).unwrap();
         assert_eq!(m.overrides["turnBlink"], 1.0);
-        let a = side("glowing", 1.0, &[("nodeCount", 220.0)]);
-        let b = side("glowing", 1.0, &[("nodeCount", 340.0)]);
+        // glowing's profile varies its count (220 / 260 / 340): from 1.13 its voice states
+        // carry the layout, so the count blends and the dots fade.
+        let prof = |st: &str| {
+            crate::voice_state::profile("glowing", st)
+                .unwrap()
+                .overrides
+        };
+        let (idle, thinking) = (prof("idle"), prof("thinking"));
+        assert_eq!(
+            (idle["nodeCountLayout"], thinking["nodeCountLayout"]),
+            (340.0, 340.0)
+        );
+        let a = TransitionSide {
+            state: "glowing".into(),
+            speed: 1.0,
+            overrides: idle,
+        };
+        let b = TransitionSide {
+            state: "glowing".into(),
+            speed: 1.0,
+            overrides: thinking,
+        };
         let m = blend(&[a, b], &[0.5, 0.5], 1, 64).unwrap();
         assert_eq!(
             (m.overrides["nodeCount"], m.overrides["nodeCountLayout"]),
             (280.0, 340.0)
         );
         assert!(m.structural_to.is_empty(), "a density never swaps");
-        let f = crate::frame_with_overrides("glowing".into(), 64, 3.0, m.overrides).unwrap();
+        let mut o = m.overrides.clone();
+        // The lattice alone (no glow halos, no particles).
+        o.extend([
+            ("glowStrength".to_string(), 0.0),
+            ("particleStrength".to_string(), 0.0),
+        ]);
+        let f = crate::frame_with_overrides("glowing".into(), 64, 3.0, o).unwrap();
         assert_eq!(f.dots.len(), 280);
+        // Without the layout (an older file's states) the count swaps as before.
+        let a = side("glowing", 1.0, &[("nodeCount", 220.0)]);
+        let b = side("glowing", 1.0, &[("nodeCount", 340.0)]);
+        let old = blend(&[a, b], &[0.5, 0.5], 1, 64).unwrap();
+        assert!(
+            old.structural_to.contains_key("nodeCount")
+                && !old.overrides.contains_key("nodeCountLayout")
+        );
+        let legacy = crate::voice_state::profile_for_minor("glowing", "idle", 12).unwrap();
+        assert!(
+            !legacy.overrides.contains_key("nodeCountLayout"),
+            "1.12 files keep the swap"
+        );
     }
 
     #[test]

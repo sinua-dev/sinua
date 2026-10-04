@@ -610,6 +610,10 @@ pub fn suitability(mode: &str) -> LiquidSuitability {
             "drawn mostly with lines, so there is little to melt",
         ),
         "hush" => ("notRecommended", "dim by design; nothing pools"),
+        "silhouette" => (
+            "notRecommended",
+            "the outline and the even dots are the look; liquid melts them into blobs",
+        ),
         "bar" | "waveform" | "scroll" | "playback" => (
             "notRecommended",
             "drawn with strokes, not dots -- nothing for liquid to melt",

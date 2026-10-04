@@ -65,7 +65,7 @@ const MATERIAL_KEYS: [&str; 3] = ["colorMix", "colorMode", "gradientStrength"];
 /// Every state this set freezes -- the complement of `PORTED` across all
 /// five families. `every_non_ported_state_is_frozen` checks each one
 /// resolves; adding a state means adding it here (docs/testing.md).
-const STATES: [&str; 34] = [
+const STATES: [&str; 35] = [
     // orbs, additive
     "glowing",
     "drifting",
@@ -76,6 +76,7 @@ const STATES: [&str; 34] = [
     "progressing",
     "concluding",
     "muted",
+    "silhouette",
     // signal
     "signaling",
     "waveform",
@@ -180,6 +181,28 @@ fn cases() -> Vec<Case> {
     };
     let extra: Vec<ExtraCase> = vec![
         ("completing", "progress37", s(&[("progress", 0.37)])),
+        // Design note 32: the motions, the helmet, a turned head and the looks.
+        (
+            "silhouette",
+            "speaking",
+            s(&[("speech", 1.0), ("audioLevel", 0.7), ("breath", 0.2)]),
+        ),
+        (
+            "silhouette",
+            "listening",
+            s(&[("inward", 1.0), ("audioLevel", 0.4)]),
+        ),
+        (
+            "silhouette",
+            "thinking-helmet",
+            s(&[("neuron", 1.0), ("silhouetteId", 1.0)]),
+        ),
+        ("silhouette", "turned", s(&[("turnYaw", 0.8)])),
+        (
+            "silhouette",
+            "rim-glitch-wire",
+            s(&[("hologram", 1.0), ("scanlines", 0.6), ("wire", 1.0)]),
+        ),
         ("stepping", "progress60", s(&[("progress", 0.6)])),
         (
             "measuring",

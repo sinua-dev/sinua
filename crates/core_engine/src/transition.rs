@@ -186,6 +186,8 @@ static RATES: &[(&str, &str, bool)] = &[
     ("hueSpeed", "hueSpeedCycles", false),
     ("jumpSpeed", "jumpSpeedCycles", false),
     ("period", "periodCycles", true),
+    ("waveSpeed", "waveSpeedCycles", false),
+    ("scanSpeed", "scanSpeedCycles", false),
 ];
 
 /// The layout key of a count `mode` draws as a density (design note 31, TS7): its

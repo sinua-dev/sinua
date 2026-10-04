@@ -330,6 +330,31 @@ pub fn base_profiles() -> HashMap<&'static str, ModeOpts> {
             ]),
         ),
         (
+            // Design note 32. The five voice keys (`breath`/`glint`/`inward`/`neuron`/
+            // `speech`) are what the voice-state profile blends; the looks (`hologram`,
+            // `scanlines`, `wire`) are off by default.
+            "silhouette",
+            opts(&[
+                ("breath", 1.0),
+                ("glint", 1.0),
+                ("inward", 0.0),
+                ("neuron", 0.0),
+                ("speech", 0.0),
+                ("hologram", 0.0),
+                ("scanlines", 0.0),
+                ("wire", 0.0),
+                ("rim", 0.7),
+                ("turnYaw", 0.0),
+                ("waveSpeed", 0.8),
+                ("period", 4.0),
+                ("scanSpeed", 0.3),
+                ("dotSize", 1.0),
+                ("rMin", 0.3),
+                ("saturation", 0.0),
+                ("hue", 200.0),
+            ]),
+        ),
+        (
             // ring shares ribbon's painter; faceOn cancels the camera tilt and
             // moves the undulation onto the radius; no ghost sphere behind it.
             "ring",

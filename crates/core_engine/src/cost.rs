@@ -294,9 +294,11 @@ mod tests {
                 .unwrap()
                 .class
         };
-        // Every state is light without glow.
+        // Every state is light without glow, but the silhouette: ~1,500 dots at 64 px,
+        // medium by design (design note 32, the user's call).
         for s in all_states() {
-            assert_eq!(class(s, false), "light", "{s}");
+            let want = if s == "silhouette" { "medium" } else { "light" };
+            assert_eq!(class(s, false), want, "{s}");
         }
         assert_eq!(class("working", true), "heavy");
         assert_eq!(class("breathing", true), "heavy");

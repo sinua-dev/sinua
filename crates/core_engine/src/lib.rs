@@ -113,6 +113,8 @@ fn render(
         "crystallize" => orbs::modes::crystallize::frame_crystallize(size as f64, t, opts),
         // Not a port -- the `muted` resting state, see hush.rs's header.
         "hush" => orbs::modes::hush::frame_hush(size as f64, t, opts),
+        // A head and shoulders of dots (design note 32).
+        "silhouette" => orbs::modes::silhouette::frame_silhouette(size as f64, t, opts),
         // The `signal` family -- a sibling to `orbs`, see `signal/mod.rs`.
         "bar" => signal::modes::bar::frame_bar(size as f64, t, opts),
         "waveform" => signal::modes::waveform::frame_waveform(size as f64, t, opts),

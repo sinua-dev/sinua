@@ -923,7 +923,8 @@ fn section_owner(key: &str) -> Option<&'static str> {
         }
         k if k.starts_with("liquid") => Some("/materials/liquid"),
         k if k.starts_with("particle") => Some("/materials/particles"),
-        k if k.starts_with("holo") => Some("/materials/holographic"),
+        // The silhouette's own `hologram` look (design note 32) is a pattern key.
+        k if k.starts_with("holo") && k != "hologram" => Some("/materials/holographic"),
         _ => None,
     }
 }
@@ -1000,6 +1001,72 @@ fn use_recipe(root: &mut Map<String, Value>, r: &Value, object: Option<&str>, di
                     c.elements
                 ),
             );
+        }
+    }
+}
+
+/// 1.13 (design note 32): checks that a `silhouette` pattern is allowed by the file's
+/// version and returns the `silhouette` key's id: a built-in by name, or a file's own
+/// `{ path, eyes, mouth }`, registered.
+#[inline(never)]
+fn silhouette(root: &Map<String, Value>, minor: u64, diag: &mut Diag) -> Option<f64> {
+    let named =
+        |b: &Map<String, Value>| b.get("pattern").and_then(Value::as_str) == Some("silhouette");
+    let used = named(root)
+        || matches!(root.get("states"), Some(Value::Object(st))
+            if st.values().any(|e| e.as_object().is_some_and(named)));
+    if used && minor < 13 {
+        diag.error(
+            "/pattern",
+            format!("`pattern: silhouette` needs \"fxSpec\": \"1.13\" (this file says 1.{minor})"),
+        );
+    }
+    let v = root.get("silhouette")?;
+    if !used {
+        diag.warn(
+            "/silhouette",
+            "no `pattern` is `silhouette`, so this isn't drawn",
+        );
+    }
+    let names = crate::orbs::modes::silhouette::NAMES;
+    if let Some(name) = v.as_str() {
+        return match names.iter().position(|n| *n == name) {
+            Some(i) => Some(i as f64),
+            None => {
+                diag.error(
+                    "/silhouette",
+                    format!("unknown silhouette `{name}` ({})", names.join(", ")),
+                );
+                None
+            }
+        };
+    }
+    let nums = |k: &str, n: usize| -> Option<Vec<f64>> {
+        let a = v.get(k)?.as_array()?;
+        let x: Vec<f64> = a.iter().filter_map(Value::as_f64).collect();
+        (a.len() == n && x.len() == n).then_some(x)
+    };
+    let (Some(path), Some(eyes), Some(mouth)) = (
+        v.get("path").and_then(Value::as_str),
+        nums("eyes", 3),
+        nums("mouth", 2),
+    ) else {
+        diag.error(
+            "/silhouette",
+            "expected a name or { \"path\", \"eyes\": [left x, right x, y], \"mouth\": [x, y] }",
+        );
+        return None;
+    };
+    let def = crate::orbs::modes::silhouette::Def {
+        path: path.to_string(),
+        eyes: [eyes[0], eyes[1], eyes[2]],
+        mouth: [mouth[0], mouth[1]],
+    };
+    match crate::orbs::modes::silhouette::register(def) {
+        Ok(id) => Some(f64::from(id)),
+        Err((at, e)) => {
+            diag.error(at, e);
+            None
         }
     }
 }
@@ -1372,7 +1439,7 @@ fn migrate(mut doc: Value, diag: &mut Diag) -> Value {
 
 // ------------------------------------------------------------ resolving --
 
-const TOP_KEYS: [&str; 24] = [
+const TOP_KEYS: [&str; 25] = [
     "$schema",
     "fxSpec",
     "name",
@@ -1397,6 +1464,7 @@ const TOP_KEYS: [&str; 24] = [
     "palette",
     "cosmetics",
     "wardrobe",
+    "silhouette",
 ];
 /// The design keys of a block: the base (top level) and each `states` entry.
 const ENTRY_KEYS: [&str; 10] = [
@@ -1481,6 +1549,7 @@ const SINCE: &[(&str, u64)] = &[
     ("palette", 12),
     ("cosmetics", 13),
     ("wardrobe", 13),
+    ("silhouette", 13),
 ];
 
 /// The cosmetics a file offers: its `wardrobe.cosmetics`, then its `cosmetics`.
@@ -2869,6 +2938,8 @@ pub fn resolve_full(
             .map(str::to_string);
         use_recipe(root, &r, object.as_deref(), &mut diag);
     }
+    // 1.13: the silhouette pattern and its shape (design note 32).
+    let silhouette_id = silhouette(root, minor, &mut diag);
 
     // File-wide: object and size.
     let object = root.get("object").and_then(Value::as_str);
@@ -3081,6 +3152,16 @@ pub fn resolve_full(
             for m in ["grain", "shading"] {
                 res.disabled_materials.push(m.to_string());
             }
+        }
+    }
+    if block.state == "silhouette" {
+        if let Some(id) = silhouette_id {
+            out.insert("silhouetteId".into(), id);
+        }
+        // Low power draws a prefix of the dots: the order is blue noise, so the spread
+        // holds and the cost halves (design note 32).
+        if low_power {
+            out.insert("silhouetteDots".into(), 800.0);
         }
     }
 
@@ -4466,6 +4547,98 @@ mod tests {
     }
 
     const POWER: &str = include_str!("../../../spec/examples/status-beacon-power.fxspec.json");
+
+    #[test]
+    fn silhouettes_need_1_13_pick_a_built_in_or_register_their_own() {
+        let none = HashMap::new();
+        let errors = |r: &FxSpecResolved| {
+            r.diagnostics
+                .iter()
+                .filter(|d| d.severity == "error")
+                .map(|d| format!("{} {}", d.path, d.message))
+                .collect::<Vec<_>>()
+        };
+        let old = resolve_full(
+            r#"{ "fxSpec": "1.12", "object": "orb", "pattern": "silhouette" }"#,
+            None,
+            &none,
+            false,
+        );
+        assert!(
+            errors(&old)
+                .iter()
+                .any(|e| e.contains("needs \"fxSpec\": \"1.13\"")),
+            "{:?}",
+            old.diagnostics
+        );
+        let plain = resolve_full(
+            r#"{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette" }"#,
+            None,
+            &none,
+            false,
+        );
+        assert!(plain.ok, "{:?}", plain.diagnostics);
+        assert!(!plain.overrides.contains_key("silhouetteId"));
+        let helmet = resolve_full(
+            r#"{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette", "silhouette": "helmet" }"#,
+            None,
+            &none,
+            true,
+        );
+        assert!(helmet.ok, "{:?}", helmet.diagnostics);
+        assert_eq!(helmet.overrides["silhouetteId"], 1.0);
+        assert_eq!(
+            helmet.overrides["silhouetteDots"], 800.0,
+            "low power draws a prefix"
+        );
+        // The docs' example (docs/fx-spec.md, v1.13: silhouettes): `hologram` is the
+        // pattern's own key, not the holographic material's.
+        let look = resolve_full(
+            r#"{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette", "silhouette": "helmet",
+                "params": { "hologram": 1, "scanlines": 0.6, "saturation": 0.5, "hue": 190 } }"#,
+            None,
+            &none,
+            false,
+        );
+        assert!(look.ok, "{:?}", look.diagnostics);
+        assert_eq!(look.overrides["hologram"], 1.0);
+        let own = r#"{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette",
+            "silhouette": { "path": "M10 214 C10 150 60 140 70 120 C40 100 50 30 100 30 C150 30 160 100 130 120 C140 140 190 150 190 214 Z",
+                            "eyes": [85, 115, 70], "mouth": [100, 100] } }"#;
+        let a = resolve_full(own, None, &none, false);
+        let b = resolve_full(own, None, &none, false);
+        assert!(a.ok, "{:?}", a.diagnostics);
+        assert!(a.overrides["silhouetteId"] >= 2.0);
+        assert_eq!(a.overrides["silhouetteId"], b.overrides["silhouetteId"]);
+        for (bad, want) in [
+            (r#""hat""#, "unknown silhouette `hat`"),
+            (r#"{ "path": "M0 0 L10 0 Z" }"#, "expected a name or"),
+            (
+                r#"{ "path": "M0 0 L400 0 L400 400 Z", "eyes": [1, 2, 3], "mouth": [1, 2] }"#,
+                "200 × 200 box",
+            ),
+        ] {
+            let f = format!(
+                r#"{{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette", "silhouette": {bad} }}"#
+            );
+            let r = resolve_full(&f, None, &none, false);
+            assert!(
+                errors(&r).iter().any(|e| e.contains(want)),
+                "{bad}: {:?}",
+                r.diagnostics
+            );
+        }
+        let stray = resolve_full(
+            r#"{ "fxSpec": "1.13", "object": "orb", "pattern": "glowing", "silhouette": "human" }"#,
+            None,
+            &none,
+            false,
+        );
+        assert!(stray
+            .diagnostics
+            .iter()
+            .any(|d| d.message.contains("isn't drawn")));
+    }
 
     #[test]
     fn performance_caps_fps_and_sheds_materials_under_low_power() {

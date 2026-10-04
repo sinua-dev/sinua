@@ -21,12 +21,22 @@ import type { AgentState } from "@sinua/core";
 import { isFatalRealtimeError } from "./realtimeReconnect.js";
 
 export const LIVE_SPEAKING_LEVEL = 0.05;
-// Speaking ends after ~1 s of quiet, so a pause between phrases doesn't flip the state
-// (design note 30, V3); after ~300 ms when the user just spoke (a barge-in stays instant).
-export const LIVE_SPEAKING_TAIL_FRAMES = 30;
+// Speaking ends after a quiet tail that grows with how long the agent has been speaking
+// (design note 31, V7; telephony's variable hangover): a short reply hands back quickly, a
+// long answer survives the pauses people leave. In 30 Hz frames: the base, plus so many per
+// second of the speaking stretch so far, up to the max. After ~300 ms when the user just
+// spoke (a barge-in stays instant).
+export const LIVE_SPEAKING_TAIL_FRAMES = 21;
+export const LIVE_SPEAKING_TAIL_PER_SECOND = 4;
+export const LIVE_SPEAKING_TAIL_MAX_FRAMES = 51;
 export const LIVE_BARGE_IN_TAIL_FRAMES = 9;
 export const LIVE_BARGE_IN_WINDOW_MS = 1000;
 export const LIVE_DELEGATION_TIMEOUT_MS = 30_000;
+
+/** The quiet frames that end a speaking stretch `ms` long (see the constants above). */
+export function liveSpeakingTail(ms: number): number {
+  return Math.min(LIVE_SPEAKING_TAIL_MAX_FRAMES, Math.max(LIVE_SPEAKING_TAIL_FRAMES, Math.round(LIVE_SPEAKING_TAIL_FRAMES + (LIVE_SPEAKING_TAIL_PER_SECOND * ms) / 1000)));
+}
 
 const TERMINAL_RESPONSE_EVENTS = new Set(["response.completed", "response.failed", "response.incomplete", "response.cancelled"]);
 
@@ -46,6 +56,8 @@ export class OpenAILiveSession {
 
   private started = false;
   private quietFrames = 0;
+  /** When the current speaking stretch began (ms). */
+  private speakingSince = 0;
   /** When user speech was heard over the model's audio; null when not armed. */
   private bargeInAt: number | null = null;
   /** Open delegations, oldest first: id -> last news (ms) and whether the app's backend answers it. */
@@ -126,11 +138,12 @@ export class OpenAILiveSession {
     this.expire(now);
     if (level > LIVE_SPEAKING_LEVEL) {
       this.quietFrames = 0;
+      if (this.state !== "speaking") this.speakingSince = now;
       this.setState("speaking");
     } else if (this.state === "speaking") {
       this.quietFrames++;
       const userSpoke = this.bargeInAt != null && now - this.bargeInAt <= LIVE_BARGE_IN_WINDOW_MS;
-      if (this.quietFrames >= (userSpoke ? LIVE_BARGE_IN_TAIL_FRAMES : LIVE_SPEAKING_TAIL_FRAMES)) {
+      if (this.quietFrames >= (userSpoke ? LIVE_BARGE_IN_TAIL_FRAMES : liveSpeakingTail(now - this.speakingSince))) {
         const armed = this.bargeInAt;
         this.bargeInAt = null;
         this.quietFrames = 0;

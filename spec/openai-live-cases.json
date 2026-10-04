@@ -1,16 +1,16 @@
 {
-  "about": "OpenAI GPT-Live source state rules (OpenAILiveSession on web, iOS, Android; docs/audio-pipeline.md, *OpenAILiveVoiceSource*). Every case starts right after connecting() (state initializing). A step is an `event` (a data-channel JSON event) or a `level` tick (remote audio level, 30 Hz; `repeat` runs it n times, 33 ms apart from `t`), at time `t` ms; `state` is the state after it, `interrupts` the total onInterrupt count so far, `closed` the session.closed reason seen, `fatal` the fatal error code seen. Read by packages/voice (node), iOS SinuaVoiceTests and Android JVM tests. Speaking ends after `speakingTailFrames` quiet ticks (~1 s: a pause between phrases does not flip the state, design note 30, V3), or after `bargeInTailFrames` (~300 ms) when the user spoke within `bargeInWindowMs` (a barge-in stays instant).",
-  "constants": { "speakingLevel": 0.05, "speakingTailFrames": 30, "bargeInTailFrames": 9, "bargeInWindowMs": 1000, "delegationTimeoutMs": 30000 },
+  "about": "OpenAI GPT-Live source state rules (OpenAILiveSession on web, iOS, Android; docs/audio-pipeline.md, *OpenAILiveVoiceSource*). Every case starts right after connecting() (state initializing). A step is an `event` (a data-channel JSON event) or a `level` tick (remote audio level, 30 Hz; `repeat` runs it n times, 33 ms apart from `t`), at time `t` ms; `state` is the state after it, `interrupts` the total onInterrupt count so far, `closed` the session.closed reason seen, `fatal` the fatal error code seen. Read by packages/voice (node), iOS SinuaVoiceTests and Android JVM tests. Speaking ends after a quiet tail that grows with the speaking stretch so far: `speakingTailFrames` ticks plus `speakingTailPerSecond` per second of it, at most `speakingTailMaxFrames` (~0.7 s for a short reply, up to ~1.7 s for a long answer, so a long answer survives natural pauses; design note 31, V7), or after `bargeInTailFrames` (~300 ms) when the user spoke within `bargeInWindowMs` (a barge-in stays instant).",
+  "constants": { "speakingLevel": 0.05, "speakingTailFrames": 21, "speakingTailPerSecond": 4, "speakingTailMaxFrames": 51, "bargeInTailFrames": 9, "bargeInWindowMs": 1000, "delegationTimeoutMs": 30000 },
   "cases": [
     { "name": "session.started makes the session live", "steps": [
       { "t": 0, "level": 0.5, "state": "initializing" },
       { "t": 10, "event": { "type": "session.started", "session": { "id": "live_1" } }, "state": "listening" }
     ] },
-    { "name": "remote audio drives speaking; ~1 s of quiet ends it", "steps": [
+    { "name": "remote audio drives speaking; a short reply hands back after ~0.8 s of quiet", "steps": [
       { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
       { "t": 100, "level": 0.3, "state": "speaking" },
-      { "t": 133, "level": 0, "repeat": 29, "state": "speaking" },
-      { "t": 1100, "level": 0, "state": "listening" }
+      { "t": 133, "level": 0, "repeat": 23, "state": "speaking" },
+      { "t": 892, "level": 0, "state": "listening" }
     ] },
     { "name": "pauses between phrases keep speaking (no flapping)", "steps": [
       { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
@@ -20,7 +20,19 @@
       { "t": 666, "level": 0, "repeat": 15, "state": "speaking" },
       { "t": 1166, "level": 0.4, "repeat": 10, "state": "speaking" },
       { "t": 1500, "level": 0, "repeat": 29, "state": "speaking" },
-      { "t": 2500, "level": 0, "state": "listening", "interrupts": 0 }
+      { "t": 2457, "level": 0, "state": "listening", "interrupts": 0 }
+    ] },
+    { "name": "a long answer keeps speaking through a 1.5 s pause", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "level": 0.4, "repeat": 180, "state": "speaking" },
+      { "t": 6100, "level": 0, "repeat": 45, "state": "speaking" },
+      { "t": 7585, "level": 0.4, "state": "speaking", "interrupts": 0 }
+    ] },
+    { "name": "the tail stops growing at ~1.7 s", "steps": [
+      { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
+      { "t": 100, "level": 0.4, "repeat": 600, "state": "speaking" },
+      { "t": 20100, "level": 0, "repeat": 50, "state": "speaking" },
+      { "t": 21750, "level": 0, "state": "listening" }
     ] },
     { "name": "a delegation is thinking until its backend response completes", "steps": [
       { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
@@ -77,7 +89,7 @@
       { "t": 11568, "level": 0, "repeat": 30, "state": "thinking" },
       { "t": 13414, "event": { "type": "session.commentary.appended", "start_ms": 11200, "end_ms": 11400, "client_event_id": "answer_1" }, "state": "listening" },
       { "t": 13945, "level": 0.5, "state": "speaking" },
-      { "t": 21000, "level": 0, "repeat": 30, "state": "listening" }
+      { "t": 21000, "level": 0, "repeat": 51, "state": "listening" }
     ] },
     { "name": "a commentary acknowledgment never closes a Responses delegation", "steps": [
       { "t": 0, "event": { "type": "session.started" }, "state": "listening" },
@@ -109,7 +121,7 @@
       { "t": 100, "level": 0.3, "state": "speaking" },
       { "t": 500, "event": { "type": "session.input_transcript.delta", "delta": "mhm" }, "state": "speaking" },
       { "t": 533, "level": 0.3, "repeat": 40, "state": "speaking" },
-      { "t": 1900, "level": 0, "repeat": 30, "state": "listening", "interrupts": 0 }
+      { "t": 1900, "level": 0, "repeat": 40, "state": "listening", "interrupts": 0 }
     ] },
     { "name": "user speech while the model is quiet is not an interrupt", "steps": [
       { "t": 0, "event": { "type": "session.started" }, "state": "listening" },

@@ -13,9 +13,14 @@ import Foundation
 /// that stops it within 1 s is a barge-in (full duplex: a "mhm" under continuing speech isn't).
 public final class OpenAILiveSession {
     public static let speakingLevel = 0.05
-    /// Speaking ends after ~1 s of quiet, so a pause between phrases doesn't flip the state
-    /// (design note 30, V3); after ~300 ms when the user just spoke (a barge-in stays instant).
-    public static let speakingTailFrames = 30
+    /// Speaking ends after a quiet tail that grows with how long the agent has been speaking
+    /// (design note 31, V7): `speakingTailFrames` 30 Hz ticks plus `speakingTailPerSecond` per
+    /// second of the stretch, at most `speakingTailMaxFrames` -- a short reply hands back in
+    /// ~0.7 s, a long answer survives natural pauses. After ~300 ms when the user just spoke
+    /// (a barge-in stays instant).
+    public static let speakingTailFrames = 21
+    public static let speakingTailPerSecond = 4.0
+    public static let speakingTailMaxFrames = 51
     public static let bargeInTailFrames = 9
     public static let bargeInWindowMs = 1000.0
     public static let delegationTimeoutMs = 30_000.0
@@ -37,6 +42,8 @@ public final class OpenAILiveSession {
     public var onClosed: ((String) -> Void)?
 
     private var quietFrames = 0
+    /// When the current speaking stretch began (ms).
+    private var speakingSince = 0.0
     private var bargeInAt: Double?
     /// Open delegations: id -> last news (ms), the order it opened in, and whether the app's
     /// backend answers it (target `client`).
@@ -103,11 +110,13 @@ public final class OpenAILiveSession {
         delegations = delegations.filter { now - $0.value.at <= Self.delegationTimeoutMs }
         if level > Self.speakingLevel {
             quietFrames = 0
+            if state != .speaking { speakingSince = now }
             setState(.speaking)
         } else if state == .speaking {
             quietFrames += 1
             let userSpoke = bargeInAt.map { now - $0 <= Self.bargeInWindowMs } ?? false
-            guard quietFrames >= (userSpoke ? Self.bargeInTailFrames : Self.speakingTailFrames) else { return }
+            let tail = userSpoke ? Self.bargeInTailFrames : Self.speakingTail(ms: now - speakingSince)
+            guard quietFrames >= tail else { return }
             let armed = bargeInAt
             bargeInAt = nil
             quietFrames = 0
@@ -146,6 +155,12 @@ public final class OpenAILiveSession {
         quietFrames = 0
         bargeInAt = nil
         delegations.removeAll()
+    }
+
+    /// The quiet ticks that end a speaking stretch `ms` long (the constants above).
+    public static func speakingTail(ms: Double) -> Int {
+        let grown = (Double(speakingTailFrames) + speakingTailPerSecond * ms / 1000).rounded()
+        return min(speakingTailMaxFrames, max(speakingTailFrames, Int(grown)))
     }
 
     private func setState(_ s: AgentState) {

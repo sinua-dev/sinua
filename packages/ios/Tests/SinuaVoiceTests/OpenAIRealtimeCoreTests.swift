@@ -66,9 +66,10 @@ final class OpenAIRealtimeCoreTests: XCTestCase {
         s.tick(level: 0.2)
         XCTAssertEqual(s.state, .speaking, "energy during a response")
         s.handle(ev("response.done"))
-        for _ in 0..<29 { s.tick(level: 0.01) }
-        XCTAssertEqual(s.state, .speaking, "the ~1 s tail (design note 30)")
-        s.tick(level: 0.01)
+        // The adaptive tail (design note 31, V7): a short reply hands back in ~0.7-0.9 s.
+        for _ in 0..<20 { s.tick(level: 0.01) }
+        XCTAssertEqual(s.state, .speaking, "still in the tail")
+        for _ in 0..<7 { s.tick(level: 0.01) }
         XCTAssertEqual(s.state, .listening)
         s.tick(level: 0.3)
         XCTAssertEqual(s.state, .listening, "no response active: energy alone doesn't speak")

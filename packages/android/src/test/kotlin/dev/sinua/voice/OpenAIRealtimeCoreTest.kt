@@ -83,9 +83,10 @@ class OpenAIRealtimeCoreTest {
         s.tick(0.2)
         assertEquals(AgentState.SPEAKING, s.state)
         s.handle(ev("response.done"))
-        repeat(29) { s.tick(0.01) } // the ~1 s tail (design note 30)
+        // The adaptive tail (design note 31, V7): a short reply hands back in ~0.7-0.9 s.
+        repeat(20) { s.tick(0.01) }
         assertEquals(AgentState.SPEAKING, s.state)
-        s.tick(0.01)
+        repeat(7) { s.tick(0.01) }
         assertEquals(AgentState.LISTENING, s.state)
         s.tick(0.3)
         assertEquals(AgentState.LISTENING, s.state)

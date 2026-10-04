@@ -1,6 +1,7 @@
 import { AudioAnalysis } from "./analysis.js";
 import { canRefreshCredential, resolveCredential, type CredentialOptions, type CredentialProvider } from "./credential.js";
 import { openAICredentialRefusal } from "./insecureCredential.js";
+import { liveSpeakingTail } from "./openaiLive.js";
 import {
   DEFAULT_RECONNECT_ATTEMPTS,
   FatalConnectError,
@@ -135,7 +136,6 @@ export const WARP_DATA_CHANNEL_ID = 1;
 const UPDATE_MS = 1000 / 30; // ~30fps, decoupled from the render loop -- same as LocalMicVoiceSource
 const WATCHDOG_ZERO_FRAMES = 30; // ~1s of exact-zero RMS *while the model should be audible*
 const SPEAKING_LEVEL = 0.05; // energy floor for the no-output_audio_buffer-events fallback
-const SPEAKING_TAIL_FRAMES = 30; // ~1 s below the floor after response.done before leaving `speaking` (design note 30, V3)
 const DATA_CHANNEL_OPEN_TIMEOUT_MS = 15_000;
 
 export class OpenAIRealtimeVoiceSource implements VoiceSource {
@@ -180,6 +180,8 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
   private lastBandCount = 0;
   private zeroStreak = 0;
   private quietFrames = 0;
+  /** When the current speaking stretch began (ms), for the adaptive tail. */
+  private speakingSince = 0;
   /** True between `response.created` and `response.done`. */
   private responseActive = false;
   /** Once any `output_audio_buffer.*` event arrives, the energy fallback stands down. */
@@ -543,12 +545,14 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
       }
     } else if (this.state === "speaking" && !this.sawOutputBufferEvents && !this.responseActive) {
       this.quietFrames++;
-      if (this.quietFrames >= SPEAKING_TAIL_FRAMES) this.setState("listening");
+      // The same adaptive tail as GPT-Live (design note 31, V7): it grows with the stretch.
+      if (this.quietFrames >= liveSpeakingTail(performance.now() - this.speakingSince)) this.setState("listening");
     }
   }
 
   private setState(s: AgentState): void {
     if (this.state === s) return;
+    if (s === "speaking") this.speakingSince = performance.now();
     this.state = s;
     this.stateCb?.(s);
   }

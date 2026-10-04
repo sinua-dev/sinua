@@ -18,6 +18,9 @@ class OpenAIRealtimeSession {
     private var sawOutputBufferEvents = false
     private var quietFrames = 0
 
+    /** 30 Hz ticks since the current speaking stretch began. */
+    private var speakingTicks = 0
+
     var onState: ((AgentState) -> Unit)? = null
     var onInterrupt: (() -> Unit)? = null
 
@@ -95,23 +98,30 @@ class OpenAIRealtimeSession {
 
     /** 30 Hz with the remote track's current level: the energy fallback only. */
     fun tick(level: Double) {
+        if (state == AgentState.SPEAKING) speakingTicks++
         if (level > SPEAKING_LEVEL) {
             quietFrames = 0
             if (state == AgentState.THINKING && responseActive && !sawOutputBufferEvents) setState(AgentState.SPEAKING)
         } else if (state == AgentState.SPEAKING && !sawOutputBufferEvents && !responseActive) {
             quietFrames++
-            if (quietFrames >= SPEAKING_TAIL_FRAMES) setState(AgentState.LISTENING)
+            // The Live session's adaptive tail (design note 31, V7), counted in ticks.
+            if (quietFrames >=
+                OpenAILiveSession.speakingTail(speakingTicks * 1000.0 / 30)
+            ) {
+                setState(AgentState.LISTENING)
+            }
         }
     }
 
     private fun setState(s: AgentState) {
         if (s == state) return
+        if (s == AgentState.SPEAKING) speakingTicks = 0
         state = s
         onState?.invoke(s)
     }
 
     companion object {
         const val SPEAKING_LEVEL = 0.05
-        const val SPEAKING_TAIL_FRAMES = 30 // ~1 s, as the Live session (design note 30, V3)
+        const val SPEAKING_TAIL_FRAMES = OpenAILiveSession.SPEAKING_TAIL_FRAMES
     }
 }

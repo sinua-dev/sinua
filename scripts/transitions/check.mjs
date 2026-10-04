@@ -11,24 +11,22 @@ const args = process.argv.slice(2);
 const quick = args.includes("--quick");
 const jsonOut = args.includes("--json") ? args[args.indexOf("--json") + 1] : null;
 
-// 1 = a perfect transition. The general bound has a little headroom over what the
-// contract measures (design note 31); the exceptions are motion that is meant to travel.
-const GENERAL = { peak: 2.5, path: 2.6 };
-const RING = { path: 3.2, why: "thinking starts the ring's own brightness pulse with the change" };
-const STEPS = (what) => ({ peak: Infinity, why: `${what} steps: single-frame changes are its steady motion too` });
+// 1 = a perfect transition. Each bound sits ~10-15 % over what the contract measures
+// (design note 31, "Sınırlar: ölçülen / sınır"), so a regression shows; the exceptions are
+// motion that is meant to travel, each with its measured value.
+const GENERAL = { peak: 2.7, path: 2.25 }; // measured 2.39 (glowing, a 5-minute session) / 1.99 (chirp)
+const RING = { path: 3.3, why: "thinking starts the ring's own brightness pulse with the change (measured 2.93)" };
 const EXCEPT = {
-  speaking: { peak: 3, path: 5.5, why: "the spectrum's bars join one at a time and slide (the user's pick: the join chain)" },
-  concluding: { path: 4.5, why: "crystallize assembles and scatters on its own cycle; a burst can fall in the window" },
-  muted: { peak: 6.5, path: 5.5, why: "a rigid turn of a dense lattice (yaw): every dot moves a little every frame" },
-  calibrating: { peak: 12, why: "chladni snaps to a new mode every holdDuration (a smoothing is the next step)" },
-  beep: { peak: 3.6, path: 3.2, why: "the arms swing out wide, a big continuous move" },
+  speaking: { peak: 3.0, path: 5.8, why: "the spectrum's bars join one at a time and slide, the user's pick (measured 2.64 / 5.12)" },
+  concluding: { path: 4.7, why: "crystallize assembles and scatters on its own cycle (measured 4.18)" },
+  muted: { peak: 6.8, path: 5.4, why: "the sphere turns (yaw 1.2 / 1.0 / none per state): a rigid turn of a dense lattice (measured 6.07 / 4.79)" },
+  calibrating: { peak: 12.2, why: "chladni snaps to a new mode every holdDuration; smoothing it is a 1.14 candidate (measured 10.85)" },
+  beep: { peak: 3.7, path: 3.3, why: "the arms swing out wide, a big continuous move (measured 3.33 / 2.91)" },
   completing: RING,
   tracking: RING,
   stepping: RING,
   measuring: RING,
-  signaling: STEPS("LED"),
-  metering: STEPS("meter"),
-  playing: { ...STEPS("playback"), path: 2.6 },
+  playing: { path: 2.5, why: "playback steps (measured 2.19)" },
 };
 const bound = (p, k) => EXCEPT[p]?.[k] ?? GENERAL[k];
 
@@ -56,16 +54,14 @@ for (const p of patterns) {
   console.log(`${p.padEnd(14)} peak ${worst.peak.toFixed(2).padStart(5)}  path ${worst.path.toFixed(2).padStart(5)}${EXCEPT[p] ? `   (${EXCEPT[p].why})` : ""}`);
 }
 
-// Conversations: each answer is one speaking stretch (the 1 s tail holds pauses under it),
-// and the transitions stay inside the bounds on representative patterns, as smooth at the
-// end of a 5-minute session as at its start.
+// Conversations: each answer is exactly one speaking stretch (the adaptive tail holds every
+// pause the scripts leave, design note 31 V7), and the transitions stay inside the bounds on
+// representative patterns, as smooth at the end of a 5-minute session as at its start.
 const SAMPLE = quick ? ["glowing"] : ["glowing", "working", "breathing", "tracking", "speaking", "buzzy"];
 for (const sc of SCENARIOS) {
   const { changes, answers, seconds } = states(sc);
   const entries = changes.filter((c) => c[1] === "speaking").length;
-  // A pause longer than the 1 s tail ends speaking once (the 1500 ms pause).
-  const longPauses = sc.segments.flatMap((s) => (Array.isArray(s.pauses) ? s.pauses : [])).filter(([, ms]) => ms > 1000).length * (sc.repeat ?? 1);
-  if (entries > answers + longPauses) failures.push(`${sc.name}: ${entries} speaking stretches for ${answers} answers (flapping)`);
+  if (entries !== answers) failures.push(`${sc.name}: ${entries} speaking stretches for ${answers} answers`);
   const row = { name: sc.name, answers, speakingStretches: entries, patterns: {} };
   for (const p of SAMPLE) {
     if (sc.window) {

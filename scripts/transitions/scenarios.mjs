@@ -20,7 +20,7 @@ function rng(seed) {
 }
 
 /** The agent's level and the session events over time, in ms. */
-function stream(sc) {
+export function stream(sc) {
   const r = rng(7);
   const jitter = () => (sc.jitter ? (r() * 2 - 1) * sc.jitter : 0);
   const levels = []; // [fromMs, toMs, level]

@@ -18,12 +18,14 @@ const liveAnswer = (id = "live_123") => async () => ({
 });
 
 test("OpenAILiveSession: spec/openai-live-cases.json", async () => {
-  const { OpenAILiveSession, LIVE_SPEAKING_LEVEL, LIVE_SPEAKING_TAIL_FRAMES, LIVE_BARGE_IN_TAIL_FRAMES, LIVE_BARGE_IN_WINDOW_MS, LIVE_DELEGATION_TIMEOUT_MS } = await import(
+  const { OpenAILiveSession, LIVE_SPEAKING_LEVEL, LIVE_SPEAKING_TAIL_FRAMES, LIVE_SPEAKING_TAIL_PER_SECOND, LIVE_SPEAKING_TAIL_MAX_FRAMES, LIVE_BARGE_IN_TAIL_FRAMES, LIVE_BARGE_IN_WINDOW_MS, LIVE_DELEGATION_TIMEOUT_MS } = await import(
     "../dist/openaiLive.js"
   );
   assert.deepEqual(cases.constants, {
     speakingLevel: LIVE_SPEAKING_LEVEL,
     speakingTailFrames: LIVE_SPEAKING_TAIL_FRAMES,
+    speakingTailPerSecond: LIVE_SPEAKING_TAIL_PER_SECOND,
+    speakingTailMaxFrames: LIVE_SPEAKING_TAIL_MAX_FRAMES,
     bargeInTailFrames: LIVE_BARGE_IN_TAIL_FRAMES,
     bargeInWindowMs: LIVE_BARGE_IN_WINDOW_MS,
     delegationTimeoutMs: LIVE_DELEGATION_TIMEOUT_MS,

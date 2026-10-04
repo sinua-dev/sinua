@@ -37,6 +37,9 @@ class OpenAILiveSession {
     var onClosed: ((String) -> Unit)? = null
 
     private var quietFrames = 0
+
+    /** When the current speaking stretch began (ms). */
+    private var speakingSince = 0.0
     private var bargeInAt: Double? = null
 
     /** Open delegations, oldest first: id -> last news (ms) and whether the app's backend answers it. */
@@ -110,11 +113,12 @@ class OpenAILiveSession {
         delegations.entries.removeAll { now - it.value.at > DELEGATION_TIMEOUT_MS }
         if (level > SPEAKING_LEVEL) {
             quietFrames = 0
+            if (state != AgentState.SPEAKING) speakingSince = now
             setState(AgentState.SPEAKING)
         } else if (state == AgentState.SPEAKING) {
             quietFrames++
             val userSpoke = bargeInAt?.let { now - it <= BARGE_IN_WINDOW_MS } ?: false
-            if (quietFrames < if (userSpoke) BARGE_IN_TAIL_FRAMES else SPEAKING_TAIL_FRAMES) return
+            if (quietFrames < if (userSpoke) BARGE_IN_TAIL_FRAMES else speakingTail(now - speakingSince)) return
             val armed = bargeInAt
             bargeInAt = null
             quietFrames = 0
@@ -160,13 +164,25 @@ class OpenAILiveSession {
         const val SPEAKING_LEVEL = 0.05
 
         /**
-         * Speaking ends after ~1 s of quiet, so a pause between phrases doesn't flip the state
-         * (design note 30, V3); after ~300 ms when the user just spoke (a barge-in stays instant).
+         * Speaking ends after a quiet tail that grows with how long the agent has been speaking
+         * (design note 31, V7): [SPEAKING_TAIL_FRAMES] 30 Hz ticks plus [SPEAKING_TAIL_PER_SECOND]
+         * per second of the stretch, at most [SPEAKING_TAIL_MAX_FRAMES] -- a short reply hands back
+         * in ~0.7 s, a long answer survives natural pauses. After ~300 ms when the user just spoke
+         * (a barge-in stays instant).
          */
-        const val SPEAKING_TAIL_FRAMES = 30
+        const val SPEAKING_TAIL_FRAMES = 21
+        const val SPEAKING_TAIL_PER_SECOND = 4.0
+        const val SPEAKING_TAIL_MAX_FRAMES = 51
         const val BARGE_IN_TAIL_FRAMES = 9
         const val BARGE_IN_WINDOW_MS = 1000.0
         const val DELEGATION_TIMEOUT_MS = 30_000.0
+
+        /** The quiet ticks that end a speaking stretch [ms] long (half up, as Web and iOS). */
+        fun speakingTail(ms: Double): Int {
+            val grown = Math.round(SPEAKING_TAIL_FRAMES + SPEAKING_TAIL_PER_SECOND * ms / 1000).toInt()
+            return grown.coerceIn(SPEAKING_TAIL_FRAMES, SPEAKING_TAIL_MAX_FRAMES)
+        }
+
         private val TERMINAL_RESPONSE_EVENTS =
             setOf("response.completed", "response.failed", "response.incomplete", "response.cancelled")
     }

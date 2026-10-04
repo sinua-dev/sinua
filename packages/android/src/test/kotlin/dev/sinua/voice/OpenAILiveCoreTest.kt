@@ -20,6 +20,8 @@ class OpenAILiveCoreTest {
         val k = root.getJSONObject("constants")
         assertEquals(OpenAILiveSession.SPEAKING_LEVEL, k.getDouble("speakingLevel"), 0.0)
         assertEquals(OpenAILiveSession.SPEAKING_TAIL_FRAMES, k.getInt("speakingTailFrames"))
+        assertEquals(OpenAILiveSession.SPEAKING_TAIL_PER_SECOND, k.getDouble("speakingTailPerSecond"), 0.0)
+        assertEquals(OpenAILiveSession.SPEAKING_TAIL_MAX_FRAMES, k.getInt("speakingTailMaxFrames"))
         assertEquals(OpenAILiveSession.BARGE_IN_TAIL_FRAMES, k.getInt("bargeInTailFrames"))
         assertEquals(OpenAILiveSession.BARGE_IN_WINDOW_MS, k.getDouble("bargeInWindowMs"), 0.0)
         assertEquals(OpenAILiveSession.DELEGATION_TIMEOUT_MS, k.getDouble("delegationTimeoutMs"), 0.0)

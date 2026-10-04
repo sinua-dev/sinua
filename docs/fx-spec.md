@@ -196,13 +196,13 @@ const { frame, previous, blend } = player.frame(elapsedS, dtS, voice.overrides(d
 previous ? drawCrossDissolve(ctx, previous, frame, blend) : draw(ctx, frame);
 ```
 
-1. **On a state change,** animate from what is on screen now (a change mid-transition starts from the current mix), over the spec's `transitions` for that pair (below; default **0.6 s, easeInOut**). The engine's `transitionMix(from, to, size, progress, curve)` says how, per frame:
-   - **same pattern** (`params`): the continuous parameters and the speed interpolate, so one frame flows from one state to the next. Counts and choices (`nodeCount`, `particleStyle`, …) can't interpolate; they swap in a short window mid-way (40–60 % of the curve) as a brief dissolve of two frames that share every continuous value;
-   - **the orb lattice trio** (`morph`: glowing / calibrating / progressing): the point-by-point `frameTransitionWithOverrides`;
-   - **anything else** (`crossFade`): the two frames dissolve.
-   Reduced motion cuts. A view's `crossFade` option overrides every change's duration (`0` = a cut).
+1. **On a state change,** the view's transition clock (`StateTransition`, the same on Web, iOS and Android; design note 31) keeps a weight per state and moves them all continuously: the new state's weight heads to 1, the others' to 0, from wherever they are, so a change mid-transition (or three changes in a row) never kinks. Each weight runs through three first-order lags (`ω = 6.3 / duration`, ~95 % of the way in `duration`); the duration is the file's `transitions` for that pair, else the voice-state profile's time (below). A file that writes a `curve` keeps it, the motion's velocity carried into it. Per frame the step is capped at 0.1 s; after a gap over 1 s (back from the background) the weights land on the target. What it draws:
+   - **one pattern** (every voice state, most FX Spec states): `voiceBlend(sides, weights, target, size)` mixes the sides' parameters by weight into one frame. Counts the pattern draws as densities fade; other counts and choices swap in a short window as a brief dissolve;
+   - **the orb lattice trio** (glowing / calibrating / progressing): the point-by-point `frameTransitionWithOverrides`, at the new pattern's weight;
+   - **any other two patterns:** the two frames dissolve by their weights.
+   The rate sums `voiceBlend` reports keep every rhythm continuous (*The transition contract*). Reduced motion cuts. A view's `crossFade` option overrides every change's duration (`0` = a cut). `spec/transition-timeline.json` holds the three platforms to the same steps.
 2. **Ease slow inputs** yourself if they jump (`k = min(1, rate·dt)`, dt clamped to 0.1 s, the `ReactiveBinding`/`VoiceOverrides` rule). The first value is taken as-is.
-3. **Render** with `resolve…With(state, inputs)`, then `frameWithOverrides(state, size, t, { ...overrides, ...extra })` at a phase that runs at the effective speed (preset × `speed`, mixed mid-transition, so motion speeds up or slows down instead of jumping). `extra` is for runtime keys the spec doesn't own, such as `VoiceOverrides`' spectrum bands and `voiceStateCode`.
+3. **Render** with `resolve…With(state, inputs)`, then `frameWithOverrides(state, size, t, { ...overrides, ...extra })` at a phase that runs at the effective speed (preset × `speed`, weighted mid-transition), pinned at each speed change so motion speeds up or slows down instead of jumping. The players do this themselves. `extra` is for runtime keys the spec doesn't own, such as `VoiceOverrides`' spectrum bands and `voiceStateCode`.
 
 Parsing happens on every call. A spec is a few KB of JSON, which is cheap next to rendering.
 

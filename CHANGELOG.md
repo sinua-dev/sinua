@@ -170,6 +170,17 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   snaps to. Thumbnails of a recipe file are about 3× faster: whether a character is heavy to draw
   is now measured once per character, not on every resolve.
 
+- Transitions (design note 31, part 2: the views): every view (Web, iOS, Android, React
+  Native) moves a weight per state on a continuous clock, so a change mid-transition
+  heads somewhere else without a kink and three quick changes blend. Voice-state changes
+  take the profile's time per pair; a file's own `curve` is kept, with the motion's
+  velocity carried into it. The players pin their phase at speed changes (a state with its
+  own speed no longer jumps the pose). From FX Spec 1.13 (and in views without a file),
+  glowing and calibrating lay their dots out once for their densest state, so their
+  sparser states look slightly more organic at rest; older files keep the old look.
+- Android: JNA 5.19.1 (16 KB memory pages, required by Google Play for Android 15+); a CI
+  check keeps every 64-bit `.so` 16 KB aligned, and the 32-bit libraries are aligned too.
+
 - Transitions (design note 31, part 1: the engine):
   - Rate keys (`pulsePeriod`, `period`, `surfaceSpeed`, …) can be accumulated by the view
     (`rates` on `transitionMix`, `<key>Cycles` overrides), so a state change late in a

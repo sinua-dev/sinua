@@ -22,6 +22,7 @@ final class OpenAILiveCoreTests: XCTestCase {
         let k = root["constants"] as! [String: Double]
         XCTAssertEqual(k["speakingLevel"], OpenAILiveSession.speakingLevel)
         XCTAssertEqual(k["speakingTailFrames"], Double(OpenAILiveSession.speakingTailFrames))
+        XCTAssertEqual(k["bargeInTailFrames"], Double(OpenAILiveSession.bargeInTailFrames))
         XCTAssertEqual(k["bargeInWindowMs"], OpenAILiveSession.bargeInWindowMs)
         XCTAssertEqual(k["delegationTimeoutMs"], OpenAILiveSession.delegationTimeoutMs)
         let cases = root["cases"] as! [[String: Any]]

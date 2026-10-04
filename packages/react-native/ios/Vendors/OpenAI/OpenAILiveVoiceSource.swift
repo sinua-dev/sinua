@@ -41,6 +41,9 @@ final class OpenAILiveVoiceSource: NSObject, VoiceSource, @unchecked Sendable {
     private let reconnects: Bool
     private let urlSession: URLSession
     private let requestPermission: () async -> Bool
+    private let audioSession: VoiceAudioSession
+    /// This source claimed the app's audio session (released on teardown). Main thread.
+    private var holdsSession = false
     private let session = OpenAILiveSession()
     private let tap = PcmTap()
     private lazy var renderer = Renderer(sink: tap.sink)
@@ -66,15 +69,19 @@ final class OpenAILiveVoiceSource: NSObject, VoiceSource, @unchecked Sendable {
 
     /// `sessionURL`: your endpoint that opens the GPT-Live session (never `api.openai.com`).
     /// `credential`: your own token for it, fresh per session with `.url(…)` / `.provider { … }`;
-    /// nil when your endpoint authenticates another way.
+    /// nil when your endpoint authenticates another way. `audioSession`: how the app's audio
+    /// session is set up before the call (default: the loudspeaker; `.unmanaged` if your app
+    /// does it).
     public init(
         sessionURL: URL,
         credential: CredentialSource? = nil,
         warp: Bool = false,
         reconnect: Bool = true,
         urlSession: URLSession = .shared,
-        requestPermission: @escaping () async -> Bool = AVPcmAudioDevice.requestPermission
+        requestPermission: @escaping () async -> Bool = AVPcmAudioDevice.requestPermission,
+        audioSession: VoiceAudioSession = .speaker
     ) {
+        self.audioSession = audioSession
         self.sessionURL = sessionURL
         credentials = credential
         self.warp = warp
@@ -130,6 +137,7 @@ final class OpenAILiveVoiceSource: NSObject, VoiceSource, @unchecked Sendable {
             try InsecureCredential.checkOpenAILive(sessionURL: sessionURL, credential: nil)
             let token = try await resolveToken()  // auth first: no prompt for a bad credential
             guard await requestPermission() else { throw VoiceSourceError.permissionDenied }
+            try await MainActor.run { try claimSession() }
             try await call(token)
             await MainActor.run {
                 connected = true
@@ -359,7 +367,17 @@ final class OpenAILiveVoiceSource: NSObject, VoiceSource, @unchecked Sendable {
         session.tick(level: m.level, now: Self.now())
     }
 
+    /// The app's audio session, set up before the peer connection's audio engine starts.
+    private func claimSession() throws {
+        guard !holdsSession else { return }
+        holdsSession = try WebRTCAudioSession.claim(audioSession)
+    }
+
     private func teardown() {
+        if holdsSession {
+            holdsSession = false
+            WebRTCAudioSession.release()
+        }
         wantConnected = false
         connected = false
         timer?.cancel()

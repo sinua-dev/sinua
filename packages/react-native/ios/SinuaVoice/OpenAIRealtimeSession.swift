@@ -11,7 +11,7 @@ import Foundation
 /// during a response; left after ~300 ms of quiet once `response.done`).
 public final class OpenAIRealtimeSession {
     public static let speakingLevel = 0.05
-    public static let speakingTailFrames = 9  // ~300 ms at 30 Hz
+    public static let speakingTailFrames = 30  // ~1 s, as the Live session (design note 30, V3)
 
     public private(set) var state: AgentState = .idle
     public let transcript = TranscriptLog()

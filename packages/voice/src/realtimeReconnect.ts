@@ -62,9 +62,50 @@ export function isRetryableHttpStatus(status: number): boolean {
   return status === 408 || status === 425 || status === 429 || status >= 500;
 }
 
-/** A thrown connect failure the reconnect loop must not retry. */
+/**
+ * A thrown connect failure the reconnect loop must not retry. From an HTTP answer it
+ * carries the `status` and the start of the response `body` (design note 30, V4: the
+ * same as iOS / Android's `SignalingError.fatal(status, body)`).
+ */
 export class FatalConnectError extends Error {
   readonly fatal = true;
+  constructor(
+    message?: string,
+    readonly status?: number,
+    readonly body?: string,
+  ) {
+    super(message);
+  }
+}
+
+/** An HTTP answer the reconnect loop may retry (408, 425, 429, 5xx): `status` and `body`. */
+export class VoiceHttpError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly body: string,
+  ) {
+    super(message);
+  }
+}
+
+/** The thrown error for a failed HTTP answer: retryable or fatal, with its status and body. */
+export function httpError(source: string, url: string, status: number, body: string): Error {
+  const head = body.slice(0, 500);
+  const message = `${source}: ${url} returned ${status}: ${head}`;
+  return isRetryableHttpStatus(status) ? new VoiceHttpError(message, status, head) : new FatalConnectError(message, status, head);
+}
+
+/**
+ * Extra request headers for your session endpoint (design note 30, V5): a CSRF token or
+ * your own auth. A function is called for every request (a fresh token each time). Their
+ * values never appear in a log or an error.
+ */
+export type RequestHeaders = Record<string, string> | (() => Record<string, string> | Promise<Record<string, string>>);
+
+export async function resolveHeaders(h: RequestHeaders | undefined): Promise<Record<string, string>> {
+  if (!h) return {};
+  return typeof h === "function" ? await h() : h;
 }
 
 export function isFatalConnectError(err: unknown): boolean {

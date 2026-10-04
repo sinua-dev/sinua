@@ -21,7 +21,10 @@ import type { AgentState } from "@sinua/core";
 import { isFatalRealtimeError } from "./realtimeReconnect.js";
 
 export const LIVE_SPEAKING_LEVEL = 0.05;
-export const LIVE_SPEAKING_TAIL_FRAMES = 9; // ~300 ms at 30 Hz
+// Speaking ends after ~1 s of quiet, so a pause between phrases doesn't flip the state
+// (design note 30, V3); after ~300 ms when the user just spoke (a barge-in stays instant).
+export const LIVE_SPEAKING_TAIL_FRAMES = 30;
+export const LIVE_BARGE_IN_TAIL_FRAMES = 9;
 export const LIVE_BARGE_IN_WINDOW_MS = 1000;
 export const LIVE_DELEGATION_TIMEOUT_MS = 30_000;
 
@@ -126,7 +129,8 @@ export class OpenAILiveSession {
       this.setState("speaking");
     } else if (this.state === "speaking") {
       this.quietFrames++;
-      if (this.quietFrames >= LIVE_SPEAKING_TAIL_FRAMES) {
+      const userSpoke = this.bargeInAt != null && now - this.bargeInAt <= LIVE_BARGE_IN_WINDOW_MS;
+      if (this.quietFrames >= (userSpoke ? LIVE_BARGE_IN_TAIL_FRAMES : LIVE_SPEAKING_TAIL_FRAMES)) {
         const armed = this.bargeInAt;
         this.bargeInAt = null;
         this.quietFrames = 0;

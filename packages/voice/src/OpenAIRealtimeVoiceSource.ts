@@ -7,9 +7,11 @@ import {
   TranscriptLog,
   isFatalConnectError,
   isFatalRealtimeError,
-  isRetryableHttpStatus,
+  httpError,
   reconnectDelayMs,
+  resolveHeaders,
   type ReconnectPolicy,
+  type RequestHeaders,
 } from "./realtimeReconnect.js";
 import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
 
@@ -87,6 +89,13 @@ export interface OpenAIRealtimeVoiceSourceOptions extends CredentialOptions {
   getCredential?: CredentialProvider;
   /** Reconnect policy after a drop; `false` restores the old drop-to-`idle` behaviour. */
   reconnect?: ReconnectPolicy | false;
+  /**
+   * Extra headers on the request to `callsUrl` (for your own endpoint: a CSRF token, your
+   * auth); a function is called per request. Never logged or put in an error.
+   */
+  headers?: RequestHeaders;
+  /** The `fetch` to use (a wrapped one, a test's). Default the global `fetch`. */
+  fetch?: typeof fetch;
   /** Replay the finalized transcript into a replacement session. Default true. */
   replayTranscript?: boolean;
   /** Realtime model id. `gpt-realtime` is the alias OpenAI's own WebRTC guide uses. */
@@ -126,13 +135,15 @@ export const WARP_DATA_CHANNEL_ID = 1;
 const UPDATE_MS = 1000 / 30; // ~30fps, decoupled from the render loop -- same as LocalMicVoiceSource
 const WATCHDOG_ZERO_FRAMES = 30; // ~1s of exact-zero RMS *while the model should be audible*
 const SPEAKING_LEVEL = 0.05; // energy floor for the no-output_audio_buffer-events fallback
-const SPEAKING_TAIL_FRAMES = 9; // ~300ms below the floor after response.done before leaving `speaking`
+const SPEAKING_TAIL_FRAMES = 30; // ~1 s below the floor after response.done before leaving `speaking` (design note 30, V3)
 const DATA_CHANNEL_OPEN_TIMEOUT_MS = 15_000;
 
 export class OpenAIRealtimeVoiceSource implements VoiceSource {
   private readonly credentials: CredentialOptions;
   private readonly reconnectPolicy: ReconnectPolicy | null;
   private readonly replayTranscript: boolean;
+  private readonly headers: RequestHeaders | undefined;
+  private readonly fetchFn: typeof fetch | undefined;
   private readonly transcript = new TranscriptLog();
   private readonly model: string;
   private readonly callsUrl: string;
@@ -186,6 +197,8 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
       );
     }
     this.reconnectPolicy = opts.reconnect === false ? null : opts.reconnect ?? {};
+    this.headers = opts.headers;
+    this.fetchFn = opts.fetch;
     this.replayTranscript = opts.replayTranscript ?? true;
     this.model = opts.model ?? "gpt-realtime";
     this.callsUrl = opts.callsUrl ?? CALLS_URL;
@@ -319,18 +332,16 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
       const url = new URL(this.callsUrl, (globalThis as { location?: { href?: string } }).location?.href);
       url.searchParams.set("model", this.model);
       if (this.warp) url.searchParams.set("dcid", String(WARP_DATA_CHANNEL_ID));
-      const res = await fetch(url.href, {
+      const res = await (this.fetchFn ?? fetch)(url.href, {
         method: "POST",
         body: offer.sdp,
         headers: {
           Authorization: `Bearer ${key}`,
           "Content-Type": "application/sdp",
+          ...(await resolveHeaders(this.headers)),
         },
       });
-      if (!res.ok) {
-        const message = `OpenAI ${this.callsUrl} returned ${res.status}: ${await safeText(res)}`;
-        throw isRetryableHttpStatus(res.status) ? new Error(message) : new FatalConnectError(message);
-      }
+      if (!res.ok) throw httpError("OpenAI", this.callsUrl, res.status, await safeText(res));
       await pc.setRemoteDescription({ type: "answer", sdp: await res.text() });
       await opened;
     } catch (err) {

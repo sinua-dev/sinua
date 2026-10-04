@@ -113,7 +113,8 @@ class OpenAILiveSession {
             setState(AgentState.SPEAKING)
         } else if (state == AgentState.SPEAKING) {
             quietFrames++
-            if (quietFrames < SPEAKING_TAIL_FRAMES) return
+            val userSpoke = bargeInAt?.let { now - it <= BARGE_IN_WINDOW_MS } ?: false
+            if (quietFrames < if (userSpoke) BARGE_IN_TAIL_FRAMES else SPEAKING_TAIL_FRAMES) return
             val armed = bargeInAt
             bargeInAt = null
             quietFrames = 0
@@ -157,7 +158,13 @@ class OpenAILiveSession {
 
     companion object {
         const val SPEAKING_LEVEL = 0.05
-        const val SPEAKING_TAIL_FRAMES = 9 // ~300 ms at 30 Hz
+
+        /**
+         * Speaking ends after ~1 s of quiet, so a pause between phrases doesn't flip the state
+         * (design note 30, V3); after ~300 ms when the user just spoke (a barge-in stays instant).
+         */
+        const val SPEAKING_TAIL_FRAMES = 30
+        const val BARGE_IN_TAIL_FRAMES = 9
         const val BARGE_IN_WINDOW_MS = 1000.0
         const val DELEGATION_TIMEOUT_MS = 30_000.0
         private val TERMINAL_RESPONSE_EVENTS =

@@ -66,8 +66,8 @@ final class OpenAIRealtimeCoreTests: XCTestCase {
         s.tick(level: 0.2)
         XCTAssertEqual(s.state, .speaking, "energy during a response")
         s.handle(ev("response.done"))
-        for _ in 0..<8 { s.tick(level: 0.01) }
-        XCTAssertEqual(s.state, .speaking, "the ~300 ms tail")
+        for _ in 0..<29 { s.tick(level: 0.01) }
+        XCTAssertEqual(s.state, .speaking, "the ~1 s tail (design note 30)")
         s.tick(level: 0.01)
         XCTAssertEqual(s.state, .listening)
         s.tick(level: 0.3)

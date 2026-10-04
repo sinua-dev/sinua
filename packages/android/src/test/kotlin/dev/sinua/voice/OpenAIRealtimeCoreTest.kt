@@ -83,7 +83,7 @@ class OpenAIRealtimeCoreTest {
         s.tick(0.2)
         assertEquals(AgentState.SPEAKING, s.state)
         s.handle(ev("response.done"))
-        repeat(8) { s.tick(0.01) }
+        repeat(29) { s.tick(0.01) } // the ~1 s tail (design note 30)
         assertEquals(AgentState.SPEAKING, s.state)
         s.tick(0.01)
         assertEquals(AgentState.LISTENING, s.state)

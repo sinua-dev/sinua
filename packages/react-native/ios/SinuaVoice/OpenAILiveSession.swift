@@ -13,7 +13,10 @@ import Foundation
 /// that stops it within 1 s is a barge-in (full duplex: a "mhm" under continuing speech isn't).
 public final class OpenAILiveSession {
     public static let speakingLevel = 0.05
-    public static let speakingTailFrames = 9  // ~300 ms at 30 Hz
+    /// Speaking ends after ~1 s of quiet, so a pause between phrases doesn't flip the state
+    /// (design note 30, V3); after ~300 ms when the user just spoke (a barge-in stays instant).
+    public static let speakingTailFrames = 30
+    public static let bargeInTailFrames = 9
     public static let bargeInWindowMs = 1000.0
     public static let delegationTimeoutMs = 30_000.0
     static let terminalResponseEvents: Set<String> = [
@@ -103,7 +106,8 @@ public final class OpenAILiveSession {
             setState(.speaking)
         } else if state == .speaking {
             quietFrames += 1
-            guard quietFrames >= Self.speakingTailFrames else { return }
+            let userSpoke = bargeInAt.map { now - $0 <= Self.bargeInWindowMs } ?? false
+            guard quietFrames >= (userSpoke ? Self.bargeInTailFrames : Self.speakingTailFrames) else { return }
             let armed = bargeInAt
             bargeInAt = nil
             quietFrames = 0

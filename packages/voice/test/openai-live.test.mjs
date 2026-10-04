@@ -18,12 +18,13 @@ const liveAnswer = (id = "live_123") => async () => ({
 });
 
 test("OpenAILiveSession: spec/openai-live-cases.json", async () => {
-  const { OpenAILiveSession, LIVE_SPEAKING_LEVEL, LIVE_SPEAKING_TAIL_FRAMES, LIVE_BARGE_IN_WINDOW_MS, LIVE_DELEGATION_TIMEOUT_MS } = await import(
+  const { OpenAILiveSession, LIVE_SPEAKING_LEVEL, LIVE_SPEAKING_TAIL_FRAMES, LIVE_BARGE_IN_TAIL_FRAMES, LIVE_BARGE_IN_WINDOW_MS, LIVE_DELEGATION_TIMEOUT_MS } = await import(
     "../dist/openaiLive.js"
   );
   assert.deepEqual(cases.constants, {
     speakingLevel: LIVE_SPEAKING_LEVEL,
     speakingTailFrames: LIVE_SPEAKING_TAIL_FRAMES,
+    bargeInTailFrames: LIVE_BARGE_IN_TAIL_FRAMES,
     bargeInWindowMs: LIVE_BARGE_IN_WINDOW_MS,
     delegationTimeoutMs: LIVE_DELEGATION_TIMEOUT_MS,
   });
@@ -258,4 +259,37 @@ test("server: createOpenAILiveSession posts { session, transport } and openAILiv
   } finally {
     if (saved !== undefined) globalThis.document = saved;
   }
+});
+
+test("live: an HTTP failure carries its status and body; headers and fetch are yours (design note 30, V4/V5)", async () => {
+  const { OpenAILiveVoiceSource, FatalConnectError, VoiceHttpError } = await import("../dist/openai.js");
+  // 403: fatal, with { status, body }.
+  net.respond = async () => ({ ok: false, status: 403, text: async () => "forbidden" });
+  const fatal = await new OpenAILiveVoiceSource({ sessionUrl: OWN, reconnect: false }).connect().catch((e) => e);
+  assert.ok(fatal instanceof FatalConnectError);
+  assert.equal(fatal.status, 403);
+  assert.equal(fatal.body, "forbidden");
+  // 503: retryable, the same fields.
+  net.respond = async () => ({ ok: false, status: 503, text: async () => "busy" });
+  const retry = await new OpenAILiveVoiceSource({ sessionUrl: OWN, reconnect: false }).connect().catch((e) => e);
+  assert.ok(retry instanceof VoiceHttpError);
+  assert.equal(retry.status, 503);
+  // Your headers (a function, called per request) and your fetch; the secret never shows in an error.
+  const secret = "csrf-7d2f1e";
+  let calls = 0;
+  const mine = [];
+  const myFetch = async (url, init) => {
+    mine.push({ url, init });
+    return { ok: false, status: 401, text: async () => "no session" };
+  };
+  const src = new OpenAILiveVoiceSource({ sessionUrl: OWN, reconnect: false, headers: () => (calls++, { "X-CSRF-Token": secret }), fetch: myFetch });
+  const before = net.requests.length;
+  const err = await src.connect().catch((e) => e);
+  assert.equal(net.requests.length, before, "the global fetch isn't used");
+  assert.equal(mine.length, 1);
+  assert.equal(mine[0].init.headers["X-CSRF-Token"], secret);
+  assert.equal(mine[0].init.headers["Content-Type"], "application/json");
+  assert.equal(calls, 1);
+  assert.equal(err.status, 401);
+  assert.ok(!String(err.message).includes(secret) && !String(err.body).includes(secret));
 });

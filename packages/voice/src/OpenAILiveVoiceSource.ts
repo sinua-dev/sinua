@@ -7,9 +7,11 @@ import {
   FatalConnectError,
   isFatalConnectError,
   isFatalRealtimeError,
-  isRetryableHttpStatus,
+  httpError,
   reconnectDelayMs,
+  resolveHeaders,
   type ReconnectPolicy,
+  type RequestHeaders,
 } from "./realtimeReconnect.js";
 import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
 
@@ -59,6 +61,13 @@ export interface OpenAILiveVoiceSourceOptions extends CredentialOptions {
   sessionUrl: string;
   /** Reconnect policy after a drop or an expired session; `false` ends in `idle` instead. */
   reconnect?: ReconnectPolicy | false;
+  /**
+   * Extra headers on the request to `sessionUrl` (a CSRF token for a cookie-auth app, your
+   * own auth); a function is called per request. Never logged or put in an error.
+   */
+  headers?: RequestHeaders;
+  /** The `fetch` to use (a wrapped one, a test's). Default the global `fetch`. */
+  fetch?: typeof fetch;
 }
 
 const DATA_CHANNEL_LABEL = "oai-events";
@@ -72,6 +81,8 @@ const RECONNECTING_REASONS = new Set(["expired", "connection_lost"]);
 export class OpenAILiveVoiceSource implements VoiceSource {
   private readonly credentials: CredentialOptions;
   private readonly sessionUrl: string;
+  private readonly headers: RequestHeaders | undefined;
+  private readonly fetchFn: typeof fetch | undefined;
   private readonly reconnectPolicy: ReconnectPolicy | null;
   private readonly session = new OpenAILiveSession();
 
@@ -101,6 +112,8 @@ export class OpenAILiveVoiceSource implements VoiceSource {
   constructor(opts: OpenAILiveVoiceSourceOptions) {
     this.credentials = { credential: opts.credential, credentialUrl: opts.credentialUrl };
     this.sessionUrl = opts.sessionUrl;
+    this.headers = opts.headers;
+    this.fetchFn = opts.fetch;
     this.reconnectPolicy = opts.reconnect === false ? null : opts.reconnect ?? {};
     this.session.onClosed = (reason) => this.onSessionClosed(reason);
   }
@@ -217,12 +230,10 @@ export class OpenAILiveVoiceSource implements VoiceSource {
       if (!offer) throw new Error("OpenAILiveVoiceSource: no local SDP offer");
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (token) headers.Authorization = `Bearer ${token}`;
-      const res = await fetch(url, { method: "POST", headers, body: JSON.stringify({ sdp: offer }) });
+      Object.assign(headers, await resolveHeaders(this.headers));
+      const res = await (this.fetchFn ?? fetch)(url, { method: "POST", headers, body: JSON.stringify({ sdp: offer }) });
       const body = await safeText(res);
-      if (!res.ok) {
-        const message = `OpenAILiveVoiceSource: ${url} returned ${res.status}: ${body.slice(0, 500)}`;
-        throw isRetryableHttpStatus(res.status) ? new Error(message) : new FatalConnectError(message);
-      }
+      if (!res.ok) throw httpError("OpenAILiveVoiceSource", url, res.status, body);
       const answer = liveAnswerSdp(body);
       if (!answer) {
         throw new FatalConnectError(

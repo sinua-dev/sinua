@@ -112,6 +112,6 @@ class OpenAIRealtimeSession {
 
     companion object {
         const val SPEAKING_LEVEL = 0.05
-        const val SPEAKING_TAIL_FRAMES = 9 // ~300 ms at 30 Hz
+        const val SPEAKING_TAIL_FRAMES = 30 // ~1 s, as the Live session (design note 30, V3)
     }
 }

@@ -330,7 +330,7 @@ How state changes animate, per pair. Optional. Without a rule for a pair, a voic
 ## v1.13: silhouettes
 
 `pattern: "silhouette"` (an `orb`) is a front-facing head and shoulders made of evenly
-spread dots that lives with the voice (design note 32). One shape stays on screen; the
+spread dots that lives with the voice. One shape stays on screen; the
 voice states only change how it moves, so a state change never adds or drops a dot.
 
 ```json

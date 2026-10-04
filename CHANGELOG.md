@@ -14,7 +14,7 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 ### Breaking: Studio / dev APIs moved to `@sinua/core/dev`
 
 The default `@sinua/core` entry now carries only what apps draw with; the dev tools moved to
-a new entry, `@sinua/core/dev` (design note 33). Change the import:
+a new entry, `@sinua/core/dev`. Change the import:
 
 ```ts
 import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev"; // was "@sinua/core"
@@ -28,7 +28,7 @@ import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev"; // was "@s
   registers catalog packs or recipes can import everything from it and run one engine.
 - iOS and Android: the published artefacts leave out the Swift / Kotlin functions only
   the Studios use: `estimateCost`, `fxSpecCost`, `liquidSuitability`,
-  `parameterCatalogJson`, `checkOverrides` (design note 34; the Android library is
+  `parameterCatalogJson`, `checkOverrides` (the Android library is
   ~100 KB smaller installed, ~42 KB in the download). `packages/*/build.sh` keeps them for
   development (tests, the Studios); `SINUA_NATIVE_RELEASE=1` builds the published variant.
 - Android install docs: leave JNA's `armeabi` / `mips` / `mips64` loaders out of your app

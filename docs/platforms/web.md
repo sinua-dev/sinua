@@ -50,7 +50,7 @@ unpackFrame(packed): OrbFrame | null                 // readPacked(packed, visit
 ### Dev tools: `@sinua/core/dev`
 
 What only a studio, a dev tool, a test or a demo needs lives in its own entry, so apps don't
-ship it (design note 33, sinua-studio; about 26 KB of the default bundle, 48 KB with the JSON bridges):
+ship it (about 26 KB of the default bundle, 48 KB with the JSON bridges):
 
 ```ts
 import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev";

@@ -265,9 +265,3 @@ units at `size`, following the pose and the head turn. `state` is a built-in or 
 and snaps a dropped item to the nearest slot it fits (`nearestSlot(slots, x, y, { names: [item.slot] })`
 on the Web); the drop's offset from the slot becomes the item's bounded nudge in the loadout
 (*A nudge per item*).
-
-## Next in 1.13
-
-Planned additions on top of this format (not in this release yet):
-- brand cosmetics in the Studio editor and a fitting room (draggable slot handles, a depth
-  control, the whole catalog previewed on a character).

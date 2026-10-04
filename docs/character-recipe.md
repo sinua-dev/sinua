@@ -153,7 +153,7 @@ A cosmetic is an object:
 | `fit` | optional | Per character: `at` (local units), `scale`, `angle` on top of the slot. |
 
 Its parts are left out at 20 px unless `accessories` is on, like `when: notSmallOrAccessories`.
-The guide with a worked hat is `docs/character-cosmetics.md`.
+The guide with a worked hat is [character-cosmetics.md](character-cosmetics.md).
 
 ## The built-in characters
 

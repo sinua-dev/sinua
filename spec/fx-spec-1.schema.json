@@ -182,7 +182,7 @@
       "description": "FX Spec 1.13, `object: character` only: cosmetics the character wears (a hat, glasses, a badge): `body` and `eyes` parts on one of its slots, in the slot's units. A cosmetic that doesn't fit a character warns and isn't drawn. File-wide. See docs/character-cosmetics.md."
     },
     "silhouette": {
-      "description": "FX Spec 1.13, `pattern: silhouette` (design note 32): which head and shoulders the dots fill. A built-in by name, or a file's own outline in a 200 × 200 box (start and end the path below the shoulders: the bottom stays open and fades) with its landmarks. File-wide. See docs/fx-spec.md.",
+      "description": "FX Spec 1.13, `pattern: silhouette`: which head and shoulders the dots fill. A built-in by name, or a file's own outline in a 200 × 200 box (start and end the path below the shoulders: the bottom stays open and fades) with its landmarks. File-wide. See docs/fx-spec.md.",
       "oneOf": [
         { "enum": ["human", "helmet"] },
         {

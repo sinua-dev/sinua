@@ -36,6 +36,8 @@ case "${1:-}" in
     (cd packages/android && ./gradlew --no-daemon :testDebugUnitTest :sinua-view:testDebugUnitTest :sinua-gemini:testDebugUnitTest :sinua-elevenlabs:testDebugUnitTest :sinua-openai:testDebugUnitTest)
     step "android: :sinua-livekit / :sinua-openai / :site-snippets (the docs' Kotlin + XML samples) assembleDebug"
     (cd packages/android && ./gradlew --no-daemon :sinua-livekit:assembleDebug :sinua-openai:assembleDebug :site-snippets:assembleDebug)
+    step "android: 16 KB page alignment of every 64-bit .so we ship (ours + JNA's)"
+    scripts/check-so-align.sh
     ;;
   connected)
     # Android 15's cached-app freezer can freeze and kill the test process in the

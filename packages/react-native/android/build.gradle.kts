@@ -59,7 +59,7 @@ android {
 
 dependencies {
     implementation("com.facebook.react:react-android")
-    implementation("net.java.dev.jna:jna:5.14.0@aar")
+    implementation("net.java.dev.jna:jna:5.19.1@aar")
 
     // The Compose SinuaView -- the same BOM/libraries as packages/android/view.
     val composeBom = platform("androidx.compose:compose-bom:2024.10.01")

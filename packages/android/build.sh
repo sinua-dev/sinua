@@ -32,6 +32,10 @@ cp -R "$ROOT/bindings/kotlin/uniffi" src/main/kotlin/
 
 echo "==> cross-compiling for arm64-v8a, armeabi-v7a, x86_64, x86"
 rm -rf src/main/jniLibs
+# 16 KB pages (inbox J1): the 64-bit libraries are already 16384-aligned; the 32-bit
+# ones get the same alignment (Play doesn't require it there, it costs nothing).
+CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_RUSTFLAGS="-C link-arg=-Wl,-z,max-page-size=16384" \
+CARGO_TARGET_I686_LINUX_ANDROID_RUSTFLAGS="-C link-arg=-Wl,-z,max-page-size=16384" \
 cargo ndk \
   -t arm64-v8a -t armeabi-v7a -t x86_64 -t x86 \
   -o src/main/jniLibs \

@@ -26,7 +26,13 @@ import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev"; // was "@s
   `frameFromFxSpecViaJson`. Their types stay exported from `@sinua/core`.
 - `@sinua/core/dev` re-exports the whole default API on the same (dev) wasm, so a tool that
   registers catalog packs or recipes can import everything from it and run one engine.
-- iOS, Android and React Native are unchanged.
+- iOS and Android: the published artefacts leave out the Swift / Kotlin functions only
+  the Studios use: `estimateCost`, `fxSpecCost`, `liquidSuitability`,
+  `parameterCatalogJson`, `checkOverrides` (design note 34; the Android library is
+  ~100 KB smaller installed, ~42 KB in the download). `packages/*/build.sh` keeps them for
+  development (tests, the Studios); `SINUA_NATIVE_RELEASE=1` builds the published variant.
+- Android install docs: leave JNA's `armeabi` / `mips` / `mips64` loaders out of your app
+  (`packages/android/README.md`), so Play doesn't offer it to devices without the engine.
 - The default bundle is about 48 KB smaller: the dev tools and the JSON frame bridges left
   it, and the transition and thumbnail frames now cross as packed arrays. Frames draw as fast
   as before.

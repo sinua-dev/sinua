@@ -36,6 +36,19 @@ implementation("dev.sinua:sinua-view:0.1.0-beta.7")
 implementation("dev.sinua:sinua-gemini:0.1.0-beta.7")   // only the vendors you use
 ```
 
+The engine is built for `arm64-v8a`, `armeabi-v7a`, `x86_64` and `x86`. JNA (the
+bridge UniFFI uses) also carries its loader for `armeabi`, `mips` and `mips64`, which
+makes Play offer your app to those devices without the engine. Leave them out in your
+app module (the bundle gets ~138 KB smaller; a library can't do this for you):
+
+```kotlin
+android {
+    packaging {
+        jniLibs { excludes += listOf("lib/armeabi/**", "lib/mips/**", "lib/mips64/**") }
+    }
+}
+```
+
 The POM's URL, SCM and developer fields default to the public repository
 (`sinua-dev/sinua`) and "The Sinua Authors", each overridable by a `sinua.*`
 Gradle property — see `gradle/publish.gradle.kts` and

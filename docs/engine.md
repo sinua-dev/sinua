@@ -477,7 +477,7 @@ frame(state, size, t)
 
 ### Cost estimate
 
-`estimate_cost(state, size, overrides)` and `fx_spec_cost(json, state, inputs, low_power)` return `FxCost`. On the web they are `estimateCost` / `fxSpecCost` in `@sinua/core/dev` (a dev tool, not in the default bundle); UniFFI and RN expose the same names.
+`estimate_cost(state, size, overrides)` and `fx_spec_cost(json, state, inputs, low_power)` return `FxCost`. On the web they are `estimateCost` / `fxSpecCost` in `@sinua/core/dev` (a dev tool, not in the default bundle). The Swift / Kotlin functions of the same names are in development builds of the native packages only (`build.sh`; the published artefacts leave them out, design note 34).
 
 `FxCost` is a **render-cost proxy, not a measurement**:
 - `elements` = dots + lines + polylines, the draw calls a canvas renderer issues (a per-vertex-hue polyline adds `n − 1` for its segment strokes, 2026-09-19);

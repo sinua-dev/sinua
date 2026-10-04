@@ -166,7 +166,7 @@ frameWithOverrides("working", 64, t, { ...knobs, ...hr.overrides(dt) });  // per
 
 Every tunable of every object and pattern lives in one machine-readable catalog. Rust owns it (`crates/core_engine/src/catalog.rs`), and the curated words and ranges sit in `catalog_source.json` next to it. Typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaCore`, `SinuaBeacon`, `<sinua-orb>`), the Studios and the docs' parameter tables are generated from it. The key tables below are a readable overview; **the catalog wins where they differ.**
 
-| | Web (`@sinua/core/dev`) | Swift / Kotlin (UniFFI) |
+| | Web (`@sinua/core/dev`) | Swift / Kotlin (UniFFI; development builds only, not in the published artefacts) |
 |---|---|---|
 | The catalog | `parameterCatalog()`, typed (`ParameterCatalog`) | `parameterCatalogJson()`: JSON text, one shape everywhere |
 | Validate overrides | `checkOverrides(pattern, size, overrides)` | `checkOverrides(state:size:overrides:)` (`state` = the pattern id in the low-level API) |

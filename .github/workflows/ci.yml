@@ -185,6 +185,10 @@ jobs:
       - name: packages/voice -- test (sources on fakes, subpath hygiene; no audio)
         working-directory: packages/voice
         run: npm test
+      # Design note 31: every pattern through every voice-state pair (10 s / 300 s and an
+      # interruption) and realistic conversations through the GPT-Live session core.
+      - name: transitions -- the contract's bounds (after packages/core + packages/voice)
+        run: node scripts/transitions/check.mjs
       - name: examples/voice-server -- credential endpoint templates (type-check + tests, vendor HTTP mocked)
         working-directory: examples/voice-server
         run: npm ci && npm run check

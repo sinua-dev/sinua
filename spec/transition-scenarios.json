@@ -1,0 +1,21 @@
+{
+  "about": "Realistic conversations for the transition suite (design note 31, TS5; scripts/transitions). Each scenario feeds a GPT-Live session core (OpenAILiveSession, the state rules every platform shares) at 30 Hz, then the states drive the view's transition clock and the engine. Segments: say (the agent's voice; pauses as [seconds into the segment, ms of silence]), user (the user's words; over the agent it is a barge-in), think (a delegation open for the seconds), quiet. jitter: each event moves by up to that many ms (seeded).",
+  "scenarios": [
+    { "name": "phrases with pauses (300-1500 ms)", "segments": [
+      { "quiet": 1 }, { "user": 1.5 }, { "say": 7, "pauses": [[1.0, 300], [2.2, 600], [3.5, 900], [4.8, 1200], [6.2, 1500]] }, { "quiet": 2 } ] },
+    { "name": "a barge-in mid-sentence", "segments": [
+      { "quiet": 1 }, { "user": 1.2 }, { "say": 2.0 }, { "user": 1.4, "over": true }, { "think": 0.8 }, { "say": 2.0 }, { "quiet": 2 } ] },
+    { "name": "quick back-and-forth turns", "segments": [
+      { "quiet": 0.5 }, { "user": 0.8 }, { "say": 1.0 }, { "user": 0.6 }, { "say": 0.8 }, { "user": 0.7 }, { "say": 1.2 }, { "user": 0.5 }, { "say": 0.9 }, { "quiet": 2 } ] },
+    { "name": "a long monologue", "segments": [
+      { "quiet": 1 }, { "user": 1.0 }, { "say": 40, "pauses": "natural" }, { "quiet": 2 } ] },
+    { "name": "a thinking pause before the answer", "segments": [
+      { "quiet": 1 }, { "user": 2.0 }, { "think": 1.8 }, { "say": 4.0, "pauses": [[1.5, 500]] }, { "quiet": 2 } ] },
+    { "name": "events with jitter", "jitter": 60, "segments": [
+      { "quiet": 0.5 }, { "user": 0.9 }, { "think": 0.4 }, { "say": 1.6, "pauses": [[0.7, 400]] }, { "user": 0.7 }, { "say": 1.1 }, { "user": 0.8, "over": true }, { "say": 1.0 }, { "quiet": 2 } ] },
+    { "name": "a change mid-transition (a thinking blip)", "segments": [
+      { "quiet": 1 }, { "user": 1.0 }, { "think": 0.15 }, { "say": 2.0 }, { "user": 0.3 }, { "think": 0.1 }, { "say": 1.5 }, { "quiet": 2 } ] },
+    { "name": "a 5-minute session", "repeat": 22, "window": [0, 30, 270, 300], "segments": [
+      { "user": 2.0 }, { "think": 0.9 }, { "say": 6.0, "pauses": "natural" }, { "quiet": 1.0 }, { "user": 1.2, "over": false }, { "say": 2.5 } ] }
+  ]
+}

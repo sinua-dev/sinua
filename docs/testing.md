@@ -195,6 +195,32 @@ Every binding checks the frozen file itself. The rules mirror the Rust checker: 
 - RN: the example app shows PASS on both the Android emulator and the iOS simulator.
 - Negative checks: a perturbed polyline vertex in `tracking-64-0.6-laps` failed wasm and Android with that exact key and field. iOS also failed. The file was restored and its checksum re-checked.
 
+## Transitions: the contract's bounds
+
+`node scripts/transitions/check.mjs` (CI, after the packages build; `--quick` while
+iterating) holds the transition contract (design note 31, sinua-studio):
+
+- **Every pattern** (30 orb patterns, 7 characters) through every voice-state pair and
+  `initializing -> idle`, at 10 s and at 300 s into the session, plus an interruption, on
+  the real view clock (`StateTransition`) and engine. Each frame is rasterized and two
+  numbers judge the change (1 = ideal): *peak*, the worst frame over what a smooth change
+  of that size and duration would show, and *path*, how far the picture travels during
+  the change over what it needs to. Bounds: peak <= 2.5 and path <= 2.6, with named
+  exceptions in the script for motion that is meant to travel (the spectrum's joining bars,
+  muted's turn, crystallize's cycle, the rings' thinking pulse, step patterns) and
+  calibrating's snap (a smoothing is the next step).
+- **Realistic conversations** (`spec/transition-scenarios.json`): pauses of 300-1500 ms,
+  a barge-in mid-sentence, quick turns, a 40 s monologue, a thinking pause, jittered
+  events, a thinking blip shorter than a transition, a 5-minute session. They run through
+  the GPT-Live session core (`OpenAILiveSession`, the rules every platform shares) and
+  then the clock: each answer must be one speaking stretch (a pause longer than the 1 s
+  tail ends it once), the changes must stay in the bounds on representative patterns, and
+  the last 30 s of the 5-minute session must be as smooth as the first.
+- The clock itself is held to `spec/transition-timeline.json` on Web, iOS and Android, and
+  the engine's guards (a key that multiplies time must be a rate key; voice states may
+  only change a count the pattern draws as a density; taking over the rate sums moves no
+  pixel) are Rust tests in `transition.rs`.
+
 ## Running the Rust suite
 
 ```bash

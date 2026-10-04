@@ -962,6 +962,7 @@ mod wasm {
     use std::collections::HashMap;
     use wasm_bindgen::prelude::wasm_bindgen;
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn frame_json(state: String, size: u32, t: f64) -> String {
         match crate::frame(state, size, t) {
@@ -970,6 +971,7 @@ mod wasm {
         }
     }
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn frame_json_with_overrides(
         state: String,
@@ -986,31 +988,32 @@ mod wasm {
     }
 
     #[wasm_bindgen]
-    pub fn frame_transition_json(
+    pub fn frame_transition_packed(
         from_state: String,
         to_state: String,
         size: u32,
         t: f64,
         blend: f64,
-    ) -> String {
-        match crate::frame_transition(from_state, to_state, size, t, blend) {
-            Some(f) => serde_json::to_string(&f).unwrap_or_else(|_| "null".to_string()),
-            None => "null".to_string(),
-        }
+    ) -> Box<[f64]> {
+        let f = crate::frame_transition(from_state, to_state, size, t, blend);
+        crate::transport::pack(f.as_ref()).into_boxed_slice()
     }
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn conversation_at_json(json: String, t: f64, band_count: u32) -> String {
         serde_json::to_string(&crate::conversation_at(json, t, band_count))
             .unwrap_or_else(|_| "null".to_string())
     }
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn conversation_samples_json() -> String {
         serde_json::to_string(&crate::conversation_sample_names())
             .unwrap_or_else(|_| "[]".to_string())
     }
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn conversation_sample_json(name: String) -> String {
         crate::conversation_sample(name).unwrap_or_else(|| "null".to_string())
@@ -1053,23 +1056,21 @@ mod wasm {
     }
 
     #[wasm_bindgen]
-    pub fn frame_transition_with_overrides_json(
+    pub fn frame_transition_with_overrides_packed(
         from_json: String,
         to_json: String,
         size: u32,
         t: f64,
         blend: f64,
-    ) -> String {
-        let (Ok(from), Ok(to)) = (
+    ) -> Box<[f64]> {
+        let f = match (
             serde_json::from_str::<crate::TransitionSide>(&from_json),
             serde_json::from_str::<crate::TransitionSide>(&to_json),
-        ) else {
-            return "null".to_string();
+        ) {
+            (Ok(from), Ok(to)) => crate::frame_transition_with_overrides(from, to, size, t, blend),
+            _ => None,
         };
-        match crate::frame_transition_with_overrides(from, to, size, t, blend) {
-            Some(f) => serde_json::to_string(&f).unwrap_or_else(|_| "null".to_string()),
-            None => "null".to_string(),
-        }
+        crate::transport::pack(f.as_ref()).into_boxed_slice()
     }
 
     #[wasm_bindgen]
@@ -1107,11 +1108,14 @@ mod wasm {
     }
 
     #[wasm_bindgen]
-    pub fn frame_still_json(spec: String, loadout: String, size: u32, turn_yaw: f64) -> String {
-        match crate::frame_still(spec, loadout, size, turn_yaw) {
-            Some(f) => serde_json::to_string(&f).unwrap_or_else(|_| "null".to_string()),
-            None => "null".to_string(),
-        }
+    pub fn frame_still_packed(
+        spec: String,
+        loadout: String,
+        size: u32,
+        turn_yaw: f64,
+    ) -> Box<[f64]> {
+        let f = crate::frame_still(spec, loadout, size, turn_yaw);
+        crate::transport::pack(f.as_ref()).into_boxed_slice()
     }
 
     #[wasm_bindgen]
@@ -1214,6 +1218,7 @@ mod wasm {
         .unwrap_or_else(|_| "null".to_string())
     }
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn frame_from_fx_spec_json(json: String, elapsed: f64, ctx_json: String) -> String {
         let ctx = fx_context(&ctx_json);
@@ -1259,6 +1264,7 @@ mod wasm {
         crate::transport::pack(f.as_ref()).into_boxed_slice()
     }
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn estimate_cost_json(state: String, size: u32, overrides_json: String) -> String {
         let overrides: HashMap<String, f64> =
@@ -1269,6 +1275,7 @@ mod wasm {
         }
     }
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn fx_spec_cost_json(json: String, ctx_json: String) -> String {
         let ctx = fx_context(&ctx_json);
@@ -1278,6 +1285,7 @@ mod wasm {
         }
     }
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn parameter_catalog_json() -> String {
         crate::parameter_catalog_json()
@@ -1318,6 +1326,7 @@ mod wasm {
         crate::playback_seek_progress(aspect, x)
     }
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn check_overrides_json(state: String, size: u32, overrides_json: String) -> String {
         let overrides: HashMap<String, f64> =
@@ -1334,6 +1343,7 @@ mod wasm {
         }
     }
 
+    #[cfg(feature = "dev")]
     #[wasm_bindgen]
     pub fn liquid_suitability_json(state: String) -> String {
         match crate::liquid_suitability(state) {

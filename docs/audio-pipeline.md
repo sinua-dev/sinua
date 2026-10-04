@@ -204,8 +204,8 @@ reference in May 2025 per their community forum, Azure's reference lists
 it, one current reference page only shows `output_audio_buffer.clear`/
 `cleared`), so the adapter treats it as optional: until one has been seen
 in a session, `speaking` is entered when the remote track's level rises
-during an active response and left ~300 ms after it falls following
-`response.done`. Once any `output_audio_buffer.*` event arrives, the
+during an active response and left ~1 s after it falls following
+`response.done` (design note 30). Once any `output_audio_buffer.*` event arrives, the
 energy fallback stands down for the rest of the session.
 
 **Credentials — the security note, taken seriously.** The adapter takes
@@ -323,7 +323,10 @@ developers.openai.com `guides/voice-webrtc?api=live`, `guides/live-migration`,
 `response.created/done`, no `output_audio_buffer.*`. OpenAI's migration guide says to drive
 the speaking indicator from the player. `OpenAILiveSession` (`openaiLive.ts`, ported to
 SinuaVoice / `dev.sinua.voice`, all held to `spec/openai-live-cases.json`) does this:
-- **speaking:** the remote track's level is above 0.05. It ends after ~300 ms of quiet.
+- **speaking:** the remote track's level is above 0.05. It ends after ~1 s of quiet, so a
+  pause between phrases doesn't flip the state (each flip would restart a 0.6 s transition;
+  design note 30). The level is measured where the audio plays, so buffered audio still
+  counts as speaking.
 - **thinking:** an open delegation while the model is quiet.
   - It opens on `session.delegation.created` or a nested `response.created` inside a
     `response.event`.
@@ -337,7 +340,15 @@ SinuaVoice / `dev.sinua.voice`, all held to `spec/openai-live-cases.json`) does 
   - The model can talk while the backend works: speaking wins.
 - **barge-in:** a `session.input_transcript.delta` while the model is audible, followed by
   the model going quiet within 1 s. GPT-Live is full duplex, so a "mhm" under continuing
-  speech isn't one.
+  speech isn't one. After user speech, ~300 ms of quiet ends speaking, so a barge-in stays
+  instant.
+
+**Your endpoint's request (Web).** `headers` (an object, or a function called per request:
+a CSRF token for a cookie-auth app) and `fetch` (your own) go on the request to `sessionUrl`;
+the same options exist on `OpenAIRealtimeVoiceSource`. Header values never appear in a log or
+an error. A failed answer throws with `status` and the start of the `body`: a
+`FatalConnectError` (no retry) or a `VoiceHttpError` (408, 425, 429, 5xx: retried), as the
+native `SignalingError.fatal(status, body)`.
 
 **Ending and reconnecting.**
 - `disconnect()` goes `idle` at once and silences the mic and playback. It then sends
@@ -1343,6 +1354,16 @@ Built 2026-09-19. It mirrors the Web `OpenAIRealtimeVoiceSource`:
   `Content-Type: application/sdp`), then the answer;
 - events on the `oai-events` data channel; the model's audio as a remote
   track.
+
+**The audio session (iOS).** Both `OpenAIRealtimeVoiceSource` and `OpenAILiveVoiceSource`
+set the app's audio session up before the call (design note 30): play and record, the
+`.videoChat` mode with `.defaultToSpeaker` and Bluetooth, the configuration LiveKit itself
+uses. It's written into WebRTC's own configuration, so its audio engine keeps it. Without it,
+LiveKitWebRTC's engine left the default category: no mic frames, no playback, an expired
+session (DevinFit's device test). `audioSession: .receiver` uses the earpiece (`.voiceChat`,
+much quieter on the loudspeaker), `.unmanaged` leaves the session to your app. Sinua's
+sources share it: the first to connect activates it, the last to disconnect deactivates it
+(other apps are notified); one that never activated it never touches it.
 
 The state rules and the energy fallback are ported from Web (see the next
 section), as is reconnect: a new session with a fresh credential from the

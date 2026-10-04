@@ -170,6 +170,15 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   snaps to. Thumbnails of a recipe file are about 3× faster: whether a character is heavy to draw
   is now measured once per character, not on every resolve.
 
+- Voice (design note 30, from DevinFit's device test):
+  - iOS `OpenAILiveVoiceSource` / `OpenAIRealtimeVoiceSource` set up the audio session
+    (`.videoChat` on the loudspeaker, Bluetooth; `audioSession: .receiver` / `.unmanaged`).
+    Before, GPT-Live on iOS sent no mic audio and played nothing.
+  - OpenAI sources on every platform leave `speaking` after ~1 s of quiet instead of
+    ~300 ms, so a pause between phrases no longer flips the state; a barge-in stays instant.
+  - Web: `headers` and `fetch` options on the OpenAI sources; a failed request throws with
+    `status` and `body` (`FatalConnectError` / `VoiceHttpError`).
+
 ### Changed
 
 - `parameterCatalog()` / `parameterCatalogJson()` no longer carry `description` texts: they are

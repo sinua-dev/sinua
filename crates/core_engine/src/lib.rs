@@ -887,7 +887,7 @@ pub fn fx_color_to_hsl(color: String) -> Option<FxHsl> {
 /// times, classed light / medium / heavy (`cost.rs`; docs/engine.md, *Cost
 /// estimate*). A proxy for a Studio badge or a host's shedding decision,
 /// not a measurement. `None` if the state doesn't resolve.
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+#[cfg_attr(all(not(target_arch = "wasm32"), feature = "dev"), uniffi::export)]
 pub fn estimate_cost(state: String, size: u32, overrides: HashMap<String, f64>) -> Option<FxCost> {
     cost::estimate(&state, size, &overrides)
 }
@@ -897,7 +897,7 @@ pub fn estimate_cost(state: String, size: u32, overrides: HashMap<String, f64>) 
 // `low_power` defaults to false, so Swift/Kotlin callers from before 1.2
 // (the Studios, FxView) compile unchanged.
 #[cfg_attr(
-    not(target_arch = "wasm32"),
+    all(not(target_arch = "wasm32"), feature = "dev"),
     uniffi::export(default(low_power = false))
 )]
 pub fn fx_spec_cost(
@@ -913,7 +913,7 @@ pub fn fx_spec_cost(
 /// `"notRecommended"`, a one-line reason, and the state's tuned liquid
 /// defaults) -- from contact sheets, see docs/materials.md. For a Studio
 /// badge. `None` only for an unknown state.
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+#[cfg_attr(all(not(target_arch = "wasm32"), feature = "dev"), uniffi::export)]
 pub fn liquid_suitability(state: String) -> Option<LiquidSuitability> {
     let mode = resolve_any(&state, 64)?.mode;
     Some(liquid::suitability(mode))
@@ -936,7 +936,7 @@ pub fn particle_defaults(state: String) -> Option<HashMap<String, f64>> {
 /// ranges, groups, paths and per-size defaults. `spec/parameters.json` is a
 /// checked-in copy. Parse it on the caller's side (one stable JSON shape
 /// on every platform rather than a deep tree of UniFFI records).
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+#[cfg_attr(all(not(target_arch = "wasm32"), feature = "dev"), uniffi::export)]
 pub fn parameter_catalog_json() -> String {
     catalog::catalog_json()
 }
@@ -945,7 +945,7 @@ pub fn parameter_catalog_json() -> String {
 /// keys (with a did-you-mean), out-of-range values, fractional values for
 /// whole-number keys, renamed keys. Warnings only -- the frame is unaffected.
 /// `state` is the pattern id, as everywhere in the low-level API.
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
+#[cfg_attr(all(not(target_arch = "wasm32"), feature = "dev"), uniffi::export)]
 pub fn check_overrides(
     state: String,
     size: u32,

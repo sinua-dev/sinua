@@ -38,9 +38,12 @@ serde_json = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
-# `dev`: the wasm exports only the Studio and dev tools use (design note 33). The
-# default web build (@sinua/core) leaves them out; @sinua/core/dev is built with them.
-# Native builds don't read it.
+# `dev`: the exports only the Studio and dev tools use. Web (design note 33): the
+# default build (@sinua/core) leaves them out; @sinua/core/dev is built with them.
+# Native (design note 34): estimate_cost, fx_spec_cost, liquid_suitability,
+# parameter_catalog_json and check_overrides are UniFFI exports only with it. The
+# packages' build.sh enables it for development (tests, the Studios);
+# SINUA_NATIVE_RELEASE=1 (the release workflow) builds the published artefacts without.
 [features]
 dev = []
 

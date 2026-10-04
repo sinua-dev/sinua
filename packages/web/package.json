@@ -6,7 +6,6 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sinua-dev/sinua.git",
-    "directory": "packages/web",
     "directory": "packages/web"
   },
   "homepage": "https://github.com/sinua-dev/sinua/tree/main/packages/web#readme",

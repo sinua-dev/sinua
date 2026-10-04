@@ -6,7 +6,6 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sinua-dev/sinua.git",
-    "directory": "packages/react-native",
     "directory": "packages/react-native"
   },
   "homepage": "https://github.com/sinua-dev/sinua/tree/main/packages/react-native#readme",

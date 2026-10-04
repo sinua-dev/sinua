@@ -681,7 +681,7 @@ binding takes it unchanged. It opens no microphone, builds no audio graph, asks 
 permission and makes no network call.
 
 ```ts
-import { SimulatedVoiceSource } from "@sinua/core";
+import { SimulatedVoiceSource } from "@sinua/core/dev";   // a demo / preview tool, not in the default bundle
 const voice = new SimulatedVoiceSource("barge-in");   // a sample name, a script object or JSON
 mount(canvas, { pattern: "glowing", voice });
 await voice.connect();                                // plays (and loops, for the samples)
@@ -732,7 +732,7 @@ bindings.
 
 **Built-in samples** (`spec/conversations/`, embedded in the engine), all looping:
 `calendar`, `quick-answer`, `long-answer` and `barge-in`, 10–15 s each. List them with
-`conversationSampleNames()` (Web), `SimulatedVoiceSource.sampleNames` (iOS / Android), or
+`conversationSampleNames()` (Web, `@sinua/core/dev`), `SimulatedVoiceSource.sampleNames` (iOS / Android), or
 `SimulatedVoiceSource.BUILT_IN_SAMPLES` on Android, which is a constant for UI built before
 the native library loads.
 

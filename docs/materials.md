@@ -301,7 +301,7 @@ colour, pair `fixed` with a positive `colorLightness` (+0.3 to +0.5).
 
 Reach above ~6 collapses sparse orbs into one blob, which is why these stay moderate.
 
-**Suitability** (`liquidSuitability(state)` → `{ level: recommended | ok | notRecommended, reason, defaults }`, for the Studio badge; the table is in `liquid.rs::suitability`). It was judged on a 34-state sheet of outline and blurred fill, with the tuned defaults:
+**Suitability** (`liquidSuitability(state)`, `@sinua/core/dev` on the web, → `{ level: recommended | ok | notRecommended, reason, defaults }`, for the Studio badge; the table is in `liquid.rs::suitability`). It was judged on a 34-state sheet of outline and blurred fill, with the tuned defaults:
 - **recommended:** searching, solving, listening, connecting, breathing, shaping, glowing, drifting, speaking, metering, typing (three dots merge into one liquid pill)
 - **ok:** working, weaving, composing, confirming, progressing, scanning
 - **notRecommended:**

@@ -43,15 +43,36 @@ resolveFxSpec(spec | json, ctx?): FxSpecResolved     // FX Spec, see ../fx-spec.
 frameFromFxSpec(spec | json, elapsed, ctx?): OrbFrame | null
 new FxSpecPlayer(spec, opts?)                        // 1.1 caller loop: setState / setInput / frame(elapsed, dt)
 fxColorToHsl(color): FxHsl | null
-estimateCost(state, size, overrides?): FxCost | null // render-cost proxy, light/medium/heavy (../engine.md#cost-estimate)
-fxSpecCost(spec | json, ctx?): FxCost | null
 framePacked / frameWithOverridesPacked / frameFromFxSpecPacked → PackedFrame | null
 unpackFrame(packed): OrbFrame | null                 // readPacked(packed, visitor): paint with no objects
 ```
 
+### Dev tools: `@sinua/core/dev`
+
+What only a studio, a dev tool, a test or a demo needs lives in its own entry, so apps don't
+ship it (design note 33, sinua-studio; about 26 KB of the default bundle, 48 KB with the JSON bridges):
+
+```ts
+import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev";
+
+estimateCost(state, size, overrides?): FxCost | null // render-cost proxy, light/medium/heavy (../engine.md#cost-estimate)
+fxSpecCost(spec | json, ctx?): FxCost | null
+liquidSuitability(state): LiquidSuitability | null
+parameterCatalog(): ParameterCatalog
+checkOverrides(pattern, size, overrides): FxDiagnostic[]
+conversationAt(script, t, bands?) / conversationSampleNames() / conversationSample(name)
+new SimulatedVoiceSource(sample | script)            // a scripted conversation, no model or mic
+frameViaJson / frameWithOverridesViaJson / frameFromFxSpecViaJson  // the JSON bridges, for parity tests
+```
+
+`@sinua/core/dev` also re-exports the whole default API, bound to the same (dev) wasm. A tool
+that registers catalog packs or recipes should import everything from it (or alias
+`@sinua/core` to it in its bundler, as the Studio does), so it runs one engine and its views
+draw what it registered.
+
 ### Frame transport: packed `Float64Array` (2026-09-18)
 
-`frame`, `frameWithOverrides` and `frameFromFxSpec` cross the wasm boundary as **one packed `Float64Array`**. wasm-bindgen copies it out of linear memory once, and it is unpacked into the same `OrbFrame` objects as before. The old path, `serde_json` → string → `JSON.parse`, was measured at 10–25× the frame's own compute. The public API didn't change, and the output is **bit-identical**: it's f64 throughout, and `test/packed.test.mjs` checks all 214 golden cases plus every FX Spec example. The JSON bridge stays as `frameViaJson` / `frameWithOverridesViaJson` / `frameFromFxSpecViaJson` (and the raw `*_json` exports).
+`frame`, `frameWithOverrides` and `frameFromFxSpec` cross the wasm boundary as **one packed `Float64Array`**. wasm-bindgen copies it out of linear memory once, and it is unpacked into the same `OrbFrame` objects as before. The old path, `serde_json` → string → `JSON.parse`, was measured at 10–25× the frame's own compute. The public API didn't change, and the output is **bit-identical**: it's f64 throughout, and `test/packed.test.mjs` checks all 214 golden cases plus every FX Spec example. The JSON bridges `frameViaJson` / `frameWithOverridesViaJson` / `frameFromFxSpecViaJson` are in `@sinua/core/dev`, for the parity tests and benchmarks; `frameTransition`, `frameTransitionWithOverrides` and `frameStill` are packed too.
 
 Layout v1 (`crates/core_engine/src/transport.rs`, `src/packed.ts`):
 

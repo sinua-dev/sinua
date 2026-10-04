@@ -98,7 +98,7 @@ it, or ear pods with `front`. Keep or drop both.
 - **Limits** (an error, never trimmed): 64 KB, 96 parts, 4,096 path points in all, lists of 32, numbers within ±1000;
   a path at most 16 KB and 512 commands.
 - Look at all four voice states and at 20 px: the Studio's preview, or the `cost` estimate
-  (`fxSpecCost`).
+  (`fxSpecCost` from `@sinua/core/dev`).
 
 ## 7. Ship it
 

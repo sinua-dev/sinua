@@ -11,6 +11,26 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 ## Unreleased
 
+### Breaking: Studio / dev APIs moved to `@sinua/core/dev`
+
+The default `@sinua/core` entry now carries only what apps draw with; the dev tools moved to
+a new entry, `@sinua/core/dev` (design note 33). Change the import:
+
+```ts
+import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev"; // was "@sinua/core"
+```
+
+- Moved: `parameterCatalog`, `checkOverrides`, `estimateCost`, `fxSpecCost`,
+  `liquidSuitability`, `conversationAt`, `conversationSampleNames`, `conversationSample`,
+  `SimulatedVoiceSource`, and the JSON bridges `frameViaJson`, `frameWithOverridesViaJson`,
+  `frameFromFxSpecViaJson`. Their types stay exported from `@sinua/core`.
+- `@sinua/core/dev` re-exports the whole default API on the same (dev) wasm, so a tool that
+  registers catalog packs or recipes can import everything from it and run one engine.
+- iOS, Android and React Native are unchanged.
+- The default bundle is about 48 KB smaller: the dev tools and the JSON frame bridges left
+  it, and the transition and thumbnail frames now cross as packed arrays. Frames draw as fast
+  as before.
+
 ### Added
 
 - A new family, `character`: voice-assistant characters with a face (FX Spec 1.11,

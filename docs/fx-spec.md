@@ -103,7 +103,7 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 
 ## API
 
-(1.2 adds `lowPower` to every `…With` call and to `ctx`, and the cost helpers `estimateCost` / `fxSpecCost`. See *v1.2* and [engine.md](engine.md#cost-estimate).)
+(1.2 adds `lowPower` to every `…With` call and to `ctx`, and the cost helpers `estimateCost` / `fxSpecCost`, in `@sinua/core/dev` on the web since beta.8. See *v1.2* and [engine.md](engine.md#cost-estimate).)
 
 All platforms are thin wrappers over the same Rust functions:
 

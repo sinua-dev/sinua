@@ -108,7 +108,7 @@ change between loadouts comes with the loadout API.
 
 - Cosmetics are left out at **20 px** unless `accessories` is on; a part's own `when` can say
   otherwise.
-- The recipe limits count the character with its cosmetics: 48 parts and 64 KB.
+- The recipe limits count the character with its cosmetics: 96 parts, 4,096 path points and 64 KB.
 - The party hat leaves every character "light" in the cost estimate. The zoom makes the
   character's own fills smaller, so the cost often goes down.
 
@@ -232,8 +232,17 @@ reason `no-slot`. For what a slot can't say, a recipe lists `tags` and a cosmeti
 `floats`. A character without a required tag skips the item (reason `missing-tag`); an unknown
 tag warns (the schema lists the known ones). `fits` (character names) stays for a brand's explicit list.
 
-`behind` / `above` (lists of part names, for "a hat behind the ears") are reserved: accepted
-and checked now, drawn from the Studio's fitting room release on.
+## Depth: behind the ears
+
+A recipe's parts may name a `role` (`head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`,
+`tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow`, `body`; design note 28). A cosmetic's
+`behind` / `above` lists roles:
+- `"behind": ["ears"]` draws it before the character's first `ears` part, so the ears (and
+  everything after them) cover it: a beanie with the fox's ears poking through;
+- `"above": ["head"]` draws it after the last `head` part;
+- `behind` wins when both match; a character without such a part draws it on top, as before.
+  The built-ins name no roles, so nothing about them changes. An imported character
+  (`docs/character-svg-guides.md`) gets its roles from its layer names.
 
 ## A nudge per item
 
@@ -250,6 +259,5 @@ head turn.
 ## Next in 1.13
 
 Planned additions on top of this format (not in this release yet):
-- brand cosmetics in the Studio editor, SVG import with slot guides, and a fitting room (the
-  draggable slot handles and `behind` / `above` drawn);
-- clearer palette slot names and an `iris` slot on every character.
+- brand cosmetics in the Studio editor and a fitting room (draggable slot handles, a depth
+  control, the whole catalog previewed on a character).

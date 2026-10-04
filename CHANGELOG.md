@@ -156,6 +156,14 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
     colours the glossy eye; a loadout's `iris` picks one by name from `wardrobe.irises` or the
     catalog (`catalog:eyes-hazel`).
 
+- Imported characters (design note 28): a recipe part may name its `role` (`head`, `ears`,
+  `arms`…), and a cosmetic's `behind` / `above` draws against it (a beanie behind a fox's
+  ears). A recipe may now have 96 parts (was 48) and at most 4,096 path points in all.
+  `docs/character-svg-guides.md` describes how to name an SVG's groups and guides so it becomes
+  a character.
+- A 1.13 file without `states` (or missing some) now reacts to the voice: each voice state
+  takes the voice profile. 1.8–1.12 files resolve as before.
+
 ### Changed
 
 - `parameterCatalog()` / `parameterCatalogJson()` no longer carry `description` texts: they are

@@ -342,7 +342,7 @@ no cosmetic; the file carries each one. The guide is
 - **Errors point into `cosmetics`**: `/cosmetics/0/parts/1/part: a cosmetic draws `body` (with
   its layers) and `eyes``. `space` and `surface` aren't allowed (a cosmetic draws in its slot
   and turns with it). The recipe limits apply to the whole character with its cosmetics
-  (48 parts, 64 KB).
+  (96 parts, 4,096 path points, 64 KB).
 - **How it resolves:** the cosmetics go into the character's recipe (a built-in's, or the
   file's `recipe`), which registers under its content key (`recipe:<id>:<hash>`) like a 1.12
   recipe. Platform code doesn't change. A recipe may also carry `cosmetics` itself (always
@@ -376,8 +376,15 @@ no cosmetic; the file carries each one. The guide is
   cosmetic in `cosmetics` / `wardrobe.cosmetics`, and `"<namespace>:<name>"` a pack's palette in
   `palette` (a loadout's too). A name not loaded warns and is skipped. A cosmetic may say
   `slot: "frame"` (round the whole character, behind it), `requires` (capability tags against a
-  recipe's `tags`), `season`, and the reserved `behind` / `above`. A loadout's `wear` entry may
+  recipe's `tags`), `season`, and `behind` / `above` (depth against the recipe parts' `role`,
+  design note 28). A loadout's `wear` entry may
   carry a bounded nudge. See [`character-cosmetics.md`](character-cosmetics.md).
+- **Voice states without `states`** (B2, design note 28): in a 1.13 file, a voice state
+  (`idle`, `listening`, `thinking`, `speaking`, `initializing`) the file has no `states` entry
+  for resolves as an empty entry, so it takes the voice profile: a character file without
+  `states` still listens, thinks and speaks. A key that isn't a voice state still warns and
+  draws the base. 1.8–1.12 files keep the old behaviour (the base design).
+- **Recipe limits** (design note 28): 96 parts (was 48) and 4,096 path points in all.
 - **Registry keys** of a built-in wearing cosmetics hash the character's id and the cosmetics,
   not its recipe text, so an edit to a built-in that draws the same leaves them (and the lock)
   as they were.
@@ -409,7 +416,7 @@ which this file's schema refers to); a worked remix: [`character-remix.md`](char
   keeps the last 32 recipes used.
 - **Errors point into the recipe**: `/recipe/parts/2/segments: expected a whole number from 3 to 128`.
 - **Limits** (a file from outside can't make the engine slow; over a limit is an error, never
-  trimmed): the recipe at most 64 KB; at most 48 parts, a body's inner layers included; lists
+  trimmed): the recipe at most 64 KB; at most 96 parts, a body's inner layers included, and 4,096 path points in all; lists
   (feathers, bars, stripes, glints, stops) at most 32; `segments` 3–128 (an ellipse's too);
   counted things (`count`) 1–24; edge steps at least 1; every number within ±1000. A recipe
   the cost estimate calls `heavy` is a warning.

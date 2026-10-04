@@ -53,14 +53,17 @@ parts sit on, so they wrap round when the head turns. A shallower `depth` turns 
 | `roles` | optional | `{ "primary": "<slot>", "secondary": "<slot>", "accent": "<slot>" }` (FX Spec 1.13): the slots a named palette (`"palette": "sunset"`) or a role colour (`{ "primary": "#E63946" }`) repaints. A role left out isn't repainted. |
 
 Every part has `part` (its kind) and `space` (a body layer inside `inner` may leave it out), and
-may have `when` (`notSmallOrAccessories`: left out at 20 px with `accessories` off) and `show`
-(`{ idle, listening, thinking, speaking }`, 0–1: how visible it is per voice state).
+may have `when` (`notSmallOrAccessories`: left out at 20 px with `accessories` off), `show`
+(`{ idle, listening, thinking, speaking }`, 0–1: how visible it is per voice state) and `role`
+(what it is: `head`, `ears`, `arms`…; a cosmetic's `behind` / `above` draws against it, design
+note 28).
 
 ## Limits
 
 Over a limit is an error, never trimmed: a file from outside can't make the engine slow.
 
-- The recipe: at most 64 KB; at most 48 parts, a body's layers included.
+- The recipe: at most 64 KB; at most 96 parts, a body's layers included (48 before design note 28); at most 4,096
+  points in all its path shapes together, after flattening.
 - Lists (feathers, bars, stripes, glints, stops, layers): at most 32 entries.
 - `segments`: 3–128. `count`: 1–24. Rounding steps: at least 1.
 - Every number within ±1000.

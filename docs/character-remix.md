@@ -95,7 +95,7 @@ it, or ear pods with `front`. Keep or drop both.
 
 - The engine reports a mistake with its place: `/recipe/parts/2/rise: expected a number`.
   `resolveFxSpec` returns these, and `SinuaView` reports them through `onError`.
-- **Limits** (an error, never trimmed): 64 KB, 48 parts, lists of 32, numbers within ±1000;
+- **Limits** (an error, never trimmed): 64 KB, 96 parts, 4,096 path points in all, lists of 32, numbers within ±1000;
   a path at most 16 KB and 512 commands.
 - Look at all four voice states and at 20 px: the Studio's preview, or the `cost` estimate
   (`fxSpecCost`).

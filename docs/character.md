@@ -135,8 +135,8 @@ new kind of sparkle, a new mouth mechanism) is a new part in Rust.
 - **Size:** the reader and the recipes cost about 17 KB gzip in the wasm (1.12 items 1a
   and 1b saved 16 KB just before). FX Spec-carried recipes (1.12, item 3) reuse the same
   reader; the registry, the limits and the FX Spec wiring add about 7 KB gzip.
-- **Limits.** Every recipe, built-in or from a file, stays within: 64 KB, 48 parts (inner
-  layers included), lists of 32, `segments` 3–128, `count` 1–24, edge steps ≥ 1, numbers
+- **Limits.** Every recipe, built-in or from a file, stays within: 64 KB, 96 parts (inner
+  layers included), 4,096 path points in all, lists of 32, `segments` 3–128, `count` 1–24, edge steps ≥ 1, numbers
   within ±1000. Over a limit is an error with its pointer, never trimmed.
 - **In an FX Spec (1.12).** A file's `recipe` is registered (`character/registry.rs`) under
   `recipe:<id>:<fnv-1a 64>` and its `pattern` resolves to that key, which `render` draws like

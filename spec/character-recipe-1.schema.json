@@ -9,16 +9,48 @@
       "description": "A cosmetic: `body` and `eyes` parts drawn on one of the character's slots, in the slot's local units (the slot point is (0, 0), up is −y; on `headTop` a hat has 40 units of height). It moves with the slot: the pose, the head turn, the hop.",
       "properties": {
         "above": {
-          "description": "Reserved (FX Spec 1.13, drawn from item 7 on): part names to draw in front of.",
+          "description": "Part roles to draw in front of: the cosmetic goes after the last part with one of them. `behind` wins when both match.",
           "items": {
-            "type": "string"
+            "enum": [
+              "head",
+              "face",
+              "ears",
+              "arms",
+              "legs",
+              "antenna",
+              "hair",
+              "tail",
+              "eyes",
+              "mouth",
+              "nose",
+              "cheeks",
+              "neck",
+              "shadow",
+              "body"
+            ]
           },
           "type": "array"
         },
         "behind": {
-          "description": "Reserved (FX Spec 1.13, drawn from item 7 on): part names to draw behind (`[\"ears\", \"antenna\"]`).",
+          "description": "Part roles to draw behind (design note 28): the cosmetic goes before the first part with one of them (`[\"ears\"]`: a hat behind the ears). A character without such a part: on top, as usual.",
           "items": {
-            "type": "string"
+            "enum": [
+              "head",
+              "face",
+              "ears",
+              "arms",
+              "legs",
+              "antenna",
+              "hair",
+              "tail",
+              "eyes",
+              "mouth",
+              "nose",
+              "cheeks",
+              "neck",
+              "shadow",
+              "body"
+            ]
           },
           "type": "array"
         },
@@ -99,7 +131,7 @@
               }
             ]
           },
-          "maxItems": 48,
+          "maxItems": 96,
           "minItems": 1,
           "type": "array"
         },
@@ -219,6 +251,26 @@
           "const": "body",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "shape": {
           "$ref": "#/$defs/shape",
           "description": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes)."
@@ -319,6 +371,26 @@
           "const": "eyes",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "scale": {
           "description": "Its size: `[at 64 and 32 px, at 20 px]`.",
           "items": {
@@ -395,6 +467,26 @@
         "part": {
           "const": "band",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "shape": {
           "$ref": "#/$defs/shape",
@@ -491,6 +583,26 @@
         "part": {
           "const": "eyes",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "scale": {
           "description": "Its size: `[at 64 and 32 px, at 20 px]`.",
@@ -609,6 +721,26 @@
           "minItems": 4,
           "type": "array"
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "show": {
           "additionalProperties": false,
           "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
@@ -690,6 +822,26 @@
           "maxItems": 2,
           "minItems": 2,
           "type": "array"
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "show": {
           "additionalProperties": false,
@@ -795,6 +947,26 @@
           "const": "patch",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "shape": {
           "$ref": "#/$defs/shape",
           "description": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes)."
@@ -883,6 +1055,26 @@
           "const": "rim",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "show": {
           "additionalProperties": false,
           "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
@@ -970,6 +1162,26 @@
         "part": {
           "const": "shade",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "shape": {
           "$ref": "#/$defs/shape",
@@ -1062,6 +1274,26 @@
           "maxItems": 5,
           "minItems": 5,
           "type": "array"
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "show": {
           "additionalProperties": false,
@@ -1249,6 +1481,26 @@
           "const": "arms",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "shoulder": {
           "description": "The right shoulder `[x, y]`; the left mirrors it round `mirror`.",
           "items": {
@@ -1392,6 +1644,26 @@
         "part": {
           "const": "beak",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "show": {
           "additionalProperties": false,
@@ -1582,6 +1854,26 @@
           "const": "body",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "shape": {
           "$ref": "#/$defs/shape",
           "description": "A shape: `{ \"ellipse\": [cx, cy, rx, ry, rotation, segments] }`, `{ \"roundRect\": [x, y, w, h, radius, step] }` or `{ \"path\": \"M… Z\" }` (an SVG path with `M L H V C S Q T Z`; later subpaths are holes)."
@@ -1689,6 +1981,26 @@
         "r": {
           "$ref": "#/$defs/number",
           "description": "Its radius."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "show": {
           "additionalProperties": false,
@@ -1810,6 +2122,26 @@
         "part": {
           "const": "crest",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "root": {
           "$ref": "#/$defs/number",
@@ -1937,6 +2269,26 @@
           "$ref": "#/$defs/number",
           "description": "Each pod's distance from `x`."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "show": {
           "additionalProperties": false,
           "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
@@ -2037,6 +2389,26 @@
         "part": {
           "const": "eyes",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "scale": {
           "description": "Its size: `[at 64 and 32 px, at 20 px]`.",
@@ -2150,6 +2522,26 @@
           "const": "faceScreen",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "sclera": {
           "description": "The glossy eye has a white sclera and a dark lid line instead of a dark lens.",
           "type": "boolean"
@@ -2247,6 +2639,26 @@
           "const": "feet",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "show": {
           "additionalProperties": false,
           "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
@@ -2341,6 +2753,26 @@
           "const": "fin",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "show": {
           "additionalProperties": false,
           "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
@@ -2417,6 +2849,26 @@
         "r": {
           "$ref": "#/$defs/number",
           "description": "Its radius."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "segments": {
           "$ref": "#/$defs/number",
@@ -2501,6 +2953,26 @@
         "part": {
           "const": "helmet",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "shades": {
           "description": "`[light, mid, dark]` (palette names).",
@@ -2654,6 +3126,26 @@
           "$ref": "#/$defs/number",
           "description": "How fast the notes rise."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "scale": {
           "description": "A note's size: `[at 64 px, at 32 and 20 px]`.",
           "items": {
@@ -2760,6 +3252,26 @@
           "const": "ovalMouth",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "scale": {
           "description": "Its size: `[at 64 and 32 px, at 20 px]`.",
           "items": {
@@ -2857,6 +3369,26 @@
           "minItems": 2,
           "type": "array"
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "show": {
           "additionalProperties": false,
           "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
@@ -2939,6 +3471,26 @@
           "const": "sparkles",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "show": {
           "additionalProperties": false,
           "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
@@ -3012,6 +3564,26 @@
         "part": {
           "const": "spirit",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "shine": {
           "$ref": "#/$defs/colour",
@@ -3142,6 +3714,26 @@
           "const": "stand",
           "description": "The part's kind."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "segments": {
           "$ref": "#/$defs/number",
           "description": "How many points a curve or ellipse is drawn with: 3–128."
@@ -3262,6 +3854,26 @@
           "$ref": "#/$defs/number",
           "description": "How high they rise (kept inside the box)."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "show": {
           "additionalProperties": false,
           "description": "How visible it is per voice state, 0–1: `{ idle, listening, thinking, speaking }`; a state left out is 0. Absent: always, at its own alpha.",
@@ -3381,6 +3993,26 @@
           "$ref": "#/$defs/number",
           "description": "Its radius."
         },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
+        },
         "segments": {
           "$ref": "#/$defs/number",
           "description": "How many points a curve or ellipse is drawn with: 3–128."
@@ -3471,6 +4103,26 @@
         "part": {
           "const": "torso",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "shades": {
           "description": "`[light, mid, dark]` (palette names).",
@@ -3593,6 +4245,26 @@
         "part": {
           "const": "wings",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "segments": {
           "$ref": "#/$defs/number",
@@ -3729,6 +4401,26 @@
         "part": {
           "const": "yoke",
           "description": "The part's kind."
+        },
+        "role": {
+          "description": "What the part is (design note 28): `head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`, `tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow` or `body`. A cosmetic's `behind` / `above` draws against it. Absent: unnamed.",
+          "enum": [
+            "head",
+            "face",
+            "ears",
+            "arms",
+            "legs",
+            "antenna",
+            "hair",
+            "tail",
+            "eyes",
+            "mouth",
+            "nose",
+            "cheeks",
+            "neck",
+            "shadow",
+            "body"
+          ]
         },
         "segments": {
           "$ref": "#/$defs/number",
@@ -4024,7 +4716,7 @@
       "type": "object"
     },
     "parts": {
-      "description": "What is drawn, back to front: up to 48 parts, a body's inner layers included.",
+      "description": "What is drawn, back to front: up to 96 parts, a body's inner layers included, and 4,096 path points in all.",
       "items": {
         "oneOf": [
           {
@@ -4098,7 +4790,7 @@
           }
         ]
       },
-      "maxItems": 48,
+      "maxItems": 96,
       "type": "array"
     },
     "profile": {

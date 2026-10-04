@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { FxSpecPlayer, StateTransition, WEAR_S, applyLoadout, cosmeticsFor, frameStill, resolveFxSpec } from "../dist/index.js";
+import { FxSpecPlayer, StateTransition, WEAR_S, applyLoadout, characterSlots, cosmeticsFor, frameStill, nearestSlot, resolveFxSpec } from "../dist/index.js";
 
 const read = (f) => readFileSync(fileURLToPath(new URL(`../../../spec/${f}`, import.meta.url)), "utf8");
 const vectors = JSON.parse(read("loadout-vectors.json"));
@@ -81,4 +81,16 @@ test("a stale loadout warns and the character still draws", () => {
   const player = new FxSpecPlayer(spec, { loadout: { loadout: 3, wear: ["top-hat"], palette: "neon" } });
   assert.ok(player.frame(0, 0.016).frame);
   assert.deepEqual(player.loadoutDiagnostics.map((d) => d.path).sort(), ["/loadout/loadout", "/loadout/palette", "/loadout/wear/0"]);
+});
+
+test("characterSlots: where a dragged item snaps (design note 29)", () => {
+  const slots = characterSlots("buzzy", 64, 1, { still: 1 });
+  assert.deepEqual(slots.map((s) => s.name).sort(), ["chest", "face", "headTop", "neck"]);
+  const top = slots.find((s) => s.name === "headTop");
+  assert.ok(top.x > 0 && top.x < 64 && top.y > 0 && top.y < 32, JSON.stringify(top));
+  // Dropped just above the head: the hat slot; restricted to the item's own slot.
+  assert.equal(nearestSlot(slots, top.x, top.y - 3).name, "headTop");
+  assert.equal(nearestSlot(slots, top.x, top.y - 3, { names: ["chest"] }).name, "chest");
+  assert.equal(nearestSlot(slots, 0, 0, { within: 2 }), null);
+  assert.deepEqual(characterSlots("working", 64, 1), []);
 });

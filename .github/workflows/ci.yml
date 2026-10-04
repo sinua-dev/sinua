@@ -134,6 +134,9 @@ jobs:
       - name: packages/core -- test (reactive, 210-case wasm parity, RN checkpoint sync)
         working-directory: packages/core
         run: npm test
+      # spec/size-budget.json; the native limits are checked in release.yml on the release variant.
+      - name: size -- web inline within budget
+        run: node scripts/size-budget.mjs --web
       # The docs site's generated tables and code samples (apps/site, scripts/docs).
       - name: docs -- generated partials up to date
         run: node scripts/docs/gen.mjs --check

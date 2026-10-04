@@ -25,7 +25,7 @@ lockstep), `sinua.version` in `packages/android/gradle.properties` and the coord
 
 ```sh
 node scripts/release/set-version.mjs 0.1.0-beta.2   # bump: VERSION + every copy
-# add the entry to CHANGELOG.md, commit, then:
+# add the entry to CHANGELOG.md with its size line (see *Size budget*), commit, then:
 git tag v0.1.0-beta.2 && git push origin v0.1.0-beta.2
 ```
 
@@ -109,6 +109,34 @@ Files are the tight one. Gradle's staging repository writes, per file, `.md5`, `
 so `release.yml` zips the bundle without the rest: **140 files per release** (5 files × 4 ×
 7 modules), which keeps even seven releases a month under 1,000. Batch fixes into fewer
 releases anyway.
+
+## Size budget
+
+The limits are in `spec/size-budget.json`, in bytes, for what is published (the release
+variant). The user set them (2026-10-05) and only the user raises one; over a limit, trim
+first, then move optional parts out of the core, then bring the numbers to the user.
+
+| Artefact | Limit | Checked |
+|---|---|---|
+| `@sinua/core` `pkg/sinua_core_inline.js` | 532,480 B (520 KiB) | every push (CI web job, `scripts/ci-local.sh`) |
+| Android arm64 `libcore_engine.so` | 2,306,867 B | `release.yml`, after the release build, before staging |
+| iOS device `libcore_engine.a` (after `strip -S`) | 4,718,592 B | `release.yml`, after the release build, before zipping |
+
+`scripts/size-budget.mjs` measures and fails over a limit. The native limits only hold for
+the release variant: a default `build.sh` build carries the Studio / dev exports and is about
+100 KB larger, so regular CI doesn't check them. Measure locally before a release:
+
+```sh
+SINUA_NATIVE_RELEASE=1 packages/android/build.sh
+SINUA_NATIVE_RELEASE=1 packages/ios/build.sh
+node scripts/size-budget.mjs --web \
+  --android packages/android/src/main/jniLibs/arm64-v8a/libcore_engine.so \
+  --ios packages/ios/core_engineFFI.xcframework/ios-arm64/libcore_engine.a --line
+```
+
+`--line` prints the line every CHANGELOG entry carries under its version heading, e.g.
+`Size: web 511,877 B (gzip 382,107), Android arm64 .so 2,124,360 B, iOS .a 4,393,832 B (release builds).`
+Rebuild without `SINUA_NATIVE_RELEASE` afterwards: the tests and the Studios need the dev variant.
 
 ## The site (sinua.dev)
 

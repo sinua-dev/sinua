@@ -111,6 +111,7 @@ step "codegen: tests";                      node --test 'scripts/codegen/test/*.
 step "packages/core: npm ci";        (cd packages/core && npm ci)
 step "packages/core: npm run build"; (cd packages/core && npm run build)
 step "packages/core: npm test";      (cd packages/core && npm test)
+step "size: web inline within budget"; node scripts/size-budget.mjs --web
 
 # The docs site's generated tables and code samples (apps/site): partials match spec/parameters.json + the engine's messages,
 # and every snippet resolves / type-checks. Needs packages/core's dist.

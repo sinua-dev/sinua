@@ -1,0 +1,6 @@
+{
+  "//": "Size limits in bytes, measured on the release variant (the published artefacts). Approved by the user on 2026-10-05; only the user changes them. Checked by scripts/size-budget.mjs: the web inline on every push (CI web job, ci-local), the native libraries in the release workflow before anything is published. docs/publishing.md, *Size budget*.",
+  "webInline": 532480,
+  "androidSo": 2306867,
+  "iosA": 4718592
+}

@@ -110,6 +110,8 @@ jobs:
         env:
           SINUA_NATIVE_RELEASE: "1"
         run: packages/android/build.sh
+      - name: Size budget (arm64 .so, release variant; spec/size-budget.json)
+        run: node scripts/size-budget.mjs --android packages/android/src/main/jniLibs/arm64-v8a/libcore_engine.so
       - name: Stage (signed when SIGNING_KEY is set)
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
@@ -169,6 +171,8 @@ jobs:
         env:
           SINUA_NATIVE_RELEASE: "1"
         run: packages/ios/build.sh
+      - name: Size budget (device .a, release variant; spec/size-budget.json)
+        run: node scripts/size-budget.mjs --ios packages/ios/core_engineFFI.xcframework/ios-arm64/libcore_engine.a
       - name: Zip, checksum, distribution trees
         run: scripts/release/build.sh --only swift
       - uses: actions/upload-artifact@v4

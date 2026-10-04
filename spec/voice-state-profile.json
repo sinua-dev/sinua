@@ -1,6 +1,6 @@
 {
   "$comment": "The voice-state profile: what each agent state does to ANY pattern, as engine overrides. Compiled into the engine (crates/core_engine/src/voice_state.rs) and returned by `voiceStateProfile(pattern, state)`; the FX Spec resolver fills these into a 1.8+ file's voice-state entries for keys the file doesn't set, so an author patches the profile instead of restating it. `speed` multiplies the pattern's tuned speed; `overrides` are engine keys; `audioInput` tells a view which level to feed `audioLevel` (it is not an engine key). A negative `audioStrength` is the inward inhale, positive the outward swell. Per-pattern entries under `patterns` override the generic state for that pattern only.",
-  "profileVersion": 2,
+  "profileVersion": 3,
   "simulated": {
     "$comment": "Nothing here is simulated any more: `ink` and the listening inhale became engine keys in FX Spec 1.8, and the views' clock became phase-continuous on 2026-09-20 -- including the FX Spec path, so a state with its own `speed` keeps the pose. Kept as a field so tools reading it don't break."
   },
@@ -10,6 +10,17 @@
     "listening": 2,
     "thinking": 3,
     "speaking": 4
+  },
+  "transitions": {
+    "$comment": "Seconds a voice-state change takes when the FX Spec has no rule for the pair (design note 31): the exact pair, then `from->*`, then `*->to`, else 0.6. Fast into speaking (the visual answers the voice at once), soft into thinking, slow back to idle. A view's transition clock reaches ~95 % of the way in this time.",
+    "*->speaking": 0.25,
+    "thinking->speaking": 0.3,
+    "idle->listening": 0.3,
+    "speaking->listening": 0.45,
+    "listening->thinking": 0.4,
+    "*->thinking": 0.5,
+    "initializing->idle": 0.8,
+    "*->idle": 0.9
   },
   "base": {
     "colorHue": 251.9,

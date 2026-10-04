@@ -206,6 +206,15 @@ previous ? drawCrossDissolve(ctx, previous, frame, blend) : draw(ctx, frame);
 
 Parsing happens on every call. A spec is a few KB of JSON, which is cheap next to rendering.
 
+### The transition contract (design note 31)
+
+What the engine gives a view so every change stays continuous, however long the session has run and however often it is interrupted:
+
+- **Rate keys accumulate.** Keys that multiply time (`pulsePeriod`, `period`, `holdDuration`, `surfaceSpeed`, `hueSpeed`, `noiseSpeed`, `holoSpeed`, `jumpSpeed`, `spin`, `scanMul`; `warp`'s `warpSpeed / period`) would make the motion jump when they change mid-session, because `t × rate` rescales all the time already elapsed. `transitionMix` and `voiceBlend` return `rates`: each accumulated key (`periodCycles`, …) with its rate now. A view adds `rate × dt` (engine time) to each sum, starting from `t × rate`, and passes the sums with the overrides; the modes read them in place of `t × rate`. Without them, the old formula: plain frames are unchanged.
+- **`voiceBlend(sides, weights, target, size)`** mixes a pattern's voice-state sides by weight (the view moves the weights with its clock; `target` is the state it is heading to). Numbers blend, hues the short way round; arrival keys (a character's `turnBlink`) take the target's value at once; other counts and choices come from the heaviest side with the second's in `structuralTo`, dissolved by `swap`. An interruption needs no special case: the weights head somewhere else from where they are.
+- **Counts that fade (TS7).** Between voice states some patterns change a count: the orb lattice (`nodeCount` on glowing / calibrating / progressing), the spectrum's `barCount`, sonar's `echoCount`. `voiceBlend` blends them as numbers and adds `<key>Layout`, the largest. With it the set is laid out once: lattice dots in an order whose every prefix covers the sphere evenly, so extra dots fade in and none moves; bars join one at a time into gaps spread round the ring, each keeping its height pattern; echoes fade. At the largest count it is today's layout.
+- **A guard:** a test changes every number key a little and fails if one moves the frame far more at t = 300 s than at t = 10 s without being a rate key; another fails if a voice state changes a count or choice that isn't a density.
+
 ## v1.2: `performance`
 
 ```json
@@ -289,7 +298,7 @@ Unchanged: `audioLevel`, `muted`, `quality`, `accuracy`, `progress`, free input 
 
 ## v1.9: `transitions`
 
-How state changes animate, per pair. Optional; without it every change takes 0.6 s, easeInOut.
+How state changes animate, per pair. Optional. Without a rule for a pair, a voice-state change takes the voice-state profile's time (below) and anything else 0.6 s; the curve is then the view's own transition clock.
 
 ```json
 { "fxSpec": "1.9", "object": "orb", "pattern": "glowing",
@@ -300,10 +309,23 @@ How state changes animate, per pair. Optional; without it every change takes 0.6
     "*->idle": { "duration": 0.9 } } }
 ```
 
-- **Keys:** `default`, `"from->to"`, `"from->*"`, `"*->to"`, with `states` keys (`""`, the base design, has no key of its own and is matched by `*` and `default`). The most specific match wins field by field: the exact pair, then `from->*`, then `*->to`, then `default`, then 0.6 s / easeInOut.
+- **Keys:** `default`, `"from->to"`, `"from->*"`, `"*->to"`, with `states` keys (`""`, the base design, has no key of its own and is matched by `*` and `default`). The most specific match wins field by field: the exact pair, then `from->*`, then `*->to`, then `default`, then the profile's time / 0.6 s.
+- **The voice-state profile's times** (`spec/voice-state-profile.json` → `transitions`, design note 31), used when the file has no rule:
+
+  | Change | Seconds |
+  |---|---|
+  | → speaking | 0.25 |
+  | thinking → speaking | 0.3 |
+  | idle → listening | 0.3 |
+  | speaking → listening | 0.45 |
+  | listening → thinking | 0.4 |
+  | → thinking | 0.5 |
+  | initializing → idle | 0.8 |
+  | → idle | 0.9 |
+  | anything else | 0.6 |
 - **Fields:** `duration` (seconds, 0–10; `0` = a cut) and `curve` (one of the binding curves: `linear`, `ease`, `easeIn`, `easeOut`, `easeInOut`).
 - **Diagnostics:** a key that isn't `default` or `a->b` is an error; a state name that isn't in `states` is a warning (the entry never applies); an unknown curve or an out-of-range duration is an error.
-- `fxSpecTransition(spec, from, to)` returns `{ duration, curve }` for a pair; the players call it on every state change. The technique (interpolate / morph / cross-fade) isn't in the file: the engine picks it from the pair (see *Caller loop*).
+- `fxSpecTransition(spec, from, to)` returns `{ duration, curve, authored }` for a pair; the players call it on every state change. `authored` says the file wrote `curve` for this change: a view keeps that curve (carrying the motion's velocity into it); otherwise it uses its own transition clock, which reaches ~95 % of the way in `duration`. The technique (interpolate / morph / cross-fade) isn't in the file: the engine picks it from the pair (see *Caller loop*).
 
 ## v1.13: cosmetics
 

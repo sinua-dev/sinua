@@ -170,6 +170,22 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   snaps to. Thumbnails of a recipe file are about 3× faster: whether a character is heavy to draw
   is now measured once per character, not on every resolve.
 
+- Transitions (design note 31, part 1: the engine):
+  - Rate keys (`pulsePeriod`, `period`, `surfaceSpeed`, …) can be accumulated by the view
+    (`rates` on `transitionMix`, `<key>Cycles` overrides), so a state change late in a
+    session no longer makes a pattern flash or boil. Plain frames are unchanged. This is a
+    bug fix for every file, with no version gate.
+  - `voiceBlend(sides, weights, target, size)`: the voice states' weighted mix, for views
+    whose transition clock keeps a weight per state.
+  - Counts that change between voice states fade instead of swapping: the orb lattice's
+    dots, the spectrum's bars, sonar's echoes. Plain frames are unchanged.
+  - Voice-state changes take the profile's time per pair when the file has no rule
+    (0.25 s into speaking … 0.9 s back to idle; profileVersion 3). `FxTransition.authored`
+    says whether the file wrote the curve.
+  - The glow fades its faintest layers instead of dropping them, the speaker ring's
+    shimmer grows from nothing, and a character's elbow eases where its two IK solutions
+    tie (beep's resting arm moves by up to 4 units in the thinking pose).
+
 - Voice (design note 30, from DevinFit's device test):
   - iOS `OpenAILiveVoiceSource` / `OpenAIRealtimeVoiceSource` set up the audio session
     (`.videoChat` on the loudspeaker, Bluetooth; `audioSession: .receiver` / `.unmanaged`).

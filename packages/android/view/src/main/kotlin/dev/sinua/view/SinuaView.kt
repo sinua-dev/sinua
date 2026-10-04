@@ -934,8 +934,10 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
                 // profile goes *under* the app's own overrides; the voice's live keys stay last.
                 val lifecycle = lifecycle()
                 if (sawLifecycle && lifecycle != lastLifecycle) {
-                    // A state change animates (0.6 s easeInOut, or `crossFade` seconds); reduced motion cuts.
-                    transition.start(if (reduced) 0.0 else (crossFade ?: 0.6), "easeInOut")
+                    // A state change runs on the transition clock for the voice-state profile's
+                    // time for the pair (design note 31), or `crossFade` seconds; reduced motion cuts.
+                    val pair = fxSpecTransition("{}", lastLifecycle, lifecycle)
+                    transition.start(if (reduced) 0.0 else (crossFade ?: pair.duration), pair.curve)
                 }
                 sawLifecycle = true
                 lastLifecycle = lifecycle
@@ -956,8 +958,9 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
                 if (transition.active) {
                     transition.frames(side, size, t, live)
                 } else {
-                    transition.settle(side)
-                    frameWithOverrides(state, size, t, side.overrides + live)?.let { FxFrames(it, null, 1.0) }
+                    // The side's overrides, plus the rate sums once a rate changed mid-session.
+                    val own = transition.steadyOverrides(side, size, t)
+                    frameWithOverrides(state, size, t, own + live)?.let { FxFrames(it, null, 1.0) }
                 }
             }
         }
@@ -1000,7 +1003,7 @@ internal class FxStatePlayer {
         if (started && key == current) return
         if (started) {
             val t = fxSpecTransition(spec, current, key)
-            transition.start(crossFade ?: t.duration, t.curve)
+            transition.start(crossFade ?: t.duration, t.curve, crossFade == null && t.authored)
         }
         started = true
         current = key
@@ -1008,6 +1011,9 @@ internal class FxStatePlayer {
 
     /** End a running transition now (reduced motion). */
     fun skipTransition() = transition.cancel()
+
+    /** The rate sums the transition keeps for [pattern] (design note 31); for tests. */
+    internal fun rateSums(pattern: String) = transition.rateSums(pattern)
 
     /** The loadout changed: ease from what is showing (design note 25). */
     fun wear() = transition.wear()
@@ -1038,7 +1044,32 @@ internal class FxStatePlayer {
             transition.cancel()
             return null
         }
-        return transition.frames(s, size, elapsed * transition.speed(s, size), extra)
+        return transition.frames(s, size, phase(elapsed, transition.speed(s, size)), extra)
+    }
+
+    private var phaseBase = 0.0
+    private var elapsedBase = 0.0
+    private var phaseSpeed: Double? = null
+    private var lastElapsed = 0.0
+
+    /**
+     * The engine time: pinned at each speed change and run from there, so a state with
+     * its own speed (or a mixed speed mid-transition) doesn't jump the pose. With one
+     * speed it is exactly `elapsed × speed`.
+     */
+    private fun phase(elapsed: Double, speed: Double): Double {
+        if (elapsed < lastElapsed) phaseSpeed = null
+        val old = phaseSpeed
+        if (old == null) {
+            phaseBase = 0.0
+            elapsedBase = 0.0
+        } else if (old != speed) {
+            phaseBase += (lastElapsed - elapsedBase) * old
+            elapsedBase = lastElapsed
+        }
+        phaseSpeed = speed
+        lastElapsed = elapsed
+        return phaseBase + (elapsed - elapsedBase) * speed
     }
 
     companion object {

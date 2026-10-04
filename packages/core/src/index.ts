@@ -337,6 +337,12 @@ export interface TransitionMix {
   structuralTo: Record<string, number>;
   /** `params`: the weight of the `overrides + structuralTo` frame. */
   swap: number;
+  /**
+   * Accumulated rate key (`periodCycles`, ...) -> its rate now, per second of engine
+   * time (design note 31). A view adds `rate * dt` to each sum and passes the sums with
+   * the overrides, so a rate that changes mid-session doesn't make the motion jump.
+   */
+  rates: Record<string, number>;
 }
 
 /** One instant of a simulated conversation (`core_engine::ConversationFrame`). */
@@ -396,6 +402,8 @@ export interface ConversationScript {
 export interface FxTransition {
   duration: number;
   curve: string;
+  /** The file's author wrote `curve` for this change: keep it (velocity carried). Otherwise the view's own clock. */
+  authored: boolean;
 }
 
 /** Mirrors `core_engine::Resolved` in Rust. */

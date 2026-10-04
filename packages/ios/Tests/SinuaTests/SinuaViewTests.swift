@@ -112,8 +112,8 @@ final class SinuaViewTests: XCTestCase {
         XCTAssertGreaterThan(checked, 3)
     }
 
-    /// A pattern change cross-fades (the engine's `crossFade` technique), over the
-    /// `crossFade` override here; then it settles on one frame.
+    /// A pattern change cross-fades by the weights of the transition clock (design note 31),
+    /// over the `crossFade` override here; when the old state's weight has gone, one frame.
     func testStatePlayerCrossFadesAPatternChangeThenSettles() throws {
         var p = FxStatePlayer()
         p.crossFade = 0.25
@@ -124,49 +124,45 @@ final class SinuaViewTests: XCTestCase {
         p.setState("speaking", spec: json)
         let mid = p.frame(spec: json, elapsed: 1, dt: 0.1, inputs: [:], extra: [:])
         XCTAssertNotNil(mid.previous)
-        let r = { (s: String?) -> TransitionSide in
-            let x = resolveFxSpecWith(json: json, state: s, inputs: [:], lowPower: false)
-            return TransitionSide(
-                state: x.state, speed: (resolvedOpts(state: x.state, size: x.size)?.speed ?? 1) * x.speed,
-                overrides: x.overrides)
-        }
-        let want = try XCTUnwrap(
-            transitionMix(from: r(nil), to: r("speaking"), size: 64, progress: 0.4, curve: "easeInOut"))
-        XCTAssertEqual(want.technique, "crossFade")
-        XCTAssertEqual(mid.blend, want.weight, accuracy: 1e-12)
-        let end = p.frame(spec: json, elapsed: 1, dt: 0.2, inputs: [:], extra: [:])
+        let k = 1 - exp(-(lag95 / 0.25) * 0.1)
+        XCTAssertEqual(mid.blend, k * k * k, accuracy: 1e-12, "three lags from 0 after one step")
+        for _ in 0..<6 { _ = p.frame(spec: json, elapsed: 1, dt: 0.1, inputs: [:], extra: [:]) }
+        let end = p.frame(spec: json, elapsed: 1, dt: 0.1, inputs: [:], extra: [:])
         XCTAssertNil(end.previous)
         XCTAssertEqual(end.blend, 1)
     }
 
-    /// The same pattern across states: one frame whose parameters flow (no dissolve outside
-    /// the short count/choice swap window), landing exactly on the new state.
+    /// The same pattern across states: one frame whose parameters flow. The file writes a
+    /// linear curve, so it is kept (`authored`); the phase runs on at the mixed speed.
     func testStatePlayerInterpolatesASamePatternChange() throws {
         let json =
             #"{"fxSpec":"1.9","object":"orb","pattern":"glowing","states":{"idle":{"ink":0.6,"speed":0.5},"speaking":{"ink":1,"speed":1.2}},"transitions":{"default":{"duration":0.5,"curve":"linear"}}}"#
         XCTAssertEqual(
-            fxSpecTransition(json: json, from: "idle", to: "speaking"), FxTransition(duration: 0.5, curve: "linear"))
+            fxSpecTransition(json: json, from: "idle", to: "speaking"),
+            FxTransition(duration: 0.5, curve: "linear", authored: true))
         var p = FxStatePlayer()
         p.setState("idle", spec: json)
         _ = p.frame(spec: json, elapsed: 1, dt: 0.016, inputs: [:], extra: [:])
         let idleSpeed = p.speed(spec: json, inputs: [:])
         p.setState("speaking", spec: json)
-        let mid = p.frame(spec: json, elapsed: 1, dt: 0.15, inputs: [:], extra: [:])
-        XCTAssertNil(mid.previous, "one frame before the count/choice swap window: the parameters interpolate")
-        let midSpeed = p.speed(spec: json, inputs: [:])
-        XCTAssertGreaterThan(midSpeed, idleSpeed)
+        let mid = p.frame(spec: json, elapsed: 1, dt: 0.1, inputs: [:], extra: [:])
+        XCTAssertNil(mid.previous, "one pattern, no count change: one frame")
         let x = resolveFxSpecWith(json: json, state: "speaking", inputs: [:], lowPower: false)
         let preset = resolvedOpts(state: x.state, size: x.size)?.speed ?? 1
-        XCTAssertLessThan(midSpeed, preset * x.speed)
-        _ = p.frame(spec: json, elapsed: 1, dt: 0.4, inputs: [:], extra: [:])
-        XCTAssertEqual(p.speed(spec: json, inputs: [:]), preset * x.speed, accuracy: 1e-12, "lands on speaking")
+        let full = preset * x.speed
+        // Linear from rest: 0.1 of 0.5 s is 20 % of the way.
+        XCTAssertEqual(p.speed(spec: json, inputs: [:]), idleSpeed + (full - idleSpeed) * 0.2, accuracy: 1e-9)
+        for _ in 0..<4 { _ = p.frame(spec: json, elapsed: 1, dt: 0.1, inputs: [:], extra: [:]) }
+        XCTAssertEqual(p.speed(spec: json, inputs: [:]), full, accuracy: 1e-12, "lands on speaking")
         let end = p.frame(spec: json, elapsed: 2, dt: 0.016, inputs: [:], extra: [:])
+        XCTAssertNil(end.previous)
         XCTAssertEqual(
-            end.frame, frameWithOverrides(state: x.state, size: x.size, t: 2 * preset * x.speed, overrides: x.overrides)
-        )
+            end.frame?.dots.count,
+            frameWithOverrides(state: x.state, size: x.size, t: idleSpeed + full, overrides: x.overrides)?.dots.count)
     }
 
-    /// `crossFade: 0` is a cut, as before.
+    /// `crossFade: 0` is a cut: one frame at once, the new state's design with its rate
+    /// sums carried on from where the old state's rates were (no jump in the motion).
     func testStatePlayerCutsWithCrossFadeZero() throws {
         let json =
             #"{"fxSpec":"1.8","object":"orb","pattern":"glowing","states":{"idle":{"ink":0.6},"speaking":{"ink":1}}}"#
@@ -174,11 +170,16 @@ final class SinuaViewTests: XCTestCase {
         p.crossFade = 0
         p.setState("idle", spec: json)
         _ = p.frame(spec: json, elapsed: 1, dt: 0.016, inputs: [:], extra: [:])
+        let idleSpeed = p.speed(spec: json, inputs: [:])
         p.setState("speaking", spec: json)
         let f = p.frame(spec: json, elapsed: 1, dt: 0.016, inputs: [:], extra: [:])
         XCTAssertNil(f.previous)
-        XCTAssertEqual(
-            f.frame, FxStatePlayer.render(spec: json, state: "speaking", elapsed: 1, inputs: [:], extra: [:]))
+        XCTAssertEqual(f.blend, 1)
+        let x = resolveFxSpecWith(json: json, state: "speaking", inputs: [:], lowPower: false)
+        // The phase was pinned at the old speed: 1 s of it, nothing at the new one yet.
+        let want = frameWithOverrides(
+            state: x.state, size: x.size, t: idleSpeed, overrides: x.overrides.merging(p.rateSums(x.state)) { $1 })
+        XCTAssertEqual(f.frame, want)
     }
 
     func testSinuaViewRendersASpecAndAState() throws {

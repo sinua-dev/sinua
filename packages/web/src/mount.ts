@@ -1,4 +1,5 @@
 import {
+  fxSpecTransition,
   FxSpecPlayer,
   SharedVoiceSource,
   a11yStateWords,
@@ -834,8 +835,10 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
       // profile goes *under* the app's own overrides, and the voice's live keys stay last.
       const lifecycle = lifecycleNow();
       if (lifecycle !== lastLifecycle) {
-        // A state change animates (0.6 s easeInOut, or `crossFade` seconds); reduced motion cuts.
-        transition.start(reduced ? 0 : (opts.crossFade ?? 0.6), "easeInOut");
+        // A state change animates on the transition clock for the voice-state profile's
+        // time for the pair (design note 31), or `crossFade` seconds; reduced motion cuts.
+        const pair = fxSpecTransition("{}", lastLifecycle, lifecycle);
+        transition.start(reduced ? 0 : (opts.crossFade ?? pair.duration), pair.curve);
         lastLifecycle = lifecycle;
       }
       transition.advance(Math.min(rawDt, MAX_DT_S));
@@ -855,8 +858,9 @@ export function mount(canvas: HTMLCanvasElement, options: SinuaViewOptions): FxH
         previous = out.previous;
         blend = out.blend;
       } else {
-        transition.settle(side);
-        packed = frameWithOverridesPacked(resolved.state as OrbState, resolved.size as OrbSize, t, { ...side.overrides, ...live });
+        // The side's overrides, plus the rate sums once a rate changed mid-session.
+        const own = transition.steadyOverrides(side, resolved.size as OrbSize, t);
+        packed = frameWithOverridesPacked(resolved.state as OrbState, resolved.size as OrbSize, t, { ...own, ...live });
       }
     }
     if (!frame && !packed) return;

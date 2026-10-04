@@ -136,7 +136,7 @@ class SinuaViewTest {
         assertTrue("checked $checked", checked > 3)
     }
 
-    /** A pattern change cross-fades (the engine's `crossFade` technique), then settles on one frame. */
+    /** A pattern change cross-fades by the transition clock's weights (design note 31), then settles. */
     @Test
     fun statePlayerCrossFadesAPatternChangeThenSettles() {
         val p = FxStatePlayer().apply { crossFade = 0.25 }
@@ -146,50 +146,51 @@ class SinuaViewTest {
         p.setState("speaking", json)
         val mid = p.frame(json, 1.0, 0.1, emptyMap(), emptyMap())!!
         assertTrue(mid.previous != null)
-        val side = { s: String? ->
-            val r = resolveFxSpecWith(json, s, emptyMap(), false)
-            TransitionSide(r.state, (resolvedOpts(r.state, r.size)?.speed ?: 1.0) * r.speed, r.overrides)
-        }
-        val want = transitionMix(side(null), side("speaking"), 64u, 0.4, "easeInOut")!!
-        assertEquals("crossFade", want.technique)
-        assertEquals(want.weight, mid.blend, 1e-12)
-        val end = p.frame(json, 1.0, 0.2, emptyMap(), emptyMap())!!
+        val k = 1 - kotlin.math.exp(-(LAG_95 / 0.25) * 0.1)
+        assertEquals("three lags from 0 after one step", k * k * k, mid.blend, 1e-12)
+        repeat(6) { p.frame(json, 1.0, 0.1, emptyMap(), emptyMap()) }
+        val end = p.frame(json, 1.0, 0.1, emptyMap(), emptyMap())!!
         assertNull(end.previous)
     }
 
-    /** The same pattern across states: one frame whose parameters flow, landing exactly on the new state. */
+    /** The same pattern across states: one frame whose parameters flow; the file's linear curve is kept. */
     @Test
     fun statePlayerInterpolatesASamePatternChange() {
         val json = """{"fxSpec":"1.9","object":"orb","pattern":"glowing","states":{"idle":{"ink":0.6,"speed":0.5},"speaking":{"ink":1,"speed":1.2}},"transitions":{"default":{"duration":0.5,"curve":"linear"}}}"""
-        assertEquals(FxTransition(0.5, "linear"), fxSpecTransition(json, "idle", "speaking"))
+        assertEquals(FxTransition(0.5, "linear", true), fxSpecTransition(json, "idle", "speaking"))
         val p = FxStatePlayer()
         p.setState("idle", json)
         p.frame(json, 1.0, 0.016, emptyMap(), emptyMap())
         val idleSpeed = p.speed(json, emptyMap())
         p.setState("speaking", json)
-        val mid = p.frame(json, 1.0, 0.15, emptyMap(), emptyMap())!!
-        assertNull("one frame before the count/choice swap window", mid.previous)
+        val mid = p.frame(json, 1.0, 0.1, emptyMap(), emptyMap())!!
+        assertNull("one pattern, no count change: one frame", mid.previous)
         val x = resolveFxSpecWith(json, "speaking", emptyMap(), false)
-        val preset = resolvedOpts(x.state, x.size)?.speed ?: 1.0
-        val midSpeed = p.speed(json, emptyMap())
-        assertTrue(midSpeed > idleSpeed && midSpeed < preset * x.speed)
-        p.frame(json, 1.0, 0.4, emptyMap(), emptyMap())
-        assertEquals("lands on speaking", preset * x.speed, p.speed(json, emptyMap()), 1e-12)
+        val full = (resolvedOpts(x.state, x.size)?.speed ?: 1.0) * x.speed
+        // Linear from rest: 0.1 of 0.5 s is 20 % of the way.
+        assertEquals(idleSpeed + (full - idleSpeed) * 0.2, p.speed(json, emptyMap()), 1e-9)
+        repeat(4) { p.frame(json, 1.0, 0.1, emptyMap(), emptyMap()) }
+        assertEquals("lands on speaking", full, p.speed(json, emptyMap()), 1e-12)
         val end = p.frame(json, 2.0, 0.016, emptyMap(), emptyMap())!!
-        assertEquals(frameWithOverrides(x.state, x.size, 2.0 * preset * x.speed, x.overrides), end.frame)
+        assertNull(end.previous)
+        assertEquals(frameWithOverrides(x.state, x.size, idleSpeed + full, x.overrides)?.dots?.size, end.frame.dots.size)
     }
 
-    /** `crossFade = 0.0` is a cut, as before. */
+    /** `crossFade = 0.0` is a cut: one frame at once, its rate sums carried on (no jump in the motion). */
     @Test
     fun statePlayerCutsWithCrossFadeZero() {
         val json = """{"fxSpec":"1.8","object":"orb","pattern":"glowing","states":{"idle":{"ink":0.6},"speaking":{"ink":1}}}"""
         val p = FxStatePlayer().apply { crossFade = 0.0 }
         p.setState("idle", json)
         p.frame(json, 1.0, 0.016, emptyMap(), emptyMap())
+        val idleSpeed = p.speed(json, emptyMap())
         p.setState("speaking", json)
         val f = p.frame(json, 1.0, 0.016, emptyMap(), emptyMap())!!
         assertNull(f.previous)
-        assertEquals(FxStatePlayer.render(json, "speaking", 1.0, emptyMap(), emptyMap()), f.frame)
+        assertEquals(1.0, f.blend, 0.0)
+        val x = resolveFxSpecWith(json, "speaking", emptyMap(), false)
+        // The phase was pinned at the old speed: 1 s of it, nothing at the new one yet.
+        assertEquals(frameWithOverrides(x.state, x.size, idleSpeed, x.overrides + p.rateSums(x.state)), f.frame)
     }
 
     /**

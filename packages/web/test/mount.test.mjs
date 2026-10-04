@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { frameFromFxSpec, frameWithOverrides, resolveFxSpec, resolvedOpts, transitionMix, voiceOverrides, voiceStateProfile, VoiceOverrides } from "@sinua/core";
+import { frameFromFxSpec, frameWithOverrides, fxSpecTransition, resolveFxSpec, resolvedOpts, StateTransition, transitionMix, voiceOverrides, voiceStateProfile, VoiceOverrides } from "@sinua/core";
 import { mount, viewLayout, DPR_CAP } from "../dist/index.js";
 import { env, canvas } from "./dom.mjs";
 
@@ -513,35 +513,45 @@ test("crossFade: 0 cuts: the profile's speed rides the phase-continuous clock ac
   fx.destroy();
 });
 
-test("a plain view's state change flows: parameters and speed interpolate over 0.6 s, then land exactly", () => {
+test("a plain view's state change runs on the transition clock for the profile's time, then lands on the new state", () => {
   const { step } = env();
   const c = canvas();
   const idle = voiceStateProfile("working", "idle");
   const speaking = voiceStateProfile("working", "speaking");
   const preset = resolvedOpts("working", 64).speed;
+  const from = { state: "working", speed: preset * idle.speed, overrides: idle.overrides };
+  const to = { state: "working", speed: preset * speaking.speed, overrides: speaking.overrides };
   const fx = mount(c.el, { pattern: "working", state: "idle" });
   step(59);
   oneFrame(c, step);
+  // A reference clock fed what the view feeds its own (design note 31).
+  const ref = new StateTransition();
   let phase = fx.elapsed * preset * idle.speed;
+  ref.steadyOverrides(from, 64, phase);
+  const pair = fxSpecTransition("{}", "idle", "speaking");
+  assert.equal(pair.duration, 0.25, "the profile's time into speaking");
   fx.update({ state: "speaking" });
-  const from = { state: "working", speed: preset * idle.speed, overrides: idle.overrides };
-  const to = { state: "working", speed: preset * speaking.speed, overrides: speaking.overrides };
-  // One frame in: the mix at 1/60 of 0.6 s, the phase advanced at the mixed speed.
+  ref.start(pair.duration, pair.curve);
+  const next = () => {
+    ref.advance(1 / 60);
+    phase += (1 / 60) * ref.speed(to, 64);
+    return ref.frames(to, 64, phase);
+  };
   const first = oneFrame(c, step);
-  const mix = transitionMix(from, to, 64, 1 / 60 / 0.6, "easeInOut");
-  assert.equal(mix.technique, "params");
-  phase += (1 / 60) * mix.speed;
-  const expected = Object.keys(mix.structuralTo).length && mix.swap > 0
-    ? null
-    : dotsOf(frameWithOverrides("working", 64, phase, mix.overrides));
-  if (expected) assert.ok(frameDistance(first, expected) < 1e-9, "the first frame is the mix, not speaking");
-  assert.ok(frameDistance(first, dotsOf(frameWithOverrides("working", 64, phase, speaking.overrides))) > 1e-6, "not a jump");
-  // Frame by frame the phase advances at the mixed speed; after 0.6 s it is speaking exactly.
-  step(40);
-  for (let k = 2; k <= 41; k++) phase += (1 / 60) * (transitionMix(from, to, 64, Math.min(1, k / 60 / 0.6), "easeInOut").speed);
-  const last = oneFrame(c, step);
-  phase += (1 / 60) * to.speed;
-  assert.ok(frameDistance(last, dotsOf(frameWithOverrides("working", 64, phase, speaking.overrides))) < 1e-6, "lands on speaking");
+  const want = next();
+  assert.equal(want.previous, null, "one pattern: one blended frame");
+  assert.ok(frameDistance(first, dotsOf(want.frame)) < 1e-6, "the first frame is the clock's blend");
+  assert.ok(frameDistance(first, dotsOf(frameWithOverrides("working", 64, phase, speaking.overrides))) > 1e-6, "not a jump to speaking");
+  assert.ok(frameDistance(first, dotsOf(frameWithOverrides("working", 64, phase, idle.overrides))) > 1e-9, "already moving");
+  // Frame by frame it follows the clock; the old state's weight fades out and it lands.
+  let last = first;
+  for (let k = 0; k < 45; k++) {
+    last = oneFrame(c, step);
+    const w = next();
+    if (k === 20) assert.ok(frameDistance(last, dotsOf(w.frame)) < 1e-6, "mid-way, the clock's blend");
+  }
+  assert.ok(!ref.active, "only speaking is left");
+  assert.ok(frameDistance(last, dotsOf(frameWithOverrides("working", 64, phase, ref.steadyOverrides(to, 64, phase)))) < 1e-6, "lands on speaking");
   fx.destroy();
 });
 

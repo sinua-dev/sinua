@@ -13,6 +13,7 @@ import {
   resolvedOpts,
   transitionMix,
   fxSpecTransition,
+  LAG_95,
 } from "../dist/index.js";
 
 const read = (f) => readFileSync(fileURLToPath(new URL(`../../../spec/examples/${f}`, import.meta.url)), "utf8");
@@ -26,7 +27,7 @@ const sideOf = (spec, state) => {
   return { side: { state: r.state, speed: resolvedOpts(r.state, r.size).speed * r.speed, overrides: r.overrides }, size: r.size };
 };
 
-test("different patterns: nothing until the state changes, then a 0.6 s easeInOut cross-fade", () => {
+test("different patterns: nothing until the state changes, then a cross-fade on the transition clock (0.25 s into speaking)", () => {
   const p = new FxSpecPlayer(voice);
   let f = p.frame(1, 1 / 60);
   assert.equal(f.previous, null);
@@ -36,17 +37,21 @@ test("different patterns: nothing until the state changes, then a 0.6 s easeInOu
   f = p.frame(1.1, 0.1);
   const from = sideOf(voice, undefined).side;
   const { side: to, size } = sideOf(voice, "speaking");
-  const mix = transitionMix(from, to, size, 0.1 / 0.6, "easeInOut");
-  assert.equal(mix.technique, "crossFade", "voice-assistant switches pattern per state");
+  // Design note 31: the profile's time for the pair, on the three-lag clock (~95 % in d).
+  const d = fxSpecTransition(voice, undefined, "speaking").duration;
+  assert.equal(d, 0.25);
+  const k = 1 - Math.exp(-(LAG_95 / d) * 0.1);
+  const weight = k * k * k; // three lags from 0 after one step
   assert.ok(f.previous, "two frames while it fades");
-  assert.ok(Math.abs(f.blend - mix.weight) < 1e-12);
-  const t = 1.1 * mix.speed;
+  assert.ok(Math.abs(f.blend - weight) < 1e-12, `${f.blend} vs ${weight}`);
+  // The phase: `elapsed × speed` until the speed changed, then the mixed speed from there.
+  const t = 1 * from.speed + 0.1 * ((1 - weight) * from.speed + weight * to.speed);
   assert.deepEqual(f.previous, frameWithOverrides(from.state, size, t, from.overrides));
   assert.deepEqual(f.frame, frameWithOverrides(to.state, size, t, to.overrides));
   assert.equal(f.resolved.stateKey, "speaking");
-  for (let i = 0; i < 5; i++) p.frame(1.2 + i / 10, 0.1);
+  for (let i = 0; i < 6; i++) p.frame(1.2 + i / 10, 0.1);
   f = p.frame(1.8, 0.1);
-  assert.equal(f.previous, null, "done after 0.6 s");
+  assert.equal(f.previous, null, "the old state's weight has gone");
   assert.equal(f.blend, 1);
 });
 
@@ -77,9 +82,11 @@ test("timing: the spec's 1.9 transitions block, crossFade override, and a cut", 
   spec.fxSpec = "1.9";
   spec.transitions = { default: { duration: 1.2, curve: "linear" }, "idle->speaking": { duration: 0.2 } };
   const text = JSON.stringify(spec);
-  assert.deepEqual(fxSpecTransition(text, "idle", "speaking"), { duration: 0.2, curve: "linear" });
-  assert.deepEqual(fxSpecTransition(text, "speaking", "idle"), { duration: 1.2, curve: "linear" });
-  assert.deepEqual(fxSpecTransition(glowing, "idle", "speaking"), { duration: 0.6, curve: "easeInOut" });
+  assert.deepEqual(fxSpecTransition(text, "idle", "speaking"), { duration: 0.2, curve: "linear", authored: true });
+  assert.deepEqual(fxSpecTransition(text, "speaking", "idle"), { duration: 1.2, curve: "linear", authored: true });
+  // No rule of its own: the voice-state profile's time, the view's own clock.
+  assert.deepEqual(fxSpecTransition(glowing, "idle", "speaking"), { duration: 0.25, curve: "easeInOut", authored: false });
+  assert.deepEqual(fxSpecTransition(glowing, "ok", "error"), { duration: 0.6, curve: "easeInOut", authored: false });
   assert.ok(resolveFxSpec(text).ok);
 
   const quick = new FxSpecPlayer(text);

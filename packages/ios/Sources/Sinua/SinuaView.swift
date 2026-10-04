@@ -805,9 +805,11 @@ final class FxModel: ObservableObject {
             // With a lifecycle state (given, or the bound voice's), the built-in voice-state
             // profile goes *under* the app's own overrides; the voice's live keys stay last.
             let lifecycle = self.lifecycle(config)
-            if lastLifecycle.map({ $0 != lifecycle }) ?? false {
-                // A state change animates (0.6 s easeInOut, or `crossFade` seconds); reduced motion cuts.
-                transition.start(duration: reduced ? 0 : (config.crossFade ?? 0.6), curve: "easeInOut")
+            if let last = lastLifecycle, last != lifecycle {
+                // A state change runs on the transition clock for the voice-state profile's
+                // time for the pair (design note 31), or `crossFade` seconds; reduced motion cuts.
+                let pair = fxSpecTransition(json: "{}", from: last, to: lifecycle)
+                transition.start(duration: reduced ? 0 : (config.crossFade ?? pair.duration), curve: pair.curve)
             }
             lastLifecycle = .some(lifecycle)
             transition.advance(min(rawDt, Self.maxDt))
@@ -833,9 +835,10 @@ final class FxModel: ObservableObject {
                 previous = out.previous
                 blend = out.blend
             } else {
-                transition.settle(side)
+                // The side's overrides, plus the rate sums once a rate changed mid-session.
+                let own = transition.steadyOverrides(side, size: resolved.size, t: t)
                 frame = frameWithOverrides(
-                    state: resolved.state, size: resolved.size, t: t, overrides: side.overrides.merging(live) { $1 })
+                    state: resolved.state, size: resolved.size, t: t, overrides: own.merging(live) { $1 })
             }
         }
         guard let frame else { return }
@@ -905,12 +908,17 @@ struct FxStatePlayer {
     private var current: String?
     private var started = false
     private var transition = StateTransition()
+    private var phaseBase = 0.0
+    private var elapsedBase = 0.0
+    private var phaseSpeed: Double?
+    private var lastElapsed = 0.0
 
     mutating func setState(_ key: String?, spec: String) {
         guard !started || key != current else { return }
         if started {
             let t = fxSpecTransition(json: spec, from: current, to: key)
-            transition.start(duration: crossFade ?? t.duration, curve: t.curve)
+            transition.start(
+                duration: crossFade ?? t.duration, curve: t.curve, authored: crossFade == nil && t.authored)
         }
         started = true
         current = key
@@ -918,6 +926,9 @@ struct FxStatePlayer {
 
     /// End a running transition now (reduced motion).
     mutating func skipTransition() { transition.cancel() }
+
+    /// The rate sums the transition keeps for `pattern` (design note 31); for tests.
+    func rateSums(_ pattern: String) -> [String: Double] { transition.rateSums(pattern) }
 
     /// The loadout changed: ease from what is showing (design note 25).
     mutating func wear() { transition.wear() }
@@ -944,8 +955,27 @@ struct FxStatePlayer {
             transition.cancel()
             return (nil, nil, 1)
         }
-        let t = elapsed * transition.speed(s, size: size)
+        let t = phase(elapsed, speed: transition.speed(s, size: size))
         return transition.frames(s, size: size, t: t, extra: extra)
+    }
+
+    /// The engine time: pinned at each speed change and run from there, so a state with
+    /// its own speed (or a mixed speed mid-transition) doesn't jump the pose. With one
+    /// speed it is exactly `elapsed × speed`.
+    private mutating func phase(_ elapsed: Double, speed: Double) -> Double {
+        if elapsed < lastElapsed { phaseSpeed = nil }
+        if let old = phaseSpeed {
+            if old != speed {
+                phaseBase += (lastElapsed - elapsedBase) * old
+                elapsedBase = lastElapsed
+            }
+        } else {
+            phaseBase = 0
+            elapsedBase = 0
+        }
+        phaseSpeed = speed
+        lastElapsed = elapsed
+        return phaseBase + (elapsed - elapsedBase) * speed
     }
 
     static func render(

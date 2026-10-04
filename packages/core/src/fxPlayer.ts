@@ -61,6 +61,15 @@ export class FxSpecPlayer {
   private spec: string;
   private loadoutWarnings: FxSpecResolved["diagnostics"] = [];
   private readonly fadeS: number | undefined;
+  /**
+   * The engine time: pinned at each speed change and run from there, so a state with
+   * its own speed (or a mixed speed mid-transition) doesn't jump the pose. With one
+   * speed it is exactly `elapsed × speed`.
+   */
+  private phaseBase = 0;
+  private elapsedBase = 0;
+  private phaseSpeed: number | null = null;
+  private lastElapsed = 0;
   private readonly rates: Record<string, number>;
   private readonly goals = new Map<string, number>();
   private readonly values = new Map<string, number>();
@@ -124,8 +133,22 @@ export class FxSpecPlayer {
   setState(key: string | undefined): void {
     if (key === this.current) return;
     const t = fxSpecTransition(this.spec, this.current, key);
-    this.transition.start(this.fadeS ?? t.duration, t.curve);
+    this.transition.start(this.fadeS ?? t.duration, t.curve, this.fadeS === undefined && t.authored);
     this.current = key;
+  }
+
+  private phase(elapsed: number, speed: number): number {
+    if (elapsed < this.lastElapsed) this.phaseSpeed = null;
+    if (this.phaseSpeed === null) {
+      this.phaseBase = 0;
+      this.elapsedBase = 0;
+    } else if (this.phaseSpeed !== speed) {
+      this.phaseBase += (this.lastElapsed - this.elapsedBase) * this.phaseSpeed;
+      this.elapsedBase = this.lastElapsed;
+    }
+    this.phaseSpeed = speed;
+    this.lastElapsed = elapsed;
+    return this.phaseBase + (elapsed - this.elapsedBase) * speed;
   }
 
   /** End a running transition now (reduced motion): the next frame is the current state. */
@@ -178,7 +201,7 @@ export class FxSpecPlayer {
       this.transition.cancel();
       return { frame: null, previous: null, blend: 1, resolved: this.resolve(this.inputs) };
     }
-    const t = elapsed * this.transition.speed(now.side, now.size);
+    const t = this.phase(elapsed, this.transition.speed(now.side, now.size));
     const out = this.transition.frames(now.side, now.size, t, extraOverrides);
     return { ...out, resolved: now.resolved };
   }

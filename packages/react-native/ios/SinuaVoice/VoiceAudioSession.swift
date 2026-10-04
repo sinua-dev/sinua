@@ -18,9 +18,12 @@ public enum VoiceAudioSession: Sendable, Equatable {
     public var policy: AudioSessionPolicy? {
         switch self {
         case .speaker:
-            AudioSessionPolicy(category: .playAndRecord, mode: .videoChat, options: [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP])
+            AudioSessionPolicy(
+                category: .playAndRecord, mode: .videoChat,
+                options: [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP])
         case .receiver:
-            AudioSessionPolicy(category: .playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .allowBluetoothA2DP])
+            AudioSessionPolicy(
+                category: .playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .allowBluetoothA2DP])
         case .unmanaged:
             nil
         }

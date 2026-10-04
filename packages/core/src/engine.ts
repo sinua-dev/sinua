@@ -17,6 +17,7 @@ import {
   resolved_opts_json,
   resolve_fx_spec_json,
   transition_mix_json,
+  voice_blend_json,
   frame_transition_with_overrides_json,
   fx_spec_transition_json,
   conversation_at_json,
@@ -108,6 +109,18 @@ export function transitionMix(
   curve: string
 ): TransitionMix | null {
   return JSON.parse(transition_mix_json(JSON.stringify(from), JSON.stringify(to), size, progress, curve)) as TransitionMix | null;
+}
+
+/**
+ * The voice states' weighted mix of one pattern (design note 31): `sides` are its
+ * voice-state sides, `weights` one per side (moved by the view's transition clock),
+ * `target` the index of the state it is heading to. Counts the pattern draws as a
+ * density blend too (with their `<key>Layout`); other counts and choices come from the
+ * heaviest side, the second's in `structuralTo` dissolved by `swap`. Mirrors
+ * `core_engine::voice_blend`. `null` if the sides draw different patterns.
+ */
+export function voiceBlend(sides: TransitionSide[], weights: number[], target: number, size: OrbSize): TransitionMix | null {
+  return JSON.parse(voice_blend_json(JSON.stringify(sides), new Float64Array(weights), target, size)) as TransitionMix | null;
 }
 
 /**

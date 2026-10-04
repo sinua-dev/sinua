@@ -70,6 +70,9 @@ export type OrbState =
   | "concluding"
   // The "mic muted / connection lost" resting state (`orbs::modes::hush`).
   | "muted"
+  // A head and shoulders of dots that lives with the voice, FX Spec 1.13
+  // (`orbs::modes::silhouette`, design note 32).
+  | "silhouette"
   // Not `orbs` states at all -- `signal`, a genuinely separate family
   // (see `crates/core_engine/src/signal/mod.rs`). Kept in the same
   // `OrbState` union purely so `frame`/`frameWithOverrides` (whose engine

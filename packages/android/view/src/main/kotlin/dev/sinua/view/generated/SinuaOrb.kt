@@ -37,6 +37,7 @@ enum class SinuaOrbPattern(val id: String) {
     PROGRESSING("progressing"),
     CONCLUDING("concluding"),
     MUTED("muted"),
+    SILHOUETTE("silhouette"),
 }
 
 /** Orb parameters; null keeps the pattern's value. [toOverrides] is what [SinuaOrb] hands to SinuaView. */
@@ -127,7 +128,7 @@ data class SinuaOrbProps(
     val hueOffset: Double? = null,
     /** Range of hues across the sphere. Range 0...720 (deg). Patterns: glowing. */
     val hueSpread: Double? = null,
-    /** Colour saturation of the aurora. Range 0...1 (fraction). Patterns: glowing, speaking, muted. */
+    /** Colour saturation of the aurora. Range 0...1 (fraction). Patterns: glowing, speaking, muted, silhouette. */
     val saturation: Double? = null,
     /** Scale of the flowing colour field on the sphere. Range 0.05...16. Patterns: glowing. */
     val surfaceScale: Double? = null,
@@ -141,15 +142,15 @@ data class SinuaOrbProps(
     val nodeSize: Double? = null,
     /** Frequency bars around the orb. Range 1...96. Patterns: speaking. */
     val barCount: Int? = null,
-    /** Ink hue in degrees; applies once saturation is above 0. Range 0...360 (deg). Patterns: speaking, muted. */
+    /** Ink hue in degrees; applies once saturation is above 0. Range 0...360 (deg). Patterns: speaking, muted, silhouette. */
     val hue: Double? = null,
     /** How fast the synthetic bars jump when no audio is supplied. Range 0...32. Patterns: speaking. */
     val jumpSpeed: Double? = null,
     /** Dots stacked in each bar. Range 1...24. Patterns: speaking. */
     val barDotCount: Int? = null,
-    /** Dot radius. Range 0...6. Patterns: speaking, concluding. */
+    /** Dot radius. Range speaking 0...6, concluding 0...6, silhouette 0...4. Patterns: speaking, concluding, silhouette. */
     val dotSize: Double? = null,
-    /** Seconds between sonar pings. Range confirming 0.05...30, initializing 0.05...30, concluding 0.5...60, muted 0.05...30. Patterns: confirming, initializing, concluding, muted. */
+    /** Seconds between sonar pings. Range confirming 0.05...30, initializing 0.05...30, concluding 0.5...60, muted 0.05...30, silhouette 0.05...30. Patterns: confirming, initializing, concluding, muted, silhouette. */
     val period: Double? = null,
     /** Trailing echo rings per ping. Range 0...8. Patterns: confirming. */
     val echoCount: Int? = null,
@@ -179,6 +180,30 @@ data class SinuaOrbProps(
     val pulseAmplitude: Double? = null,
     /** Slow turning speed of the sphere. Range -4...4. Patterns: muted. */
     val yaw: Double? = null,
+    /** A brighter rim and, now and then, a thin band sliding sideways. Range 0...1 (fraction). Patterns: silhouette. */
+    val hologram: Double? = null,
+    /** Strength of the outline and its glow. Range 0...1 (fraction). Patterns: silhouette. */
+    val rim: Double? = null,
+    /** Bands moving down over the dots. Range 0...1 (fraction). Patterns: silhouette. */
+    val scanlines: Double? = null,
+    /** Thin links between neighbouring dots. Range 0...1 (fraction). Patterns: silhouette. */
+    val wire: Double? = null,
+    /** How much the silhouette breathes (idle). Range 0...1 (fraction). Patterns: silhouette. */
+    val breath: Double? = null,
+    /** Waves per second for the listening, thinking and speaking motion. Range 0...4 (Hz). Patterns: silhouette. */
+    val waveSpeed: Double? = null,
+    /** Dots that catch the light now and then (idle). Range 0...1 (fraction). Patterns: silhouette. */
+    val glint: Double? = null,
+    /** Waves travelling in from the outline, stronger with the mic level (listening). Range 0...1 (fraction). Patterns: silhouette. */
+    val inward: Double? = null,
+    /** Dots flickering along the eye line (thinking). Range 0...1 (fraction). Patterns: silhouette. */
+    val neuron: Double? = null,
+    /** Waves spreading from the mouth with the voice's level (speaking). Range 0...1 (fraction). Patterns: silhouette. */
+    val speech: Double? = null,
+    /** Scanline bands per second. Range 0...4 (Hz). Patterns: silhouette. */
+    val scanSpeed: Double? = null,
+    /** Where the head faces, sideways (-1..1; negative = the viewer's left). The shoulders stay. Range -1...1. Patterns: silhouette. */
+    val turnYaw: Double? = null,
     val glow: SinuaGlow? = null,
     val noise: SinuaNoise? = null,
     val pulse: SinuaPulse? = null,
@@ -258,6 +283,18 @@ data class SinuaOrbProps(
         dim?.let { o["dim"] = it }
         pulseAmplitude?.let { o["pulseAmplitude"] = it }
         yaw?.let { o["yaw"] = it }
+        hologram?.let { o["hologram"] = it }
+        rim?.let { o["rim"] = it }
+        scanlines?.let { o["scanlines"] = it }
+        wire?.let { o["wire"] = it }
+        breath?.let { o["breath"] = it }
+        waveSpeed?.let { o["waveSpeed"] = it }
+        glint?.let { o["glint"] = it }
+        inward?.let { o["inward"] = it }
+        neuron?.let { o["neuron"] = it }
+        speech?.let { o["speech"] = it }
+        scanSpeed?.let { o["scanSpeed"] = it }
+        turnYaw?.let { o["turnYaw"] = it }
         glow?.writeTo(o)
         noise?.writeTo(o)
         pulse?.writeTo(o)
@@ -347,6 +384,18 @@ fun SinuaOrb(
     dim: Double? = null,
     pulseAmplitude: Double? = null,
     yaw: Double? = null,
+    hologram: Double? = null,
+    rim: Double? = null,
+    scanlines: Double? = null,
+    wire: Double? = null,
+    breath: Double? = null,
+    waveSpeed: Double? = null,
+    glint: Double? = null,
+    inward: Double? = null,
+    neuron: Double? = null,
+    speech: Double? = null,
+    scanSpeed: Double? = null,
+    turnYaw: Double? = null,
     glow: SinuaGlow? = null,
     noise: SinuaNoise? = null,
     pulse: SinuaPulse? = null,
@@ -381,7 +430,7 @@ fun SinuaOrb(
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
     effect: SinuaEffectTrigger? = null,
 ) {
-    val overrides = SinuaOrbProps(pattern = pattern, size = size, ghostA = ghostA, ink = ink, orbitParticles = orbitParticles, ghostN = ghostN, ghostR = ghostR, orbitN = orbitN, partR = partR, partRDepth = partRDepth, rMin = rMin, rsPow = rsPow, dimBase = dimBase, scanMul = scanMul, inkFar = inkFar, inkSpan = inkSpan, latRings = latRings, lonDensity = lonDensity, rBase = rBase, rDepth = rDepth, rBoost = rBoost, moveCount = moveCount, rActive = rActive, rings = rings, lineW = lineW, spread = spread, thr = thr, signals = signals, nodeN = nodeN, nodeR = nodeR, nodeRDepth = nodeRDepth, turns = turns, strandN = strandN, bandMul = bandMul, spin = spin, wobMul = wobMul, faceOn = faceOn, lanes = lanes, segs = segs, iconD = iconD, rDot = rDot, depthTone = depthTone, hueOffset = hueOffset, hueSpread = hueSpread, saturation = saturation, surfaceScale = surfaceScale, hueSpeed = hueSpeed, surfaceSpeed = surfaceSpeed, nodeCount = nodeCount, nodeSize = nodeSize, barCount = barCount, hue = hue, jumpSpeed = jumpSpeed, barDotCount = barDotCount, dotSize = dotSize, period = period, echoCount = echoCount, coreSize = coreSize, ringCount = ringCount, echoSpacing = echoSpacing, starCount = starCount, warpSpeed = warpSpeed, decay = decay, holdDuration = holdDuration, progress = progress, driftAmplitude = driftAmplitude, lineWidth = lineWidth, dim = dim, pulseAmplitude = pulseAmplitude, yaw = yaw, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
+    val overrides = SinuaOrbProps(pattern = pattern, size = size, ghostA = ghostA, ink = ink, orbitParticles = orbitParticles, ghostN = ghostN, ghostR = ghostR, orbitN = orbitN, partR = partR, partRDepth = partRDepth, rMin = rMin, rsPow = rsPow, dimBase = dimBase, scanMul = scanMul, inkFar = inkFar, inkSpan = inkSpan, latRings = latRings, lonDensity = lonDensity, rBase = rBase, rDepth = rDepth, rBoost = rBoost, moveCount = moveCount, rActive = rActive, rings = rings, lineW = lineW, spread = spread, thr = thr, signals = signals, nodeN = nodeN, nodeR = nodeR, nodeRDepth = nodeRDepth, turns = turns, strandN = strandN, bandMul = bandMul, spin = spin, wobMul = wobMul, faceOn = faceOn, lanes = lanes, segs = segs, iconD = iconD, rDot = rDot, depthTone = depthTone, hueOffset = hueOffset, hueSpread = hueSpread, saturation = saturation, surfaceScale = surfaceScale, hueSpeed = hueSpeed, surfaceSpeed = surfaceSpeed, nodeCount = nodeCount, nodeSize = nodeSize, barCount = barCount, hue = hue, jumpSpeed = jumpSpeed, barDotCount = barDotCount, dotSize = dotSize, period = period, echoCount = echoCount, coreSize = coreSize, ringCount = ringCount, echoSpacing = echoSpacing, starCount = starCount, warpSpeed = warpSpeed, decay = decay, holdDuration = holdDuration, progress = progress, driftAmplitude = driftAmplitude, lineWidth = lineWidth, dim = dim, pulseAmplitude = pulseAmplitude, yaw = yaw, hologram = hologram, rim = rim, scanlines = scanlines, wire = wire, breath = breath, waveSpeed = waveSpeed, glint = glint, inward = inward, neuron = neuron, speech = speech, scanSpeed = scanSpeed, turnYaw = turnYaw, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,

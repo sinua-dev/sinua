@@ -1,5 +1,5 @@
 {
-  "$comment": "Loadout rules (FX Spec 1.13, design note 25), checked on every platform against the engine's applyLoadout / cosmeticsFor: spec/examples/wardrobe-bean.fxspec.json with each loadout. `wear`: the ids worn after applying it; `palette`: the file's `palette` after it (null = none; an `iris` name, design note 27, joins it); `eyeStyle`: `params.eyeStyle` (null = none); `warnings`: the warning paths, sorted. `fits`: cosmeticsFor's reason per character and id. A wear entry may be an object with a bounded nudge (C2): `fit` lists the cosmetic's resulting `fit` for the drawn character. A `fits` entry may carry its own `spec`.",
+  "$comment": "Loadout rules (FX Spec 1.13), checked on every platform against the engine's applyLoadout / cosmeticsFor: spec/examples/wardrobe-bean.fxspec.json with each loadout. `wear`: the ids worn after applying it; `palette`: the file's `palette` after it (null = none; an `iris` name, joins it); `eyeStyle`: `params.eyeStyle` (null = none); `warnings`: the warning paths, sorted. `fits`: cosmeticsFor's reason per character and id. A wear entry may be an object with a bounded nudge (C2): `fit` lists the cosmetic's resulting `fit` for the drawn character. A `fits` entry may carry its own `spec`.",
   "spec": "examples/wardrobe-bean.fxspec.json",
   "cases": [
     {

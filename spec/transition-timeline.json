@@ -1,5 +1,5 @@
 {
- "about": "design note 31: the transition clock's steps (packages/core/test/transition-timeline.test.mjs writes it; Swift and Kotlin replay it to 1e-9)",
+ "about": "The transition clock's steps (packages/core/test/transition-timeline.test.mjs writes it; Swift and Kotlin replay it to 1e-9)",
  "cases": [
   {
    "name": "clean change",

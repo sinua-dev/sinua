@@ -2,7 +2,7 @@
   "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.13",
   "name": "Hum with light-point eyes",
-  "description": "An eye style (FX Spec 1.13, design note 24): `\"eyeStyle\": \"dot\"` turns Hum's eyes into two soft glowing points: a minimal look. A blink squashes them; expressions tilt and scale them a little.",
+  "description": "An eye style (FX Spec 1.13): `\"eyeStyle\": \"dot\"` turns Hum's eyes into two soft glowing points: a minimal look. A blink squashes them; expressions tilt and scale them a little.",
   "object": "character",
   "pattern": "hum",
   "size": 64,

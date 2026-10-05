@@ -2,7 +2,7 @@
   "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.13",
   "name": "Bean and its wardrobe",
-  "description": "A wardrobe (FX Spec 1.13, design note 25): what an end user may pick. The app keeps the user's choice as one small value, a loadout (`{ \"loadout\": 1, \"wear\": [\"round-glasses\"], \"palette\": \"mint\", \"eyeStyle\": \"glossy\" }`), and passes it to the view; the view applies it and eases the change (a hat pops in, colours blend). Without a loadout the file wears its own `cosmetics` (here the party hat). A stored loadout that names something the wardrobe no longer has only warns.",
+  "description": "A wardrobe (FX Spec 1.13): what an end user may pick. The app keeps the user's choice as one small value, a loadout (`{ \"loadout\": 1, \"wear\": [\"round-glasses\"], \"palette\": \"mint\", \"eyeStyle\": \"glossy\" }`), and passes it to the view; the view applies it and eases the change (a hat pops in, colours blend). Without a loadout the file wears its own `cosmetics` (here the party hat). A stored loadout that names something the wardrobe no longer has only warns.",
   "object": "character",
   "pattern": "bean",
   "size": 64,

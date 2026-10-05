@@ -2,7 +2,7 @@
   "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.13",
   "name": "Bean, the rich look",
-  "description": "The richer look (FX Spec 1.13, design note 22) on Bean, as a remix that borrows Bean's voice states: airbrushed `shade` masses (a core shadow, light bounced from below, a soft highlight), soft blush cheeks that turn with the face, a `rim` of light along the top-left edge, and film `grain` inside the body. No blur: the soft edges are gradients that fade to alpha 0. Under low power the grain and soft layers are shed; the `grain` and `shading` options turn them off too.",
+  "description": "The richer look (FX Spec 1.13) on Bean, as a remix that borrows Bean's voice states: airbrushed `shade` masses (a core shadow, light bounced from below, a soft highlight), soft blush cheeks that turn with the face, a `rim` of light along the top-left edge, and film `grain` inside the body. No blur: the soft edges are gradients that fade to alpha 0. Under low power the grain and soft layers are shed; the `grain` and `shading` options turn them off too.",
   "object": "character",
   "pattern": "bean-rich",
   "size": 64,

@@ -14,9 +14,6 @@ others by `lib.rs`'s `resolve_any`. Object `character`, component `SinuaCharacte
 (`SinuaAvatar` is the ring-around-a-picture component from `ring`). FX Spec 1.11; in 1.12 every
 character became a recipe (data, not code), and a file can carry its own.
 
-Design note and research (private repo): `sinua-studio/docs/agents/families/design-07-characters.md`,
-`research-characters.md`.
-
 ## Patterns
 
 | Pattern | Character | Voice signature |
@@ -25,11 +22,11 @@ Design note and research (private repo): `sinua-studio/docs/agents/families/desi
 | `hum` | A vintage studio microphone that hosts the show: a red capsule on a brass yoke and stand, the face on its grille band | the grille is the mouth: its slots light with the level while speaking, one light scans them while thinking; a tally light is red while listening and blinks amber while thinking; the capsule tips toward you while listening and sways on the yoke while speaking (`swayGain`) |
 | `wisp` | A helpful spirit: a round, glowing head flowing into a curling smoke tail, violet into teal, with a soft halo | its sparkles wander at rest, gather in while it listens (closer as the user speaks), orbit its crown while it thinks and stream out with its voice; the tail curls tighter while thinking (`curlGain`); the mouth is an oval that opens with the level |
 | `chirp` | A songbird: a coral egg-shaped body with a cream breast, teal wings and a three-feather crest | the beak is the mouth: it opens with the level while speaking and little notes rise from it, the wings flutter (`flutterGain`); it tilts its head and lifts its crest while listening; while thinking the crest drops and three thought dots light in turn |
-| `cuppa` | A coffee mug on its saucer (FX Spec 1.12, design note 14): drawn from an SVG path, the handle is a hole; coffee at the rim, a sleeve with a heart | the mouth is an oval that opens with the level; its steam (the `steam` part) rises higher while it listens, curls while it thinks and thickens with the voice; it squashes a little as it talks |
-| `bean` | A coffee bean on little feet (FX Spec 1.12, design note 14): an SVG-path body with its S-shaped groove and lit edge as path patches, rosy cheeks | the mouth is an oval that opens with the level; aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice |
-| `beep` | A small tin robot (FX Spec 1.12, design note 17): a path head and body, a face screen, an antenna light, a chest core, legs, and **arms** | a hand goes to the ear to listen and to the chin to think, and the arms beat with the voice while speaking; the antenna light is red while listening and amber while thinking; `arms: false` takes the arms off |
+| `cuppa` | A coffee mug on its saucer (FX Spec 1.12): drawn from an SVG path, the handle is a hole; coffee at the rim, a sleeve with a heart | the mouth is an oval that opens with the level; its steam (the `steam` part) rises higher while it listens, curls while it thinks and thickens with the voice; it squashes a little as it talks |
+| `bean` | A coffee bean on little feet (FX Spec 1.12): an SVG-path body with its S-shaped groove and lit edge as path patches, rosy cheeks | the mouth is an oval that opens with the level; aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice |
+| `beep` | A small tin robot (FX Spec 1.12): a path head and body, a face screen, an antenna light, a chest core, legs, and **arms** | a hand goes to the ear to listen and to the chin to think, and the arms beat with the voice while speaking; the antenna light is red while listening and amber while thinking; `arms: false` takes the arms off |
 
-**Expressions** (design note 16): the app picks one with `expression` (a view prop, or the
+**Expressions**: the app picks one with `expression` (a view prop, or the
 FX Spec key in the base and in `states`). It stays until changed, and a change eases over 0.6 s.
 
 | Expression | Eyes | Resting mouth |
@@ -49,7 +46,7 @@ FX Spec key in the base and in `states`). It stays until changed, and a change e
   in the eyes only.
 - **Effects:** effects still play on top.
 
-**Tap to hop** (design note 15): a tap on a `SinuaCharacter` plays the `hop` effect.
+**Tap to hop**: a tap on a `SinuaCharacter` plays the `hop` effect.
 - The body crouches, hops 9 units and squashes on landing; the ground (the shadow, feet and
   saucer) stays put.
 - The eyes smile and glance toward the tap, then come back. The voice state keeps the mouth,
@@ -70,7 +67,7 @@ catalog entries hold only what makes it itself. Each character is named after a 
 
 ## Recipes and parts (`character/recipe.rs`, `character/parts/`)
 
-A character is **data** (design note 11, FX Spec 1.12). Its recipe,
+A character is **data** (FX Spec 1.12). Its recipe,
 `spec/characters/<id>.json`, names:
 - its **palette** (and which colours `hue` turns);
 - its **rig**: `pivot` (Chirp, Hum: tilt about a point, with optional squash, voice sway and a
@@ -91,7 +88,7 @@ new kind of sparkle, a new mouth mechanism) is a new part in Rust.
 | `mic` (Hum) | `stand`, `yoke`, `grille` (a body layer), `tally` |
 | `spirit` (Wisp) | `halo`, `spirit` (smoke, the curling tail that trails the turn, shine), `ovalMouth`, `sparkles` |
 | `ranger` (Buzzy) | `torso`, `chestCore`, `earPods` (and the near pod's front copy), `helmet`, `fin`, `faceScreen` |
-| `arms` (Beep) | `arms` (design note 17): two arms (upper arm, forearm, round hand) from mirrored shoulders. The hands blend with the voice state: hanging at rest, the right hand to the recipe's `ear` while listening and its `chin` while thinking, beats with the level while speaking; up for celebrate, a shrug for error, open for the hop. Elbows come from a two-segment IK, bent outward. A `back` copy before the body draws the far arm behind it when turned. Not at 20 px, nor with `arms` off |
+| `arms` (Beep) | `arms`: two arms (upper arm, forearm, round hand) from mirrored shoulders. The hands blend with the voice state: hanging at rest, the right hand to the recipe's `ear` while listening and its `chin` while thinking, beats with the level while speaking; up for celebrate, a shrug for error, open for the hop. Elbows come from a two-segment IK, bent outward. A `back` copy before the body draws the far arm behind it when turned. Not at 20 px, nor with `arms` off |
 | `steam` (Cuppa) | `steam`: soft blurred wisps that rise from a point, curl and fade at the top. Listening lifts them, thinking curls them, the voice thickens them. They never rise past the top of the box, and they are not drawn at 20 px or with `accessories` off |
 
 - **One reader.** Every part kind has a schema (its fields, in order, with types). A single
@@ -103,7 +100,7 @@ new kind of sparkle, a new mouth mechanism) is a new part in Rust.
   `{ "idle", "listening", "thinking", "speaking" }`. The weights come from the pose
   (`earGain`, the dots and talk mouths), so a state change fades it in or out. Absent, the
   part always draws at its own alpha.
-- **Shapes:** `ellipse`, `roundRect` or **`path`** (FX Spec 1.12, design note 13), wherever
+- **Shapes:** `ellipse`, `roundRect` or **`path`** (FX Spec 1.12), wherever
   a part takes a shape (`body`, `patch`, `band`). A path is an SVG `d` in the 200-unit box:
   - **Commands:** `M L H V C S Q T Z`, absolute and relative. No arcs (`A`): the error says to
     convert them to curves (Figma: Flatten).
@@ -157,7 +154,7 @@ stars with a burst.
 The face is independent of any body: a character gives it an anchor, a scale, a colour
 and an optional clip (BUZZY's screen), and gets fills back.
 
-### Eye styles (FX Spec 1.13, design note 24)
+### Eye styles (FX Spec 1.13)
 
 The shape eye is the default. Three more styles draw inside or over the same eye shape, so
 blinks, the gaze, the turn blink, the startle and every expression work unchanged; the
@@ -212,7 +209,7 @@ would still be near 0, and leaving thinking would blink on the way out.
 
 ## The head turn (`character/turn.rs`)
 
-The head yaws and pitches like a solid, not a flat sticker (design note 8, after a
+The head yaws and pitches like a solid, not a flat sticker (after a
 comparison with libraries.dev's bot-avatars; nothing copied). It stays stateless: the
 angles are a function of `t`, `seed` and the state's numbers, so a state change slides the
 turn like any other rig value. Two cheap layers, no extruded slice stack:
@@ -271,13 +268,13 @@ and mouth, with heavier lines.
 | `arms` | 1 | 0 takes the arms off (a character with an `arms` part: Beep) |
 | `eyeStyle` | 0 | the eye style: 0 = the recipe's, 1 shape, 2 glossy, 3 pixel, 4 dot (see *Eye styles*) |
 
-## Palette (FX Spec 1.12, design note 19)
+## Palette (FX Spec 1.12)
 
 `palette` repaints some of a character's colours and leaves the rest as drawn:
 `"palette": { "body": "#E63946", "accent": "#FFFFFF" }` in an FX Spec (base and `states`), or
 the `palette` prop on a view.
 - **Slots** are the recipe's palette names (`characterRecipe(id).palette` on the Web), named by
-  the part they paint, never by colour (design note 27): `body` is every character's main
+  the part they paint, never by colour: `body` is every character's main
   colour, `outline`, `cheeks`, `shine` and `iris` mean the same everywhere, and the eyes are
   `eyes` on a body face and `glow` on a screen face. An unknown slot is an error with a "did you mean".
 - **Labels:** `spec/character-slot-labels.json` gives every slot a label and a one-line
@@ -309,7 +306,7 @@ the `palette` prop on a view.
 `iris` colours the glossy eye (`eyeStyle: glossy`); the other eye styles have no iris and
 ignore it. Beep's `arms` paints only its arms.
 
-### Named palettes and roles (FX Spec 1.13, design note 23)
+### Named palettes and roles (FX Spec 1.13)
 
 A palette can also be written over **roles**, so one palette fits every character: each
 recipe's `roles` maps `primary`, `secondary`, `accent` and `iris` to its own slots.
@@ -357,9 +354,9 @@ as an error, and raw `colorMix` / `gradientStrength` overrides are ignored. The 
 effect drawing (ring, tick, burst) and the interrupt flash are skipped too
 (`effects::draws_own`): the face is the effect.
 
-## Cosmetics (FX Spec 1.13, design note 21)
+## Cosmetics (FX Spec 1.13)
 
-End users pick from a file's `wardrobe` with a `loadout` (design note 25): see [`character-cosmetics.md`](character-cosmetics.md), *Let end users pick*.
+End users pick from a file's `wardrobe` with a `loadout`: see [`character-cosmetics.md`](character-cosmetics.md), *Let end users pick*.
 
 A character can wear a hat, glasses or a badge: `cosmetics` in an FX Spec file, `body` and
 `eyes` parts drawn on one of its slots (`headTop`, `face`, `neck`, `chest`) in the slot's
@@ -369,7 +366,7 @@ out about its feet so the hat fits. The guide is [`character-cosmetics.md`](char
 the slots of each character are in [`character-recipe.md`](character-recipe.md), *Slots and
 cosmetics*.
 
-## The richer look (FX Spec 1.13, design note 22)
+## The richer look (FX Spec 1.13)
 
 Airbrushed shading, rim light and film grain, with no blur: a recipe's `shade` layers are soft
 masses (elliptical lights whose stops fade to alpha 0), `rim` lights the edge the light reaches
@@ -387,7 +384,7 @@ it a new `id` and `"profile": "<the original>"`, change it, and ship it as an FX
 file's `recipe`. The [remix guide](character-remix.md) walks through it (the result is
 `spec/examples/remix-latte.fxspec.json`); the [recipe reference](character-recipe.md) lists every
 key, and `spec/character-recipe-1.schema.json` checks it in an editor. The Studio's editor
-(design note 18) does the same with a form; `fitPath` in `@sinua/snippets` turns an SVG from a
+ does the same with a form; `fitPath` in `@sinua/snippets` turns an SVG from a
 drawing tool into a body.
 
 ## Tests

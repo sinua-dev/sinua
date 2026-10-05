@@ -11,5 +11,11 @@ if (start < 0) throw new Error("CHANGELOG.md: no `## <version>` heading to publi
 const body = text
   .slice(start)
   // Repository-relative links point at GitHub; the site has no copy of those files.
-  .replace(/\]\((?!https?:|#)([^)]+)\)/g, (_, path) => `](${REPO}${path})`);
+  .replace(/\]\((?!https?:|#)([^)]+)\)/g, (_, path) => `](${REPO}${path})`)
+  // Design notes live in a private repository; the public page doesn't cite them
+  // (scripts/docs/gen.mjs does the same for the generated partials).
+  .replace(/ before design note\s+\d+/g, " before 1.13")
+  .replace(/ \(design note\s+\d+\)/g, "")
+  .replace(/\(design note\s+\d+[,;] /g, "(")
+  .replace(/[,;] design note\s+\d+/g, "");
 writeFileSync(new URL("../content/changelog.generated.mdx", import.meta.url), body);

@@ -53,7 +53,7 @@ public struct SinuaCharacter: View {
     public var eyeR: Double?
     /// The happy arc cut from below the eyes. Range 0...1.
     public var eyeSmile: Double?
-    /// How the eyes are drawn (FX Spec 1.13, design note 24): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style.
+    /// How the eyes are drawn (FX Spec 1.13): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style.
     public var eyeStyle: EyeStyle?
     /// Slope of the lid: positive lowers the outer corners (pensive). Range -1...1.
     public var eyeTilt: Double?
@@ -65,7 +65,7 @@ public struct SinuaCharacter: View {
     public var gazeX: Double?
     /// Where the eyes look, up and down, in design units (negative = up). Range -12...12.
     public var gazeY: Double?
-    /// Film grain inside the character's bodies (FX Spec 1.13, design note 22): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1.
+    /// Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1.
     public var grain: Double?
     /// Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. Range 0...360 (deg).
     public var hue: Double?
@@ -87,7 +87,7 @@ public struct SinuaCharacter: View {
     public var mouthTalk: Double?
     /// Changes when it blinks and glances, so two characters side by side don't move in sync. Range 0...1000000.
     public var seed: Int?
-    /// Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13, design note 22). An FX Spec resolved under low power turns them off.
+    /// Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off.
     public var shading: Bool?
     /// How much the voice squashes the body while speaking. Range 0...0.12.
     public var squashGain: Double?

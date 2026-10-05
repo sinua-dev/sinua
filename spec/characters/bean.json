@@ -1,6 +1,6 @@
 {
   "$schema": "https://sinua.dev/schema/character-recipe-1.json",
-  "$comment": "BEAN, a coffee bean on little feet (design note 14). Drawn from an SVG path, with its S-shaped groove and the groove's lit edge as path patches; aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice. A recipe only.",
+  "$comment": "BEAN, a coffee bean on little feet. Drawn from an SVG path, with its S-shaped groove and the groove's lit edge as path patches; aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice. A recipe only.",
   "recipe": 1,
   "id": "bean",
   "tags": ["round"],

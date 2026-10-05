@@ -1,6 +1,6 @@
 {
   "$schema": "https://sinua.dev/schema/character-recipe-1.json",
-  "$comment": "BUZZY, a small space-hero assistant (design note 7): a rounded-square indigo helmet with an amber fin and chevron ear pods, a glass visor over a face screen, a voice core in the chest. The mouth is a voice line; the chest bars follow the level; while listening, sound arcs light at the ear pods with the user's level.",
+  "$comment": "BUZZY, a small space-hero assistant: a rounded-square indigo helmet with an amber fin and chevron ear pods, a glass visor over a face screen, a voice core in the chest. The mouth is a voice line; the chest bars follow the level; while listening, sound arcs light at the ear pods with the user's level.",
   "recipe": 1,
   "id": "buzzy",
   "tags": ["screen-face"],

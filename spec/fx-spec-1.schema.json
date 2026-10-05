@@ -122,7 +122,7 @@
       "description": "Per-state engine opts (docs/parameters.md). Runtime inputs (pointer*, audio*, history*, interrupt*, muted*, voiceStateCode, peakN) and section-owned keys (color*, gradient*, glow*, noise*, pulse*) are rejected here. FX Spec 1.7: `progress` / `segment` may be arrays.",
       "properties": {
         "eyeStyle": {
-          "description": "A character's eye style (FX Spec 1.13, design note 24): a name, or its number (0-4).",
+          "description": "A character's eye style (FX Spec 1.13): a name, or its number (0-4).",
           "anyOf": [
             {
               "enum": ["auto", "shape", "glossy", "pixel", "dot"]
@@ -200,7 +200,7 @@
     "wardrobe": {
       "type": "object",
       "additionalProperties": false,
-      "description": "FX Spec 1.13, `object: character` only (design note 25): what an end user may pick. An app applies a loadout (`{ \"loadout\": 1, \"wear\": [ids], \"palette\": name, \"iris\": name, \"eyeStyle\": name }`) to the file; the file's own `cosmetics` are what it wears without one.",
+      "description": "FX Spec 1.13, `object: character` only: what an end user may pick. An app applies a loadout (`{ \"loadout\": 1, \"wear\": [ids], \"palette\": name, \"iris\": name, \"eyeStyle\": name }`) to the file; the file's own `cosmetics` are what it wears without one.",
       "properties": {
         "cosmetics": {
           "type": "array",
@@ -214,7 +214,7 @@
         },
         "irises": {
           "type": "object",
-          "description": "Named eye colours to pick from (design note 27): a loadout's `iris` names one, which colours the `iris` slot (the glossy eye). Each a colour, hex or DTCG.",
+          "description": "Named eye colours to pick from: a loadout's `iris` names one, which colours the `iris` slot (the glossy eye). Each a colour, hex or DTCG.",
           "additionalProperties": { "anyOf": [{ "$ref": "#/$defs/hex" }, { "$ref": "#/$defs/dtcgColor" }] }
         }
       }

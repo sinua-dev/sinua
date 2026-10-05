@@ -196,7 +196,7 @@ const { frame, previous, blend } = player.frame(elapsedS, dtS, voice.overrides(d
 previous ? drawCrossDissolve(ctx, previous, frame, blend) : draw(ctx, frame);
 ```
 
-1. **On a state change,** the view's transition clock (`StateTransition`, the same on Web, iOS and Android; design note 31) keeps a weight per state and moves them all continuously: the new state's weight heads to 1, the others' to 0, from wherever they are, so a change mid-transition (or three changes in a row) never kinks. Each weight runs through three first-order lags (`ω = 6.3 / duration`, ~95 % of the way in `duration`); the duration is the file's `transitions` for that pair, else the voice-state profile's time (below). A file that writes a `curve` keeps it, the motion's velocity carried into it. Per frame the step is capped at 0.1 s; after a gap over 1 s (back from the background) the weights land on the target. What it draws:
+1. **On a state change,** the view's transition clock (`StateTransition`, the same on Web, iOS and Android) keeps a weight per state and moves them all continuously: the new state's weight heads to 1, the others' to 0, from wherever they are, so a change mid-transition (or three changes in a row) never kinks. Each weight runs through three first-order lags (`ω = 6.3 / duration`, ~95 % of the way in `duration`); the duration is the file's `transitions` for that pair, else the voice-state profile's time (below). A file that writes a `curve` keeps it, the motion's velocity carried into it. Per frame the step is capped at 0.1 s; after a gap over 1 s (back from the background) the weights land on the target. What it draws:
    - **one pattern** (every voice state, most FX Spec states): `voiceBlend(sides, weights, target, size)` mixes the sides' parameters by weight into one frame. Counts the pattern draws as densities fade; other counts and choices swap in a short window as a brief dissolve;
    - **the orb lattice trio** (glowing / calibrating / progressing): the point-by-point `frameTransitionWithOverrides`, at the new pattern's weight;
    - **any other two patterns:** the two frames dissolve by their weights.
@@ -206,7 +206,7 @@ previous ? drawCrossDissolve(ctx, previous, frame, blend) : draw(ctx, frame);
 
 Parsing happens on every call. A spec is a few KB of JSON, which is cheap next to rendering.
 
-### The transition contract (design note 31)
+### The transition contract
 
 What the engine gives a view so every change stays continuous, however long the session has run and however often it is interrupted:
 
@@ -310,7 +310,7 @@ How state changes animate, per pair. Optional. Without a rule for a pair, a voic
 ```
 
 - **Keys:** `default`, `"from->to"`, `"from->*"`, `"*->to"`, with `states` keys (`""`, the base design, has no key of its own and is matched by `*` and `default`). The most specific match wins field by field: the exact pair, then `from->*`, then `*->to`, then `default`, then the profile's time / 0.6 s.
-- **The voice-state profile's times** (`spec/voice-state-profile.json` → `transitions`, design note 31), used when the file has no rule:
+- **The voice-state profile's times** (`spec/voice-state-profile.json` → `transitions`), used when the file has no rule:
 
   | Change | Seconds |
   |---|---|
@@ -340,7 +340,7 @@ voice states only change how it moves, so a state change never adds or drops a d
 
 - **`silhouette`** (top level, file-wide): `"human"` (default) or `"helmet"`, or a file's
   own `{ "path", "eyes": [left x, right x, y], "mouth": [x, y] }`. The path is SVG path
-  data in a 200 × 200 box, with the path's own limits (design note 13). Start and end it
+  data in a 200 × 200 box, with the path's own limits. Start and end it
   below the shoulders: the bottom stays open and fades. Thinking flickers along the eye
   line; speaking waves spread from the mouth. A bad shape is an error and the human is drawn.
 - **Dots:** ~1,500 at 64 px, ~380 at 32 px, the outline alone at 20 px, always a prefix of
@@ -349,7 +349,7 @@ voice states only change how it moves, so a state change never adds or drops a d
 - **Voice keys** (the voice-state profile sets them): `breath` and `glint` (idle),
   `inward` (listening, with the mic level), `neuron` (thinking), `speech` (speaking, with
   the agent's level). `waveSpeed`, `period` and `scanSpeed` are rate keys: a transition
-  accumulates them (design note 31).
+  accumulates them.
 - **Look:** `turnYaw` turns the head (−1..1; the shoulders stay), `rim` the outline and its
   glow, `hologram` the hologram look (a bright rim, now and then a thin band sliding
   sideways), `scanlines`, `wire` (links between neighbours), `dotSize`, `saturation`/`hue`.
@@ -399,13 +399,13 @@ no cosmetic; the file carries each one. The guide is
   file's `recipe`), which registers under its content key (`recipe:<id>:<hash>`) like a 1.12
   recipe. Platform code doesn't change. A recipe may also carry `cosmetics` itself (always
   worn); a file's come after them.
-- **The richer look** (design note 22): a recipe may draw soft `shade` masses, `rim` light,
+- **The richer look**: a recipe may draw soft `shade` masses, `rim` light,
   elliptical lights and `grain` ([`character-recipe.md`](character-recipe.md), *The richer
   look*; `spec/examples/rich-bean.fxspec.json`, `rich-buzzy.fxspec.json`). `params` take
   `grain` (0–1) and `shading` (0/1) for any character. **Under low power** a character that has
   grain or soft layers gets `grain` 0 and `shading` 0, and `disabledMaterials` lists `grain`
   and `shading`, whatever the file's `performance` says; other characters resolve as before.
-- **Named palettes and roles** (design note 23): `palette` also takes role names
+- **Named palettes and roles**: `palette` also takes role names
   (`primary`, `secondary`, `accent`, through the recipe's `roles`), a built-in named palette
   (`"theme": "sunset"` or the shorthand `"palette": "sunset"`; `sunset`, `ocean`, `forest`,
   `candy`, `mono`, `night`) and a `dark` variant. The theme's roles < roles written out < slots
@@ -413,30 +413,29 @@ no cosmetic; the file carries each one. The guide is
   dark theme and the engine picks it. An unknown palette name gets a "did you mean". A name,
   `theme` or `dark` in a file before 1.13 is an error. See [`character.md`](character.md),
   *Named palettes and roles*.
-- **Eye styles** (design note 24): `params.eyeStyle` takes a name (`auto`, `shape`, `glossy`,
+- **Eye styles**: `params.eyeStyle` takes a name (`auto`, `shape`, `glossy`,
   `pixel`, `dot`) or its number (0–4) on any character; an unknown name is an error. A recipe's
   `eyes` / `faceScreen` part takes `style`, `iris` and `sclera`. See
   [`character.md`](character.md), *Eye styles*; `spec/examples/glossy-bean.fxspec.json`,
   `pixel-beep.fxspec.json`, `dot-hum.fxspec.json`.
-- **Wardrobe and loadout** (design note 25): the top-level `wardrobe` (`object: character`)
+- **Wardrobe and loadout**: the top-level `wardrobe` (`object: character`)
   holds what an end user may pick (`cosmetics`, named `palettes`, named eye colours
-  `irises`, design note 27). A loadout
+  `irises`). A loadout
   (`{ "loadout": 1, "wear": [ids], "palette": name, "iris": name, "eyeStyle": name }`) is applied by the
   views (`loadout`) or `applyLoadout`; it only ever warns. A cosmetic may name its `category`.
   See [`character-cosmetics.md`](character-cosmetics.md), *Let end users pick*.
-- **Catalog packs** (design note 26): after `loadCatalog`, `"<namespace>:<id>"` names a pack's
+- **Catalog packs**: after `loadCatalog`, `"<namespace>:<id>"` names a pack's
   cosmetic in `cosmetics` / `wardrobe.cosmetics`, and `"<namespace>:<name>"` a pack's palette in
   `palette` (a loadout's too). A name not loaded warns and is skipped. A cosmetic may say
   `slot: "frame"` (round the whole character, behind it), `requires` (capability tags against a
-  recipe's `tags`), `season`, and `behind` / `above` (depth against the recipe parts' `role`,
-  design note 28). A loadout's `wear` entry may
+  recipe's `tags`), `season`, and `behind` / `above` (depth against the recipe parts' `role`). A loadout's `wear` entry may
   carry a bounded nudge. See [`character-cosmetics.md`](character-cosmetics.md).
-- **Voice states without `states`** (B2, design note 28): in a 1.13 file, a voice state
+- **Voice states without `states`**: in a 1.13 file, a voice state
   (`idle`, `listening`, `thinking`, `speaking`, `initializing`) the file has no `states` entry
   for resolves as an empty entry, so it takes the voice profile: a character file without
   `states` still listens, thinks and speaks. A key that isn't a voice state still warns and
   draws the base. 1.8–1.12 files keep the old behaviour (the base design).
-- **Recipe limits** (design note 28): 96 parts (was 48) and 4,096 path points in all.
+- **Recipe limits**: 96 parts (was 48) and 4,096 path points in all.
 - **Registry keys** of a built-in wearing cosmetics hash the character's id and the cosmetics,
   not its recipe text, so an edit to a built-in that draws the same leaves them (and the lock)
   as they were.

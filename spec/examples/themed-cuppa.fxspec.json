@@ -2,7 +2,7 @@
   "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.13",
   "name": "Cuppa in ocean",
-  "description": "A named palette (FX Spec 1.13, design note 23): `\"theme\": \"ocean\"` repaints Cuppa through its roles (primary = the mug, secondary = the sleeve, accent = the heart), and an explicit role or slot beats the theme (here the accent). In a dark theme the views pick the palette's dark variant on their own.",
+  "description": "A named palette (FX Spec 1.13): `\"theme\": \"ocean\"` repaints Cuppa through its roles (primary = the mug, secondary = the sleeve, accent = the heart), and an explicit role or slot beats the theme (here the accent). In a dark theme the views pick the palette's dark variant on their own.",
   "object": "character",
   "pattern": "cuppa",
   "size": 64,

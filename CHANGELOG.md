@@ -184,7 +184,7 @@ import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev"; // was "@s
   - Medium cost; under low power (`performance.lowPower`) it draws the first 800 dots,
     spread just as evenly.
 
-- Palette slots are named by the part they paint, never by colour (design note 27): every
+- Palette slots are named by the part they paint, never by colour: every
   character's main colour is `body`, and `outline`, `cheeks`, `shine` and `iris` mean the same
   everywhere (Buzzy's `shell` / `amber` / `cyan` are now `body` / `accent` / `glow`; the full
   table is in `docs/character.md`, *Palette*). `spec/character-slot-labels.json` gives every
@@ -194,7 +194,7 @@ import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev"; // was "@s
     colours the glossy eye; a loadout's `iris` picks one by name from `wardrobe.irises` or the
     catalog (`catalog:eyes-hazel`).
 
-- Imported characters (design note 28): a recipe part may name its `role` (`head`, `ears`,
+- Imported characters: a recipe part may name its `role` (`head`, `ears`,
   `arms`…), and a cosmetic's `behind` / `above` draws against it (a beanie behind a fox's
   ears). A recipe may now have 96 parts (was 48) and at most 4,096 path points in all.
   `docs/character-svg-guides.md` describes how to name an SVG's groups and guides so it becomes
@@ -203,12 +203,12 @@ import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev"; // was "@s
   takes the voice profile. 1.8–1.12 files resolve as before.
 - Resolving a file with a large recipe again (a picker's thumbnails, an imported character)
   no longer re-parses the recipe: the engine finds it by its text, guarded by a second hash.
-- Drag to dress (design note 29): `characterSlots` gives a character's cosmetic slots where it
+- Drag to dress: `characterSlots` gives a character's cosmetic slots where it
   draws them (frame units, following the pose), and `nearestSlot` picks the one a dropped item
   snaps to. Thumbnails of a recipe file are about 3× faster: whether a character is heavy to draw
   is now measured once per character, not on every resolve.
 
-- Transitions (design note 31, part 2: the views): every view (Web, iOS, Android, React
+- Transitions (part 2: the views): every view (Web, iOS, Android, React
   Native) moves a weight per state on a continuous clock, so a change mid-transition
   heads somewhere else without a kink and three quick changes blend. Voice-state changes
   take the profile's time per pair; a file's own `curve` is kept, with the motion's
@@ -219,7 +219,7 @@ import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev"; // was "@s
 - Android: JNA 5.19.1 (16 KB memory pages, required by Google Play for Android 15+); a CI
   check keeps every 64-bit `.so` 16 KB aligned, and the 32-bit libraries are aligned too.
 
-- Transitions (design note 31, part 1: the engine):
+- Transitions (part 1: the engine):
   - Rate keys (`pulsePeriod`, `period`, `surfaceSpeed`, …) can be accumulated by the view
     (`rates` on `transitionMix`, `<key>Cycles` overrides), so a state change late in a
     session no longer makes a pattern flash or boil. Plain frames are unchanged. This is a
@@ -235,7 +235,7 @@ import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev"; // was "@s
     shimmer grows from nothing, and a character's elbow eases where its two IK solutions
     tie (beep's resting arm moves by up to 4 units in the thinking pose).
 
-- Voice (design note 30, from DevinFit's device test):
+- Voice (from DevinFit's device test):
   - iOS `OpenAILiveVoiceSource` / `OpenAIRealtimeVoiceSource` set up the audio session
     (`.videoChat` on the loudspeaker, Bluetooth; `audioSession: .receiver` / `.unmanaged`).
     Before, GPT-Live on iOS sent no mic audio and played nothing.

@@ -670,9 +670,9 @@ export type SinuaCharacterPattern =
 export interface SinuaCharacterParams {
   /** The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. */
   accessories?: boolean;
-  /** How the eyes are drawn (FX Spec 1.13, design note 24): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style. */
+  /** How the eyes are drawn (FX Spec 1.13): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style. */
   eyeStyle?: "auto" | "shape" | "glossy" | "pixel" | "dot";
-  /** Film grain inside the character's bodies (FX Spec 1.13, design note 22): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1. */
+  /** Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1. */
   grain?: number;
   /** Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. Range 0...360 (deg). */
   hue?: number;
@@ -680,7 +680,7 @@ export interface SinuaCharacterParams {
   ink?: number;
   /** Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. */
   mouth?: boolean;
-  /** Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13, design note 22). An FX Spec resolved under low power turns them off. */
+  /** Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. */
   shading?: boolean;
   /** How much the eyes glance around on their own while idle (0 = always at the viewer). Range 0...2. */
   look?: number;

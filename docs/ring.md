@@ -115,7 +115,7 @@ grows then shrinks within a cycle, fully extended at the midpoint; start
 is continuous across the boundary and advances 495° per cycle; one
 round-capped polyline, deterministic in `t`).
 
-## Segmented (`stepping`): design notes
+## Segmented (`stepping`): design choices
 
 Transcribed from androidx **Wear Material 3
 `SegmentedCircularProgressIndicator`** (raw source, fetched; see the
@@ -168,7 +168,7 @@ laps, so a second overflow scheme would be redundant.
 - crowded segments = finite, non-overlapping dots
 - a 1-segment ring equals `arc`
 
-## Gauge (`measuring`): design notes
+## Gauge (`measuring`): design choices
 
 **Prior art (fetched; see the families LOG):**
 - androidx Wear M3's progress samples open the ring at the bottom with `startAngle = 120f, endAngle = 60f`, which is a 300° sweep. They round a tiny value up to the stroke width, the same as our 0% round-cap dot.
@@ -206,7 +206,7 @@ contact sheet shows it correctly in light and dark.
 - the marker sits on the fill's head and is drawn last
 - stroke and radius equal `arc`'s
 
-## Nested (`tracking`): design notes
+## Nested (`tracking`): design choices
 
 > **For any App Store app — Apple HIG constraint.** Apple's
 > Human Interface Guidelines on Activity rings: "Use Activity rings only to

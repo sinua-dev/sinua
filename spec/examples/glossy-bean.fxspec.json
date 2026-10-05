@@ -2,7 +2,7 @@
   "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.13",
   "name": "Bean with glossy eyes",
-  "description": "An eye style (FX Spec 1.13, design note 24): `\"eyeStyle\": \"glossy\"` gives Bean a dark lens, a teal iris and pupil that follow its gaze, highlights that stay with the light and a lid line. It still blinks, glances and takes every expression, because the style draws inside the same eye shape. A recipe sets its own default (`\"style\"` on its `eyes` part, with `iris` and `sclera`).",
+  "description": "An eye style (FX Spec 1.13): `\"eyeStyle\": \"glossy\"` gives Bean a dark lens, a teal iris and pupil that follow its gaze, highlights that stay with the light and a lid line. It still blinks, glances and takes every expression, because the style draws inside the same eye shape. A recipe sets its own default (`\"style\"` on its `eyes` part, with `iris` and `sclera`).",
   "object": "character",
   "pattern": "bean",
   "size": 64,

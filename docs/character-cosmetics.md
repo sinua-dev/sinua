@@ -148,7 +148,7 @@ launch (`spec/examples/wardrobe-bean.fxspec.json`).
 - `wear`: ids from the wardrobe or the file's `cosmetics`, one per slot (a later one replaces
   an earlier one); `[]` wears nothing. Without a loadout the file wears its own `cosmetics`.
 - `palette`: a `wardrobe.palettes` name or a built-in palette (`sunset`, `ocean`, …), by name only.
-- `iris` (design note 27): an eye colour, a `wardrobe.irises` name or a catalog one
+- `iris`: an eye colour, a `wardrobe.irises` name or a catalog one
   (`catalog:eyes-brown`, `-blue`, `-green`, `-hazel`, `-violet`), by name only. It joins the
   palette (`palette` still picks the rest) and colours the `iris` slot, which the glossy eye
   draws; the other eye styles have no iris. A free colour is the brand's, through the file's
@@ -235,7 +235,7 @@ tag warns (the schema lists the known ones). `fits` (character names) stays for 
 ## Depth: behind the ears
 
 A recipe's parts may name a `role` (`head`, `face`, `ears`, `arms`, `legs`, `antenna`, `hair`,
-`tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow`, `body`; design note 28). A cosmetic's
+`tail`, `eyes`, `mouth`, `nose`, `cheeks`, `neck`, `shadow`, `body`). A cosmetic's
 `behind` / `above` lists roles:
 - `"behind": ["ears"]` draws it before the character's first `ears` part, so the ears (and
   everything after them) cover it: a beanie with the fox's ears poking through;

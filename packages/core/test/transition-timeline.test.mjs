@@ -57,7 +57,7 @@ function replay(c) {
 }
 
 test("the transition clock replays its shared vectors", () => {
-  const out = { about: "design note 31: the transition clock's steps (packages/core/test/transition-timeline.test.mjs writes it; Swift and Kotlin replay it to 1e-9)", cases: CASES.map((c) => ({ ...c, frames: replay(c) })) };
+  const out = { about: "The transition clock's steps (packages/core/test/transition-timeline.test.mjs writes it; Swift and Kotlin replay it to 1e-9)", cases: CASES.map((c) => ({ ...c, frames: replay(c) })) };
   if (process.env.TIMELINE_WRITE === "1") writeFileSync(FILE, JSON.stringify(out, null, 1) + "\n");
   const want = JSON.parse(readFileSync(FILE, "utf8"));
   assert.equal(want.cases.length, out.cases.length);

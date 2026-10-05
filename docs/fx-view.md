@@ -154,11 +154,11 @@ effects", families). This section covers how each renderer draws it.
 - **Low power:** FX Spec 1.3 `performance.lowPower.disable: ["blur"]` makes
   the resolver emit no runs and σ 0, so renderers do nothing special. (The
   Web test asserts the low-power frame has no runs.)
-- **Dark palettes** (FX Spec 1.13, design note 23): a view in a dark theme adds the runtime
+- **Dark palettes** (FX Spec 1.13): a view in a dark theme adds the runtime
   key `dark` = 1 when the frame may have a palette's dark variant (a character from an FX Spec,
   or `palette.dark.*` among its keys); the engine then reads `palette.dark.<slot>.*`. Other
   frames are untouched. Web `mount.ts`, iOS `SinuaView` (`specIsCharacter`), Android `FxModel.dark`.
-- **Loadout** (FX Spec 1.13, design note 25): the `loadout` option applies an end user's
+- **Loadout** (FX Spec 1.13): the `loadout` option applies an end user's
   choice to the spec (`applyLoadout`) and, when it changes, starts the transition's separate
   wear clock (`StateTransition.wear()`, 0.35 s): the frames for the new side are drawn with
   `frameTransitionWithOverrides` from what was shown, which for two loadouts of one character
@@ -166,7 +166,7 @@ effects", families). This section covers how each renderer draws it.
   Reduced motion cancels it. Web `mount.ts` (only a different value counts, so React's
   per-render push is free), iOS `SinuaView` (`SinuaLoadout`), Android `FxModel.setLoadout`,
   React Native `loadout` → `loadoutJson`.
-- **Grain tile** (design note 22): 64 × 64, one tile pixel per CSS px / pt / dp
+- **Grain tile**: 64 × 64, one tile pixel per CSS px / pt / dp
   however large the character is drawn (the pattern undoes the engine scale),
   anchored at the origin; pixel (x, y) is the integer hash `grainValue(x, y)`
   (`h = x·73856093 ^ y·19349663 ^ 0x9E3779B9`, then `h = (h ^ h>>13)·1274126177`,
@@ -696,21 +696,21 @@ carry on underneath.
 | `celebrate` | a seeded burst of particles out of the shape, and a small brightness lift | 1.4 s | "Well done" |
 | `hop` | characters only: a crouch, a hop and a squash on landing, with a smile; other families draw nothing | 0.6 s | nothing |
 
-**Expression** (FX Spec 1.12, design note 16): a character's `expression` prop.
+**Expression** (FX Spec 1.12): a character's `expression` prop.
 - **Values:** `happy`, `surprised`, `thoughtful`, `sad`, `sleepy`, or `"none"` / `null` for none.
 - **Over the spec:** it wins over a spec's `expression`. Left unset, the spec decides.
 - **Easing:** a change eases over 0.6 s; reduced motion cuts.
 - **What it changes:** the eyes and the resting mouth. The voice state keeps the gaze and the
   talking mouth. It is never announced.
 
-**Palette** (FX Spec 1.12, design note 19): a character's `palette` prop, slot -> hex (Web /
+**Palette** (FX Spec 1.12): a character's `palette` prop, slot -> hex (Web /
 React / RN `{ body: "#E63946" }`, SwiftUI `["body": "#E63946"]`, Compose
 `mapOf("body" to "#E63946")`; on `<sinua-character>` a property).
 - **Over the spec:** it wins over a spec's `palette`, slot by slot through the engine's own
   rules (tones follow, a dark ground lifts the eyes). See [`character.md`](character.md), *Palette*.
 - **A change is immediate**, no easing. An unknown slot draws nothing new (Web: `onError`).
 
-**Tap to hop** (FX Spec 1.12, design note 15).
+**Tap to hop** (FX Spec 1.12).
 - **Option:** `tap` (Web `tap`, SwiftUI / Compose `tap:`, RN `tap`). It is on by default on
   `SinuaCharacter` / `<sinua-character>` and off on the plain view.
 - **What a tap does:** a click or a touch on the view plays `hop`. The character's eyes glance

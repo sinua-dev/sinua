@@ -78,7 +78,7 @@ denser polyline. Two consequences worth knowing: one alpha per path (a fade
 round dot of diameter `w` under round caps on every target renderer (`bar`
 relies on this for its shortest pills).
 
-## `bar`: design notes
+## `bar`: design choices
 
 Each bar is one two-point vertical `Polyline`: a stroke whose round caps
 make it a pill, **centered on the strip's midline** and growing both ways,
@@ -143,7 +143,7 @@ blink cadence is deterministic given `t`; real audio bands actually change
 bar height vs. the floor, mirrored about the center; lit bars carry the
 requested color and unlit ones stay grey).
 
-## `waveform`: design notes
+## `waveform`: design choices
 
 Built after `bar` and for a specific reason: bars — even solid pill-shaped
 ones — are a bar-chart/EQ silhouette, not what most people picture when they
@@ -227,7 +227,7 @@ silence keeps a shimmer floor; low bands drive the main trace harder than
 high bands and vice versa for a companion; no corner at the center sample
 while `speaking`).
 
-## `scroll`: design notes
+## `scroll`: design choices
 
 The third style, and the one the original three-style plan was actually
 missing (`waveform` turned out to be the *third* planned style, a static
@@ -300,7 +300,7 @@ app gets the same by rendering both codes for a moment. The native Studios
 do the same (iOS/Android, 2026-09-18), through their Transitions
 cross-fade paint.
 
-## `matrix`: design notes
+## `matrix`: design choices
 
 Transcribed from **audioMotion-analyzer**'s LED mode. I read its README and
 the raw `src/audioMotion-analyzer.js` (see the families LOG). Details taken

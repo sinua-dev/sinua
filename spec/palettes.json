@@ -1,5 +1,5 @@
 {
-  "$comment": "Named palettes (FX Spec 1.13, design note 23): colours per role ([h, s, l]); `dark` is the dark-theme variant. Embedded minified by build.rs.",
+  "$comment": "Named palettes (FX Spec 1.13): colours per role ([h, s, l]); `dark` is the dark-theme variant. Embedded minified by build.rs.",
   "sunset": {
     "primary": [
       16,

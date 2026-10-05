@@ -172,7 +172,7 @@ Every tunable of every object and pattern lives in one machine-readable catalog.
 | Validate overrides | `checkOverrides(pattern, size, overrides)` | `checkOverrides(state:size:overrides:)` (`state` = the pattern id in the low-level API) |
 | Checked-in copy | [`spec/parameters.json`](../spec/parameters.json) | same file |
 
-**The words stay out of the runtime** (design note 10, 1.12): `parameterCatalog()` /
+**The words stay out of the runtime** (1.12): `parameterCatalog()` /
 `parameterCatalogJson()` carry no `description` fields. The runtime embeds `catalog_source.json`
 without its prose and minified (`crates/core_engine/build.rs`; the voice-state profile is minified
 too), which keeps ~10 KB (gzip) out of every app. The descriptions are in `spec/parameters.json`

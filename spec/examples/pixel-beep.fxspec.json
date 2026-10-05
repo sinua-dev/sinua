@@ -2,7 +2,7 @@
   "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.13",
   "name": "Beep with pixel eyes",
-  "description": "An eye style (FX Spec 1.13, design note 24): `\"eyeStyle\": \"pixel\"` lights Beep's eyes as a grid of glowing cells (on BUZZY's face screen the mouth goes pixel too). Blinks become a row of cells; expressions reshape the grid.",
+  "description": "An eye style (FX Spec 1.13): `\"eyeStyle\": \"pixel\"` lights Beep's eyes as a grid of glowing cells (on BUZZY's face screen the mouth goes pixel too). Blinks become a row of cells; expressions reshape the grid.",
   "object": "character",
   "pattern": "beep",
   "size": 64,

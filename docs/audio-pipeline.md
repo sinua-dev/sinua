@@ -205,7 +205,7 @@ it, one current reference page only shows `output_audio_buffer.clear`/
 `cleared`), so the adapter treats it as optional: until one has been seen
 in a session, `speaking` is entered when the remote track's level rises
 during an active response and left after the same adaptive tail as GPT-Live once it falls following
-`response.done` (design note 30). Once any `output_audio_buffer.*` event arrives, the
+`response.done`. Once any `output_audio_buffer.*` event arrives, the
 energy fallback stands down for the rest of the session.
 
 **Credentials — the security note, taken seriously.** The adapter takes
@@ -324,7 +324,7 @@ developers.openai.com `guides/voice-webrtc?api=live`, `guides/live-migration`,
 the speaking indicator from the player. `OpenAILiveSession` (`openaiLive.ts`, ported to
 SinuaVoice / `dev.sinua.voice`, all held to `spec/openai-live-cases.json`) does this:
 - **speaking:** the remote track's level is above 0.05. It ends after a quiet tail that grows
-  with how long the agent has been speaking (design note 31, V7; telephony's variable
+  with how long the agent has been speaking (V7; telephony's variable
   hangover): 0.7 s, plus 0.13 s per second of the stretch so far, at most 1.7 s. A short reply
   hands back in ~0.8 s; a long answer survives the pauses people leave (up to 1.5 s, 6 s in).
   Each flip would restart a transition, so none happen inside an answer. The level is measured
@@ -1360,7 +1360,7 @@ Built 2026-09-19. It mirrors the Web `OpenAIRealtimeVoiceSource`:
   track.
 
 **The audio session (iOS).** Both `OpenAIRealtimeVoiceSource` and `OpenAILiveVoiceSource`
-set the app's audio session up before the call (design note 30): play and record, the
+set the app's audio session up before the call: play and record, the
 `.videoChat` mode with `.defaultToSpeaker` and Bluetooth, the configuration LiveKit itself
 uses. It's written into WebRTC's own configuration, so its audio engine keeps it. Without it,
 LiveKitWebRTC's engine left the default category: no mic frames, no playback, an expired

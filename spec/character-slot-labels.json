@@ -1,5 +1,5 @@
 {
-  "$comment": "Human labels for every built-in character's palette slots (design note 27), for colour pickers: English by default; translate by the key sinua.slot.<character>.<slot>. Every slot has one (a test checks).",
+  "$comment": "Human labels for every built-in character's palette slots, for colour pickers: English by default; translate by the key sinua.slot.<character>.<slot>. Every slot has one (a test checks).",
   "buzzy": {
     "iris": {
       "label": "Iris",

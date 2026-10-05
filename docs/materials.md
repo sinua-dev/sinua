@@ -99,7 +99,7 @@ or the same keys in the `overrides` map on iOS/Android/React Native. No
 new records — `Dot`/`Line`/`Polyline`/`OrbFrame` are unchanged, so the
 native bindings didn't need regenerating; only the wasm package did.
 
-## `glow`: layered halos (design notes)
+## `glow`: layered halos (design choices)
 
 There is no blur, no gradient fill and no bloom pass on any of this
 project's renderers, so the glow is the one the CSS world fakes every day:
@@ -164,7 +164,7 @@ Compared with stacked mode:
 
 A bug was fixed along the way: `apply_glow` used to rebuild the frame with `colorMode: ink`, so a `fixed` colour plus glow lost its fixed look on dark themes. It now keeps the frame's mode.
 
-## `noise`: organic jitter (design notes)
+## `noise`: organic jitter (design choices)
 
 Every dot, line endpoint and polyline vertex is displaced by a smooth,
 time-varying field from the engine's real gradient noise (`perlin3`, the
@@ -188,7 +188,7 @@ deliberately subtle — a living tremor, not a scramble; raise `noiseAmplitude`
 for a visible warp, raise `noiseScale` for fine shimmer instead of one
 slow swell.
 
-## `gradient`: a color ramp by position (design notes)
+## `gradient`: a color ramp by position (design choices)
 
 **Two or three stops (2026-09-18).**
 - `gradientHue3` adds a third stop. `gradientMid` (0.05..0.95, default
@@ -232,7 +232,7 @@ hue and the gradient only tinted them. `Line` has carried
 `saturation`/`hue` since the Color system pass (2026-09-18) and samples
 the ramp at its midpoint.
 
-## `color`: one colour for the whole frame (design notes, 2026-09-18)
+## `color`: one colour for the whole frame (design choices, 2026-09-18)
 
 `primitives::apply_color` is the engine half of the Studio's colour picker.
 It runs after noise and before gradient. Colour is the base tint, the

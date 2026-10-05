@@ -2,7 +2,7 @@
   "$schema": "https://sinua.dev/schema/fx-spec-1.json",
   "fxSpec": "1.13",
   "name": "Buzzy, the rich look",
-  "description": "The richer look (FX Spec 1.13, design note 22) on Buzzy, as a remix that borrows Buzzy's voice states. Its helmet and torso are dedicated parts, so two overlay bodies (`\"light\": \"none\"`) carry the soft layers over them: a core shadow, light bounced off the torso, a specular highlight, the head's soft shadow on the torso, `rim` light on both, and film `grain`. Under low power the grain and soft layers are shed.",
+  "description": "The richer look (FX Spec 1.13) on Buzzy, as a remix that borrows Buzzy's voice states. Its helmet and torso are dedicated parts, so two overlay bodies (`\"light\": \"none\"`) carry the soft layers over them: a core shadow, light bounced off the torso, a specular highlight, the head's soft shadow on the torso, `rim` light on both, and film `grain`. Under low power the grain and soft layers are shed.",
   "object": "character",
   "pattern": "buzzy-rich",
   "size": 64,

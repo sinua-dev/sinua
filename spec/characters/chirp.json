@@ -1,6 +1,6 @@
 {
   "$schema": "https://sinua.dev/schema/character-recipe-1.json",
-  "$comment": "CHIRP, a small songbird (design note 7). The beak is the mouth; listening tilts the head and lifts the crest; thinking drops it and lights three thought dots; speaking floats notes and flutters the wings. A recipe of the character part library (design note 11): the numbers are the drawing, the parts are the behaviour.",
+  "$comment": "CHIRP, a small songbird. The beak is the mouth; listening tilts the head and lifts the crest; thinking drops it and lights three thought dots; speaking floats notes and flutters the wings. A recipe of the character part library: the numbers are the drawing, the parts are the behaviour.",
   "recipe": 1,
   "id": "chirp",
   "tags": ["round"],

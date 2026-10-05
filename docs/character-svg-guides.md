@@ -1,7 +1,7 @@
 # Preparing a character SVG
 
 How to draw a character so that it becomes a Sinua character that animates and wears
-cosmetics (design note 28). The convention uses only **layer names and plain shapes**, so it
+cosmetics. The convention uses only **layer names and plain shapes**, so it
 survives Figma, Illustrator, Inkscape and AI drawing tools. The Sinua Studio imports a file
 drawn this way; by hand, the same names map to a recipe's `role`, `slots` and eyes
 ([`character-recipe.md`](character-recipe.md), [`character-remix.md`](character-remix.md)).
@@ -49,7 +49,7 @@ any style (they are never drawn), and name them:
 | `slot-chest` | an ellipse on the chest | badges |
 | `eye-left`, `eye-right` | a circle per eye | where Sinua draws the eyes, for a character drawn without eyes |
 
-Without guides the Studio guesses them from the drawing (design note 29): the head's top, the
+Without guides the Studio guesses them from the drawing: the head's top, the
 narrowest row between head and body (the neck), between the eyes (the face), and the chest
 below the neck. A guess it isn't sure of is left out, never put in the wrong place, and every
 guess is marked "estimated, check" in the fitting room until you confirm or move it. Guides are

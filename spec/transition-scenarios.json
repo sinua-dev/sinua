@@ -1,5 +1,5 @@
 {
-  "about": "Realistic conversations for the transition suite (design note 31, TS5; scripts/transitions). Each scenario feeds a GPT-Live session core (OpenAILiveSession, the state rules every platform shares) at 30 Hz, then the states drive the view's transition clock and the engine. Segments: say (the agent's voice; pauses as [seconds into the segment, ms of silence]), user (the user's words; over the agent it is a barge-in), think (a delegation open for the seconds), quiet. jitter: each event moves by up to that many ms (seeded).",
+  "about": "Realistic conversations for the transition suite (TS5; scripts/transitions). Each scenario feeds a GPT-Live session core (OpenAILiveSession, the state rules every platform shares) at 30 Hz, then the states drive the view's transition clock and the engine. Segments: say (the agent's voice; pauses as [seconds into the segment, ms of silence]), user (the user's words; over the agent it is a barge-in), think (a delegation open for the seconds), quiet. jitter: each event moves by up to that many ms (seeded).",
   "scenarios": [
     { "name": "phrases with pauses (300-1500 ms)", "segments": [
       { "quiet": 1 }, { "user": 1.5 }, { "say": 7, "pauses": [[1.0, 300], [2.2, 600], [3.5, 900], [4.8, 1200], [6.2, 1500]] }, { "quiet": 2 } ] },

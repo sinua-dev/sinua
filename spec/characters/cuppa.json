@@ -1,6 +1,6 @@
 {
   "$schema": "https://sinua.dev/schema/character-recipe-1.json",
-  "$comment": "CUPPA, a coffee mug on its saucer (design note 14). Drawn from an SVG path: the handle is a hole. Its steam rises higher while it listens, curls while it thinks and thickens with its voice; the coffee shows at the rim, the sleeve has a heart. A recipe only: the steam is the library's `steam` part.",
+  "$comment": "CUPPA, a coffee mug on its saucer. Drawn from an SVG path: the handle is a hole. Its steam rises higher while it listens, curls while it thinks and thickens with its voice; the coffee shows at the rim, the sleeve has a heart. A recipe only: the steam is the library's `steam` part.",
   "recipe": 1,
   "id": "cuppa",
   "palette": {

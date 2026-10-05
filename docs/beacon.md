@@ -107,7 +107,7 @@ segments are open arcs with gaps. `halo`: the halo shrinks with accuracy
 and z-sorts under the dot; the ring pulses from the dot toward (never
 past) the halo's edge, fades, and is gone by the end of the period.
 
-## Radar (`scanning`): design notes
+## Radar (`scanning`): design choices
 
 **Prior art (fetched, see the families LOG):**
 - **CodeFronts' "Weather Radar Sweep" CSS.** The beam is `conic-gradient(acc
@@ -173,7 +173,7 @@ sparse) and 3.5 (the idle scope turns into a grey disc).
 - no blips by default; going from 2 to 3 keeps the first two in place
 - grey by default, and `hue` reaches every element
 
-## Broadcast (`broadcasting`): design notes
+## Broadcast (`broadcasting`): design choices
 
 **Geometry** comes from Material Symbols' `sensors` icon. I parsed the raw
 SVG path by hand (the fetch summarizer's own numbers were wrong). In the

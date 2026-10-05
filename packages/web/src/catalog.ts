@@ -1,4 +1,4 @@
-// Sinua's catalog pack (FX Spec 1.13, design note 26): ready cosmetics and palettes,
+// Sinua's catalog pack (FX Spec 1.13): ready cosmetics and palettes,
 // free with the runtime. A copy of spec/catalog/catalog-1.json (test/catalog.test.mjs
 // holds it to the file). Import this subpath only where you use it: it stays out of
 // the main bundle.
@@ -10,7 +10,7 @@ import { loadCatalog, type FxDiagnostic } from "@sinua/core";
 
 /** The pack itself (namespace `catalog`). */
 export const SINUA_CATALOG = {
-  "$comment": "Sinua's catalog pack (FX Spec 1.13, design note 26): ready cosmetics and palettes, free with the runtime (Apache-2.0). Load it with loadCatalog; name an item as \"catalog:<id>\" in cosmetics, wardrobe.cosmetics or palette. Ids are permanent: an item to be removed is marked deprecated first.",
+  "$comment": "Sinua's catalog pack (FX Spec 1.13): ready cosmetics and palettes, free with the runtime (Apache-2.0). Load it with loadCatalog; name an item as \"catalog:<id>\" in cosmetics, wardrobe.cosmetics or palette. Ids are permanent: an item to be removed is marked deprecated first.",
   "catalog": 1,
   "namespace": "catalog",
   "version": "1.0.0",

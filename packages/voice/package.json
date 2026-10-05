@@ -1,6 +1,6 @@
 {
   "name": "@sinua/voice",
-  "version": "0.1.0-beta.7",
+  "version": "0.1.0-beta.8",
   "license": "Apache-2.0",
   "author": "The Sinua Authors",
   "repository": {
@@ -76,7 +76,7 @@
     "test": "node --test test/*.test.mjs"
   },
   "peerDependencies": {
-    "@sinua/core": "0.1.0-beta.7",
+    "@sinua/core": "0.1.0-beta.8",
     "livekit-client": "^2.22.3"
   },
   "peerDependenciesMeta": {

@@ -9,7 +9,9 @@ tag `beta`, and it may still change incompatibly.
 
 How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
-## Unreleased
+## 0.1.0-beta.8
+
+Size: web 511,877 B (gzip 382,107), Android arm64 .so 2,124,360 B, iOS .a 4,393,832 B (release builds).
 
 ### Breaking: Studio / dev APIs moved to `@sinua/core/dev`
 

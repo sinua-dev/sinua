@@ -116,7 +116,6 @@ step "size: web inline within budget"; node scripts/size-budget.mjs --web
 # The docs site's generated tables and code samples (apps/site): partials match spec/parameters.json + the engine's messages,
 # and every snippet resolves / type-checks. Needs packages/core's dist.
 step "docs: generated partials up to date"; node scripts/docs/gen.mjs --check
-step "docs: snippets resolve and type-check"; node scripts/docs/check-snippets.mjs
 
 step "packages/web: npm ci";        (cd packages/web && npm ci)
 step "packages/web: npm run build"; (cd packages/web && npm run build)
@@ -130,6 +129,8 @@ step "packages/core: bundler check"; (cd packages/core/bundler-check && npm ci &
 # its tests are the byte-for-byte lock the native ports are diffed against.
 step "packages/snippets: npm ci";        (cd packages/snippets && npm ci)
 step "packages/snippets: npm run build"; (cd packages/snippets && npm run build)
+# After the build above: a docs sample imports @sinua/snippets (fitPath).
+step "docs: snippets resolve and type-check"; node scripts/docs/check-snippets.mjs
 step "packages/snippets: npm test";      (cd packages/snippets && npm test)
 
 # The look the Studio and the docs site share (tokens, fonts, controls).

@@ -140,8 +140,6 @@ jobs:
       # The docs site's generated tables and code samples (apps/site, scripts/docs).
       - name: docs -- generated partials up to date
         run: node scripts/docs/gen.mjs --check
-      - name: docs -- snippets resolve and type-check
-        run: node scripts/docs/check-snippets.mjs
       # packages/web next: it links @sinua/core (file:../core, needs its
       # dist + wasm above).
       - name: packages/web -- install
@@ -169,6 +167,9 @@ jobs:
       - name: packages/snippets -- build (tsc)
         working-directory: packages/snippets
         run: npm run build
+      # After packages/snippets' build: a docs sample imports @sinua/snippets (fitPath).
+      - name: docs -- snippets resolve and type-check
+        run: node scripts/docs/check-snippets.mjs
       - name: packages/snippets -- test (the byte-for-byte export text)
         working-directory: packages/snippets
         run: npm test

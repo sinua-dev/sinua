@@ -28,23 +28,20 @@ Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor com
 
 ## Versioning
 
-`fxSpec` is `"1.13"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.13"` and use whatever this page documents. An older file stays valid and renders the same, with two exceptions from before 1.0: [`object: "edge"`](#removed-the-edge-object) (0.1.0-beta.8) and [the liquid, particles and holographic materials](#removed-three-materials) (0.1.0-beta.9). A file that uses a removed section gets an error and isn't drawn, and the message says what to delete. After 1.0, a removal only comes in a major version (FX Spec 2.0), after a minor of deprecation warnings.
+`fxSpec` is `"1.13"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.13"` and use whatever this page documents. An older file stays valid and renders the same, with the exceptions from before 1.0: [`object: "edge"`](#removed-the-edge-object) (0.1.0-beta.8), and in the 1.14 cleanup (0.1.0-beta.9) [the liquid, particles and holographic materials](#removed-three-materials) and [the wardrobe, named palettes and eye styles](#removed-the-wardrobe-named-palettes-and-eye-styles). A file that uses a removed section gets an error and isn't drawn, and the message says what to delete. After 1.0, a removal only comes in a major version (FX Spec 2.0), after a minor of deprecation warnings.
 
-### 1.13: cosmetics, wardrobes and silhouettes
+### 1.13: the richer look and silhouettes
 
 <div className="demo-gallery">
-<Demo spec="examples/party-hat.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }]} />
-<Demo spec="examples/wardrobe-bean.fxspec.json" />
+<Demo spec="examples/rich-bean.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }]} />
 </div>
 
-- **`cosmetics`** (character): things a character wears, as data drawn on its slots (`headTop`, `face`, `neck`, `chest`, `frame`). Needs `"fxSpec": "1.13"`; file-wide. A cosmetic it can't wear is a warning and isn't drawn. See [Cosmetics](/docs/catalog/cosmetics).
-- **`wardrobe`** (character): what your users may pick: cosmetics, named palettes and eye colours. A view's `loadout` (what they picked) applies it and only ever warns.
-- **Catalog packs:** after `loadCatalog`, `"<namespace>:<id>"` names a pack's cosmetic or palette.
-- **`palette`** also takes roles (`primary`, `secondary`, `accent`, `iris`), a built-in palette by name (`"palette": "sunset"`) and a `dark` variant. See [Named palettes](/docs/catalog/character#named-palettes-and-roles).
-- **`params`** on a character take `eyeStyle` (`auto`, `shape`, `glossy`, `pixel`, `dot`), `grain` (0–1) and `shading` (0/1). Under low power, grain and the soft shading turn off.
+- **`palette`** (character) also takes roles (`primary`, `secondary`, `accent`) and a `dark` variant. See [Roles and the dark variant](/docs/catalog/character#roles-and-the-dark-variant).
+- **`params`** on a character take `grain` (0–1) and `shading` (0/1). Under low power, grain and the soft shading turn off.
 - **`silhouette`** (orb, `pattern: "silhouette"`): `"human"`, `"helmet"` or your own `{ path, eyes, mouth }`. See [Silhouette](/docs/catalog/orb#a-head-and-shoulders).
 - **Voice states without `states`:** in a 1.13 file, a voice state the file has no entry for takes the built-in voice behaviour, so a character file with no `states` still listens, thinks and speaks.
-- **Recipe limits:** 96 parts (was 48) and 4,096 path points in all, cosmetics included.
+- **Recipe limits:** 96 parts (was 48) and 4,096 path points in all.
+- **Removed in 0.1.0-beta.9:** `cosmetics`, `wardrobe`, named palettes (`"palette": "sunset"`, `theme`) and `params.eyeStyle` are errors in any version.
 - 1.8–1.12 files resolve exactly as before.
 
 ### 1.12: character recipes
@@ -74,11 +71,15 @@ Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor com
 
 #### Removed: the edge object
 
-`object: "edge"` (the screen-edge glow, `SinuaEdge`, `<sinua-edge>`) was removed in 0.1.0-beta.8. A file with it fails at every version, with an error at `/object`. There's no replacement: draw a screen-edge glow in your app. It was the first of two removals before 1.0 (see [Versioning](#versioning)).
+`object: "edge"` (the screen-edge glow, `SinuaEdge`, `<sinua-edge>`) was removed in 0.1.0-beta.8. A file with it fails at every version, with an error at `/object`. There's no replacement: draw a screen-edge glow in your app. It was the first removal before 1.0 (see [Versioning](#versioning)).
 
 #### Removed: three materials
 
 The `liquid`, `particles` and `holographic` materials were removed in 0.1.0-beta.9 (FX Spec 1.14). A file that uses `materials.liquid`, `materials.particles` or `materials.holographic`, or names `liquid` or `particles` in `performance.lowPower.disable`, is rejected at every version, with an error naming the section. Delete the section; there's no replacement. Under low power the host now turns off glow only.
+
+#### Removed: the wardrobe, named palettes and eye styles
+
+Also in 0.1.0-beta.9: the character wardrobe and cosmetics (`cosmetics`, `wardrobe`, a view's `loadout`, catalog packs), the built-in named palettes (`"palette": "sunset"`, `palette.theme`) and the eye styles (`params.eyeStyle`). A file that uses one is rejected at every version, with an error naming the key; in a recipe, `slots`, `tags`, `cosmetics`, a part's `role` and the eye fields `style`, `iris` and `sclera` are errors too. Delete them; there's no replacement. Palettes by slot or role, with a `dark` variant, stay.
 
 ### 1.11: characters
 

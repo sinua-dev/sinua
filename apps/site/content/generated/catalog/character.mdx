@@ -19,7 +19,6 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | Prop | Category | Type | Range | Default | Description |
 |---|---|---|---|---|---|
 | `accessories` | Appearance | boolean |  | 1 | The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. |
-| `eyeStyle` | Appearance | choice: `auto` · `shape` · `glossy` · `pixel` · `dot` |  | 0 | How the eyes are drawn (FX Spec 1.13): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style. |
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 232 | Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
@@ -67,7 +66,6 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | Prop | Category | Type | Range | Default | Description |
 |---|---|---|---|---|---|
 | `accessories` | Appearance | boolean |  | 1 | The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. |
-| `eyeStyle` | Appearance | choice: `auto` · `shape` · `glossy` · `pixel` · `dot` |  | 0 | How the eyes are drawn (FX Spec 1.13): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style. |
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 9 | Turns the capsule's colour in degrees; the brass, the grille, the eyes and the tally stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
@@ -116,7 +114,6 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | Prop | Category | Type | Range | Default | Description |
 |---|---|---|---|---|---|
 | `accessories` | Appearance | boolean |  | 1 | The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. |
-| `eyeStyle` | Appearance | choice: `auto` · `shape` · `glossy` · `pixel` · `dot` |  | 0 | How the eyes are drawn (FX Spec 1.13): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style. |
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 253 | Turns the spirit's colour (violet and teal together) in degrees; the sparkles and the eyes stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
@@ -165,7 +162,6 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | Prop | Category | Type | Range | Default | Description |
 |---|---|---|---|---|---|
 | `accessories` | Appearance | boolean |  | 1 | The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. |
-| `eyeStyle` | Appearance | choice: `auto` · `shape` · `glossy` · `pixel` · `dot` |  | 0 | How the eyes are drawn (FX Spec 1.13): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style. |
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 12 | Turns the bird's coral body in degrees; the crest, wings, beak and eyes stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
@@ -214,7 +210,6 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | Prop | Category | Type | Range | Default | Description |
 |---|---|---|---|---|---|
 | `accessories` | Appearance | boolean |  | 1 | The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. |
-| `eyeStyle` | Appearance | choice: `auto` · `shape` · `glossy` · `pixel` · `dot` |  | 0 | How the eyes are drawn (FX Spec 1.13): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style. |
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 12 | Turns the mug's colour in degrees; the coffee, the sleeve and the heart stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
@@ -262,7 +257,6 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | Prop | Category | Type | Range | Default | Description |
 |---|---|---|---|---|---|
 | `accessories` | Appearance | boolean |  | 1 | The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. |
-| `eyeStyle` | Appearance | choice: `auto` · `shape` · `glossy` · `pixel` · `dot` |  | 0 | How the eyes are drawn (FX Spec 1.13): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style. |
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 24 | Turns the bean's roast in degrees; the cheeks and the aroma stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
@@ -311,7 +305,6 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 |---|---|---|---|---|---|
 | `accessories` | Appearance | boolean |  | 1 | The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. |
 | `arms` | Appearance | boolean |  | 1 | The character's arms (Beep): a hand to the ear while listening, to the chin while thinking, beats while speaking. Off: no arms. |
-| `eyeStyle` | Appearance | choice: `auto` · `shape` · `glossy` · `pixel` · `dot` |  | 0 | How the eyes are drawn (FX Spec 1.13): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style. |
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 200 | Turns the robot's steel in degrees; the screen, the orange accents and the antenna light stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |

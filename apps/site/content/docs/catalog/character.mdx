@@ -77,7 +77,7 @@ A tap or a click on a character plays `hop`: it crouches, hops and lands with a 
 
 `palette` repaints some of a character's colours and leaves the rest as drawn: `{ body: "#E63946" }`. To change only colours, this is all you need; no recipe.
 
-- **Slots are named by the part they paint**, never by colour: `body` is every character's main colour, and `outline`, `cheeks`, `shine` and `iris` mean the same everywhere. The eyes are `eyes` on a body face and `glow` on a screen face. An unknown slot is an error that suggests the closest name.
+- **Slots are named by the part they paint**, never by colour: `body` is every character's main colour, and `outline`, `cheeks` and `shine` mean the same everywhere. The eyes are `eyes` on a body face and `glow` on a screen face. An unknown slot is an error that suggests the closest name.
 - **Tones follow.** Given `body`, its `bodyLight` and `bodyDark` move with it. A tone you give yourself wins.
 - **After `hue`.** `hue` still turns the slots it turns; a colour you give is never turned.
 - **The eyes stay readable.** When a new colour comes too close to the ink of the eyes and mouth, the ink moves to the far side, unless you set the ink too.
@@ -86,68 +86,33 @@ A tap or a click on a character plays `hop`: it crouches, hops and lands with a 
 
 | Character | Slots (a slot marked +Light/Dark brings its tones) |
 |---|---|
-| `buzzy` | body (+Light/Dark), outline, screen, accent, glow, visor, visorEdge, shine, iris |
-| `hum` | body (+Light/Dark), stand (+Dark), grille, glow, outline, tallyListening, tallyThinking, tallyOff, shine, iris |
-| `wisp` | body, bodyMid, tail, outline, eyes, sparkles, twinkles, shine, iris |
-| `chirp` | body (+Light/Dark), belly, feathers, beak (+Dark), outline, eyes, iris |
-| `cuppa` | mug (+Light/Dark), coffee, crema, sleeve (+Dark), heart, shine, cheeks, saucer (+Dark), outline, eyes, steam, iris |
-| `bean` | body (+Light/Dark), groove, grooveEdge, shine, cheeks, aroma, foam, outline, eyes, iris |
-| `beep` | body (+Light/Dark), arms, screen, glow, accent, tallyOff, tallyListening, tallyThinking, outline, rivets, cheeks, iris |
+| `buzzy` | body (+Light/Dark), outline, screen, accent, glow, visor, visorEdge, shine |
+| `hum` | body (+Light/Dark), stand (+Dark), grille, glow, outline, tallyListening, tallyThinking, tallyOff, shine |
+| `wisp` | body, bodyMid, tail, outline, eyes, sparkles, twinkles, shine |
+| `chirp` | body (+Light/Dark), belly, feathers, beak (+Dark), outline, eyes |
+| `cuppa` | mug (+Light/Dark), coffee, crema, sleeve (+Dark), heart, shine, cheeks, saucer (+Dark), outline, eyes, steam |
+| `bean` | body (+Light/Dark), groove, grooveEdge, shine, cheeks, aroma, foam, outline, eyes |
+| `beep` | body (+Light/Dark), arms, screen, glow, accent, tallyOff, tallyListening, tallyThinking, outline, rivets, cheeks |
 
-`iris` colours the glossy eye ([`eyeStyle: glossy`](#eye-styles)); the other eye styles ignore it.
+### Roles and the dark variant
 
-### Named palettes and roles
+A palette can also be written over **roles**, so one palette fits every character: each character maps `primary`, `secondary` and `accent` to its own slots.
 
-A palette can also be written over **roles**, so one palette fits every character: each character maps `primary`, `secondary`, `accent` and `iris` to its own slots.
+- `{ primary: "#E63946" }` paints by role, without knowing the slot names. Slots you write win over roles.
+- A role a character doesn't have is read as a slot name, so writing it is an error (Buzzy and Bean have no `secondary`).
+- **Dark theme:** `{ primary: "#2E87C2", dark: { primary: "#2E6A9E" } }` gives your own dark variant. The view picks it when the theme is dark.
 
-<div className="demo-gallery">
-<Demo spec="examples/themed-cuppa.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }]} />
-</div>
-
-- `palette: "sunset"` (or `{ theme: "sunset" }`) applies a built-in palette: `sunset`, `ocean`, `forest`, `candy`, `mono`, `night`.
-- `{ primary: "#E63946" }` paints by role, without knowing the slot names; `{ iris: "#7A4BD6" }` gives any character purple glossy eyes.
-- Mix them: `{ theme: "ocean", accent: "#FF6B6B" }`. The theme's roles come first, then roles you write, then slots you write.
-- **Dark theme:** every built-in palette has a dark variant, and `dark: { primary: "#B5202D" }` gives your own. The view picks the variant when the theme is dark.
-- A role a character doesn't have is skipped (Buzzy and Bean have no `secondary`).
-
-| Character | primary | secondary | accent | iris |
-|---|---|---|---|---|
-| `buzzy` | body | — | accent | iris |
-| `hum` | body | — | tallyListening | iris |
-| `wisp` | body | bodyMid | tail | iris |
-| `chirp` | body | belly | beak | iris |
-| `cuppa` | mug | sleeve | heart | iris |
-| `bean` | body | — | aroma | iris |
-| `beep` | body | arms | accent | iris |
-
-| Palette | primary · secondary · accent | dark |
-|---|---|---|
-| `sunset` | #F1774B · #FFD6AD · #D5346A | #DD562C · #D89264 · #EE6391 |
-| `ocean` | #2E87C2 · #D4EDF7 · #17C4B3 | #2E6A9E · #72ADCA · #3CDDC7 |
-| `forest` | #3E8E5B · #E3F1DA · #F1AF3B | #387551 · #90B280 · #F5BB47 |
-| `candy` | #F490B1 · #FFF0F7 · #7E56C2 | #E56C98 · #DF9FC3 · #A07CDE |
-| `mono` | #8B9098 · #E8EAED · #2F3237 | #737882 · #ACB1B9 · #D8DADF |
-| `night` | #3B3F7D · #1F2242 · #F5C451 | #404696 · #363A63 · #F8D062 |
+| Character | primary | secondary | accent |
+|---|---|---|---|
+| `buzzy` | body | — | accent |
+| `hum` | body | — | tallyListening |
+| `wisp` | body | bodyMid | tail |
+| `chirp` | body | belly | beak |
+| `cuppa` | mug | sleeve | heart |
+| `bean` | body | — | aroma |
+| `beep` | body | arms | accent |
 
 A character keeps its own colours otherwise: `color` and `gradient` don't apply, and in an [FX Spec](/docs/reference/fx-spec#111-characters) they are an error.
-
-## Eye styles
-
-The shape eye is the default. Three more styles draw inside the same eye shape, so blinks, the gaze, the turn blink and every expression work unchanged.
-
-<div className="demo-gallery">
-<Demo spec="examples/glossy-bean.fxspec.json" />
-<Demo spec="examples/pixel-beep.fxspec.json" />
-<Demo spec="examples/dot-hum.fxspec.json" />
-</div>
-
-| `eyeStyle` | Looks like | At 20 px |
-|---|---|---|
-| `glossy` | a dark lens (or a white sclera), an iris and a pupil that slide with the gaze, highlights that stay with the light | the lens, the iris and one highlight |
-| `pixel` | the eye lit as a grid of rounded cells glowing on a screen; on a face screen the mouth goes pixel too | the same, fewer cells |
-| `dot` | a soft glowing point on a screen, a crisp dot on a body; blinks squash it | the dot without its halo |
-
-`eyeStyle: "auto"` keeps the character's own; the built-ins use the shape eye. Every style stays in the light cost class.
 
 ## The richer look
 
@@ -160,21 +125,15 @@ Airbrushed shading, rim light and film grain, with no blur: a character's soft `
 
 The built-in characters are unchanged; a [recipe](/docs/reference/character-recipe) adds the layers.
 
-## Cosmetics
-
-A character can wear a hat, glasses, a scarf or a badge, and your users can pick from a wardrobe. See [Cosmetics](/docs/catalog/cosmetics).
-
 ## Options
 
 | Prop | Default | What it does |
 |---|---|---|
 | `hue` | 232 | Turns the character's main colour. The eyes and the accents stay. |
-| `palette` | none | Repaints colours by slot, role or a named palette (see [Palette](#palette)). |
+| `palette` | none | Repaints colours by slot or role, with an optional `dark` variant (see [Palette](#palette)). |
 | `expression` | none | A mood: `happy`, `surprised`, `thoughtful`, `sad`, `sleepy`. |
-| `eyeStyle` | auto | `shape`, `glossy`, `pixel` or `dot` (see [Eye styles](#eye-styles)). |
 | `grain` | 0 | Film grain inside the body, 0 to 1. |
 | `shading` | on | The soft shading and rim light. |
-| `loadout` | none | What your user picked from the file's wardrobe (see [Cosmetics](/docs/catalog/cosmetics)). |
 | `tap` | on | A tap plays a hop. Off inside a tappable control. |
 | `mouth` | on | Off draws eyes only. |
 | `accessories` | on | Off drops the extras: Buzzy's crest and ear arcs, Hum's tally light, Wisp's sparkles, Chirp's notes, Cuppa's steam. |

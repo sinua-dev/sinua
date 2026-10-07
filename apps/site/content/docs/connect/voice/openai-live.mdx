@@ -23,6 +23,9 @@ GPT-Live (`gpt-live-1`) is OpenAI's full-duplex voice model, a different API fro
 </Tab>
 </Tabs>
 
+
+It sends [transcripts](/docs/connect/voice/transcripts) of both speakers (`transcriptTiming` `segments`), synced to the played audio by default.
+
 ## Your endpoint
 
 - The source POSTs `{ "sdp": … }` as JSON to `sessionUrl`, with `Authorization: Bearer` when you give it a credential of your own (`credentialUrl` or a provider, as on the [Credentials](/docs/connect/voice/credentials) page).

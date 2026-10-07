@@ -46,7 +46,7 @@ How close the synced text follows the audio on GPT-Live, measured against word t
 | synced (default) | median 82 ms, p95 191 ms | median ~190 ms, p95 ~515 ms |
 | raw (`syncToAudio: false`) | text ~650 ms ahead of the audio | text ~690 ms ahead |
 
-GPT-Live's word timings are approximate and how far they run ahead varies from session to session, so treat the English figures as a known limit.
+GPT-Live's word timings are approximate and how far they run ahead varies from session to session, so treat the English figures as a known limit. `syncToAudio` also exists on ElevenLabs, Gemini Live and OpenAI Realtime.
 
 ## Which sources send transcripts
 
@@ -55,7 +55,17 @@ GPT-Live's word timings are approximate and how far they run ahead varies from s
 | Source | `transcriptTiming` | How the assistant's text follows the audio |
 |---|---|---|
 | [GPT-Live](/docs/connect/voice/openai-live) (`OpenAILiveVoiceSource`) | `segments` | GPT-Live's word timings, anchored at each turn's audio onset |
+| [ElevenLabs](/docs/connect/voice/elevenlabs) | `chars` | ElevenLabs' per-character times against the played audio: character-exact |
+| [Gemini Live](/docs/connect/voice/gemini-live) | `none` | Gemini sends no times: the text is paced over the reply's audio |
+| [OpenAI Realtime](/docs/connect/voice/openai-realtime) | `none` | Realtime sends no times: paced at about 14 characters a second while the model is audible, caught up when it stops |
+| [LiveKit](/docs/connect/voice/livekit) | `synced` | the agent's transcription stream, which LiveKit Agents already syncs to its speech and cuts on a barge-in |
 | [Simulated](/docs/connect/voice/simulated) (`SimulatedVoiceSource`) | `synced` | the script's line as it is said |
-| mic, test tone, the other vendors | — | `supportsTranscript` is false |
+| mic, test tone | — | `supportsTranscript` is false |
+
+- **Realtime** needs the session's input transcription for the user's side, which OpenAI bills per minute. When something subscribes and the session has none, the source turns it on with `gpt-4o-mini-transcribe`; `transcribeUser` picks another model, or `false` / `nil` / `null` leaves the session as your backend made it. Without it, only the assistant's side comes.
+- **Gemini** asks for output (and input) transcription in the Live setup. Its user transcript can come late, or not at all, on long speech.
+- **LiveKit:** a Room takes one handler per text-stream topic. If your app already reads `lk.transcription` on a Room you attached, the source's transcript stays empty (with a console warning); read your own handler instead. Raw mode is the agent's setting there, not the source's.
+- **Raw mode** shows the text as it arrives on every vendor. At a barge-in, `chars` keeps the characters played by then and `none` the text that had arrived.
+- Only GPT-Live has been measured on live sessions; the others' timing follows from what each vendor sends.
 
 For your own voice source, `@sinua/voice` exports `TranscriptAssembler`: feed it your vendor's events and it gives the same updates.

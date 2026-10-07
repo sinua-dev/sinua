@@ -23,6 +23,9 @@ The Gemini source streams audio to Gemini Live and plays the model's reply, repo
 </Tab>
 </Tabs>
 
+
+It sends [transcripts](/docs/connect/voice/transcripts) of both speakers (`transcriptTiming` `none`), synced to the played audio by default.
+
 ## Credentials
 
 Your server mints an ephemeral auth token (`auth_tokens/…`) with your API key and locks the model, voice and instructions into it, so the client can't change them: `mintGeminiLiveCredential` in `@sinua/voice/server`. Point the source at that endpoint with `credentialUrl`, the same on every platform. See [Credentials](/docs/connect/voice/credentials).

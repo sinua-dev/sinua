@@ -23,6 +23,11 @@ The OpenAI source opens a Realtime session over WebRTC with a short-lived client
 </Tab>
 </Tabs>
 
+
+It sends [transcripts](/docs/connect/voice/transcripts) of both speakers (`transcriptTiming` `none`), synced to the played audio by default.
+
+**Billing note:** for the user's side, Realtime needs the session's input transcription, which OpenAI bills per minute. When you subscribe to transcripts and your session has none, the source turns it on with `gpt-4o-mini-transcribe`. Set `transcribeUser` to another model, or to `false` (Swift / Kotlin: `nil`) to leave the session as your backend made it.
+
 ## Credentials
 
 Your server mints an ephemeral client secret (`ek_…`) with your API key, and sets the session's model, voice and instructions while doing it: `mintOpenAIRealtimeCredential` in `@sinua/voice/server`. Point the source at that endpoint with `credentialUrl`, the same on every platform. See [Credentials](/docs/connect/voice/credentials).

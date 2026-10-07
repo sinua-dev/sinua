@@ -35,7 +35,6 @@ enum class SinuaOrbPattern(val id: String) {
     INITIALIZING("initializing"),
     CALIBRATING("calibrating"),
     PROGRESSING("progressing"),
-    CONCLUDING("concluding"),
     MUTED("muted"),
     SILHOUETTE("silhouette"),
 }
@@ -148,9 +147,9 @@ data class SinuaOrbProps(
     val jumpSpeed: Double? = null,
     /** Dots stacked in each bar. Range 1...24. Patterns: speaking. */
     val barDotCount: Int? = null,
-    /** Dot radius. Range speaking 0...6, concluding 0...6, silhouette 0...4. Patterns: speaking, concluding, silhouette. */
+    /** Dot radius. Range speaking 0...6, silhouette 0...4. Patterns: speaking, silhouette. */
     val dotSize: Double? = null,
-    /** Seconds between sonar pings. Range confirming 0.05...30, initializing 0.05...30, concluding 0.5...60, muted 0.05...30, silhouette 0.05...30. Patterns: confirming, initializing, concluding, muted, silhouette. */
+    /** Seconds between sonar pings. Range 0.05...30 (s). Patterns: confirming, initializing, muted, silhouette. */
     val period: Double? = null,
     /** Trailing echo rings per ping. Range 0...8. Patterns: confirming. */
     val echoCount: Int? = null,
@@ -170,10 +169,6 @@ data class SinuaOrbProps(
     val holdDuration: Double? = null,
     /** How far the eclipse has advanced, 0 to 1. Range 0...1 (fraction). Patterns: progressing. */
     val progress: Double? = null,
-    /** How far dots drift before they lock into the lattice. Range 0...2 (fraction). Patterns: concluding. */
-    val driftAmplitude: Double? = null,
-    /** Stroke width of the lattice links. Range 0...4. Patterns: concluding. */
-    val lineWidth: Double? = null,
     /** How far the orb fades toward the paper. Range 0...1 (fraction). Patterns: muted. */
     val dim: Double? = null,
     /** Size of the slow breathing pulse. Range 0...0.5 (fraction). Patterns: muted. */
@@ -275,8 +270,6 @@ data class SinuaOrbProps(
         decay?.let { o["decay"] = it }
         holdDuration?.let { o["holdDuration"] = it }
         progress?.let { o["progress"] = it }
-        driftAmplitude?.let { o["driftAmplitude"] = it }
-        lineWidth?.let { o["lineWidth"] = it }
         dim?.let { o["dim"] = it }
         pulseAmplitude?.let { o["pulseAmplitude"] = it }
         yaw?.let { o["yaw"] = it }
@@ -373,8 +366,6 @@ fun SinuaOrb(
     decay: Double? = null,
     holdDuration: Double? = null,
     progress: Double? = null,
-    driftAmplitude: Double? = null,
-    lineWidth: Double? = null,
     dim: Double? = null,
     pulseAmplitude: Double? = null,
     yaw: Double? = null,
@@ -421,7 +412,7 @@ fun SinuaOrb(
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
     effect: SinuaEffectTrigger? = null,
 ) {
-    val overrides = SinuaOrbProps(pattern = pattern, size = size, ghostA = ghostA, ink = ink, orbitParticles = orbitParticles, ghostN = ghostN, ghostR = ghostR, orbitN = orbitN, partR = partR, partRDepth = partRDepth, rMin = rMin, rsPow = rsPow, dimBase = dimBase, scanMul = scanMul, inkFar = inkFar, inkSpan = inkSpan, latRings = latRings, lonDensity = lonDensity, rBase = rBase, rDepth = rDepth, rBoost = rBoost, moveCount = moveCount, rActive = rActive, rings = rings, lineW = lineW, spread = spread, thr = thr, signals = signals, nodeN = nodeN, nodeR = nodeR, nodeRDepth = nodeRDepth, turns = turns, strandN = strandN, bandMul = bandMul, spin = spin, wobMul = wobMul, faceOn = faceOn, lanes = lanes, segs = segs, iconD = iconD, rDot = rDot, depthTone = depthTone, hueOffset = hueOffset, hueSpread = hueSpread, saturation = saturation, surfaceScale = surfaceScale, hueSpeed = hueSpeed, surfaceSpeed = surfaceSpeed, nodeCount = nodeCount, nodeSize = nodeSize, barCount = barCount, hue = hue, jumpSpeed = jumpSpeed, barDotCount = barDotCount, dotSize = dotSize, period = period, echoCount = echoCount, coreSize = coreSize, ringCount = ringCount, echoSpacing = echoSpacing, starCount = starCount, warpSpeed = warpSpeed, decay = decay, holdDuration = holdDuration, progress = progress, driftAmplitude = driftAmplitude, lineWidth = lineWidth, dim = dim, pulseAmplitude = pulseAmplitude, yaw = yaw, hologram = hologram, rim = rim, scanlines = scanlines, wire = wire, breath = breath, waveSpeed = waveSpeed, glint = glint, inward = inward, neuron = neuron, speech = speech, scanSpeed = scanSpeed, turnYaw = turnYaw, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color).toOverrides()
+    val overrides = SinuaOrbProps(pattern = pattern, size = size, ghostA = ghostA, ink = ink, orbitParticles = orbitParticles, ghostN = ghostN, ghostR = ghostR, orbitN = orbitN, partR = partR, partRDepth = partRDepth, rMin = rMin, rsPow = rsPow, dimBase = dimBase, scanMul = scanMul, inkFar = inkFar, inkSpan = inkSpan, latRings = latRings, lonDensity = lonDensity, rBase = rBase, rDepth = rDepth, rBoost = rBoost, moveCount = moveCount, rActive = rActive, rings = rings, lineW = lineW, spread = spread, thr = thr, signals = signals, nodeN = nodeN, nodeR = nodeR, nodeRDepth = nodeRDepth, turns = turns, strandN = strandN, bandMul = bandMul, spin = spin, wobMul = wobMul, faceOn = faceOn, lanes = lanes, segs = segs, iconD = iconD, rDot = rDot, depthTone = depthTone, hueOffset = hueOffset, hueSpread = hueSpread, saturation = saturation, surfaceScale = surfaceScale, hueSpeed = hueSpeed, surfaceSpeed = surfaceSpeed, nodeCount = nodeCount, nodeSize = nodeSize, barCount = barCount, hue = hue, jumpSpeed = jumpSpeed, barDotCount = barDotCount, dotSize = dotSize, period = period, echoCount = echoCount, coreSize = coreSize, ringCount = ringCount, echoSpacing = echoSpacing, starCount = starCount, warpSpeed = warpSpeed, decay = decay, holdDuration = holdDuration, progress = progress, dim = dim, pulseAmplitude = pulseAmplitude, yaw = yaw, hologram = hologram, rim = rim, scanlines = scanlines, wire = wire, breath = breath, waveSpeed = waveSpeed, glint = glint, inward = inward, neuron = neuron, speech = speech, scanSpeed = scanSpeed, turnYaw = turnYaw, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,

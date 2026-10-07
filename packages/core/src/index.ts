@@ -51,7 +51,7 @@ export type OrbState =
   | "shaping"
   // Not part of the original 9 ported states -- see each mode's header
   // comment in `crates/core_engine/src/orbs/modes/` (aurora, webflow,
-  // spectrum, sonar, warp, chladni, eclipse, crystallize).
+  // spectrum, sonar, warp, chladni, eclipse).
   | "glowing"
   | "drifting"
   | "speaking"
@@ -59,7 +59,6 @@ export type OrbState =
   | "initializing"
   | "calibrating"
   | "progressing"
-  | "concluding"
   // The "mic muted / connection lost" resting state (`orbs::modes::hush`).
   | "muted"
   // A head and shoulders of dots that lives with the voice, FX Spec 1.13

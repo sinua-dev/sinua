@@ -18,7 +18,6 @@ const GENERAL = { peak: 2.7, path: 2.25 }; // measured 2.39 (glowing, a 5-minute
 const RING = { path: 3.3, why: "thinking starts the ring's own brightness pulse with the change (measured 2.93)" };
 const EXCEPT = {
   speaking: { peak: 3.0, path: 5.8, why: "the spectrum's bars join one at a time and slide, the user's pick (measured 2.64 / 5.12)" },
-  concluding: { path: 4.7, why: "crystallize assembles and scatters on its own cycle (measured 4.18)" },
   muted: { peak: 6.8, path: 5.4, why: "the sphere turns (yaw 1.2 / 1.0 / none per state): a rigid turn of a dense lattice (measured 6.07 / 4.79)" },
   calibrating: { peak: 12.2, why: "chladni snaps to a new mode every holdDuration; smoothing it is a 1.14 candidate (measured 10.85)" },
   beep: { peak: 3.7, path: 3.3, why: "the arms swing out wide, a big continuous move (measured 3.33 / 2.91)" },

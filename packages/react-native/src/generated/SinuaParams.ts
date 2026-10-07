@@ -140,7 +140,6 @@ export type SinuaOrbPattern =
   | "initializing"
   | "calibrating"
   | "progressing"
-  | "concluding"
   | "muted"
   | "silhouette";
 
@@ -250,9 +249,9 @@ export interface SinuaOrbParams {
   jumpSpeed?: number;
   /** Dots stacked in each bar. Range 1...24. Patterns: speaking. */
   barDotCount?: number;
-  /** Dot radius. Range speaking 0...6, concluding 0...6, silhouette 0...4. Patterns: speaking, concluding, silhouette. */
+  /** Dot radius. Range speaking 0...6, silhouette 0...4. Patterns: speaking, silhouette. */
   dotSize?: number;
-  /** Seconds between sonar pings. Range confirming 0.05...30, initializing 0.05...30, concluding 0.5...60, muted 0.05...30, silhouette 0.05...30. Patterns: confirming, initializing, concluding, muted, silhouette. */
+  /** Seconds between sonar pings. Range 0.05...30 (s). Patterns: confirming, initializing, muted, silhouette. */
   period?: number;
   /** Trailing echo rings per ping. Range 0...8. Patterns: confirming. */
   echoCount?: number;
@@ -272,10 +271,6 @@ export interface SinuaOrbParams {
   holdDuration?: number;
   /** How far the eclipse has advanced, 0 to 1. Range 0...1 (fraction). Patterns: progressing. */
   progress?: number;
-  /** How far dots drift before they lock into the lattice. Range 0...2 (fraction). Patterns: concluding. */
-  driftAmplitude?: number;
-  /** Stroke width of the lattice links. Range 0...4. Patterns: concluding. */
-  lineWidth?: number;
   /** How far the orb fades toward the paper. Range 0...1 (fraction). Patterns: muted. */
   dim?: number;
   /** Size of the slow breathing pulse. Range 0...0.5 (fraction). Patterns: muted. */
@@ -313,7 +308,7 @@ export interface SinuaOrbParams {
   color?: SinuaColor;
 }
 
-const ORB_TABLE: Table = {"ghostA":{"key":"ghostA"},"ink":{"key":"ink"},"orbitParticles":{"key":"particles"},"ghostN":{"key":"ghostN"},"ghostR":{"key":"ghostR"},"orbitN":{"key":"orbitN"},"partR":{"key":"partR"},"partRDepth":{"key":"partRDepth"},"rMin":{"key":"rMin"},"rsPow":{"key":"rsPow"},"dimBase":{"key":"dimBase"},"scanMul":{"key":"scanMul"},"inkFar":{"key":"inkFar"},"inkSpan":{"key":"inkSpan"},"latRings":{"key":"latRings"},"lonDensity":{"key":"lonDensity"},"rBase":{"key":"rBase"},"rDepth":{"key":"rDepth"},"rBoost":{"key":"rBoost"},"moveCount":{"key":"moveCount"},"rActive":{"key":"rActive"},"rings":{"key":"rings"},"lineW":{"key":"lineW"},"spread":{"key":"spread"},"thr":{"key":"thr"},"signals":{"key":"signals"},"nodeN":{"key":"nodeN"},"nodeR":{"key":"nodeR"},"nodeRDepth":{"key":"nodeRDepth"},"turns":{"key":"turns"},"strandN":{"key":"strandN"},"bandMul":{"key":"bandMul"},"spin":{"key":"spin"},"wobMul":{"key":"wobMul"},"faceOn":{"key":"faceOn"},"lanes":{"key":"lanes"},"segs":{"key":"segs"},"iconD":{"key":"iconD"},"rDot":{"key":"rDot"},"depthTone":{"key":"depthTone"},"hueOffset":{"key":"hueOffset"},"hueSpread":{"key":"hueSpread"},"saturation":{"key":"saturation"},"surfaceScale":{"key":"surfaceScale"},"hueSpeed":{"key":"hueSpeed"},"surfaceSpeed":{"key":"surfaceSpeed"},"nodeCount":{"key":"nodeCount"},"nodeSize":{"key":"nodeSize"},"barCount":{"key":"barCount"},"hue":{"key":"hue"},"jumpSpeed":{"key":"jumpSpeed"},"barDotCount":{"key":"barDotCount"},"dotSize":{"key":"dotSize"},"period":{"key":"period"},"echoCount":{"key":"echoCount"},"coreSize":{"key":"coreSize"},"ringCount":{"key":"ringCount"},"echoSpacing":{"key":"echoSpacing"},"starCount":{"key":"starCount"},"warpSpeed":{"key":"warpSpeed"},"decay":{"key":"decay"},"holdDuration":{"key":"holdDuration"},"progress":{"key":"progress"},"driftAmplitude":{"key":"driftAmplitude"},"lineWidth":{"key":"lineWidth"},"dim":{"key":"dim"},"pulseAmplitude":{"key":"pulseAmplitude"},"yaw":{"key":"yaw"},"hologram":{"key":"hologram"},"rim":{"key":"rim"},"scanlines":{"key":"scanlines"},"wire":{"key":"wire"},"breath":{"key":"breath"},"waveSpeed":{"key":"waveSpeed"},"glint":{"key":"glint"},"inward":{"key":"inward"},"neuron":{"key":"neuron"},"speech":{"key":"speech"},"scanSpeed":{"key":"scanSpeed"},"turnYaw":{"key":"turnYaw"}};
+const ORB_TABLE: Table = {"ghostA":{"key":"ghostA"},"ink":{"key":"ink"},"orbitParticles":{"key":"particles"},"ghostN":{"key":"ghostN"},"ghostR":{"key":"ghostR"},"orbitN":{"key":"orbitN"},"partR":{"key":"partR"},"partRDepth":{"key":"partRDepth"},"rMin":{"key":"rMin"},"rsPow":{"key":"rsPow"},"dimBase":{"key":"dimBase"},"scanMul":{"key":"scanMul"},"inkFar":{"key":"inkFar"},"inkSpan":{"key":"inkSpan"},"latRings":{"key":"latRings"},"lonDensity":{"key":"lonDensity"},"rBase":{"key":"rBase"},"rDepth":{"key":"rDepth"},"rBoost":{"key":"rBoost"},"moveCount":{"key":"moveCount"},"rActive":{"key":"rActive"},"rings":{"key":"rings"},"lineW":{"key":"lineW"},"spread":{"key":"spread"},"thr":{"key":"thr"},"signals":{"key":"signals"},"nodeN":{"key":"nodeN"},"nodeR":{"key":"nodeR"},"nodeRDepth":{"key":"nodeRDepth"},"turns":{"key":"turns"},"strandN":{"key":"strandN"},"bandMul":{"key":"bandMul"},"spin":{"key":"spin"},"wobMul":{"key":"wobMul"},"faceOn":{"key":"faceOn"},"lanes":{"key":"lanes"},"segs":{"key":"segs"},"iconD":{"key":"iconD"},"rDot":{"key":"rDot"},"depthTone":{"key":"depthTone"},"hueOffset":{"key":"hueOffset"},"hueSpread":{"key":"hueSpread"},"saturation":{"key":"saturation"},"surfaceScale":{"key":"surfaceScale"},"hueSpeed":{"key":"hueSpeed"},"surfaceSpeed":{"key":"surfaceSpeed"},"nodeCount":{"key":"nodeCount"},"nodeSize":{"key":"nodeSize"},"barCount":{"key":"barCount"},"hue":{"key":"hue"},"jumpSpeed":{"key":"jumpSpeed"},"barDotCount":{"key":"barDotCount"},"dotSize":{"key":"dotSize"},"period":{"key":"period"},"echoCount":{"key":"echoCount"},"coreSize":{"key":"coreSize"},"ringCount":{"key":"ringCount"},"echoSpacing":{"key":"echoSpacing"},"starCount":{"key":"starCount"},"warpSpeed":{"key":"warpSpeed"},"decay":{"key":"decay"},"holdDuration":{"key":"holdDuration"},"progress":{"key":"progress"},"dim":{"key":"dim"},"pulseAmplitude":{"key":"pulseAmplitude"},"yaw":{"key":"yaw"},"hologram":{"key":"hologram"},"rim":{"key":"rim"},"scanlines":{"key":"scanlines"},"wire":{"key":"wire"},"breath":{"key":"breath"},"waveSpeed":{"key":"waveSpeed"},"glint":{"key":"glint"},"inward":{"key":"inward"},"neuron":{"key":"neuron"},"speech":{"key":"speech"},"scanSpeed":{"key":"scanSpeed"},"turnYaw":{"key":"turnYaw"}};
 
 /** The engine overrides a SinuaOrb hands to SinuaView. */
 export function sinuaOrbOverrides(pattern: SinuaOrbPattern, params: SinuaOrbParams): Record<string, number> {

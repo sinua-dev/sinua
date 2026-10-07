@@ -33,7 +33,6 @@ export type OrbState =
   | "initializing"
   | "calibrating"
   | "progressing"
-  | "concluding"
   | "muted"
   | "signaling"
   | "waveform"

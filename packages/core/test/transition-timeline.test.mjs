@@ -31,7 +31,7 @@ const CASES = [
   { name: "irregular frames (16 / 33 / 8 ms)", t0: 1, sides: { a: plain("glowing", 0.6), b: plain("glowing", 1.15) }, events: [[0, "a"], [4, "b", 0.5, "easeInOut"]], dts: Array.from({ length: 60 }, (_, i) => ms([16, 33, 8][i % 3])) },
   { name: "a 250 ms hitch continues the change", t0: 1, sides: { a: plain("glowing", 0.6), b: plain("glowing", 1.15) }, events: [[0, "a"], [5, "b", 0.6, "easeInOut"]], dts: [...steady(10), ms(250), ...steady(30)] },
   { name: "a 3 s gap (back from the background) lands on the target", t0: 1, sides: { a: plain("glowing", 0.6), b: plain("glowing", 1.15) }, events: [[0, "a"], [5, "b", 0.6, "easeInOut"]], dts: [...steady(10), 3, ...steady(5)] },
-  { name: "rates accumulate from the first change of a resting view (concluding at 300 s)", t0: 300, sides: { i: voice("concluding", "idle"), s: voice("concluding", "speaking") }, events: [[0, "i"], [10, "s", 0.25, "easeInOut"]], dts: steady(60) },
+  { name: "rates accumulate from the first change of a resting view (confirming at 300 s)", t0: 300, sides: { i: voice("confirming", "idle"), s: voice("confirming", "speaking") }, events: [[0, "i"], [10, "s", 0.25, "easeInOut"]], dts: steady(60) },
 ];
 
 function replay(c) {

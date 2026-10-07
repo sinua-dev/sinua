@@ -663,7 +663,7 @@
           "nodeCount": 260.0,
           "nodeSize": 1.5,
           "saturation": 0.62,
-          "surfaceScale": 1.5,
+          "surfaceScale": 1.4,
           "surfaceSpeed": 0.5
         },
         "size": 64,
@@ -699,7 +699,7 @@
           "nodeCount": 260.0,
           "nodeSize": 1.5,
           "saturation": 0.62,
-          "surfaceScale": 1.5,
+          "surfaceScale": 1.4,
           "surfaceSpeed": 0.5
         },
         "size": 64,
@@ -737,7 +737,7 @@
           "pulseScale": 0.015,
           "pulseStrength": 0.6,
           "saturation": 0.8,
-          "surfaceScale": 3.0,
+          "surfaceScale": 1.6,
           "surfaceSpeed": 0.55
         },
         "size": 64,
@@ -775,7 +775,7 @@
           "pulseScale": 0.015,
           "pulseStrength": 0.6,
           "saturation": 0.8,
-          "surfaceScale": 3.0,
+          "surfaceScale": 1.6,
           "surfaceSpeed": 0.55
         },
         "size": 64,

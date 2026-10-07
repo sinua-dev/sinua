@@ -12769,7 +12769,7 @@
       ]
     }
   ],
-  "profileVersion": 3,
+  "profileVersion": 4,
   "runtimeInputs": [
     {
       "description": "The live voice level 0 to 1; drives the radial breathing pulse on any pattern.",

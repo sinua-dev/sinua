@@ -141,6 +141,7 @@ step "packages/voice: npm ci";      (cd packages/voice && npm ci)
 step "packages/voice: npm run build"; (cd packages/voice && npm run build)
 step "packages/voice: npm test";      (cd packages/voice && npm test)
 step "transitions: the contract's bounds (every pattern, realistic conversations)"; node scripts/transitions/check.mjs
+step "transitions: the lattice trio at 512 px, in colour (no jump at video size)"; node scripts/transitions/large.mjs
 step "examples/voice-server: npm ci + check (templates type-check, mocked tests)"; (cd examples/voice-server && npm ci && npm run check)
 step "packages/react-native: npm ci (types for the docs' RN samples)"; (cd packages/react-native && npm ci --ignore-scripts)
 step "docs: code samples (Web + RN type-check, install names)"; scripts/docs/check-code-snippets.sh --web

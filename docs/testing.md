@@ -198,7 +198,13 @@ Every binding checks the frozen file itself. The rules mirror the Rust checker: 
 ## Transitions: the contract's bounds
 
 `node scripts/transitions/check.mjs` (CI, after the packages build; `--quick` while
-iterating) holds the transition contract:
+iterating) holds the transition contract. `node scripts/transitions/large.mjs` (CI, right
+after it) adds what the contract's 96 px ink raster can't see: the lattice trio (glowing,
+calibrating, progressing) through their voice-state changes in colour at 512 px. Each
+change's worst frame must stay within 1.6× the pattern's liveliest steady motion. One
+exception is listed with its measured value: progressing's idle → listening wake-up, 2.69×.
+
+The contract itself:
 
 - **Every pattern** (31 orb patterns, 7 characters; the script stops if the catalog has an
   orb or character pattern its lists miss) through every voice-state pair and

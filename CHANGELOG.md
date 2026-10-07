@@ -48,6 +48,16 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   the `speaking` → `listening` change come at such a cut-off. A short "mhm" under speech that goes on
   still doesn't count. `spec/openai-live-cases.json` has the case.
 
+- **`glowing` no longer jumps between voice states at large sizes (every platform, every FX Spec
+  version).** Its voice-state profile zoomed the colour field 2.5× from listening to thinking
+  (`surfaceScale` 1.2 → 3.0) in under half a second, which read as a jump at video size (~560 px).
+  Now thinking is 1.6 and speaking 1.4 (`profileVersion` 4). Transitions measured at 560 px drop
+  from 1.9–2.1× to 0.6–0.8× of the orb's own speaking motion, and thinking still looks closer in
+  than listening. Apps that pinned `surfaceScale` to hide the jump can drop the pin. Files of every
+  FX Spec version see the new values (the identity locks were rewritten for these two values only).
+  A new CI check (`scripts/transitions/large.mjs`) drives glowing, calibrating and progressing
+  through their state changes in colour at 512 px.
+
 ### Removed
 
 1.14 takes out what the 1.14 review found unused or about to be replaced. None of it is

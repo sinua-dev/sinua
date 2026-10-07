@@ -193,6 +193,8 @@ jobs:
       # interruption) and realistic conversations through the GPT-Live session core.
       - name: transitions -- the contract's bounds (after packages/core + packages/voice)
         run: node scripts/transitions/check.mjs
+      - name: transitions -- the lattice trio at 512 px, in colour (no jump at video size)
+        run: node scripts/transitions/large.mjs
       - name: examples/voice-server -- credential endpoint templates (type-check + tests, vendor HTTP mocked)
         working-directory: examples/voice-server
         run: npm ci && npm run check

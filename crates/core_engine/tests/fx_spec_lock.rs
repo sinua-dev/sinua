@@ -14,7 +14,9 @@
 //! writes the lock for the current `RUNTIME_MINOR`. Never run it to paper
 //! over a diff: a lock that changes means the older wording's meaning
 //! changed, which is the one thing these files exist to prevent
-//! (docs/fx-spec.md, *Identity*).
+//! (docs/fx-spec.md, *Identity*). `FX_SPEC_LOCK_WRITE=all` rewrites every
+//! minor's lock: only for a change that the versioning policy lets reach
+//! older files (a pre-1.0 cleanup; recorded under *Versioning*).
 use serde_json::{json, Map, Value};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -169,9 +171,13 @@ fn the_current_runtimes_lock_is_present_and_still_matches() {
 #[test]
 #[ignore = "writes spec/fx-spec-1.<minor>-resolved.json; run deliberately with FX_SPEC_LOCK_WRITE=1"]
 fn write_the_current_runtimes_lock() {
-    if std::env::var("FX_SPEC_LOCK_WRITE").as_deref() != Ok("1") {
-        return;
+    let runtime = core_engine::fx_spec_runtime_minor();
+    let minors = match std::env::var("FX_SPEC_LOCK_WRITE").as_deref() {
+        Ok("1") => runtime..=runtime,
+        Ok("all") => 8..=runtime,
+        _ => return,
+    };
+    for minor in minors {
+        std::fs::write(lock_path(minor), capture(minor)).unwrap();
     }
-    let minor = core_engine::fx_spec_runtime_minor();
-    std::fs::write(lock_path(minor), capture(minor)).unwrap();
 }

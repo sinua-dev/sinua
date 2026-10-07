@@ -110,6 +110,13 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
   - The `concluding` pattern, in 1.14 (0.1.0-beta.9), with the same message, at the base's or
     a `states` entry's `pattern`.
 
+  One value change reaches older files too, under the same 1.14 cleanup: `glowing`'s
+  voice-state profile zooms less (`surfaceScale` thinking 3.0 → 1.6, speaking 1.5 → 1.4;
+  `profileVersion` 4). At video size the old 2.5× zoom between listening and thinking read as
+  a jump. Every lock from 1.8 on was rewritten for those two values only
+  (`FX_SPEC_LOCK_WRITE=all`, which rewrites every minor's lock and is only for a change the
+  policy lets reach older files).
+
   After 1.0 a removal only happens in a major (FX Spec 2.0), after a minor of deprecation
   warnings.
 - `migrate` in `fx_spec.rs` reads the 1.7 grammar into engine names (catalog-path binding targets, array params) and reports the replaced names. A later minor that renames something plugs in there.

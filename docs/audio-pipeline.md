@@ -792,10 +792,20 @@ await voice.connect();                 // subscribing before connect() catches t
 - **Gemini** asks for `outputAudioTranscription` (and, as before, `inputAudioTranscription`) in the
   Live setup; nothing else is requested. Its user transcript can come late or not at all on long
   speech (a known Gemini issue).
-- **Realtime** needs the session's input transcription for the user's side, which OpenAI bills per
-  minute. When something subscribes to transcripts and the session has none, the source turns it
-  on with `gpt-4o-mini-transcribe` (`transcribeUser`: another model, or `false` / `nil` / `null` to
-  leave the session as your backend made it). Without it, only the assistant's side comes.
+- **Realtime** sends the user's side only when the session has input transcription, which OpenAI
+  bills per minute, so Sinua never turns it on by itself: by default, Realtime transcripts carry
+  the assistant's text only. Opt in with `transcribeUser` and a model, and the source turns it on
+  when something subscribes and the session has none:
+
+  ```ts
+  new OpenAIRealtimeVoiceSource({ credentialUrl: "/api/voice/openai", transcribeUser: "gpt-4o-mini-transcribe" });
+  // iOS: OpenAIRealtimeVoiceSource(credential: …, transcribeUser: "gpt-4o-mini-transcribe")
+  // Android: OpenAIRealtimeVoiceSource(context, credentials, transcribeUser = "gpt-4o-mini-transcribe")
+  // React Native: createVoiceSource({ vendor: "openai", credentialUrl, transcribeUser: "gpt-4o-mini-transcribe" })
+  ```
+
+  A session your backend already set up with input transcription is left as it is, and its user
+  text comes through.
 - **LiveKit**: a Room takes one handler per text-stream topic. On an attached Room (`{ room }`)
   whose app already reads `lk.transcription`, the source's transcript stays empty (a console
   warning); read your own handler instead. Raw mode is the agent's setting

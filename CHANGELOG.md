@@ -24,7 +24,7 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
     - `OpenAILiveVoiceSource` (GPT-Live): `segments`, from GPT-Live's `start_ms`/`end_ms`;
     - `ElevenLabsVoiceSource`: `chars`, character-exact from ElevenLabs' alignment;
     - `GeminiLiveVoiceSource`: `none`, paced over the reply's audio. The Live setup now also asks for `outputAudioTranscription`;
-    - `OpenAIRealtimeVoiceSource`: `none`, paced while audible. For the user's side it turns on the session's input transcription (`gpt-4o-mini-transcribe`, billed by OpenAI per minute) only when something subscribes and the session has none; `transcribeUser` picks the model or turns this off;
+    - `OpenAIRealtimeVoiceSource`: `none`, paced while audible; the assistant's text by default. The user's side needs the session's input transcription, which OpenAI bills per minute, so it is opt-in: `transcribeUser: "<model>"` (e.g. `gpt-4o-mini-transcribe`, on every platform and the React Native config) turns it on when something subscribes and the session has none;
     - `LiveKitVoiceSource`: `synced`, the agent's own `lk.transcription` streams passed through;
     - `SimulatedVoiceSource`.
   - **Your own source:** `@sinua/voice` exports `TranscriptAssembler` (and `alignmentFragments` for per-character times); the rules live in `spec/transcript-cases.json` and `spec/transcript-assembler-cases.json`.

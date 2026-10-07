@@ -24,7 +24,8 @@ final class VoiceRegistry {
             switch self {
             case .unknownVendor(let v): return "unknown voice vendor \"\(v)\""
             case .vendorNotInstalled(let v, let s):
-                return "the \(v) voice source isn't in this build: add `pod 'SinuaCore/\(s)'` (and LiveKit's podspecs source) to your Podfile, then pod install"
+                return
+                    "the \(v) voice source isn't in this build: add `pod 'SinuaCore/\(s)'` (and LiveKit's podspecs source) to your Podfile, then pod install"
             case .missingField(let v, let f): return "\(v) needs \(f)"
             case .unknownSource(let id): return "no voice source \(id) (already released?)"
             }
@@ -53,6 +54,15 @@ final class VoiceRegistry {
         source.listenInterrupt { [weak self] in self?.onEvent?(id, "interrupt", [:]) }
         source.listenConnection { [weak self] up in self?.onEvent?(id, "connection", ["connected": up]) }
         source.listenMute { [weak self] muted in self?.onEvent?(id, "mute", ["muted": muted]) }
+        // Always forwarded (JS keeps the listeners), so a JS listener added before connect() sees the first turn.
+        source.listenTranscript { [weak self] u in
+            var payload: [String: Any] = [
+                "role": u.role.rawValue, "text": u.text, "final": u.final, "turnId": u.turnId, "truncated": u.truncated,
+            ]
+            if let s = u.startMs { payload["startMs"] = s }
+            if let e = u.endMs { payload["endMs"] = e }
+            self?.onEvent?(id, "transcript", payload)
+        }
         sources[id] = source
     }
 
@@ -126,10 +136,13 @@ final class VoiceRegistry {
         case "mic": return LocalMicVoiceSource()
         case "gemini":
             return GeminiLiveVoiceSource(
-                credential: try credentialSource(id: id, config: config, missing: ("gemini", "a credential or credentialUrl")),
+                credential: try credentialSource(
+                    id: id, config: config, missing: ("gemini", "a credential or credentialUrl")),
                 model: string("model") ?? GeminiLiveSession.defaultModel,
                 instructions: string("instructions"),
-                endpoint: string("endpoint").flatMap(URL.init(string:)).map { GeminiLiveSession.Endpoint(url: $0, headers: [:]) })
+                endpoint: string("endpoint").flatMap(URL.init(string:)).map {
+                    GeminiLiveSession.Endpoint(url: $0, headers: [:])
+                })
         case "elevenlabs":
             return ElevenLabsVoiceSource(
                 credential: try credentialSource(
@@ -137,25 +150,26 @@ final class VoiceRegistry {
                 endpoint: string("endpoint").flatMap { URL(string: $0) })
         case "livekit":
             #if SINUA_LIVEKIT
-            let publish = config["publishMicrophone"] as? Bool ?? true
-            if let url = string("url"), let token = string("token") {
-                return LiveKitVoiceSource(url: url, token: token, publishMicrophone: publish)
-            }
-            guard config["hasCredentialProvider"] as? Bool == true else {
-                throw RegistryError.missingField(vendor: "livekit", field: "a url and token, or credentialUrl")
-            }
-            return LiveKitVoiceSource(
-                credential: try credentialSource(id: id, config: config, missing: ("livekit", "credentialUrl")),
-                publishMicrophone: publish)
+                let publish = config["publishMicrophone"] as? Bool ?? true
+                if let url = string("url"), let token = string("token") {
+                    return LiveKitVoiceSource(url: url, token: token, publishMicrophone: publish)
+                }
+                guard config["hasCredentialProvider"] as? Bool == true else {
+                    throw RegistryError.missingField(vendor: "livekit", field: "a url and token, or credentialUrl")
+                }
+                return LiveKitVoiceSource(
+                    credential: try credentialSource(id: id, config: config, missing: ("livekit", "credentialUrl")),
+                    publishMicrophone: publish)
             #else
-            throw RegistryError.vendorNotInstalled(vendor: "LiveKit", subspec: "LiveKit")
+                throw RegistryError.vendorNotInstalled(vendor: "LiveKit", subspec: "LiveKit")
             #endif
         case "openai":
             #if SINUA_OPENAI
-            return OpenAIRealtimeVoiceSource(
-                credential: try credentialSource(id: id, config: config, missing: ("openai", "a credential or credentialUrl")))
+                return OpenAIRealtimeVoiceSource(
+                    credential: try credentialSource(
+                        id: id, config: config, missing: ("openai", "a credential or credentialUrl")))
             #else
-            throw RegistryError.vendorNotInstalled(vendor: "OpenAI Realtime", subspec: "OpenAI")
+                throw RegistryError.vendorNotInstalled(vendor: "OpenAI Realtime", subspec: "OpenAI")
             #endif
         default:
             throw RegistryError.unknownVendor(vendor)

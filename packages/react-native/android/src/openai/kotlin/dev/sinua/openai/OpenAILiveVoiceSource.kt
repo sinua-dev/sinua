@@ -15,6 +15,8 @@ import dev.sinua.voice.OpenAILiveSignaling
 import dev.sinua.voice.OpenAIRealtimeSignaling
 import dev.sinua.voice.PcmTap
 import dev.sinua.voice.RealtimeReconnect
+import dev.sinua.voice.TranscriptTiming
+import dev.sinua.voice.TranscriptUpdate
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import dev.sinua.voice.isMicPermissionGranted
@@ -82,9 +84,15 @@ class OpenAILiveVoiceSource(
     private val warp: Boolean = false,
     private val reconnect: Boolean = true,
     private val http: OpenAIHttp = OpenAIHttp(),
+    /**
+     * Transcripts ([onTranscript]): `true` (default) reveals the assistant's text with the
+     * played audio; `false` passes GPT-Live's text through as it arrives, with its
+     * `start_ms`/`end_ms` (docs/audio-pipeline.md, *Transcripts*).
+     */
+    syncToAudio: Boolean = true,
 ) : VoiceSource {
     private val appContext = context.applicationContext
-    private val session = OpenAILiveSession()
+    private val session = OpenAILiveSession(syncToAudio)
     private val tap = PcmTap()
     private val handler = Handler(Looper.getMainLooper())
     private val mainDispatcher = object : MainDispatcher {
@@ -174,6 +182,18 @@ class OpenAILiveVoiceSource(
     override fun onInterrupt(cb: () -> Unit) {
         session.onInterrupt = cb
     }
+
+    /**
+     * Both speakers' live transcript, on the Main dispatcher (design note 39). Turn ids keep
+     * counting across reconnects; display only, nothing is kept or sent.
+     */
+    override fun onTranscript(cb: (TranscriptUpdate) -> Unit) {
+        session.onTranscript = cb
+    }
+
+    /** GPT-Live sends both speakers' text with `start_ms`/`end_ms` on the session timeline. */
+    override val supportsTranscript: Boolean get() = true
+    override val transcriptTiming: TranscriptTiming get() = TranscriptTiming.SEGMENTS
 
     /** Failures after `connect()` returned (the state is already back to idle). */
     override fun onError(cb: (Throwable) -> Unit) {

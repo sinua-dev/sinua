@@ -9,12 +9,26 @@
 // its nested terminal Responses event, the `session.commentary.appended` that delivers a
 // client delegation's result -- it carries no `delegation_id`, so the oldest open client
 // delegation closes -- or 30 s without news); user speech over the model's audio
-// that stops it within 1 s is a barge-in (full duplex: a "mhm" under continuing speech isn't).
+// that stops it within 1 s of the user's latest words is a barge-in (full duplex: a "mhm" under
+// continuing speech isn't, and the model may talk on for a while before it stops).
 package dev.sinua.voice
 
 import org.json.JSONObject
 
-class OpenAILiveSession {
+class OpenAILiveSession(syncToAudio: Boolean = true) {
+    /**
+     * The transcript (design note 39): `segments` timing, reveal synced to the audio unless
+     * `syncToAudio` is false.
+     */
+    val transcript = TranscriptAssembler(TranscriptTiming.SEGMENTS, syncToAudio)
+
+    /** Transcript updates for both speakers (see [TranscriptAssembler]). */
+    var onTranscript: ((TranscriptUpdate) -> Unit)?
+        get() = transcript.onUpdate
+        set(value) {
+            transcript.onUpdate = value
+        }
+
     var state: AgentState = AgentState.IDLE
         private set
 
@@ -71,8 +85,20 @@ class OpenAILiveSession {
                 setState(AgentState.LISTENING)
             }
 
-            "session.input_transcript.delta" ->
-                if (state == AgentState.SPEAKING && bargeInAt == null) bargeInAt = now
+            "session.input_transcript.delta" -> {
+                // The window runs from the user's latest words: in full duplex the model may talk on
+                // for a while after the user started, and stop only later (seen live, design note 39).
+                if (state == AgentState.SPEAKING) bargeInAt = now
+                if (state == AgentState.SPEAKING) transcript.hold()
+                ev.optStringOrNull("delta")?.let {
+                    transcript.userDelta(it, now, ev.optNumber("start_ms"), ev.optNumber("end_ms"))
+                }
+            }
+
+            "session.output_transcript.delta" ->
+                ev.optStringOrNull("delta")?.let {
+                    transcript.assistantDelta(it, now, ev.optNumber("start_ms"), ev.optNumber("end_ms"))
+                }
 
             "session.delegation.created" -> {
                 val d = ev.optJSONObject("delegation")
@@ -118,15 +144,19 @@ class OpenAILiveSession {
         } else if (state == AgentState.SPEAKING) {
             quietFrames++
             val userSpoke = bargeInAt?.let { now - it <= BARGE_IN_WINDOW_MS } ?: false
-            if (quietFrames < if (userSpoke) BARGE_IN_TAIL_FRAMES else speakingTail(now - speakingSince)) return
-            val armed = bargeInAt
-            bargeInAt = null
-            quietFrames = 0
-            setState(if (delegations.isEmpty()) AgentState.LISTENING else AgentState.THINKING)
-            if (armed != null && now - armed <= BARGE_IN_WINDOW_MS) onInterrupt?.invoke()
+            if (quietFrames >= if (userSpoke) BARGE_IN_TAIL_FRAMES else speakingTail(now - speakingSince)) {
+                val armed = bargeInAt
+                bargeInAt = null
+                quietFrames = 0
+                val interrupted = armed != null && now - armed <= BARGE_IN_WINDOW_MS
+                if (interrupted) transcript.cut() else transcript.speakingEnded()
+                setState(if (delegations.isEmpty()) AgentState.LISTENING else AgentState.THINKING)
+                if (interrupted) onInterrupt?.invoke()
+            }
         } else {
             settle()
         }
+        transcript.tick(now, level, state == AgentState.SPEAKING)
     }
 
     private fun open(id: String, now: Double, client: Boolean) {
@@ -145,6 +175,7 @@ class OpenAILiveSession {
     }
 
     private fun reset() {
+        transcript.stop()
         isStarted = false
         sessionId = null
         fatalCode = null
@@ -190,3 +221,5 @@ class OpenAILiveSession {
 
 /** A string field, or null when it's absent, not a string, or empty. */
 private fun JSONObject.optStringOrNull(key: String): String? = (opt(key) as? String)?.takeIf { it.isNotEmpty() }
+
+private fun JSONObject.optNumber(key: String): Double? = (opt(key) as? Number)?.toDouble()?.takeIf { it.isFinite() }

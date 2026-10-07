@@ -15,10 +15,12 @@
 //   it closes the oldest open client delegation. `session.thinking.appended` is
 //   quiet progress and keeps thinking;
 // - a barge-in is user speech (`session.input_transcript.delta`) while the
-//   model is audible, followed by the model going quiet within 1 s -- GPT-Live
-//   is full duplex, so a "mhm" under continuing speech is not one.
-import type { AgentState } from "@sinua/core";
+//   model is audible, followed by the model going quiet within 1 s of the user's
+//   latest words -- GPT-Live is full duplex, so a "mhm" under continuing speech
+//   is not one, and the model may talk on for a while before it stops.
+import type { AgentState, TranscriptUpdate } from "@sinua/core";
 import { isFatalRealtimeError } from "./realtimeReconnect.js";
+import { TranscriptAssembler } from "./transcript.js";
 
 export const LIVE_SPEAKING_LEVEL = 0.05;
 // Speaking ends after a quiet tail that grows with how long the agent has been speaking
@@ -38,6 +40,8 @@ export function liveSpeakingTail(ms: number): number {
   return Math.min(LIVE_SPEAKING_TAIL_MAX_FRAMES, Math.max(LIVE_SPEAKING_TAIL_FRAMES, Math.round(LIVE_SPEAKING_TAIL_FRAMES + (LIVE_SPEAKING_TAIL_PER_SECOND * ms) / 1000)));
 }
 
+const num = (v: unknown): number | undefined => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
+
 const TERMINAL_RESPONSE_EVENTS = new Set(["response.completed", "response.failed", "response.incomplete", "response.cancelled"]);
 
 type Json = Record<string, unknown>;
@@ -53,6 +57,8 @@ export class OpenAILiveSession {
   onState: ((s: AgentState) => void) | null = null;
   onInterrupt: (() => void) | null = null;
   onClosed: ((reason: string) => void) | null = null;
+  /** The transcript (design note 39): `segments` timing, reveal synced to the audio unless `syncToAudio: false`. */
+  readonly transcript: TranscriptAssembler;
 
   private started = false;
   private quietFrames = 0;
@@ -62,6 +68,15 @@ export class OpenAILiveSession {
   private bargeInAt: number | null = null;
   /** Open delegations, oldest first: id -> last news (ms) and whether the app's backend answers it. */
   private readonly delegations = new Map<string, { at: number; client: boolean }>();
+
+  constructor(opts: { syncToAudio?: boolean } = {}) {
+    this.transcript = new TranscriptAssembler("segments", opts.syncToAudio ?? true);
+  }
+
+  /** Transcript updates for both speakers (see `TranscriptAssembler`). */
+  set onTranscript(cb: ((u: TranscriptUpdate) => void) | null) {
+    this.transcript.onUpdate = cb;
+  }
 
   connecting(): void {
     this.reset();
@@ -96,7 +111,14 @@ export class OpenAILiveSession {
         break;
       }
       case "session.input_transcript.delta":
-        if (this.state === "speaking" && this.bargeInAt == null) this.bargeInAt = now;
+        // The window runs from the user's latest words: in full duplex the model may talk on for
+        // a while after the user started, and stop only later (seen live, design note 39).
+        if (this.state === "speaking") this.bargeInAt = now;
+        if (this.state === "speaking") this.transcript.hold();
+        if (typeof ev.delta === "string") this.transcript.userDelta(ev.delta, now, num(ev.start_ms), num(ev.end_ms));
+        break;
+      case "session.output_transcript.delta":
+        if (typeof ev.delta === "string") this.transcript.assistantDelta(ev.delta, now, num(ev.start_ms), num(ev.end_ms));
         break;
       case "session.delegation.created": {
         const d = ev.delegation as Json | undefined;
@@ -147,12 +169,16 @@ export class OpenAILiveSession {
         const armed = this.bargeInAt;
         this.bargeInAt = null;
         this.quietFrames = 0;
+        const interrupted = armed != null && now - armed <= LIVE_BARGE_IN_WINDOW_MS;
+        if (interrupted) this.transcript.cut();
+        else this.transcript.speakingEnded();
         this.setState(this.delegations.size > 0 ? "thinking" : "listening");
-        if (armed != null && now - armed <= LIVE_BARGE_IN_WINDOW_MS) this.onInterrupt?.();
+        if (interrupted) this.onInterrupt?.();
       }
     } else {
       this.settle();
     }
+    this.transcript.tick(now, level, this.state === "speaking");
   }
 
   private open(id: string, now: number, client: boolean): void {
@@ -178,6 +204,7 @@ export class OpenAILiveSession {
   }
 
   private reset(): void {
+    this.transcript.stop();
     this.started = false;
     this.sessionId = null;
     this.fatalCode = null;

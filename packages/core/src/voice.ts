@@ -20,6 +20,32 @@
  */
 export type AgentState = "initializing" | "idle" | "listening" | "thinking" | "speaking";
 
+/**
+ * One transcript update (docs/audio-pipeline.md, *Transcripts*): the turn's text so far.
+ * Display only -- Sinua keeps nothing beyond the current turn and sends it nowhere.
+ */
+export interface TranscriptUpdate {
+  role: "user" | "assistant";
+  /** Everything visible so far in this turn (cumulative, never a diff). */
+  text: string;
+  /** True exactly once per turn, on its last update. */
+  final: boolean;
+  /** Stable for the whole turn: role + a counter that never resets for the source object ("u3", "a4"). */
+  turnId: string;
+  /** The assistant turn was cut by a barge-in; `text` is the full spoken part. Always `final`. */
+  truncated?: boolean;
+  /** The vendor's own timing for the text, when it has one (GPT-Live: ms on the session timeline). */
+  startMs?: number;
+  endMs?: number;
+}
+
+/**
+ * How a source times its transcript: `chars` per-character timings, `segments` per-fragment
+ * timings mapped to the played audio, `synced` already in step with the audio, `none`
+ * revealed with the speech.
+ */
+export type TranscriptTiming = "chars" | "segments" | "synced" | "none";
+
 /** A smoothed, normalized reading from whichever `VoiceSource` is active. */
 export interface VoiceMetrics {
   /** Overall smoothed volume, 0..1. */
@@ -65,6 +91,16 @@ export interface VoiceSource {
    * button uses it to go back to "ready"; without it, `idle` counts as ended.
    */
   onConnectionChange?(cb: (connected: boolean) => void): void;
+  /**
+   * Optional: live transcript updates for both speakers (docs/audio-pipeline.md,
+   * *Transcripts*). Callbacks arrive on the event loop. Call it through
+   * `SharedVoiceSource` to have more than one listener.
+   */
+  onTranscript?(cb: (u: TranscriptUpdate) => void): void;
+  /** Whether this source sends transcripts at all (`onTranscript` is wired to real data). */
+  readonly supportsTranscript?: boolean;
+  /** How this source times its transcript (see `TranscriptTiming`). */
+  readonly transcriptTiming?: TranscriptTiming;
 }
 
 /**

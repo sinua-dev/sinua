@@ -18,6 +18,32 @@ import { NativeEventEmitter, NativeModules } from "react-native";
 /** The agent's lifecycle, as every sinua voice source reports it (docs/audio-pipeline.md). */
 export type AgentState = "initializing" | "idle" | "listening" | "thinking" | "speaking";
 
+/**
+ * One transcript update (docs/audio-pipeline.md, *Transcripts*): the turn's text so far, the
+ * same shape as `@sinua/core`'s. Display only -- Sinua keeps nothing beyond the current turn
+ * and sends it nowhere.
+ */
+export interface TranscriptUpdate {
+  role: "user" | "assistant";
+  /** Everything visible so far in this turn (cumulative, never a diff). */
+  text: string;
+  /** True exactly once per turn, on its last update. */
+  final: boolean;
+  /** Stable for the whole turn: role + a counter that never resets for the source ("u3", "a4"). */
+  turnId: string;
+  /** The assistant turn was cut by a barge-in; `text` is the full spoken part. */
+  truncated?: boolean;
+  /** The vendor's own timing, when it has one. */
+  startMs?: number;
+  endMs?: number;
+}
+
+/** How a source times its transcript: per character, per fragment, already in step, or revealed with the speech. */
+export type TranscriptTiming = "chars" | "segments" | "synced" | "none";
+
+/** The vendors that send transcripts here, and how they time them (the others: `supportsTranscript` false). */
+const TRANSCRIPT_TIMING: Partial<Record<string, TranscriptTiming>> = { simulated: "synced" };
+
 /** What your credential endpoint answers, the same JSON on every platform and vendor. */
 export interface SinuaCredential {
   /** `ek_…` (OpenAI), `auth_tokens/…` (Gemini), a signed `wss://` URL (ElevenLabs) or a room JWT (LiveKit). */
@@ -98,6 +124,15 @@ export interface VoiceSourceHandle {
   /** `true` once the session is up, `false` when it ends (your disconnect, a hang-up, a drop). */
   onConnectionChange(cb: (connected: boolean) => void): () => void;
   onMuteChange(cb: (muted: boolean) => void): () => void;
+  /**
+   * Live transcript updates for both speakers (docs/audio-pipeline.md, *Transcripts*). Works
+   * before `connect()`, so the first turn isn't missed. Only fires where `supportsTranscript`.
+   */
+  onTranscript(cb: (u: TranscriptUpdate) => void): () => void;
+  /** Whether this vendor sends transcripts on React Native. */
+  readonly supportsTranscript: boolean;
+  /** How this vendor times its transcript (`none` when it sends none). */
+  readonly transcriptTiming: TranscriptTiming;
 }
 
 interface VoiceNativeModule {
@@ -122,12 +157,29 @@ const nativeOrThrow = (): VoiceNativeModule => {
 /** One `sinua-voice` event from the native module. */
 interface VoiceEvent {
   id: string;
-  event: "state" | "error" | "interrupt" | "connection" | "mute" | "credentialRequest";
+  event: "state" | "error" | "interrupt" | "connection" | "mute" | "transcript" | "credentialRequest";
   state?: AgentState;
   message?: string;
   connected?: boolean;
   muted?: boolean;
   requestId?: string;
+  // "transcript": the update's fields, flat.
+  role?: "user" | "assistant";
+  text?: string;
+  final?: boolean;
+  turnId?: string;
+  truncated?: boolean;
+  startMs?: number;
+  endMs?: number;
+}
+
+/** A "transcript" event as the update apps get (optional fields only when set). */
+function transcriptOf(e: VoiceEvent): TranscriptUpdate {
+  const u: TranscriptUpdate = { role: e.role ?? "assistant", text: e.text ?? "", final: e.final === true, turnId: e.turnId ?? "" };
+  if (e.truncated) u.truncated = true;
+  if (typeof e.startMs === "number") u.startMs = e.startMs;
+  if (typeof e.endMs === "number") u.endMs = e.endMs;
+  return u;
 }
 
 type Listener = { id: string; event: string; cb: (payload: never) => void };
@@ -140,7 +192,8 @@ function subscribe(id: string, event: string, cb: (payload: never) => void): () 
     emitter.addListener("sinua-voice", (raw) => {
       const e = raw as VoiceEvent;
       if (e.event === "credentialRequest") return void credentialRequest(e.id, e.requestId ?? "");
-      for (const l of listeners) if (l.id === e.id && l.event === e.event) (l.cb as (p: unknown) => void)(e.state ?? e.message ?? e.connected ?? e.muted);
+      const payload = e.event === "transcript" ? transcriptOf(e) : (e.state ?? e.message ?? e.connected ?? e.muted);
+      for (const l of [...listeners]) if (l.id === e.id && l.event === e.event) (l.cb as (p: unknown) => void)(payload);
     });
   }
   const listener: Listener = { id, event, cb };
@@ -273,6 +326,9 @@ export function createVoiceSource(config: VoiceSourceConfig): VoiceSourceHandle 
     },
     onConnectionChange: (cb) => subscribe(id, "connection", cb as (p: never) => void),
     onMuteChange: (cb) => subscribe(id, "mute", cb as (p: never) => void),
+    onTranscript: (cb) => subscribe(id, "transcript", cb as (p: never) => void),
+    supportsTranscript: TRANSCRIPT_TIMING[config.vendor] !== undefined,
+    transcriptTiming: TRANSCRIPT_TIMING[config.vendor] ?? "none",
   };
   return handle;
 }

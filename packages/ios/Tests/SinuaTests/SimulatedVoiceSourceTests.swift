@@ -80,4 +80,43 @@ final class SimulatedVoiceSourceTests: XCTestCase {
         }
         XCTAssertThrowsError(try SimulatedVoiceSource(sample: "nope"))
     }
+
+    func testTranscriptsFollowTheLinesWithTheBargeInCutTruncatedAndSubscribedBeforeConnect() async throws {
+        let src = try SimulatedVoiceSource(sample: "barge-in", bands: 8)
+        XCTAssertTrue(src.supportsTranscript)
+        XCTAssertEqual(src.transcriptTiming, .synced)
+        let shared = SharedVoiceSource.of(src)
+        var got: [TranscriptUpdate] = []
+        shared.listenTranscript { got.append($0) }
+        try await shared.connect()
+        src.pause()
+        for _ in 0..<Int(src.duration * 30) {
+            src.play()
+            src.advance(1.0 / 30)
+            src.pause()
+        }
+        var finals = got.filter(\.final)
+        // The cut turn ends with what was said by its last frame: a prefix of its line (which frame that
+        // is depends on the tick grid).
+        XCTAssertEqual(finals.count, 4)
+        let cut = finals[1]
+        XCTAssertTrue(cut.truncated && cut.text.count >= 40, cut.text)
+        XCTAssertTrue("The city museum opened in 1902 and holds over forty".hasPrefix(cut.text), cut.text)
+        finals[1].text = "<cut>"
+        XCTAssertEqual(
+            finals,
+            [
+                TranscriptUpdate(role: .user, text: "Tell me about the museum.", final: true, turnId: "u1"),
+                TranscriptUpdate(role: .assistant, text: "<cut>", final: true, turnId: "a1", truncated: true),
+                TranscriptUpdate(role: .user, text: "Sorry, is it open today?", final: true, turnId: "u2"),
+                TranscriptUpdate(role: .assistant, text: "Yes, until 6 pm.", final: true, turnId: "a2"),
+            ])
+        var seen: [String: TranscriptUpdate] = [:]
+        for u in got {
+            XCTAssertFalse(seen[u.turnId]?.final ?? false, "\(u.turnId) after final")
+            if !u.truncated { XCTAssertTrue(u.text.hasPrefix(seen[u.turnId]?.text ?? "")) }
+            seen[u.turnId] = u
+        }
+        src.disconnect()
+    }
 }

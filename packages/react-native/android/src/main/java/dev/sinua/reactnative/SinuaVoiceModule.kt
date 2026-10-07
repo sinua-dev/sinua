@@ -38,6 +38,7 @@ class SinuaVoiceModule(private val reactContext: ReactApplicationContext) :
                 when (v) {
                     is String -> body.putString(k, v)
                     is Boolean -> body.putBoolean(k, v)
+                    is Double -> body.putDouble(k, v)
                 }
             }
             reactContext

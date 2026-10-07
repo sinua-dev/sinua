@@ -19,6 +19,7 @@ class SharedVoiceSource private constructor(
     private val muteCbs = LinkedHashSet<(Boolean) -> Unit>()
     private val connectionCbs = LinkedHashSet<(Boolean) -> Unit>()
     private val errorCbs = LinkedHashSet<(Throwable) -> Unit>()
+    private val transcriptCbs = LinkedHashSet<(TranscriptUpdate) -> Unit>()
 
     /** The source's last reported state ([AgentState.IDLE] before any). */
     var state: AgentState = AgentState.IDLE
@@ -42,6 +43,8 @@ class SharedVoiceSource private constructor(
             connectionCbs.toList().forEach { it(c) }
         }
         source.onError { e -> errorCbs.toList().forEach { it(e) } }
+        // Subscribed here, at creation: a listener added before connect() sees the first turn.
+        source.onTranscript { u -> transcriptCbs.toList().forEach { it(u) } }
     }
 
     private fun <T> add(set: MutableSet<T>, cb: T): () -> Unit {
@@ -65,6 +68,12 @@ class SharedVoiceSource private constructor(
 
     fun listenError(cb: (Throwable) -> Unit): () -> Unit = add(errorCbs, cb)
 
+    /**
+     * Transcript updates (docs/audio-pipeline.md, *Transcripts*), on the Main dispatcher. Works
+     * before [connect]. Only fires for a source that sends them ([supportsTranscript]).
+     */
+    fun listenTranscript(cb: (TranscriptUpdate) -> Unit): () -> Unit = add(transcriptCbs, cb)
+
     // --- VoiceSource (the `on…` forms add a listener you can't remove) ---
 
     override fun onMetrics(cb: (VoiceMetrics) -> Unit) {
@@ -86,6 +95,13 @@ class SharedVoiceSource private constructor(
     override fun onError(cb: (Throwable) -> Unit) {
         listenError(cb)
     }
+
+    override fun onTranscript(cb: (TranscriptUpdate) -> Unit) {
+        listenTranscript(cb)
+    }
+
+    override val supportsTranscript: Boolean get() = source.supportsTranscript
+    override val transcriptTiming: TranscriptTiming get() = source.transcriptTiming
 
     override val supportsMute: Boolean get() = source.supportsMute
     override val reportsConnection: Boolean get() = source.reportsConnection

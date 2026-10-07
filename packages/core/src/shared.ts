@@ -4,7 +4,7 @@
 // the first. `SharedVoiceSource` subscribes once and fans out; it is itself a
 // `VoiceSource`, so it goes anywhere a source goes. It also owns the session's
 // mute, so every view bound through it shows the muted cue.
-import { VoiceOverrides, type AgentState, type VoiceMetrics, type VoiceOverridesOptions, type VoiceSource } from "./voice.js";
+import { VoiceOverrides, type AgentState, type TranscriptTiming, type TranscriptUpdate, type VoiceMetrics, type VoiceOverridesOptions, type VoiceSource } from "./voice.js";
 
 type Listener<T> = (value: T) => void;
 
@@ -25,6 +25,7 @@ export class SharedVoiceSource implements VoiceSource {
   private readonly interruptCbs = new Set<Listener<void>>();
   private readonly muteCbs = new Set<Listener<boolean>>();
   private readonly connectionCbs = new Set<Listener<boolean>>();
+  private readonly transcriptCbs = new Set<Listener<TranscriptUpdate>>();
   private currentState: AgentState = "idle";
   private isMuted = false;
   private isConnected = false;
@@ -60,6 +61,10 @@ export class SharedVoiceSource implements VoiceSource {
       this.isConnected = c;
       for (const cb of this.connectionCbs) cb(c);
     });
+    // Subscribed here, at creation: a listener added before `connect()` sees the first turn.
+    source.onTranscript?.((u) => {
+      for (const cb of this.transcriptCbs) cb(u);
+    });
   }
 
   /** Adds a listener; returns its unsubscribe. */
@@ -80,6 +85,24 @@ export class SharedVoiceSource implements VoiceSource {
   /** Adds a listener; returns its unsubscribe. Only fires for a source that reports it (`reportsConnection`). */
   onConnectionChange(cb: (connected: boolean) => void): () => void {
     return add(this.connectionCbs, cb);
+  }
+
+  /**
+   * Adds a transcript listener; returns its unsubscribe. Works before `connect()`. Only
+   * fires for a source that sends transcripts (`supportsTranscript`).
+   */
+  onTranscript(cb: (u: TranscriptUpdate) => void): () => void {
+    return add(this.transcriptCbs, cb);
+  }
+
+  /** Whether the wrapped source sends transcripts. */
+  get supportsTranscript(): boolean {
+    return this.source.supportsTranscript === true;
+  }
+
+  /** How the wrapped source times its transcript (`none` when it sends none). */
+  get transcriptTiming(): TranscriptTiming {
+    return this.source.transcriptTiming ?? "none";
   }
 
   /** Whether the wrapped source reports `onConnectionChange`; without it, `idle` is the only hint that a session ended. */

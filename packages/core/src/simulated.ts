@@ -11,7 +11,7 @@
 
 import { conversationAt, conversationSample } from "./conversation.js";
 import type { ConversationFrame, ConversationScript } from "./index.js";
-import type { AgentState, VoiceMetrics, VoiceSource } from "./voice.js";
+import type { AgentState, TranscriptUpdate, VoiceMetrics, VoiceSource } from "./voice.js";
 
 // This package is DOM-free (no `lib: dom`); every JS runtime has these two.
 const timers = globalThis as unknown as {
@@ -63,6 +63,14 @@ export class SimulatedVoiceSource implements VoiceSource {
   private connectionCb: ((connected: boolean) => void) | null = null;
   private muted = false;
   private frameCb: ((f: ConversationFrame) => void) | null = null;
+  private transcriptCb: ((u: TranscriptUpdate) => void) | null = null;
+  /** The turn being transcribed (`turn` is the script's index), and the counters that name turns. */
+  private said: { turn: number; id: string; role: "user" | "assistant"; text: string } | null = null;
+  private userTurns = 0;
+  private assistantTurns = 0;
+  /** The script's lines are spoken as they play: the transcript is already in step with the audio. */
+  readonly supportsTranscript = true;
+  readonly transcriptTiming = "synced" as const;
   /** The turns, with their start times. */
   readonly turns: SimulatedTurn[];
   /** The script's length in seconds. */
@@ -110,6 +118,14 @@ export class SimulatedVoiceSource implements VoiceSource {
     this.interruptCb = cb;
   }
 
+  /**
+   * Transcript updates: each turn's line as it is said (`synced`); a turn cut by a
+   * barge-in ends `truncated`. Muted user turns say nothing.
+   */
+  onTranscript(cb: (u: TranscriptUpdate) => void): void {
+    this.transcriptCb = cb;
+  }
+
   /** Every tick's full reading (turn, progress, the line said so far), for captions and a timeline. */
   onFrame(cb: (f: ConversationFrame) => void): void {
     this.frameCb = cb;
@@ -139,6 +155,7 @@ export class SimulatedVoiceSource implements VoiceSource {
 
   disconnect(): void {
     const was = this.connected;
+    this.close(false);
     this.connected = false;
     if (was) this.connectionCb?.(false);
     this.pause();
@@ -203,7 +220,10 @@ export class SimulatedVoiceSource implements VoiceSource {
       const entering = this.lastTurn !== -1 && f.bargeIn;
       this.lastTurn = f.turn;
       if (entering) this.interruptCb?.();
+      // The turn that was being said ends: cut short by a barge-in, or said in full.
+      if (this.said && this.said.turn !== f.turn) this.close(entering);
     }
+    this.transcribe(f);
     if (f.state !== this.lastState) {
       this.lastState = f.state;
       this.stateCb?.(f.state as AgentState);
@@ -211,5 +231,40 @@ export class SimulatedVoiceSource implements VoiceSource {
     if (this.muted && this.turns[f.turn]?.voice === "user") this.metricsCb?.({ level: 0, bands: f.bands.map(() => 0) });
     else this.metricsCb?.({ level: f.level, bands: f.bands });
     this.frameCb?.(f);
+  }
+
+  /** Speaker of a turn: its `voice`, else what its state implies (listening = the user). */
+  private roleOf(turn: number, state: string): "user" | "assistant" | null {
+    const voice = this.turns[turn]?.voice;
+    if (voice === "user") return "user";
+    if (voice === "agent") return "assistant";
+    if (state === "speaking") return "assistant";
+    if (state === "listening") return "user";
+    return null;
+  }
+
+  private transcribe(f: ConversationFrame): void {
+    if (!this.transcriptCb) return;
+    const role = this.roleOf(f.turn, f.state);
+    if (!role || !f.line || (role === "user" && this.muted)) return;
+    const text = Array.from(f.line.normalize("NFC")).slice(0, f.shown).join("");
+    if (!this.said) {
+      if (!text) return;
+      const id = role === "user" ? `u${++this.userTurns}` : `a${++this.assistantTurns}`;
+      this.said = { turn: f.turn, id, role, text: "" };
+    }
+    if (text === this.said.text) return;
+    this.said.text = text;
+    this.transcriptCb({ role, text, final: false, turnId: this.said.id });
+  }
+
+  /** Ends the turn being said: `cut` by a barge-in (what was said so far), else in full. */
+  private close(cut: boolean): void {
+    const s = this.said;
+    this.said = null;
+    if (!s || !this.transcriptCb) return;
+    const full = (this.turns[s.turn]?.line ?? "").normalize("NFC");
+    const text = (cut && s.role === "assistant" ? s.text : full).trim();
+    this.transcriptCb(cut && s.role === "assistant" ? { role: s.role, text, final: true, turnId: s.id, truncated: true } : { role: s.role, text, final: true, turnId: s.id });
   }
 }

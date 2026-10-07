@@ -1,0 +1,1285 @@
+{
+ "about": "Transcript rules (design note 39): GPT-Live events and 30 Hz level ticks (repeat = 33 ms apart) through OpenAILiveSession with the transcript on. After each step, `user` / `assistant` is the latest update for that role so far (its listed keys must match) and `finals` the number of final updates so far. Every case also holds: final exactly once per turnId, nothing after a final, text never shrinks except in the truncated update. Web, iOS and Android run this table.",
+ "constants": {
+  "userSilenceMs": 4000,
+  "userCloseChars": 12,
+  "revealCharsPerSecond": 14,
+  "cutGraceMs": 150,
+  "segmentDelayMs": 300,
+  "newUtteranceGapMs": 600,
+  "audibleLevel": 0.05
+ },
+ "cases": [
+  {
+   "name": "user text shows as it arrives and ends after 4 s of silence (Turkish, spaces kept)",
+   "syncToAudio": true,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": "Merhaba,",
+      "start_ms": 0,
+      "end_ms": 400
+     },
+     "user": {
+      "role": "user",
+      "text": "Merhaba,",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 400
+     },
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 200,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": " nasılsın?",
+      "start_ms": 400,
+      "end_ms": 900
+     },
+     "user": {
+      "role": "user",
+      "text": "Merhaba, nasılsın?",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 900
+     },
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 300,
+     "level": 0,
+     "repeat": 120,
+     "user": {
+      "role": "user",
+      "text": "Merhaba, nasılsın?",
+      "final": true,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 900
+     },
+     "assistant": null,
+     "finals": 1
+    },
+    {
+     "t": 4300,
+     "level": 0,
+     "repeat": 10,
+     "user": {
+      "role": "user",
+      "text": "Merhaba, nasılsın?",
+      "final": true,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 900
+     },
+     "assistant": null,
+     "finals": 1
+    }
+   ]
+  },
+  {
+   "name": "synced: the assistant's text opens with the audio from its onset (segments)",
+   "syncToAudio": true,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Bugün hava",
+      "start_ms": 1000,
+      "end_ms": 1600
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 120,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": " güzel.",
+      "start_ms": 1600,
+      "end_ms": 2000
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 300,
+     "level": 0.5,
+     "repeat": 10,
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 630,
+     "level": 0.5,
+     "repeat": 20,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Bugün hava",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 1600
+     },
+     "finals": 0
+    },
+    {
+     "t": 1290,
+     "level": 0.01,
+     "repeat": 60,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Bugün hava güzel.",
+      "final": true,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2000
+     },
+     "finals": 1
+    }
+   ]
+  },
+  {
+   "name": "raw (syncToAudio false): text as it arrives, with the vendor's timing",
+   "syncToAudio": false,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Bugün hava",
+      "start_ms": 1000,
+      "end_ms": 1600
+     },
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Bugün hava",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 1600
+     },
+     "finals": 0
+    },
+    {
+     "t": 120,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": " güzel.",
+      "start_ms": 1600,
+      "end_ms": 2000
+     },
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Bugün hava güzel.",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2000
+     },
+     "finals": 0
+    },
+    {
+     "t": 300,
+     "level": 0.5,
+     "repeat": 30,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Bugün hava güzel.",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2000
+     },
+     "finals": 0
+    },
+    {
+     "t": 1290,
+     "level": 0.01,
+     "repeat": 60,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Bugün hava güzel.",
+      "final": true,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2000
+     },
+     "finals": 1
+    }
+   ]
+  },
+  {
+   "name": "barge-in, synced: the assistant turn ends truncated at the last audible moment",
+   "syncToAudio": true,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Toplantını yarına",
+      "start_ms": 1000,
+      "end_ms": 1500
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 110,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": " saat üçe taşıdım,",
+      "start_ms": 1500,
+      "end_ms": 2200
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 120,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": " haber verdim.",
+      "start_ms": 2200,
+      "end_ms": 2800
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 300,
+     "level": 0.5,
+     "repeat": 20,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Toplantını ",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 1500
+     },
+     "finals": 0
+    },
+    {
+     "t": 960,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": "Dur",
+      "start_ms": 500,
+      "end_ms": 700
+     },
+     "user": {
+      "role": "user",
+      "text": "Dur",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 500,
+      "endMs": 700
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Toplantını ",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 1500
+     },
+     "finals": 0
+    },
+    {
+     "t": 970,
+     "level": 0.01,
+     "repeat": 15,
+     "user": {
+      "role": "user",
+      "text": "Dur",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 500,
+      "endMs": 700
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Toplantını",
+      "final": true,
+      "turnId": "a1",
+      "truncated": true,
+      "startMs": 1000,
+      "endMs": 1500
+     },
+     "finals": 1
+    }
+   ]
+  },
+  {
+   "name": "barge-in, raw: only the fragments that ended by the cut stay",
+   "syncToAudio": false,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Toplantını yarına",
+      "start_ms": 1000,
+      "end_ms": 1500
+     },
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Toplantını yarına",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 1500
+     },
+     "finals": 0
+    },
+    {
+     "t": 110,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": " saat üçe taşıdım,",
+      "start_ms": 1500,
+      "end_ms": 2200
+     },
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Toplantını yarına saat üçe taşıdım,",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2200
+     },
+     "finals": 0
+    },
+    {
+     "t": 120,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": " haber verdim.",
+      "start_ms": 2200,
+      "end_ms": 2800
+     },
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Toplantını yarına saat üçe taşıdım, haber verdim.",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2800
+     },
+     "finals": 0
+    },
+    {
+     "t": 300,
+     "level": 0.5,
+     "repeat": 28,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Toplantını yarına saat üçe taşıdım, haber verdim.",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2800
+     },
+     "finals": 0
+    },
+    {
+     "t": 1225,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": "Dur",
+      "start_ms": 500,
+      "end_ms": 700
+     },
+     "user": {
+      "role": "user",
+      "text": "Dur",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 500,
+      "endMs": 700
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Toplantını yarına saat üçe taşıdım, haber verdim.",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2800
+     },
+     "finals": 0
+    },
+    {
+     "t": 1235,
+     "level": 0.01,
+     "repeat": 15,
+     "user": {
+      "role": "user",
+      "text": "Dur",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 500,
+      "endMs": 700
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Toplantını yarına",
+      "final": true,
+      "turnId": "a1",
+      "truncated": true,
+      "startMs": 1000,
+      "endMs": 1500
+     },
+     "finals": 1
+    }
+   ]
+  },
+  {
+   "name": "a new assistant reply of 12+ characters ends the user's turn; a short one doesn't",
+   "syncToAudio": true,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": "Yarınki",
+      "start_ms": 0,
+      "end_ms": 300
+     },
+     "user": {
+      "role": "user",
+      "text": "Yarınki",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 300
+     },
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 400,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Mhm.",
+      "start_ms": 400,
+      "end_ms": 600
+     },
+     "user": {
+      "role": "user",
+      "text": "Yarınki",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 300
+     },
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 420,
+     "level": 0.5,
+     "repeat": 5,
+     "user": {
+      "role": "user",
+      "text": "Yarınki",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 300
+     },
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 585,
+     "level": 0.01,
+     "repeat": 25,
+     "user": {
+      "role": "user",
+      "text": "Yarınki",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 300
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Mhm.",
+      "final": true,
+      "turnId": "a1",
+      "startMs": 400,
+      "endMs": 600
+     },
+     "finals": 1
+    },
+    {
+     "t": 1500,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": " toplantıyı ertele.",
+      "start_ms": 900,
+      "end_ms": 1500
+     },
+     "user": {
+      "role": "user",
+      "text": "Yarınki toplantıyı ertele.",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 1500
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Mhm.",
+      "final": true,
+      "turnId": "a1",
+      "startMs": 400,
+      "endMs": 600
+     },
+     "finals": 1
+    },
+    {
+     "t": 1700,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Tamam, erteliyorum.",
+      "start_ms": 1700,
+      "end_ms": 2600
+     },
+     "user": {
+      "role": "user",
+      "text": "Yarınki toplantıyı ertele.",
+      "final": true,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 1500
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Mhm.",
+      "final": true,
+      "turnId": "a1",
+      "startMs": 400,
+      "endMs": 600
+     },
+     "finals": 2
+    }
+   ]
+  },
+  {
+   "name": "turn ids keep counting across a reconnect",
+   "syncToAudio": true,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": "Bir",
+      "start_ms": 0,
+      "end_ms": 300
+     },
+     "user": {
+      "role": "user",
+      "text": "Bir",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 300
+     },
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 200,
+     "reconnect": true,
+     "user": {
+      "role": "user",
+      "text": "Bir",
+      "final": true,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 300
+     },
+     "assistant": null,
+     "finals": 1
+    },
+    {
+     "t": 300,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": {
+      "role": "user",
+      "text": "Bir",
+      "final": true,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 300
+     },
+     "assistant": null,
+     "finals": 1
+    },
+    {
+     "t": 400,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": "İki",
+      "start_ms": 0,
+      "end_ms": 300
+     },
+     "user": {
+      "role": "user",
+      "text": "İki",
+      "final": false,
+      "turnId": "u2",
+      "startMs": 0,
+      "endMs": 300
+     },
+     "assistant": null,
+     "finals": 1
+    }
+   ]
+  },
+  {
+   "name": "text that arrives after the audio started catches up at once",
+   "syncToAudio": true,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "level": 0.5,
+     "repeat": 15,
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 600,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Geç gelen metin.",
+      "start_ms": 2000,
+      "end_ms": 2800
+     },
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Geç ",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 2000,
+      "endMs": 2800
+     },
+     "finals": 0
+    },
+    {
+     "t": 610,
+     "level": 0.5,
+     "repeat": 1,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Geç ",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 2000,
+      "endMs": 2800
+     },
+     "finals": 0
+    }
+   ]
+  },
+  {
+   "name": "NFC: a decomposed letter arrives composed",
+   "syncToAudio": true,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": "şehir",
+      "start_ms": 0,
+      "end_ms": 300
+     },
+     "user": {
+      "role": "user",
+      "text": "şehir",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 0,
+      "endMs": 300
+     },
+     "assistant": null,
+     "finals": 0
+    }
+   ]
+  },
+  {
+   "name": "a delegation gives two assistant turns",
+   "syncToAudio": true,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Hemen bakıyorum.",
+      "start_ms": 500,
+      "end_ms": 1200
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 120,
+     "level": 0.5,
+     "repeat": 20,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Hemen b",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 500,
+      "endMs": 1200
+     },
+     "finals": 0
+    },
+    {
+     "t": 800,
+     "event": {
+      "type": "session.delegation.created",
+      "delegation": {
+       "id": "d1",
+       "target": "server"
+      }
+     },
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Hemen b",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 500,
+      "endMs": 1200
+     },
+     "finals": 0
+    },
+    {
+     "t": 810,
+     "level": 0.01,
+     "repeat": 30,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Hemen bakıyorum.",
+      "final": true,
+      "turnId": "a1",
+      "startMs": 500,
+      "endMs": 1200
+     },
+     "finals": 1
+    },
+    {
+     "t": 1800,
+     "event": {
+      "type": "response.event",
+      "delegation_id": "d1",
+      "event": {
+       "type": "response.completed"
+      }
+     },
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Hemen bakıyorum.",
+      "final": true,
+      "turnId": "a1",
+      "startMs": 500,
+      "endMs": 1200
+     },
+     "finals": 1
+    },
+    {
+     "t": 1900,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Yarın yağmur var.",
+      "start_ms": 3000,
+      "end_ms": 3800
+     },
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Hemen bakıyorum.",
+      "final": true,
+      "turnId": "a1",
+      "startMs": 500,
+      "endMs": 1200
+     },
+     "finals": 1
+    },
+    {
+     "t": 1910,
+     "level": 0.5,
+     "repeat": 25,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Yarın yağm",
+      "final": false,
+      "turnId": "a2",
+      "startMs": 3000,
+      "endMs": 3800
+     },
+     "finals": 1
+    },
+    {
+     "t": 2740,
+     "level": 0.01,
+     "repeat": 60,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Yarın yağmur var.",
+      "final": true,
+      "turnId": "a2",
+      "startMs": 3000,
+      "endMs": 3800
+     },
+     "finals": 2
+    }
+   ]
+  },
+  {
+   "name": "a mhm under continuing speech holds the reveal only until the audio is heard again",
+   "syncToAudio": true,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Toplantını yarına",
+      "start_ms": 1000,
+      "end_ms": 1500
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 110,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": " saat üçe taşıdım.",
+      "start_ms": 1500,
+      "end_ms": 2200
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 300,
+     "level": 0.5,
+     "repeat": 10,
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 630,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": "mhm",
+      "start_ms": 300,
+      "end_ms": 500
+     },
+     "user": {
+      "role": "user",
+      "text": "mhm",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 300,
+      "endMs": 500
+     },
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 640,
+     "level": 0.01,
+     "repeat": 6,
+     "user": {
+      "role": "user",
+      "text": "mhm",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 300,
+      "endMs": 500
+     },
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 840,
+     "level": 0.5,
+     "repeat": 20,
+     "user": {
+      "role": "user",
+      "text": "mhm",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 300,
+      "endMs": 500
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Toplantını yarına saat üçe",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2200
+     },
+     "finals": 0
+    }
+   ]
+  },
+  {
+   "name": "after a barge-in, text that starts after a gap is the next utterance: it opens the next turn",
+   "syncToAudio": true,
+   "steps": [
+    {
+     "t": 0,
+     "event": {
+      "type": "session.started",
+      "session": {
+       "id": "live_1"
+      }
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 100,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": "Bir zamanlar",
+      "start_ms": 1000,
+      "end_ms": 1500
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 110,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": " bir sincap",
+      "start_ms": 1500,
+      "end_ms": 2000
+     },
+     "user": null,
+     "assistant": null,
+     "finals": 0
+    },
+    {
+     "t": 300,
+     "level": 0.5,
+     "repeat": 30,
+     "user": null,
+     "assistant": {
+      "role": "assistant",
+      "text": "Bir zamanlar bi",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2000
+     },
+     "finals": 0
+    },
+    {
+     "t": 1270,
+     "event": {
+      "type": "session.input_transcript.delta",
+      "delta": "Dur",
+      "start_ms": 900,
+      "end_ms": 1100
+     },
+     "user": {
+      "role": "user",
+      "text": "Dur",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 900,
+      "endMs": 1100
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Bir zamanlar bi",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2000
+     },
+     "finals": 0
+    },
+    {
+     "t": 1280,
+     "event": {
+      "type": "session.output_transcript.delta",
+      "delta": " Peki, tamam.",
+      "start_ms": 2800,
+      "end_ms": 3300
+     },
+     "user": {
+      "role": "user",
+      "text": "Dur",
+      "final": false,
+      "turnId": "u1",
+      "startMs": 900,
+      "endMs": 1100
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Bir zamanlar bi",
+      "final": false,
+      "turnId": "a1",
+      "startMs": 1000,
+      "endMs": 2000
+     },
+     "finals": 0
+    },
+    {
+     "t": 1290,
+     "level": 0.01,
+     "repeat": 12,
+     "user": {
+      "role": "user",
+      "text": "Dur",
+      "final": true,
+      "turnId": "u1",
+      "startMs": 900,
+      "endMs": 1100
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Bir zamanlar bi",
+      "final": true,
+      "turnId": "a1",
+      "truncated": true,
+      "startMs": 1000,
+      "endMs": 2000
+     },
+     "finals": 2
+    },
+    {
+     "t": 1700,
+     "level": 0.5,
+     "repeat": 30,
+     "user": {
+      "role": "user",
+      "text": "Dur",
+      "final": true,
+      "turnId": "u1",
+      "startMs": 900,
+      "endMs": 1100
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": " Peki, tamam.",
+      "final": false,
+      "turnId": "a2",
+      "startMs": 2800,
+      "endMs": 3300
+     },
+     "finals": 2
+    },
+    {
+     "t": 2700,
+     "level": 0.01,
+     "repeat": 60,
+     "user": {
+      "role": "user",
+      "text": "Dur",
+      "final": true,
+      "turnId": "u1",
+      "startMs": 900,
+      "endMs": 1100
+     },
+     "assistant": {
+      "role": "assistant",
+      "text": "Peki, tamam.",
+      "final": true,
+      "turnId": "a2",
+      "startMs": 2800,
+      "endMs": 3300
+     },
+     "finals": 3
+    }
+   ]
+  }
+ ]
+}

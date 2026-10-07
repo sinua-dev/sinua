@@ -327,6 +327,8 @@ export type {
   CredentialOptions,
   CredentialProvider,
   SinuaCredential,
+  TranscriptTiming,
+  TranscriptUpdate,
   VoiceSourceConfig,
   VoiceSourceHandle,
 } from "./voice";

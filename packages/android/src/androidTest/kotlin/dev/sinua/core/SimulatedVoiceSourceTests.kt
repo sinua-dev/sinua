@@ -4,10 +4,15 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.sinua.voice.AgentState
 import dev.sinua.voice.MainDispatcher
+import dev.sinua.voice.SharedVoiceSource
 import dev.sinua.voice.SimulatedVoiceSource
+import dev.sinua.voice.TranscriptRole
+import dev.sinua.voice.TranscriptTiming
+import dev.sinua.voice.TranscriptUpdate
 import dev.sinua.voice.VoiceMetrics
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -97,5 +102,39 @@ class SimulatedVoiceSourceTests {
             .exceptionOrNull()
         assertTrue("$e", e?.message?.contains("/turns/0/seconds") == true)
         assertTrue(runCatching { SimulatedVoiceSource.sample("nope") }.isFailure)
+    }
+
+    @Test
+    fun transcriptsFollowTheLinesWithTheBargeInCutTruncatedAndSubscribedBeforeConnect() {
+        val src = SimulatedVoiceSource(conversationSample("barge-in")!!, bands = 8, main = Manual, autoTick = false)
+        assertTrue(src.supportsTranscript)
+        assertEquals(TranscriptTiming.SYNCED, src.transcriptTiming)
+        val shared = SharedVoiceSource.of(src)
+        val got = mutableListOf<TranscriptUpdate>()
+        shared.listenTranscript { got += it }
+        shared.connect()
+        repeat((src.duration * 30).toInt()) { src.advance(1.0 / 30) }
+        val finals = got.filter { it.final }
+        // The cut turn ends with what was said by its last frame: a prefix of its line (which frame that
+        // is depends on the tick grid).
+        val cut = finals[1]
+        assertTrue(cut.text, cut.truncated && cut.text.length >= 40)
+        assertTrue(cut.text, "The city museum opened in 1902 and holds over forty".startsWith(cut.text))
+        assertEquals(
+            listOf(
+                TranscriptUpdate(TranscriptRole.USER, "Tell me about the museum.", true, "u1"),
+                TranscriptUpdate(TranscriptRole.ASSISTANT, "<cut>", true, "a1", truncated = true),
+                TranscriptUpdate(TranscriptRole.USER, "Sorry, is it open today?", true, "u2"),
+                TranscriptUpdate(TranscriptRole.ASSISTANT, "Yes, until 6 pm.", true, "a2"),
+            ),
+            finals.map { if (it === cut) it.copy(text = "<cut>") else it },
+        )
+        val seen = HashMap<String, TranscriptUpdate>()
+        for (u in got) {
+            assertFalse("${u.turnId} after final", seen[u.turnId]?.final ?: false)
+            if (!u.truncated) assertTrue(u.text.startsWith(seen[u.turnId]?.text ?: ""))
+            seen[u.turnId] = u
+        }
+        src.disconnect()
     }
 }

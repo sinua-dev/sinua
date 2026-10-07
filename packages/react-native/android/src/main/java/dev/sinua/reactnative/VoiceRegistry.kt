@@ -77,6 +77,15 @@ object VoiceRegistry {
         source.listenInterrupt { onEvent?.invoke(id, "interrupt", emptyMap()) }
         source.listenConnection { up -> onEvent?.invoke(id, "connection", mapOf("connected" to up)) }
         source.listenMute { muted -> onEvent?.invoke(id, "mute", mapOf("muted" to muted)) }
+        // Always forwarded (JS keeps the listeners), so a JS listener added before connect() sees the first turn.
+        source.listenTranscript { u ->
+            val payload = mutableMapOf<String, Any>(
+                "role" to u.role.wire, "text" to u.text, "final" to u.final, "turnId" to u.turnId, "truncated" to u.truncated,
+            )
+            u.startMs?.let { payload["startMs"] = it }
+            u.endMs?.let { payload["endMs"] = it }
+            onEvent?.invoke(id, "transcript", payload)
+        }
         // The fan-out holds the source's one onError (the vendor factory's callback is replaced),
         // so failures after connect() reach JS from here.
         source.listenError { e -> onEvent?.invoke(id, "error", mapOf("message" to (e.message ?: e.toString()))) }

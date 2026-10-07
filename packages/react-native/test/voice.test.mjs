@@ -193,3 +193,25 @@ test("setMuted reaches the native side by id; mute and connection events reach t
   voice.setMuted(false);
   assert.notDeepEqual(calls.at(-1), ["setMuted", voice.id, false], "released: no native call");
 });
+
+test("transcripts: the flat native event arrives as the shared update shape, before connect, per handle", async () => {
+  const sim = createVoiceSource({ vendor: "simulated", sample: "barge-in" });
+  const mic = createVoiceSource({ vendor: "mic" });
+  assert.equal(sim.supportsTranscript, true);
+  assert.equal(sim.transcriptTiming, "synced");
+  assert.equal(mic.supportsTranscript, false);
+  assert.equal(mic.transcriptTiming, "none");
+  const got = [];
+  const off = sim.onTranscript((u) => got.push(u));
+  emit({ id: sim.id, event: "transcript", role: "user", text: "Merhaba", final: false, turnId: "u1", truncated: false });
+  emit({ id: mic.id, event: "transcript", role: "user", text: "not mine", final: false, turnId: "u1", truncated: false });
+  emit({ id: sim.id, event: "transcript", role: "assistant", text: "Toplantını", final: true, turnId: "a1", truncated: true, startMs: 1000, endMs: 1500 });
+  off();
+  emit({ id: sim.id, event: "transcript", role: "user", text: "after", final: false, turnId: "u2", truncated: false });
+  assert.deepEqual(got, [
+    { role: "user", text: "Merhaba", final: false, turnId: "u1" },
+    { role: "assistant", text: "Toplantını", final: true, turnId: "a1", truncated: true, startMs: 1000, endMs: 1500 },
+  ]);
+  sim.release();
+  mic.release();
+});

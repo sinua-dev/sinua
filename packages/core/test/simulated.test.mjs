@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { SimulatedVoiceSource, conversationAt, conversationSample, conversationSampleNames } from "../dist-dev/dev-entry.js";
+import { SharedVoiceSource, SimulatedVoiceSource, conversationAt, conversationSample, conversationSampleNames } from "../dist-dev/dev-entry.js";
 
 const vectors = JSON.parse(readFileSync(fileURLToPath(new URL("../../../spec/conversation-vectors.json", import.meta.url)), "utf8"));
 
@@ -78,4 +78,53 @@ test("scripts: an object or JSON works, a bad one throws with its path, and no a
   assert.equal(src.turns[1].start, 1);
   assert.throws(() => new SimulatedVoiceSource({ turns: [{ state: "idle", seconds: 0 }] }), /\/turns\/0\/seconds/);
   assert.throws(() => new SimulatedVoiceSource("not-a-sample"), /SimulatedVoiceSource/);
+});
+
+test("transcripts: each turn's line as it is said, final once, the barge-in cut truncated; subscribed before connect", async () => {
+  const src = new SimulatedVoiceSource("barge-in", { autoTick: false });
+  assert.equal(src.supportsTranscript, true);
+  assert.equal(src.transcriptTiming, "synced");
+  const shared = SharedVoiceSource.of(src);
+  const got = [];
+  const off = shared.onTranscript((u) => got.push(u));
+  await shared.connect();
+  for (let i = 0; i < 16 * 30; i++) src.advance(1 / 30);
+  const finals = got.filter((u) => u.final);
+  // The cut turn ends with what was said by its last frame: a prefix of its line (which frame that is depends on the tick grid).
+  const cut = finals[1];
+  assert.ok(cut.truncated && cut.text.length >= 40 && "The city museum opened in 1902 and holds over forty".startsWith(cut.text), cut.text);
+  assert.deepEqual(
+    finals.map((u) => (u === cut ? { ...u, text: "<cut>" } : u)),
+    [
+      { role: "user", text: "Tell me about the museum.", final: true, turnId: "u1" },
+      { role: "assistant", text: "<cut>", final: true, turnId: "a1", truncated: true },
+      { role: "user", text: "Sorry, is it open today?", final: true, turnId: "u2" },
+      { role: "assistant", text: "Yes, until 6 pm.", final: true, turnId: "a2" },
+    ],
+  );
+  // Cumulative: every update of a turn extends the one before; nothing after its final.
+  const seen = new Map();
+  for (const u of got) {
+    assert.ok(!seen.get(u.turnId)?.final, `${u.turnId} after final`);
+    if (!u.truncated) assert.ok(u.text.startsWith(seen.get(u.turnId)?.text ?? ""));
+    seen.set(u.turnId, u);
+  }
+  off();
+  const before = got.length;
+  src.seek(0);
+  for (let i = 0; i < 5 * 30; i++) src.advance(1 / 30);
+  assert.equal(got.length, before, "unsubscribed");
+  shared.disconnect();
+});
+
+test("transcripts: a muted user says nothing", async () => {
+  const src = new SimulatedVoiceSource("barge-in", { autoTick: false });
+  const got = [];
+  src.onTranscript((u) => got.push(u));
+  await src.connect();
+  src.setMuted(true);
+  for (let i = 0; i < 16 * 30; i++) src.advance(1 / 30);
+  assert.ok(got.length > 0);
+  assert.ok(got.every((u) => u.role === "assistant"));
+  src.disconnect();
 });

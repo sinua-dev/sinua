@@ -65,6 +65,13 @@ class SimulatedVoiceSource(
     private var stateCb: ((AgentState) -> Unit)? = null
     private var interruptCb: (() -> Unit)? = null
     private var frameCb: ((ConversationFrame) -> Unit)? = null
+    private var transcriptCb: ((TranscriptUpdate) -> Unit)? = null
+
+    /** The turn being transcribed (`turn` is the script's index) and the counters that name turns. */
+    private class Said(val turn: Int, val id: String, val role: TranscriptRole, var text: String)
+    private var said: Said? = null
+    private var userTurns = 0
+    private var assistantTurns = 0
     private var connectionCb: ((Boolean) -> Unit)? = null
     private var muted = false
 
@@ -136,6 +143,17 @@ class SimulatedVoiceSource(
         frameCb = cb
     }
 
+    /**
+     * Transcript updates: each turn's line as it is said ([TranscriptTiming.SYNCED]); a turn cut
+     * by a barge-in ends `truncated`. Muted user turns say nothing. Main thread.
+     */
+    override fun onTranscript(cb: (TranscriptUpdate) -> Unit) {
+        transcriptCb = cb
+    }
+
+    override val supportsTranscript: Boolean get() = true
+    override val transcriptTiming: TranscriptTiming get() = TranscriptTiming.SYNCED
+
     /** Starts playing from the current time. Never touches the microphone. */
     override fun connect() {
         val was = connected
@@ -148,6 +166,7 @@ class SimulatedVoiceSource(
     }
 
     override fun disconnect() {
+        close(cut = false)
         val was = connected
         connected = false
         if (was) connectionCb?.invoke(false)
@@ -195,7 +214,11 @@ class SimulatedVoiceSource(
             val entering = lastTurn != -1 && f.bargeIn
             lastTurn = f.turn.toInt()
             if (entering) interruptCb?.invoke()
+            // The turn that was being said ends: cut short by a barge-in, or said in full.
+            val s = said
+            if (s != null && s.turn != f.turn.toInt()) close(cut = entering)
         }
+        transcribe(f)
         if (f.state != lastState) {
             lastState = f.state
             stateCb?.invoke(AgentState.fromWire(f.state) ?: AgentState.IDLE)
@@ -206,6 +229,46 @@ class SimulatedVoiceSource(
             metricsCb?.invoke(VoiceMetrics(f.level, f.bands))
         }
         frameCb?.invoke(f)
+    }
+
+    /** Speaker of a turn: its `voice`, else what its state implies (listening = the user). */
+    private fun roleOf(turn: Int, state: String): TranscriptRole? = when (turns.getOrNull(turn)?.voice) {
+        "user" -> TranscriptRole.USER
+
+        "agent" -> TranscriptRole.ASSISTANT
+
+        else -> when (state) {
+            "speaking" -> TranscriptRole.ASSISTANT
+            "listening" -> TranscriptRole.USER
+            else -> null
+        }
+    }
+
+    private fun transcribe(f: ConversationFrame) {
+        val cb = transcriptCb ?: return
+        val role = roleOf(f.turn.toInt(), f.state) ?: return
+        if (f.line.isEmpty() || (role == TranscriptRole.USER && muted)) return
+        val line = java.text.Normalizer.normalize(f.line, java.text.Normalizer.Form.NFC)
+        val n = minOf(f.shown.toInt(), line.codePointCount(0, line.length))
+        val text = line.substring(0, line.offsetByCodePoints(0, n))
+        val s = said ?: run {
+            if (text.isEmpty()) return
+            val id = if (role == TranscriptRole.USER) "u${++userTurns}" else "a${++assistantTurns}"
+            Said(f.turn.toInt(), id, role, "").also { said = it }
+        }
+        if (text == s.text) return
+        s.text = text
+        cb(TranscriptUpdate(role, text, false, s.id))
+    }
+
+    /** Ends the turn being said: `cut` by a barge-in (what was said so far), else in full. */
+    private fun close(cut: Boolean) {
+        val s = said ?: return
+        said = null
+        val cb = transcriptCb ?: return
+        val full = java.text.Normalizer.normalize(turns.getOrNull(s.turn)?.line ?: "", java.text.Normalizer.Form.NFC)
+        val truncated = cut && s.role == TranscriptRole.ASSISTANT
+        cb(TranscriptUpdate(s.role, (if (truncated) s.text else full).trim(), true, s.id, truncated))
     }
 
     companion object {

@@ -142,6 +142,14 @@
       { "t": 100, "event": { "type": "session.usage.updated", "usage": { "seconds": 12 } }, "state": "listening" },
       { "t": 200, "event": { "type": "response.event" }, "state": "listening" },
       { "t": 300, "event": { "type": "session.delegation.created" }, "state": "listening" }
+    ] },
+    { "name": "the barge-in window runs from the user's latest words (the model talked on, then stopped)", "steps": [
+      { "t": 0, "event": { "type": "session.started", "session": { "id": "live_1" } }, "state": "listening" },
+      { "t": 100, "level": 0.5, "repeat": 20, "state": "speaking" },
+      { "t": 800, "event": { "type": "session.input_transcript.delta", "delta": "Bir" }, "state": "speaking" },
+      { "t": 810, "level": 0.5, "repeat": 20, "state": "speaking", "interrupts": 0 },
+      { "t": 1500, "event": { "type": "session.input_transcript.delta", "delta": " saniye" }, "state": "speaking" },
+      { "t": 1510, "level": 0.01, "repeat": 12, "state": "listening", "interrupts": 1 }
     ] }
   ]
 }

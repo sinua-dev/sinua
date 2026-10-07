@@ -26,6 +26,44 @@ data class VoiceMetrics(val level: Double, val bands: List<Double>) {
     }
 }
 
+/** Who is speaking in a [TranscriptUpdate] -- same strings as Web's `role`. */
+enum class TranscriptRole(val wire: String) {
+    USER("user"),
+    ASSISTANT("assistant"),
+}
+
+/**
+ * One transcript update (docs/audio-pipeline.md, *Transcripts*; Web's `TranscriptUpdate`): the
+ * turn's text so far. Display only -- Sinua keeps nothing beyond the current turn and sends it
+ * nowhere.
+ */
+data class TranscriptUpdate(
+    val role: TranscriptRole,
+    /** Everything visible so far in this turn (cumulative, never a diff). */
+    val text: String,
+    /** True exactly once per turn, on its last update. */
+    val final: Boolean,
+    /** Stable for the whole turn: role + a counter that never resets for the source object ("u3", "a4"). */
+    val turnId: String,
+    /** The assistant turn was cut by a barge-in; [text] is the full spoken part. Always [final]. */
+    val truncated: Boolean = false,
+    /** The vendor's own timing for the text, when it has one (GPT-Live: ms on the session timeline). */
+    val startMs: Double? = null,
+    val endMs: Double? = null,
+)
+
+/**
+ * How a source times its transcript (Web's `TranscriptTiming`): per-character timings,
+ * per-fragment timings mapped to the played audio, already in step with the audio, or revealed
+ * with the speech.
+ */
+enum class TranscriptTiming(val wire: String) {
+    CHARS("chars"),
+    SEGMENTS("segments"),
+    SYNCED("synced"),
+    NONE("none"),
+}
+
 /**
  * One source of voice readings (a mic, a test tone, later a vendor
  * transport). Callbacks arrive on the main thread.
@@ -65,6 +103,19 @@ interface VoiceSource {
      * vendor's [connect] returns while the session is still opening; this is where it fails.
      */
     fun onError(cb: (Throwable) -> Unit) {}
+
+    /**
+     * Optional: live transcript updates for both speakers, on the Main dispatcher
+     * (docs/audio-pipeline.md, *Transcripts*). A no-op by default; see [supportsTranscript].
+     * Use [SharedVoiceSource.listenTranscript] for more than one listener.
+     */
+    fun onTranscript(cb: (TranscriptUpdate) -> Unit) {}
+
+    /** Whether this source sends transcripts. */
+    val supportsTranscript: Boolean get() = false
+
+    /** How this source times its transcript. */
+    val transcriptTiming: TranscriptTiming get() = TranscriptTiming.NONE
 }
 
 /** `primitives::audio_band`'s cap: keys `audioBand0`..`audioBand15` exist, nothing beyond. */

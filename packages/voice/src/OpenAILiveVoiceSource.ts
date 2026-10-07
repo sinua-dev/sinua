@@ -13,7 +13,7 @@ import {
   type ReconnectPolicy,
   type RequestHeaders,
 } from "./realtimeReconnect.js";
-import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
+import type { AgentState, TranscriptUpdate, VoiceMetrics, VoiceSource } from "@sinua/core";
 
 /**
  * `VoiceSource` for OpenAI's GPT-Live (`gpt-live-1`) over WebRTC
@@ -68,6 +68,12 @@ export interface OpenAILiveVoiceSourceOptions extends CredentialOptions {
   headers?: RequestHeaders;
   /** The `fetch` to use (a wrapped one, a test's). Default the global `fetch`. */
   fetch?: typeof fetch;
+  /**
+   * Transcripts (`onTranscript`): `true` (default) reveals the assistant's text with the
+   * played audio; `false` passes GPT-Live's text through as it arrives, with its
+   * `start_ms`/`end_ms` (docs/audio-pipeline.md, *Transcripts*).
+   */
+  syncToAudio?: boolean;
 }
 
 const DATA_CHANNEL_LABEL = "oai-events";
@@ -84,7 +90,10 @@ export class OpenAILiveVoiceSource implements VoiceSource {
   private readonly headers: RequestHeaders | undefined;
   private readonly fetchFn: typeof fetch | undefined;
   private readonly reconnectPolicy: ReconnectPolicy | null;
-  private readonly session = new OpenAILiveSession();
+  private readonly session: OpenAILiveSession;
+  /** GPT-Live sends both speakers' text with `start_ms`/`end_ms` on the session timeline. */
+  readonly supportsTranscript = true;
+  readonly transcriptTiming = "segments" as const;
 
   private ctx: AudioContext | null = null;
   private pc: RTCPeerConnection | null = null;
@@ -115,6 +124,7 @@ export class OpenAILiveVoiceSource implements VoiceSource {
     this.headers = opts.headers;
     this.fetchFn = opts.fetch;
     this.reconnectPolicy = opts.reconnect === false ? null : opts.reconnect ?? {};
+    this.session = new OpenAILiveSession({ syncToAudio: opts.syncToAudio });
     this.session.onClosed = (reason) => this.onSessionClosed(reason);
   }
 
@@ -128,6 +138,14 @@ export class OpenAILiveVoiceSource implements VoiceSource {
 
   onInterrupt(cb: () => void): void {
     this.session.onInterrupt = cb;
+  }
+
+  /**
+   * Both speakers' live transcript (design note 39). Turn ids keep counting across
+   * reconnects; display only, nothing is kept or sent.
+   */
+  onTranscript(cb: (u: TranscriptUpdate) => void): void {
+    this.session.onTranscript = cb;
   }
 
   onConnectionChange(cb: (connected: boolean) => void): void {

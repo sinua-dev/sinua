@@ -343,7 +343,8 @@ SinuaVoice / `dev.sinua.voice`, all held to `spec/openai-live-cases.json`) does 
   - `session.thinking.appended` is quiet progress and keeps thinking.
   - The model can talk while the backend works: speaking wins.
 - **barge-in:** a `session.input_transcript.delta` while the model is audible, followed by
-  the model going quiet within 1 s. GPT-Live is full duplex, so a "mhm" under continuing
+  the model going quiet within 1 s of the user's latest words (GPT-Live may talk on for a
+  second after the user starts). GPT-Live is full duplex, so a "mhm" under continuing
   speech isn't one. After user speech, ~300 ms of quiet ends speaking, so a barge-in stays
   instant.
 
@@ -739,6 +740,69 @@ the native library loads.
 **Controls** for a timeline: `play()`, `pause()`, `seek(t)`, `loop`, `time`, `duration`,
 `turns` (state, start, seconds, line, bargeIn, voice) and `onFrame`. With `autoTick: false`
 (Web / Android) nothing runs on a timer: call `advance(dt)` from your own loop or a test.
+
+## Transcripts
+
+A voice source can report what both speakers say, live, for captions under a visual:
+`onTranscript` on the source (Web) or `listenTranscript` on `SharedVoiceSource` (iOS,
+Android; on the Web `SharedVoiceSource.onTranscript` returns its unsubscribe). It is a data
+layer only: Sinua draws no captions. **Display only: Sinua keeps nothing beyond the current
+turn's text and sends it nowhere.**
+
+```ts
+const voice = SharedVoiceSource.of(new OpenAILiveVoiceSource({ sessionUrl: "/api/voice/live" }));
+const off = voice.onTranscript((u) => {
+  // { role: "user" | "assistant", text, final, turnId, truncated?, startMs?, endMs? }
+  bubbles.set(u.turnId, u.text);       // text is cumulative: replace, don't append
+  if (u.final) bubbles.seal(u.turnId); // exactly once per turn
+});
+await voice.connect();                 // subscribing before connect() catches the first turn
+```
+
+- **One shape on every platform and vendor.**
+  - `text` is everything visible so far in the turn (never a diff).
+  - `turnId` (`"u3"`, `"a4"`) stays the same for the whole turn and keeps counting for the source object's lifetime, reconnects included.
+  - `final: true` comes exactly once per turn, and nothing follows it.
+  - Text is NFC-normalized and otherwise left as the vendor sent it; a final text is trimmed at its two ends only.
+- **Callbacks** arrive on the main actor (iOS), the Main dispatcher (Android) or the event loop (Web), like every other callback.
+- **Both speakers at once.** User and assistant turns are independent streams, so both can grow at the same time (full duplex).
+- **Synced (default) or raw.**
+  - Synced: the assistant's text appears with the played audio.
+  - `syncToAudio: false`: it appears as the vendor sends it, with the vendor's timing in `startMs`/`endMs`.
+  - User text shows as it arrives in both modes.
+- **Barge-in.** When the user cuts the assistant off, its turn ends with one update, `truncated: true` and `final: true`, whose `text` is the whole part that was actually played. While the user talks over the audio, the reveal waits at the last audible moment, so an unspoken word doesn't flash up.
+- **When a turn ends.**
+  - An assistant turn ends when the source leaves `speaking`, after its quiet tail (up to ~1.7 s). The text is already complete by then; only `final` waits, so a natural pause doesn't split the turn.
+  - A backend delegation ("let me check" → thinking → the answer) gives two assistant turns.
+  - On GPT-Live, which sends no turn-end event, a user turn ends after 4 s without new text, or when a new assistant reply reaches 12 characters (a "mhm" doesn't count).
+  - When GPT-Live is cut off and goes straight on to a new reply (full duplex, no silence in between), text that starts ≥600 ms after the cut-off part, on its own timeline, opens the next assistant turn.
+- **`supportsTranscript` / `transcriptTiming`** say what a source gives.
+
+| Source | `transcriptTiming` | How the assistant's text follows the audio |
+|---|---|---|
+| `OpenAILiveVoiceSource` (GPT-Live) | `segments` | GPT-Live's `start_ms`/`end_ms`, anchored at the local audio onset of each turn, 300 ms behind (that timeline runs ahead of the played audio) |
+| `SimulatedVoiceSource` | `synced` | the script's line as it is said |
+| mic, test tone, the other vendors (for now) | — | `supportsTranscript` false |
+
+On React Native, `createVoiceSource(...)`'s handle has `onTranscript`, `supportsTranscript` and
+`transcriptTiming`; today the simulated source sends transcripts there.
+
+**How close the GPT-Live text follows the audio** (measured 2026-10-07 on live sessions in headless
+Chrome against whisper word timings, which carry ±100–200 ms of their own):
+
+| Mode | Turkish | English |
+|---|---|---|
+| synced (default) | median 82 ms, p95 191 ms; 27 of 28 words within 250 ms | median ~190 ms, p95 ~515 ms; 16 of 27 within 250 ms |
+| raw (`syncToAudio: false`) | text ~650 ms ahead of the audio | text ~690 ms ahead |
+
+GPT-Live's `start_ms`/`end_ms` are approximate, and how far they run ahead of the played audio
+varies from session to session, so no reveal rule tried did better in both languages: pacing by
+syllables, envelope peaks and per-session lag estimates were all measured and lost. Treat the
+synced English figures as a known limit; device numbers may differ.
+
+For your own `VoiceSource`, `@sinua/voice` exports `TranscriptAssembler`: feed it your vendor's
+fragments and 30 Hz level ticks, and it applies these rules. `spec/transcript-cases.json` holds
+them; Web, iOS and Android run it.
 
 ## Mute
 

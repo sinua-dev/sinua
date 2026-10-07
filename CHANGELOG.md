@@ -13,6 +13,18 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 ### Added
 
+- **Transcripts** (docs/audio-pipeline.md, *Transcripts*): live text for both speakers, for captions.
+  - **API:**
+    - `onTranscript` on a source;
+    - `SharedVoiceSource.onTranscript` (Web) / `listenTranscript` (iOS, Android), which works before `connect()`;
+    - `supportsTranscript` and `transcriptTiming`;
+    - the shape is `{ role, text, final, turnId, truncated?, startMs?, endMs? }`.
+  - **Modes:** synced to the played audio by default, or raw with `syncToAudio: false`. A barge-in ends the assistant's turn `truncated`, with only what was played.
+  - **Sources:** `OpenAILiveVoiceSource` (GPT-Live) on Web, iOS and Android; `SimulatedVoiceSource` everywhere, including the React Native handle (`onTranscript`).
+  - **Your own source:** `@sinua/voice` exports `TranscriptAssembler`; the rules live in `spec/transcript-cases.json`.
+  - **Privacy:** display only. Sinua keeps nothing beyond the current turn and sends nothing anywhere.
+  - **Measured on GPT-Live:** synced is within 250 ms for most words in Turkish (median 82 ms, p95 191 ms); English is looser (median ~190 ms, p95 ~515 ms). Raw text arrives ~650 ms ahead of the audio.
+
 - **iOS: Apple privacy manifests.** Every Swift target (`sinua-swift`, `-livekit`, `-openai`)
   and the React Native pod ship a `PrivacyInfo.xcprivacy`, so an App Store upload no longer
   needs the app to declare Sinua's use for it (ITMS-91053). Declared: system boot time
@@ -20,6 +32,15 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   standard library reading the app binary's own metadata). No tracking, no collected data.
   A CI check keeps the manifests in step with the sources and the engine's symbols. See
   [`docs/publishing.md`](docs/publishing.md), *Apple privacy manifests*.
+
+### Changed
+
+- **GPT-Live barge-in (`OpenAILiveVoiceSource`, Web / iOS / Android): the 1 s window now runs from
+  the user's latest words, not their first.** Live sessions showed GPT-Live talking on for ~1 s after
+  the user started, then switching straight to the new reply. The old rule missed those barge-ins,
+  so `onInterrupt` never fired and the agent stayed `speaking` across replies. Now `onInterrupt` and
+  the `speaking` → `listening` change come at such a cut-off. A short "mhm" under speech that goes on
+  still doesn't count. `spec/openai-live-cases.json` has the case.
 
 ### Removed
 

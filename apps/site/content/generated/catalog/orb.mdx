@@ -20,7 +20,6 @@ The orb component is `SinuaOrb`. Pick a look with `pattern`; each pattern reads 
 | Initializing (`initializing`) | `warp` | 1× | — |
 | Calibrating (`calibrating`) | `chladni` | 1× | — |
 | Progressing (`progressing`) | `eclipse` | 1× | `progress` |
-| Concluding (`concluding`) | `crystallize` | 1× | — |
 | Muted (`muted`) | `hush` | 1× | — |
 | Silhouette (`silhouette`) | `silhouette` | 1× | — |
 
@@ -405,28 +404,6 @@ The orb component is `SinuaOrb`. Pick a look with `pattern`; each pattern reads 
 |---|---|---|---|---|---|
 | `nodeCount` | Appearance | integer | 8–1000 | 20: 73 · 32: 130 · 64: 260 | Dots on the disc. |
 | `nodeSize` | Appearance | number | 0–6 | 20: 1.44 · 32: 1.17 · 64: 0.9 | Dot radius. |
-| `rMin` | Appearance | number | 0–4 px | 0.3 | Dots are never drawn smaller than this, in engine units, so far-side dots stay visible at small sizes. |
-| `rsPow` | Appearance | number | 0–2 | 0.6 | How dot radii scale with the frame size: radius x (size / 64)^rsPow; lower keeps small sizes chunkier. |
-
-</details>
-
-### Concluding [#concluding]
-
-`pattern: "concluding"` · mode `crystallize` · speed 1× · sizes 20, 32, 64
-
-| Prop | Category | Type | Range | Default | Description |
-|---|---|---|---|---|---|
-| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
-| `driftAmplitude` | Motion | number | 0–2 (UI 0–0.8) fraction | 0.35 | How far dots drift before they lock into the lattice. |
-| `period` | Motion | number | 0.5–60 (UI 2–12) s | 6 | Seconds per scatter-and-crystallize cycle. |
-
-<details>
-<summary>Advanced props (4)</summary>
-
-| Prop | Category | Type | Range | Default | Description |
-|---|---|---|---|---|---|
-| `dotSize` | Appearance | number | 0–6 | 1.1 | Dot radius. |
-| `lineWidth` | Appearance | number | 0–4 | 0.7 | Stroke width of the lattice links. |
 | `rMin` | Appearance | number | 0–4 px | 0.3 | Dots are never drawn smaller than this, in engine units, so far-side dots stay visible at small sizes. |
 | `rsPow` | Appearance | number | 0–2 | 0.6 | How dot radii scale with the frame size: radius x (size / 64)^rsPow; lower keeps small sizes chunkier. |
 

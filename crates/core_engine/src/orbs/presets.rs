@@ -24,7 +24,7 @@ pub const STATES: &[&str] = &[
     "shaping",
     // Not part of the original 9 ported states -- see each mode's header
     // comment in `orbs/modes/` (aurora, webflow, spectrum, sonar, warp,
-    // chladni, eclipse, crystallize).
+    // chladni, eclipse).
     "glowing",
     "drifting",
     "speaking",
@@ -32,7 +32,6 @@ pub const STATES: &[&str] = &[
     "initializing",
     "calibrating",
     "progressing",
-    "concluding",
     // Not a port either -- the "mic muted / connection lost" resting state,
     // see `orbs/modes/hush.rs`.
     "muted",
@@ -58,7 +57,6 @@ pub fn state_to_mode(state: &str) -> Option<&'static str> {
         "initializing" => "warp",
         "calibrating" => "chladni",
         "progressing" => "eclipse",
-        "concluding" => "crystallize",
         "muted" => "hush",
         "silhouette" => "silhouette",
         _ => return None,
@@ -347,17 +345,6 @@ pub fn presets() -> HashMap<&'static str, HashMap<u32, Preset>> {
                 (64, preset(1.0, 1.0, 1.0)),
                 (32, preset(1.0, 0.5, 1.3)),
                 (20, preset(1.0, 0.28, 1.6)),
-            ]),
-        ),
-        (
-            // Not a port -- see `orbs/modes/crystallize.rs`'s header. Vertex
-            // count is fixed by the polyhedron (12 or 6), not size-scaled --
-            // no `count` multiplier needed.
-            "crystallize",
-            HashMap::from([
-                (64, preset(1.0, 1.0, 1.0)),
-                (32, preset(1.0, 1.0, 1.3)),
-                (20, preset(1.0, 1.0, 1.6)),
             ]),
         ),
         (

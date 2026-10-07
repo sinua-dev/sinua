@@ -7933,35 +7933,36 @@
    ]
   },
   {
-   "name": "rates accumulate from the first change of a resting view (concluding at 300 s)",
+   "name": "rates accumulate from the first change of a resting view (confirming at 300 s)",
    "t0": 300,
    "sides": {
     "i": {
-     "state": "concluding",
+     "state": "confirming",
      "speed": 0.6,
      "overrides": {
-      "lineWidth": 1.2,
-      "ink": 0.72,
       "pulseOpacity": 0.25,
-      "pulsePeriod": 4.5,
-      "driftAmplitude": 0,
-      "period": 6,
-      "dotSize": 1.6,
+      "echoSpacing": 0.3,
+      "pulseScale": 0.04,
       "pulseStrength": 0.6,
-      "pulseScale": 0.04
+      "echoCount": 3,
+      "coreSize": 3,
+      "period": 1.8,
+      "echoCountLayout": 3,
+      "pulsePeriod": 4.5,
+      "ink": 0.72
      }
     },
     "s": {
-     "state": "concluding",
+     "state": "confirming",
      "speed": 1.15,
      "overrides": {
-      "period": 4,
-      "lineWidth": 0.9,
-      "glowStrength": 0.4,
+      "coreSize": 2.6,
       "audioStrength": 0.5,
-      "particleStrength": 0,
-      "driftAmplitude": 0.22,
-      "ink": 1
+      "ink": 1,
+      "period": 1.4,
+      "glowStrength": 0.4,
+      "echoCount": 2,
+      "echoCountLayout": 3
      }
     }
    },
@@ -8151,7 +8152,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.02457943655324,
-      "periodCycles": 30.018418514242203
+      "periodCycles": 100.06136863874285
      }
     },
     {
@@ -8165,7 +8166,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.027221719669186,
-      "periodCycles": 30.020345252051943
+      "periodCycles": 100.06770323434759
      }
     },
     {
@@ -8179,7 +8180,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.030282353403436,
-      "periodCycles": 30.0225170464698
+      "periodCycles": 100.07475263712851
      }
     },
     {
@@ -8193,7 +8194,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.033869742939736,
-      "periodCycles": 30.024979270646938
+      "periodCycles": 100.08262598691599
      }
     },
     {
@@ -8207,7 +8208,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.03806375136499,
-      "periodCycles": 30.02775325049942
+      "periodCycles": 100.09135696371823
      }
     },
     {
@@ -8221,7 +8222,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.042912820490436,
-      "periodCycles": 30.030839399072562
+      "periodCycles": 100.10092013875246
      }
     },
     {
@@ -8235,7 +8236,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.04843254878594,
-      "periodCycles": 30.034221636525317
+      "periodCycles": 100.11124918566772
      }
     },
     {
@@ -8249,7 +8250,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.05460701189603,
-      "periodCycles": 30.037872416904133
+      "periodCycles": 100.12225393739445
      }
     },
     {
@@ -8263,7 +8264,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.0613933576251,
-      "periodCycles": 30.0417576820797
+      "periodCycles": 100.13383454319268
      }
     },
     {
@@ -8277,7 +8278,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.06872906196579,
-      "periodCycles": 30.045841146962214
+      "periodCycles": 100.14589194330367
      }
     },
     {
@@ -8291,7 +8292,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.07654038380056,
-      "periodCycles": 30.050087547695128
+      "periodCycles": 100.15833466973349
      }
     },
     {
@@ -8305,7 +8306,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.0847503749063,
-      "periodCycles": 30.054464757934525
+      "periodCycles": 100.17108251272428
      }
     },
     {
@@ -8319,7 +8320,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.09328523192994,
-      "periodCycles": 30.058944895175145
+      "periodCycles": 100.18406783327268
      }
     },
     {
@@ -8333,7 +8334,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.10207847498337,
-      "periodCycles": 30.063504654272027
+      "periodCycles": 100.1972353112786
      }
     },
     {
@@ -8347,7 +8348,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.11107305320168,
-      "periodCycles": 30.068125128025226
+      "periodCycles": 100.2105407930507
      }
     },
     {
@@ -8361,7 +8362,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.120221834306754,
-      "periodCycles": 30.07279133952592
+      "periodCycles": 100.22394972739939
      }
     },
     {
@@ -8375,7 +8376,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.12948703503198,
-      "periodCycles": 30.077491652622005
+      "periodCycles": 100.23743551222688
      }
     },
     {
@@ -8389,7 +8390,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.13883908409969,
-      "periodCycles": 30.08221716866565
+      "periodCycles": 100.25097793932254
      }
     },
     {
@@ -8403,7 +8404,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.148255277278174,
-      "periodCycles": 30.086961170760315
+      "periodCycles": 100.26456182966474
      }
     },
     {
@@ -8417,7 +8418,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.157718450138795,
-      "periodCycles": 30.091718643690072
+      "periodCycles": 100.27817589017735
      }
     },
     {
@@ -8431,7 +8432,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.167215788234934,
-      "periodCycles": 30.09648587693529
+      "periodCycles": 100.29181178729493
      }
     },
     {
@@ -8445,7 +8446,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.176737822630606,
-      "periodCycles": 30.101260146555273
+      "periodCycles": 100.30546341468913
      }
     },
     {
@@ -8459,7 +8460,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.186277615888976,
-      "periodCycles": 30.106039466215535
+      "periodCycles": 100.31912632553777
      }
     },
     {
@@ -8473,7 +8474,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.19583012149842,
-      "periodCycles": 30.11082239585804
+      "periodCycles": 100.33279729908212
      }
     },
     {
@@ -8487,7 +8488,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.20539169068871,
-      "periodCycles": 30.11560789678496
+      "periodCycles": 100.3464740138248
      }
     },
     {
@@ -8501,7 +8502,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.214959699034395,
-      "periodCycles": 30.120395223178992
+      "periodCycles": 100.36015480367553
      }
     },
     {
@@ -8515,7 +8516,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.224532267443365,
-      "periodCycles": 30.125183841683068
+      "periodCycles": 100.37383847757576
      }
     },
     {
@@ -8529,7 +8530,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.2341080558581,
-      "periodCycles": 30.129973372265606
+      "periodCycles": 100.38752418707224
      }
     },
     {
@@ -8543,7 +8544,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.243686112028044,
-      "periodCycles": 30.134763545038474
+      "periodCycles": 100.40121132972102
      }
     },
     {
@@ -8557,7 +8558,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.25326576144381,
-      "periodCycles": 30.139554168913005
+      "periodCycles": 100.41489947902629
      }
     },
     {
@@ -8571,7 +8572,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.2628465277143,
-      "periodCycles": 30.14434510896799
+      "periodCycles": 100.4285883338797
      }
     },
     {
@@ -8585,7 +8586,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.149136270183938
+      "periodCycles": 100.44227768223571
      }
     },
     {
@@ -8598,7 +8599,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.153927936850607
+      "periodCycles": 100.4559681584262
      }
     },
     {
@@ -8611,7 +8612,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.158719603517277
+      "periodCycles": 100.46965863461669
      }
     },
     {
@@ -8624,7 +8625,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.163511270183946
+      "periodCycles": 100.48334911080718
      }
     },
     {
@@ -8637,7 +8638,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.168302936850615
+      "periodCycles": 100.49703958699767
      }
     },
     {
@@ -8650,7 +8651,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.173094603517285
+      "periodCycles": 100.51073006318816
      }
     },
     {
@@ -8663,7 +8664,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.177886270183954
+      "periodCycles": 100.52442053937865
      }
     },
     {
@@ -8676,7 +8677,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.182677936850624
+      "periodCycles": 100.53811101556914
      }
     },
     {
@@ -8689,7 +8690,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.187469603517293
+      "periodCycles": 100.55180149175963
      }
     },
     {
@@ -8702,7 +8703,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.192261270183963
+      "periodCycles": 100.56549196795012
      }
     },
     {
@@ -8715,7 +8716,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.197052936850632
+      "periodCycles": 100.57918244414061
      }
     },
     {
@@ -8728,7 +8729,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.2018446035173
+      "periodCycles": 100.5928729203311
      }
     },
     {
@@ -8741,7 +8742,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.20663627018397
+      "periodCycles": 100.6065633965216
      }
     },
     {
@@ -8754,7 +8755,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.21142793685064
+      "periodCycles": 100.62025387271208
      }
     },
     {
@@ -8767,7 +8768,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.21621960351731
+      "periodCycles": 100.63394434890257
      }
     },
     {
@@ -8780,7 +8781,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.22101127018398
+      "periodCycles": 100.64763482509306
      }
     },
     {
@@ -8793,7 +8794,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.22580293685065
+      "periodCycles": 100.66132530128355
      }
     },
     {
@@ -8806,7 +8807,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.230594603517318
+      "periodCycles": 100.67501577747404
      }
     },
     {
@@ -8819,7 +8820,7 @@
      "blend": 1,
      "sums": {
       "pulsePeriodCycles": 40.272428075266184,
-      "periodCycles": 30.235386270183987
+      "periodCycles": 100.68870625366453
      }
     }
    ]

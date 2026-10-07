@@ -109,11 +109,6 @@
      "description": "Progress on a sphere: a day and night line sweeps left to right as the app sets progress (0 to 1)."
     },
     {
-     "id": "concluding",
-     "label": "Concluding",
-     "description": "Wrapping up: loose dots snap into a crystal, hold, then let go."
-    },
-    {
      "id": "muted",
      "label": "Muted",
      "description": "Mic muted or connection lost: a still, dimmed sphere."
@@ -734,21 +729,6 @@
    "step": 0.01,
    "tier": "basic"
   },
-  "dotSize@crystallize": {
-   "key": "dotSize",
-   "scope": "crystallize",
-   "path": "dotSize",
-   "label": "Dot size",
-   "description": "Dot radius.",
-   "category": "appearance",
-   "group": "style",
-   "type": "number",
-   "min": 0,
-   "max": 6,
-   "unit": null,
-   "fallback": 1.1,
-   "tier": "advanced"
-  },
   "dotSize@dots": {
    "key": "dotSize",
    "scope": "dots",
@@ -850,24 +830,6 @@
    "unit": null,
    "fallback": 1,
    "tier": "advanced"
-  },
-  "driftAmplitude@crystallize": {
-   "key": "driftAmplitude",
-   "scope": "crystallize",
-   "path": "driftAmplitude",
-   "label": "Drift amount",
-   "description": "How far dots drift before they lock into the lattice.",
-   "category": "motion",
-   "group": "style",
-   "type": "number",
-   "min": 0,
-   "max": 2,
-   "unit": "fraction",
-   "fallback": 0.35,
-   "uiMin": 0,
-   "uiMax": 0.8,
-   "step": 0.02,
-   "tier": "basic"
   },
   "echoCount@sonar": {
    "key": "echoCount",
@@ -2215,21 +2177,6 @@
    "step": 0.1,
    "tier": "basic"
   },
-  "lineWidth@crystallize": {
-   "key": "lineWidth",
-   "scope": "crystallize",
-   "path": "lineWidth",
-   "label": "Line width",
-   "description": "Stroke width of the lattice links.",
-   "category": "appearance",
-   "group": "style",
-   "type": "number",
-   "min": 0,
-   "max": 4,
-   "unit": null,
-   "fallback": 0.7,
-   "tier": "advanced"
-  },
   "lineWidth@waveform": {
    "key": "lineWidth",
    "scope": "waveform",
@@ -2818,24 +2765,6 @@
    "uiMin": 0.4,
    "uiMax": 4,
    "step": 0.1,
-   "tier": "basic"
-  },
-  "period@crystallize": {
-   "key": "period",
-   "scope": "crystallize",
-   "path": "period",
-   "label": "Cycle length",
-   "description": "Seconds per scatter-and-crystallize cycle.",
-   "category": "motion",
-   "group": "style",
-   "type": "number",
-   "min": 0.5,
-   "max": 60,
-   "unit": "s",
-   "fallback": 6,
-   "uiMin": 2,
-   "uiMax": 12,
-   "step": 0.5,
    "tier": "basic"
   },
   "period@dots": {

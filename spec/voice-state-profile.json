@@ -211,38 +211,6 @@
         }
       }
     },
-    "concluding": {
-      "$comment": "crystallize dissolves and re-forms on its own cycle, so at idle speed it spent seconds near-blank (studio-ui-ux measured 1461 -> 7 -> 739 ink over 7 s). A still, denser lattice raises the floor (min frame ink 0.25 -> 0.42) but cannot remove the gap without changing the mode -- it stays on the open list.",
-      "states": {
-        "idle": {
-          "overrides": {
-            "driftAmplitude": 0,
-            "dotSize": 1.6,
-            "lineWidth": 1.2,
-            "period": 6
-          }
-        },
-        "listening": {
-          "overrides": {
-            "driftAmplitude": 0.2,
-            "period": 5
-          }
-        },
-        "thinking": {
-          "overrides": {
-            "driftAmplitude": 0.3,
-            "period": 3.5
-          }
-        },
-        "speaking": {
-          "overrides": {
-            "driftAmplitude": 0.22,
-            "period": 4,
-            "lineWidth": 0.9
-          }
-        }
-      }
-    },
     "confirming": {
       "$comment": "sonar is empty between pings, so idle showed nothing for most of a cycle. A bigger resting core and a shorter period keep something on screen.",
       "states": {
@@ -1137,11 +1105,6 @@
     "generating": {
       "status": "open",
       "issue": "shimmer is a thin track with a travelling highlight, so there is little to modulate: speaking (6) still doesn't beat listening (10) or thinking (10). It needs its own speaking treatment in the mode, not more overrides."
-    },
-    "concluding": {
-      "status": "open",
-      "issue": "crystallize dissolves completely inside its cycle, so a single frame can still be near-blank (lowest frame ink 0.42 at idle, 0.96 while speaking). A still, denser lattice raised the floor but only the mode can remove the gap.",
-      "note": "Same caveat as `confirming`: the bare pattern empties on its own cycle; the profile's denser lattice only applies when a state is set."
     },
     "shaping": {
       "status": "open",

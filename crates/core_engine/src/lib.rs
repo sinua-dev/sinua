@@ -105,7 +105,6 @@ fn render(
         "warp" => orbs::modes::warp::frame_warp(size as f64, t, opts),
         "chladni" => orbs::modes::chladni::frame_chladni(size as f64, t, opts),
         "eclipse" => orbs::modes::eclipse::frame_eclipse(size as f64, t, opts),
-        "crystallize" => orbs::modes::crystallize::frame_crystallize(size as f64, t, opts),
         // Not a port -- the `muted` resting state, see hush.rs's header.
         "hush" => orbs::modes::hush::frame_hush(size as f64, t, opts),
         // A head and shoulders of dots (design note 32).

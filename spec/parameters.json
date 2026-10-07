@@ -822,26 +822,6 @@
       "uiMin": 0.02,
       "unit": "fraction"
     },
-    "dotSize@crystallize": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Dot radius.",
-      "fallback": 1.1,
-      "group": "style",
-      "if": null,
-      "key": "dotSize",
-      "label": "Dot size",
-      "max": 6,
-      "min": 0,
-      "path": "dotSize",
-      "scope": "crystallize",
-      "specPath": "/params/dotSize",
-      "tier": "advanced",
-      "type": "number",
-      "unit": null
-    },
     "dotSize@dots": {
       "aliases": [],
       "category": "appearance",
@@ -996,29 +976,6 @@
       "tier": "advanced",
       "type": "number",
       "unit": null
-    },
-    "driftAmplitude@crystallize": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far dots drift before they lock into the lattice.",
-      "fallback": 0.35,
-      "group": "style",
-      "if": null,
-      "key": "driftAmplitude",
-      "label": "Drift amount",
-      "max": 2,
-      "min": 0,
-      "path": "driftAmplitude",
-      "scope": "crystallize",
-      "specPath": "/params/driftAmplitude",
-      "step": 0.02,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.8,
-      "uiMin": 0,
-      "unit": "fraction"
     },
     "earGain@character": {
       "aliases": [],
@@ -3412,26 +3369,6 @@
       "uiMin": 0.3,
       "unit": null
     },
-    "lineWidth@crystallize": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Stroke width of the lattice links.",
-      "fallback": 0.7,
-      "group": "style",
-      "if": null,
-      "key": "lineWidth",
-      "label": "Line width",
-      "max": 4,
-      "min": 0,
-      "path": "lineWidth",
-      "scope": "crystallize",
-      "specPath": "/params/lineWidth",
-      "tier": "advanced",
-      "type": "number",
-      "unit": null
-    },
     "lineWidth@waveform": {
       "aliases": [],
       "category": "appearance",
@@ -4360,29 +4297,6 @@
       "type": "number",
       "uiMax": 4,
       "uiMin": 0.4,
-      "unit": "s"
-    },
-    "period@crystallize": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Seconds per scatter-and-crystallize cycle.",
-      "fallback": 6,
-      "group": "style",
-      "if": null,
-      "key": "period",
-      "label": "Cycle length",
-      "max": 60,
-      "min": 0.5,
-      "path": "period",
-      "scope": "crystallize",
-      "specPath": "/params/period",
-      "step": 0.5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 12,
-      "uiMin": 2,
       "unit": "s"
     },
     "period@dots": {
@@ -9093,76 +9007,6 @@
                 "64": 0.9
               },
               "ref": "nodeSize@eclipse"
-            },
-            {
-              "default": {
-                "20": 0.3,
-                "32": 0.3,
-                "64": 0.3
-              },
-              "ref": "rMin@shared"
-            },
-            {
-              "default": {
-                "20": 0.6,
-                "32": 0.6,
-                "64": 0.6
-              },
-              "ref": "rsPow@shared"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "Wrapping up: loose dots snap into a crystal, hold, then let go.",
-          "id": "concluding",
-          "label": "Concluding",
-          "mode": "crystallize",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 0.35,
-                "32": 0.35,
-                "64": 0.35
-              },
-              "ref": "driftAmplitude@crystallize"
-            },
-            {
-              "default": {
-                "20": 6,
-                "32": 6,
-                "64": 6
-              },
-              "ref": "period@crystallize"
-            },
-            {
-              "default": {
-                "20": 1.1,
-                "32": 1.1,
-                "64": 1.1
-              },
-              "ref": "dotSize@crystallize"
-            },
-            {
-              "default": {
-                "20": 0.7,
-                "32": 0.7,
-                "64": 0.7
-              },
-              "ref": "lineWidth@crystallize"
             },
             {
               "default": {

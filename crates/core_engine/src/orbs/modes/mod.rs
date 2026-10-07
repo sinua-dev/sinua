@@ -1,7 +1,6 @@
 pub mod aurora;
 pub mod braid;
 pub mod chladni;
-pub mod crystallize;
 pub mod eclipse;
 pub mod globe;
 pub mod hush;

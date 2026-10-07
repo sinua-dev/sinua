@@ -957,7 +957,7 @@ pub fn apply_audio_reactive(mut frame: OrbFrame, opts: &HashMap<String, f64>) ->
     // makes dots fatter in place, which reads as static -- real perceived
     // motion needs a position change, not just a size change. `Line`
     // endpoints get the identical transform so line-based modes
-    // (`orbs::modes::web`/`webflow`, `crystallize`'s edges) don't visually
+    // (`orbs::modes::web`/`webflow`) don't visually
     // detach from the dots they connect.
     // Dots-only centroid whenever there are dots (every `orbs` frame: its
     // output stays exactly what it always was); otherwise the centroid over
@@ -1730,7 +1730,7 @@ pub fn apply_blur_scale(mut frame: OrbFrame, opts: &HashMap<String, f64>) -> Orb
 /// and advance slowly through the third dimension for time. Displacement
 /// is computed from each point's *pre-jitter* position, so a dot and a
 /// line endpoint or polyline vertex at the same coordinate move together
-/// -- `web`/`crystallize` edges stay attached to their dots. Only `x`/`y`
+/// -- `web` edges stay attached to their dots. Only `x`/`y`
 /// change; `z`, radius and alpha are untouched (the frame's z-sort holds).
 /// Takes `size` and `t` because it needs both, unlike the post-processes
 /// above; `render()` has them.

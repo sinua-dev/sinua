@@ -605,7 +605,6 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
         ],
         "braid" => &["ghostN", "rBase", "rDepth", "strandN", "turns"],
         "chladni" => &["holdDuration", "nodeCount", "nodeSize"],
-        "crystallize" => &["dotSize", "driftAmplitude", "lineWidth", "period"],
         "eclipse" => &["nodeCount", "nodeSize", "progress"],
         "globe" => &[
             "dimBase",
@@ -1348,6 +1347,10 @@ const REMOVED_MATERIALS: [&str; 3] = ["liquid", "particles", "holographic"];
 /// generic wardrobe. A file that still has one is rejected, whatever its version.
 const REMOVED_TOP_KEYS: [&str; 2] = ["cosmetics", "wardrobe"];
 
+/// Patterns removed in 0.1.0-beta.9 (FX Spec 1.14; design note 38): a file that still
+/// names one, in its base or a `states` entry, is rejected whatever its version.
+const REMOVED_PATTERNS: [&str; 1] = ["concluding"];
+
 /// The error for a removed material (or other removed feature) at `path`.
 fn removed_material(path: &str, name: &str, diag: &mut Diag) {
     diag.error(
@@ -1660,6 +1663,8 @@ fn resolve_block(
     let family = family_of(state);
     if state.is_empty() {
         diag.error(&at("pattern"), "missing `pattern`");
+    } else if REMOVED_PATTERNS.contains(&state) {
+        removed_material(&at("pattern"), state, diag);
     } else if family.is_none() {
         diag.error(&at("pattern"), format!("unknown pattern `{state}`"));
     }
@@ -2952,7 +2957,6 @@ mod tests {
             ("warp", include_str!("orbs/modes/warp.rs")),
             ("chladni", include_str!("orbs/modes/chladni.rs")),
             ("eclipse", include_str!("orbs/modes/eclipse.rs")),
-            ("crystallize", include_str!("orbs/modes/crystallize.rs")),
             ("hush", include_str!("orbs/modes/hush.rs")),
             ("bar", include_str!("signal/modes/bar.rs")),
             ("waveform", include_str!("signal/modes/waveform.rs")),
@@ -3308,6 +3312,32 @@ mod tests {
         assert!(errors(&shed)
             .iter()
             .any(|d| d.path == "/performance/lowPower/disable/1"
+                && d.message.contains("removed in 0.1.0-beta.9")));
+    }
+
+    #[test]
+    fn a_removed_pattern_is_an_error_in_any_version() {
+        for minor in ["1.8", "1.13", "1.14"] {
+            let r = resolve(&format!(
+                r##"{{ "fxSpec": "{minor}", "object": "orb", "pattern": "concluding" }}"##
+            ));
+            assert!(!r.ok, "{minor}");
+            assert!(
+                errors(&r)
+                    .iter()
+                    .any(|d| d.path == "/pattern" && d.message.contains("removed in 0.1.0-beta.9")),
+                "{minor}: {:?}",
+                errors(&r)
+            );
+        }
+        let r = resolve(
+            r##"{ "fxSpec": "1.13", "object": "orb", "pattern": "glowing",
+                  "states": { "idle": { "pattern": "concluding" } } }"##,
+        );
+        assert!(!r.ok);
+        assert!(errors(&r)
+            .iter()
+            .any(|d| d.path == "/states/idle/pattern"
                 && d.message.contains("removed in 0.1.0-beta.9")));
     }
 

@@ -238,18 +238,6 @@ pub fn base_profiles() -> HashMap<&'static str, ModeOpts> {
             ]),
         ),
         (
-            // Not a port -- see `orbs/modes/crystallize.rs`'s header.
-            "crystallize",
-            opts(&[
-                ("period", 6.0),
-                ("driftAmplitude", 0.35),
-                ("dotSize", 1.1),
-                ("lineWidth", 0.7),
-                ("rsPow", 0.6),
-                ("rMin", 0.3),
-            ]),
-        ),
-        (
             // Not a port -- see `orbs/modes/webflow.rs`'s header. Identical
             // to "web"'s own profile on purpose -- only the noise function
             // differs between `connecting` and `drifting`.

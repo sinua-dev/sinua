@@ -780,7 +780,7 @@ mod tests {
     fn accumulated_cycles_equal_to_t_times_rate_draw_the_same_frame() {
         // The view's sums start at `t × rate`, so taking over from the old formula is seamless.
         for (state, key, acc, rate) in [
-            ("concluding", "period", "periodCycles", 1.0 / 6.0),
+            ("confirming", "period", "periodCycles", 1.0 / 6.0),
             ("glowing", "surfaceSpeed", "surfaceSpeedCycles", 0.1),
         ] {
             let t = 123.4;
@@ -801,8 +801,8 @@ mod tests {
 
     #[test]
     fn a_voice_blend_at_one_weight_is_that_side_and_reports_rates() {
-        let idle = side("concluding", 0.6, &[("period", 6.0), ("ink", 0.72)]);
-        let speaking = side("concluding", 1.15, &[("period", 4.0), ("ink", 1.0)]);
+        let idle = side("confirming", 0.6, &[("period", 6.0), ("ink", 0.72)]);
+        let speaking = side("confirming", 1.15, &[("period", 4.0), ("ink", 1.0)]);
         let m = blend(&[idle.clone(), speaking.clone()], &[1.0, 0.0], 1, 64).unwrap();
         assert_eq!(
             (m.overrides["period"], m.overrides["ink"], m.speed),

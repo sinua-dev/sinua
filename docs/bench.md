@@ -17,7 +17,7 @@ A small harness that runs a fixed set of Sinua views on a real device and report
 
 Every case runs through the platform's own `FxView` (the drop-in view apps ship, [`fx-view.md`](fx-view.md)), twice:
 - **normal:** `lowPower` off;
-- **low:** `lowPower` on. Without a spec `performance` block this means a 30 fps cap with glow and particles off (the documented host default).
+- **low:** `lowPower` on. Without a spec `performance` block this means a 30 fps cap with glow off (the documented host default).
 
 Each run is a 1 s warmup, then the measure window: 10 s by default, overridable. `FxView`'s `onFrame` gives, per drawn frame, `dtMs` (the frame interval), `computeMs` (the engine) and `paintMs` (recording the drawing; not GPU raster).
 
@@ -46,7 +46,7 @@ It is vsync-quantized on purpose. Summing raw `dt − interval` counted ordinary
 | Web | not exposed (null) | Long Animation Frames count (≥ 50 ms, where supported) | median rAF interval over 0.5 s |
 
 - **GPU and energy are not measured in-app.** No platform exposes them to an app in a way that is both per-app and portable. Use the platform tools below.
-- **Cost:** each result carries the engine's `estimateCost` for the effective overrides. In low power, glow and particles are 0 there too. The report correlates it with the measured work.
+- **Cost:** each result carries the engine's `estimateCost` for the effective overrides. In low power, glow is 0 there too. The report correlates it with the measured work.
 
 ## How to run it on your phone
 

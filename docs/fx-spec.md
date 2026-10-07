@@ -94,11 +94,17 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
   one gate in `resolve` then turns it into an error in older files ("`materials.frost`
   needs "fxSpec": "1.9" (this file says 1.8)") and drops it. Removing a frozen key fails
   too: 1.8 files would break.
-- **Minor versions only add. The one exception** is the `edge` object, removed during the
-  beta in 1.12 (0.1.0-beta.8): a file with `object: "edge"` fails at every version with
-  "`object: edge` was removed in 0.1.0-beta.8 (FX Spec 1.12); there is no replacement:
-  draw the screen-edge glow in the app". After 1.0 a removal like that only happens in a
-  major (FX Spec 2.0).
+- **Minor versions only add, with two exceptions before 1.0.** Both remove something
+  outright: a file that uses a removed section fails at every version, and the error says
+  what to delete.
+  - The `edge` object, in 1.12 (0.1.0-beta.8): "`object: edge` was removed in 0.1.0-beta.8
+    (FX Spec 1.12); there is no replacement: draw the screen-edge glow in the app".
+  - The `liquid`, `particles` and `holographic` materials, in 1.14 (0.1.0-beta.9): "`<name>`
+    was removed in 0.1.0-beta.9 (FX Spec 1.14); there is no replacement: delete it from the
+    file".
+
+  After 1.0 a removal only happens in a major (FX Spec 2.0), after a minor of deprecation
+  warnings.
 - `migrate` in `fx_spec.rs` reads the 1.7 grammar into engine names (catalog-path binding targets, array params) and reports the replaced names. A later minor that renames something plugs in there.
 
 ## API
@@ -248,36 +254,21 @@ What the engine gives a view so every change stays continuous, however long the 
 - **Examples:** `shimmer-gradient.fxspec.json` and `radar-wedge-blur.fxspec.json` (wedge + additive blur glow; low power sheds blur and caps at 20 fps).
 - Paint semantics: [engine.md](engine.md#paint-contract-fills-and-effects-materials-phase-1-2026-09-18).
 
-## v1.4: liquid
+## v1.4–v1.6: liquid, particles, holographic (removed in 0.1.0-beta.9)
 
-- **`materials.liquid`** `{ strength, reach, threshold, cells, style: "outline" | "dots" | "fill", spacing, width, keep: bool, blur }` maps to the `liquid*` engine keys. Metaball contours of the frame's dots: [materials.md](materials.md#liquid-metaball-contours-materials-phase-2-2026-09-19). `liquid*` keys in `params` are errors that point here.
-- **`performance.lowPower.disable`** accepts **`"liquid"`** (→ `liquidStrength` 0).
-- Unset liquid keys take the state's **tuned defaults** (e.g. `working`: reach 4, threshold 0.4). Keys set in `materials.liquid` override them. `liquidSuitability(state)` reports the defaults and a recommended / ok / notRecommended verdict; see [materials.md](materials.md#liquid-metaball-contours-materials-phase-2-2026-09-19).
-- **Gating:** both need `"fxSpec": "1.4"`. 1.0–1.3 files resolve identically: `spec/fx-spec-1.3-resolved.json` froze the 10 older examples × states × power before 1.4.
-- **Example:** `liquid-orb.fxspec.json`:
-  - outline on a glowing orb;
-  - `thinking` → soft filled blobs;
-  - `speaking` → a filled band with a hole, with the dots kept on top;
-  - low power sheds liquid at 24 fps.
+1.4 added `materials.liquid` (metaball contours), 1.5 `materials.particles` (a particle
+layer) and 1.6 `materials.holographic` (a foil hue sweep) plus particles' `sync` / `audio`.
+The 1.14 review found them unused by the built-in patterns and apps, and **0.1.0-beta.9
+removed all three**: a file that uses one of these sections, or names `liquid` or
+`particles` in `performance.lowPower.disable`, is **rejected** whatever its version, with an
+error that names the section. Delete the section to draw the file again. Their examples
+(`liquid-orb`, `particles-orb`, `holo-orb`) are gone too.
 
-## v1.5: particles
-
-- **`materials.particles`** `{ strength, count, size, spread, life, style: "drift" | "attract" | "orbit" | "rise", seed }` → the `particle*` engine keys. It's a stateless particle layer emitted from the state's own geometry: [materials.md](materials.md#particles-a-stateless-particle-layer-materials-phase-3-2026-09-19-reworked-the-same-day). `particle*` keys in `params` point here.
-- **`performance.lowPower.disable`** accepts **`"particles"`** (→ `particleStrength` 0).
-- **Gating:** both need `"fxSpec": "1.5"`. 1.0–1.4 files resolve identically (`spec/fx-spec-1.4-resolved.json`, 11 examples × states × power, captured before).
-- **Example:** `particles-orb.fxspec.json` (drift; listening attracts; speaking drifts with additive blur glow; low power sheds particles and blur).
-- **Recommended host low-power default** (when a spec has no `performance` block): 30 fps with `{ glowStrength: 0, particleStrength: 0 }`. Liquid is left to the spec or app, because it replaces dots rather than adding to them.
-- No painter change: particles are ordinary dots.
-- **Engine rework (same day, applies to 1.5 files too):** particle time is **wall-clock**. The engine divides the state's preset speed back out, so `life` is real seconds; the spec's own `speed` still scales it. There are calmer base defaults (count 28, size 0.8, spread 0.18, life 4.5), and **each state has its own defaults for unset keys** (`particleDefaults(state)`). None of this touches spec resolution: `fx-spec-1.5-resolved.json` still holds.
-- **Pulse and noise followed (same day, user go):** `pulse.period` and `noise.speed` are real seconds on every state too. A spec's `speed` multiplies all four material clocks together with the geometry. See [materials.md, *Material time*](materials.md#material-time-2026-09-19).
-
-## v1.6: holographic, particle sync/audio
-
-- **`materials.holographic`** `{ strength, hue, span, saturation, depth, facing, speed }` maps to the `holo*` engine keys: a foil hue sweep by depth, facing and time over each element's kept lightness ([materials.md](materials.md#holographic-a-hue-sweep-over-kept-lightness-materials-phase-4-2026-09-19)). `holo*` keys in `params` point here.
-- It's **not sheddable**, because it recolours only: `disable: ["holographic"]` is an error saying there's nothing to shed.
-- **`materials.particles`** gains **`sync`** (0..1, 1 = a burst each life) and **`audio`** (0..1, brightness follows the host's `audioLevel` input when present).
-- **Gating:** all three need `"fxSpec": "1.6"`. 1.0–1.5 files resolve identically (`spec/fx-spec-1.5-resolved.json`, 12 examples × states × power, captured before).
-- **Example:** `holo-orb.fxspec.json` (a composing orb in foil; speaking leans on facing, with a blurred glow; low power sheds the glow and keeps the holographic).
+Still from 1.5: `pulse.period` and `noise.speed` are real seconds on every state. A spec's
+`speed` multiplies those material clocks together with the geometry. See
+[materials.md, *Material time*](materials.md#material-time-2026-09-19).
+The **recommended host low-power default** (when a spec has no `performance` block) is
+30 fps with `{ glowStrength: 0 }`.
 
 ## v1.7: the parameter catalog's names
 
@@ -528,14 +519,10 @@ spec*) no longer adds particles in `listening`, `thinking` and `speaking`. With 
 views side by side they gathered into a swarm around the shapes, and the states read
 clearly without them (ink, glow, the audio-driven shape, the speed).
 
-- **A 1.10 file:** its voice states resolve without particles. To have them, set them in
-  the state's entry: `"listening": { "materials": { "particles": { "strength": 1 } } }`.
-- **A 1.8 or 1.9 file:** resolves exactly as before, particles included (the
-  `before1_10` block of `spec/voice-state-profile.json`). The identity locks
-  `spec/fx-spec-1.8-resolved.json` and `-1.9-resolved.json` hold it; `-1.10-resolved.json`
-  is new.
+- **A 1.10 file:** its voice states resolve without particles.
+- **A 1.8 or 1.9 file** kept its voice states' particles until 0.1.0-beta.9, which removed
+  particles everywhere: such a file now resolves without them (its lock lost only those keys).
 - **Plain views** (`pattern` + `state`, no spec) follow the current profile: no particles.
-  `overrides` still turns them on per view.
 
 ## v1.9: `accessibility`
 
@@ -579,7 +566,7 @@ It exists because "how present is this right now" is a **state** cue, not a colo
 
 ### The voice-state profile
 
-1.8 also ships **the state language itself**. For a `states` key that is one of `initializing`, `idle`, `listening`, `thinking` or `speaking`, the resolver fills in what that state does to that pattern -- tempo, `ink`, the audio direction, particles, glow -- from `spec/voice-state-profile.json`, compiled into the engine (`crates/core_engine/src/voice_state.rs`, `voiceStateProfile(pattern, state)`).
+1.8 also ships **the state language itself**. For a `states` key that is one of `initializing`, `idle`, `listening`, `thinking` or `speaking`, the resolver fills in what that state does to that pattern -- tempo, `ink`, the audio direction, glow -- from `spec/voice-state-profile.json`, compiled into the engine (`crates/core_engine/src/voice_state.rs`, `voiceStateProfile(pattern, state)`).
 
 It is **fill-only**: every key the file sets, in the base or in the entry, wins; a `null` in a patch removes the key and opts it out of the profile too -- a whole section's `null` (`"materials": { "glow": null }`) opts out every key it removed. (Until the floor landed the runtime didn't honour that opt-out: a profile could put back what a `null` had removed. No 1.8 example relied on it; `voice-assistant`'s `thinking` entry, with no glow, is the case that exposed it.) So a file patches the language instead of restating it -- `spec/examples/voice-assistant-glowing.fxspec.json` is 51 lines and carries only its identity (the pinned brand colour, the glow, which input drives each state).
 

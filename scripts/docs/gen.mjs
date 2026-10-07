@@ -140,30 +140,6 @@ for (const m of catalog.materials) {
     ["Prop", "FX Spec", "Type", "Range", "Default", "Description"],
     m.params.map((id) => defs[id]).map((d) => [code(d.path), code(d.specPath), typeCell(d), rangeCell(d), num(d.fallback), descCell(d)]),
   );
-  if (["particles", "liquid"].includes(m.id)) {
-    const keys = m.params.map((id) => defs[id]);
-    const rows = [];
-    for (const obj of catalog.objects) {
-      for (const p of obj.patterns) {
-        const md = p.materialDefaults?.[m.id] ?? {};
-        const own = Object.entries(md).filter(([k]) => keys.some((d) => d.key === k));
-        if (own.length && m.id === "liquid") rows.push([code(p.id), own.map(([k, v]) => `${code(keys.find((d) => d.key === k).path)} ${num(v)}`).join(" · ")]);
-        if (m.id === "particles") {
-          const style = keys.find((d) => d.key === "particleStyle");
-          const differs = own.filter(([k, v]) => {
-            const d = keys.find((x) => x.key === k);
-            return d && v !== d.fallback;
-          });
-          if (differs.length) rows.push([code(p.id), differs.map(([k, v]) => {
-            const d = keys.find((x) => x.key === k);
-            const val = d === style ? d.choices.find((c) => c.value === v)?.spec ?? v : num(v);
-            return `${code(d.path)} ${val}`;
-          }).join(" · ")]);
-        }
-      }
-    }
-    s += `\n**Per-pattern defaults** (applied only while the material is on, and only to props you leave unset):\n\n` + table(["Pattern", "Defaults"], rows);
-  }
   files.set(`materials/${m.id}.mdx`, s);
 }
 
@@ -184,7 +160,7 @@ for (const m of catalog.materials) {
   const targets = schema.$defs.bindings.propertyNames.enum;
   s += `\nBindable targets: ${targets.filter((t) => !aliasOf.has(t)).map(code).join(", ")}.\n`;
   s += `\nDeprecated aliases (FX Spec 1.6 and earlier; still accepted, with a warning in a 1.7 file): ${code("state")} → ${code("pattern")}, ${targets.filter((t) => aliasOf.has(t)).map((t) => `${code(t)} → ${code(aliasOf.get(t))}`).join(", ")}. See the [rename map](/docs/reference/migration#what-was-renamed).\n`;
-  for (const sec of ["colorSection", "gradient", "glow", "noise", "pulse", "liquid", "particles", "holographic", "performance"]) {
+  for (const sec of ["colorSection", "gradient", "glow", "noise", "pulse", "performance"]) {
     const d = schema.$defs[sec];
     if (!d?.properties) continue;
     const title = { colorSection: "color", gradient: "gradient", performance: "performance" }[sec] ?? `materials.${sec}`;

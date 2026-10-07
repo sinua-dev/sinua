@@ -31,6 +31,15 @@ used by DevinFit (glowing + colour / gradient + GPT-Live), so DevinFit needs no 
   wardrobe in a later version. A loadout's `wear` nudges (`offset`, `scale`, `rotate`) still work.
 - `docs/character-svg-guides.md`. Migration: none; the SVG import was a Studio feature and is
   gone. The recipe format it produced (a part's `role`, a cosmetic's `behind` / `above`) stays.
+- **The liquid, particles and holographic materials.** An FX Spec file that uses
+  `materials.liquid`, `materials.particles` or `materials.holographic`, or names `liquid` or
+  `particles` in `performance.lowPower.disable`, is now **rejected** (an error naming the
+  section), whatever its `fxSpec` version. Migration: delete the section. The typed
+  components lose their `liquid`, `particles` and `holographic` props; `liquidSuitability`
+  (`@sinua/core/dev`) and `particleDefaults` are gone; the `liquid*` / `particle*` / `holo*`
+  keys do nothing as raw overrides. The low-power host default is now glow off only.
+  An FX Spec 1.8 or 1.9 file with `states` drew particles in its voice states; it now
+  resolves without them. The `liquid-orb`, `particles-orb` and `holo-orb` examples are gone.
 
 ## 0.1.0-beta.8
 

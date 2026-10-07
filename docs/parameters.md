@@ -181,9 +181,8 @@ too), which keeps ~10 KB (gzip) out of every app. The descriptions are in `spec/
 
 **Shape** (`catalogVersion` 1):
 - **`objects[]`:** `{ id, label, component, patterns[] }`. A **pattern** is the visual (`breathing`, `tracking`, …). The app lifecycle key (`listening`, …) is a **state** (FX Spec `states`).
-- **`patterns[]`:** `{ id, label, mode, speed, sizes, params: [{ ref, default: { "20", "32", "64" } }], materialDefaults }`.
+- **`patterns[]`:** `{ id, label, mode, speed, sizes, params: [{ ref, default: { "20", "32", "64" } }] }`.
   - Defaults come from the engine's resolved preset per size, else the definition's `fallback`; they're never hand-typed.
-  - `materialDefaults` holds the pattern's own particle / liquid defaults.
 - **`definitions`:** keyed `<key>@<scope>`, where scope is the engine mode or `shared`. The same key can mean different things per mode, e.g. `period` or `nodeCount`. Fields:
 
   | field | meaning |
@@ -202,7 +201,7 @@ too), which keeps ~10 KB (gzip) out of every app. The descriptions are in `spec/
   | `specPath` | where FX Spec writes it |
   | `aliases`, `deprecated` | older names: the live binding API (`bindReactiveInput`, `reactiveTargetKey`) still accepts them; in an FX Spec file they are errors that name the path (the 1.8 floor) |
 
-- **`materials[]`** (glow, noise, pulse, gradient, colour, liquid, particles, holographic), **`runtimeInputs[]`** (audio level and bands, history, peaks, pointer, interrupt, decay: fed by the SDK) and **`internalKeys`** (derived keys such as `rSizeMul`, accepted but not documented as tunables).
+- **`materials[]`** (glow, noise, pulse, gradient, colour), **`runtimeInputs[]`** (audio level and bands, history, peaks, pointer, interrupt, decay: fed by the SDK) and **`internalKeys`** (derived keys such as `rSizeMul`, accepted but not documented as tunables).
 - **Arrays:** tracking's per-ring values are one definition `progress@nested` of type `number[]` (the engine keys `progress0..3`); stepping's `segment@segmented` (`segment0..23`).
 
 **Where it comes from:**
@@ -286,18 +285,7 @@ so the 64/32/20 presets scale them exactly as before.
 `gradientStrength`, `gradientAngle`, `gradientHue`, `gradientHue2`,
 `gradientHue3`, `gradientMid`, `gradientSaturation`; `colorMix`,
 `colorHue`, `colorSaturation`, `colorLightness`, `colorMode` (all
-Material group, see [`materials.md`](materials.md#color-one-colour-for-the-whole-frame-design-notes-2026-09-18));
-`liquid*` (materials phase 2); the particle layer (materials phase 3,
-kept small):
-- `particleStrength` (Energy: the alpha master, 0 = off)
-- `particleCount` and `particleSize` (Appearance)
-- `particleSpread`, `particleLife` (real seconds) and `particleStyle` (Motion; style is 0 drift, 1 attract, 2 orbit, 3 rise)
-- `particleSync` (Motion, 1.6: 1 = a burst each life) and `particleAudio` (Energy, 1.6: brightness follows the host's `audioLevel`)
-- `particleSeed`
-
-These map to plan doc §12's "count, size, spread, attraction". Attraction is the `attract` style, not a separate knob. Each state has its own defaults for unset keys (`particleDefaults(state)`, see [`materials.md`](materials.md#defaults-and-per-state-defaults)).
-
-Holographic-lite (materials phase 4): `holoStrength` (Energy); `holoHue`, `holoSpan`, `holoSaturation`, `holoDepth`, `holoFacing` (Appearance); `holoSpeed` (Motion, wall-clock turns per second).
+Material group, see [`materials.md`](materials.md#color-one-colour-for-the-whole-frame-design-notes-2026-09-18)).
 
 **Envelopes** ([`engine.md`](engine.md#pulse-and-decay-shared-energystate-envelopes)):
 `pulseStrength`, `pulsePeriod`, `pulseOpacity`, `pulseScale`,

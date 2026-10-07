@@ -175,10 +175,8 @@ effects", families). This section covers how each renderer draws it.
   builds the same tile; the Web (`grainValue`), Swift (`FxPaint.grainValue`)
   and Kotlin (`fxGrainValue`) tests check the same five vectors. The Studio's
   SVG exporters embed the tile as a PNG `<pattern>`.
-- **Holographic-lite** (phase 4) only rewrites hue/saturation, and
-  **Particles** (phase 3) are plain `Dot`s: neither needs a painter
-  change. Low power sheds particles (`particleStrength` 0 in the host
-  default); holographic has no cost to shed.
+- **Liquid, particles and holographic** (phases 2–4) were removed in
+  0.1.0-beta.9; the measurements below that name them are history.
 - **Plain frames are untouched.** A frame without fills or effects takes
   the exact old code path on every platform:
   - Web: 0 differing pixels against the old Studio painter over 440 renders,
@@ -280,12 +278,9 @@ mean ≤ 2/255, p99 ≤ 24/255. A listed case instead passes on full-resolution
 mean ≤ 2 **and** half-resolution (2×2 box) p99 ≤ 24, and its full-resolution
 p99 is reported as information. The whole metric isn't moved to half
 resolution because that would also soften real thin-stroke offsets.
-- `drifting-64-0.6-particles-liquid`: dense thin-stroke curls at ~2.4 px,
-  where Chrome's anti-aliasing differs from CoreGraphics/Skia. Re-checked
-  again after families' Q2 re-baseline (2026-09-19; anchored drift, now 24
-  polylines instead of 30): web↔native full-resolution p99 is 24.1–28.1,
-  but 11.3–12.1 at half resolution; iOS↔Android is 15.2 at full
-  resolution; the means are ≤ 1.01. Still needed.
+- None today. The one case it held, `drifting-64-0.6-particles-liquid`
+  (dense thin-stroke curls at ~2.4 px), went with those materials in
+  0.1.0-beta.9.
 
 **Renderer-environment exceptions** (user decision, 2026-09-21; only
 deliberate additions, each with its measurement). A listed case passes on
@@ -341,23 +336,22 @@ negative control, each segment straight at `a`).
   Where two segments' AA edges overlap inside the layer, their coverages
   combine as 1−(1−c₁)(1−c₂), a touch darker than one stroker's coverage.
   It isn't the notch.
-- A 16× zoom of `tracking-64-0.6-holo`'s alpha < 1 tracks (the iOS
+- A 16× zoom of `tracking-64-0.6-gradient3`'s alpha < 1 tracks (the iOS
   attachment) shows continuous tracks with no marks at the joints.
 
 **Three-platform tolerance** (same metric; worst of light/dark; mean / p99):
 
 | Case | web↔iOS | web↔Android | iOS↔Android |
 |---|---|---|---|
-| `tracking-64-0.6-holo` | 0.07 / 1.9 | 0.21 / 3.3 | 0.22 / 3.1 |
 | `tracking-64-0.6-gradient3` | 0.13 / 1.9 | 0.19 / 3.1 | 0.26 / 3 |
-| `locating-64-0.6-holo` | 0.14 / 2 | 0.18 / 2 | 0.22 / 2.9 |
-| `completing-64-0.6-holo-interrupt` | 0.14 / 1.1 | 0.20 / 1.9 | 0.14 / 2 |
-| `completing-64-0.6-holo-glow` (now with `hues`) | 0.14 / 1.2 | 0.31 / 2.2 | 0.36 / 2.8 |
-| *synthetic* `x-…-holo-glowblur` (information) | 0.48 / 3 | 0.68 / 3 | 0.74 / 3.8 |
-| *synthetic* `x-…-holo-glowblur-additive` (information) | 0.49 / 3 | 0.54 / 3 | 0.46 / 3 |
+| *synthetic* `x-…-gradient-glowblur` (information) | 0.51 / 2.9 | 1.02 / 4 | 1.03 / 4.1 |
+| *synthetic* `x-…-gradient-glowblur-additive` (information) | 0.52 / 3 | 0.91 / 4 | 1.00 / 5 |
+
+(Measured 2026-10-07 after 0.1.0-beta.9 removed the holographic cases; the synthetic rows
+moved from holo to a 3-stop gradient.)
 
 No golden case puts an effect run on a per-vertex polyline, so the two
-synthetic cases do: `completing`, holo + glow with `glowMode 1` (+
+synthetic cases do: `completing`, a 3-stop gradient + glow with `glowMode 1` (+
 `glowBlend 1`). They're listed in `frames.mjs` `SYNTHETIC` (keys start with
 `x-`); `compare.cjs` reports them and never fails on them. `frames.mjs` now
 also picks up any golden case whose frame has `hues`, which catches
@@ -398,10 +392,8 @@ lowers smoothness, never speed.
    `resolveFxSpecWith(…, lowPower:)`). It reports the cap for that power
    state (`FxSpecResolved.maxFps`) and sheds `lowPower.disable` itself;
    a shed material stays shed even if it's bound.
-2. **No `lowPower` block:** the host default is 30 fps with glow and
-   particles off (`glowStrength` 0, `particleStrength` 0; both are their
-   material's off switch, a strict no-op). Liquid is left to the spec/app,
-   because it replaces dots rather than adding to them. This matches the
+2. **No `lowPower` block:** the host default is 30 fps with glow off
+   (`glowStrength` 0, the material's off switch, a strict no-op). This matches the
    recommended host default in `fx-spec.md`.
 3. The view's own `maxFps` caps further, and the lowest cap wins.
    `performance.maxFps` also applies outside low power.
@@ -780,7 +772,7 @@ SinuaRing(pattern = SinuaRingPattern.TRACKING, progress = SinuaNumbers.of(0.2, 0
 ```
 
 - **`pattern`** is an enum of the object's catalog patterns (required). **`size`** is 20, 32 or 64.
-- **Parameters.** Pattern and value parameters are flat optional props (`progress`, `ringCount`, `strokeWidth`, …). Material parameters are one optional group per material (`glow`, `noise`, `pulse`, `gradient`, `color`, `liquid`, `particles`, `holographic`), shared by all five components. Unset props keep the pattern's tuned values. Choices are enums (`SinuaGlow.Blend.additive`; TS: `"additive"`), and booleans become 1 or 0.
+- **Parameters.** Pattern and value parameters are flat optional props (`progress`, `ringCount`, `strokeWidth`, …). Material parameters are one optional group per material (`glow`, `noise`, `pulse`, `gradient`, `color`), shared by all five components. Unset props keep the pattern's tuned values. Choices are enums (`SinuaGlow.Blend.additive`; TS: `"additive"`), and booleans become 1 or 0.
 - **One prop per catalog path.** Where patterns disagree, the prop takes the union, and each doc comment lists the per-pattern range. Ring `progress` takes a number (arc, gauge, segmented) or one value per ring (`tracking`, up to 4 → `progress0…3`; Swift literal `0.4` or `[0.2, 0.5]`, Kotlin `SinuaNumbers.of(…)`, TS `number | number[]`). The list does not set `ringCount`: set it yourself. `segment` is a list of up to 24 values. On orb, the `orbits` pattern's particle count is `orbitParticles` (catalog path; engine key `particles`), apart from the `particles` material group.
 - **Spec path.** `spec` + `state` (the spec's lifecycle state) + `inputs` / `voiceLevelInput`. The spec's `object` must match the component. Otherwise the component draws nothing and calls `onError` (native, without an `onError`: a debug assertion on iOS, a logged error on Android; RN logs with `console.error`). An unreadable spec is passed through for FxView to report.
 - **Common options.** `voice`, `voiceOverrides`, `speed`, `theme`, `paused`, `reducedMotion`, `maxFps`, `lowPower`, `onFrame` and the accessible label all pass through to FxView.

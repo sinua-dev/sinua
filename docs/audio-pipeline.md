@@ -89,7 +89,7 @@ not a redesign.
 
 A view given `pattern` + `state` (or a bound source, whose `AgentState` supplies the
 state) applies the engine's voice-state profile: per state a speed multiplier, engine
-overrides (`ink`, a signed `audioStrength` for the listening inhale, particles, glow) and
+overrides (`ink`, a signed `audioStrength` for the listening inhale, glow) and
 the name of the input that drives `audioLevel`. The precedence table is in
 [`fx-view.md`](fx-view.md), *Voice states without a spec*.
 

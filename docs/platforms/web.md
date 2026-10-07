@@ -57,7 +57,6 @@ import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev";
 
 estimateCost(state, size, overrides?): FxCost | null // render-cost proxy, light/medium/heavy (../engine.md#cost-estimate)
 fxSpecCost(spec | json, ctx?): FxCost | null
-liquidSuitability(state): LiquidSuitability | null
 parameterCatalog(): ParameterCatalog
 checkOverrides(pattern, size, overrides): FxDiagnostic[]
 conversationAt(script, t, bands?) / conversationSampleNames() / conversationSample(name)

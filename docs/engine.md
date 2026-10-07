@@ -284,7 +284,7 @@ no golden vector affected (absent key = frame untouched).
 
 - **`apply_pulse`** — `pulseStrength` (`0..1`, the gate), `pulsePeriod`
   (2 s of **real time**: `render` divides the preset speed out of `t`, like
-  `noiseSpeed`, `particleLife` and `holoSpeed`; a spec's own `speed` still
+  `noiseSpeed`; a spec's own `speed` still
   scales it — see materials.md *Material time*),
   `pulseOpacity` (0.5), `pulseScale` (0), `pulsePhase` (0). The curve is
   Tailwind's `animate-pulse` (`50% { opacity: .5 }`, 2s,
@@ -384,10 +384,10 @@ The user chose the vector path, with no shader tier. The paint contract gains **
   - **Stops:** any number (the painters always looped); the engine emits up to a recipe's stop count, with relative alphas.
   - Winding doesn't matter, and the engine doesn't guarantee any.
   - Left out of JSON when empty. Packed **v3** only when some fill has holes.
-  - The liquid material is the first to produce holes ([`materials.md`](materials.md#liquid-metaball-contours-materials-phase-2-2026-09-19)).
+  - The liquid material was the first to produce holes (removed in 0.1.0-beta.9); characters' ring shapes (a cup's handle) produce them today.
 - **Naming:** these are **effects**, paint instructions. What the engine computes into primitives is a **material** (see the top of [`materials.md`](materials.md)).
 - **Where it's used today:**
-  - liquid `liquidStyle` 0 (fills with holes)
+  - characters (fills with holes)
   - `shimmer` `highlightFill` ([`core.md`](core.md))
   - `radar` `trailFill` ([`beacon.md`](beacon.md))
   - glow `glowMode` 1 / `glowBlend` 1 ([`materials.md`](materials.md))
@@ -483,7 +483,7 @@ frame(state, size, t)
 - `elements` = dots + lines + polylines, the draw calls a canvas renderer issues (a per-vertex-hue polyline adds `n − 1` for its segment strokes, 2026-09-19);
 - `coverage` = total primitive area / canvas area, an overdraw proxy: 1.0 = the canvas painted once;
 - the breakdown (`dots`, `lines`, `polylines`, `points`);
-- `baseElements` / `baseCoverage` for the same object with every material off (glow, noise, pulse, gradient and, since 2026-09-19, liquid), so the difference is what the materials add;
+- `baseElements` / `baseCoverage` for the same object with every material off (glow, noise, pulse, gradient), so the difference is what the materials add;
 - a `class`:
 
 | class | rule |

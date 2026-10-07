@@ -157,35 +157,3 @@ fn the_part_and_point_limits_hold_and_the_worst_case_stays_bounded() {
     assert_ne!(cost.class, "heavy");
     assert!(cost.elements <= 200, "{}", cost.elements);
 }
-
-/// C2 / design note 29: the snapping helper gives each slot where the drawing puts it.
-#[test]
-fn character_slots_follow_the_drawing_for_built_ins_and_registered_recipes() {
-    let at = |state: &str, o: &[(&str, f64)]| {
-        let o: HashMap<String, f64> = o.iter().map(|(k, v)| (k.to_string(), *v)).collect();
-        crate::character_slots(state.to_string(), 200, 1.0, o)
-    };
-    let buzzy = at("buzzy", &[("still", 1.0)]);
-    let mut names: Vec<&str> = buzzy.iter().map(|s| s.name.as_str()).collect();
-    names.sort_unstable();
-    assert_eq!(names, ["chest", "face", "headTop", "neck"]);
-    let y = |n: &str, s: &[crate::CharacterSlot]| s.iter().find(|x| x.name == n).unwrap().y;
-    assert!(y("headTop", &buzzy) < y("face", &buzzy) && y("face", &buzzy) < y("chest", &buzzy));
-    // The face slot turns with the head (wrapped on the face surface).
-    let turned = at("buzzy", &[("still", 1.0), ("turn", 1.0), ("turnYaw", 0.9)]);
-    let fx = |s: &[crate::CharacterSlot]| s.iter().find(|x| x.name == "face").unwrap().x;
-    assert!((fx(&turned) - fx(&buzzy)).abs() > 2.0);
-    // A registered recipe's key works the same; anything else has no slots.
-    let spec =
-        json!({ "fxSpec": "1.13", "object": "character", "pattern": "fox", "recipe": fox(None) });
-    let r = resolve_full(&spec.to_string(), None, &HashMap::new(), false);
-    let fox_slots = at(&r.state, &[]);
-    assert_eq!(fox_slots.len(), 1);
-    assert_eq!(fox_slots[0].name, "headTop");
-    assert!(at("working", &[]).is_empty());
-    // A worn cosmetic's own placement is no slot of the character's.
-    let hatted = json!({ "fxSpec": "1.13", "object": "character", "pattern": "buzzy",
-        "cosmetics": [hat(json!({}))] });
-    let r = resolve_full(&hatted.to_string(), None, &HashMap::new(), false);
-    assert_eq!(at(&r.state, &[]).len(), 4);
-}

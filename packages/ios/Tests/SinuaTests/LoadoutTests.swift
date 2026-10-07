@@ -50,15 +50,6 @@ final class LoadoutTests: XCTestCase {
         }
     }
 
-    /// Design note 29: where a dragged item snaps, from the engine (UniFFI `characterSlots`).
-    func testCharacterSlotsGiveEachSlotWhereItIsDrawn() {
-        let slots = characterSlots(state: "buzzy", size: 64, t: 1, overrides: ["still": 1])
-        XCTAssertEqual(slots.map(\.name).sorted(), ["chest", "face", "headTop", "neck"])
-        let top = slots.first { $0.name == "headTop" }!
-        XCTAssertTrue(top.y > 0 && top.y < 32)
-        XCTAssertTrue(characterSlots(state: "working", size: 64, t: 1, overrides: [:]).isEmpty)
-    }
-
     func testAStoredLoadoutReadsBackEvenWithMissingFields() throws {
         let l = try JSONDecoder().decode(SinuaLoadout.self, from: Data(#"{"wear":["party-hat"]}"#.utf8))
         XCTAssertEqual(l, SinuaLoadout(wear: ["party-hat"]))

@@ -13,7 +13,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import uniffi.core_engine.TransitionSide
 import uniffi.core_engine.applyLoadout
-import uniffi.core_engine.characterSlots
 import uniffi.core_engine.frameStill
 import uniffi.core_engine.resolveFxSpec
 
@@ -57,15 +56,6 @@ class LoadoutTest {
             val want = f.getJSONObject("expect").let { o -> o.keys().asSequence().associateWith { o.getString(it) } }
             assertEquals(ch, want, SinuaCosmeticFit.list(f.optJSONObject("spec")?.toString() ?: spec, ch).associate { it.id to it.reason })
         }
-    }
-
-    /** Design note 29: where a dragged item snaps, from the engine (UniFFI `characterSlots`). */
-    @Test fun characterSlotsGiveEachSlotWhereItIsDrawn() {
-        val slots = characterSlots("buzzy", 64u, 1.0, mapOf("still" to 1.0))
-        assertEquals(listOf("chest", "face", "headTop", "neck"), slots.map { it.name }.sorted())
-        val top = slots.first { it.name == "headTop" }
-        assertTrue(top.y > 0 && top.y < 32)
-        assertTrue(characterSlots("working", 64u, 1.0, emptyMap()).isEmpty())
     }
 
     @Test fun aThumbnailIsAStillImage() {

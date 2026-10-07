@@ -29,7 +29,6 @@ import {
   apply_loadout_json,
   cosmetics_for_json,
   frame_still_packed,
-  character_slots_json,
   load_catalog_json,
   unload_catalog_json,
 } from "../pkg/sinua_core_inline.js";
@@ -286,55 +285,6 @@ export function frameStill(
 ): OrbFrame | null {
   const lo = opts.loadout ? JSON.stringify(opts.loadout) : "";
   return unpackFrame(asPacked(frame_still_packed(specText(spec), lo, size, opts.turnYaw ?? 0)));
-}
-
-/** A character's cosmetic slot this frame (design note 29), in frame units. */
-export interface CharacterSlot {
-  name: string;
-  x: number;
-  y: number;
-  /** The slot's size here (its `scale` times the pose's). */
-  scale: number;
-  /** Radians. */
-  angle: number;
-}
-
-/**
- * Where a character's cosmetic slots are at `t` (a built-in, or a recipe's registry key
- * from `resolveFxSpec`), in frame units at `size`, following the pose as it draws: a
- * drag-to-dress screen snaps a dropped item to the nearest (`nearestSlot`). Scale the
- * units to your view as you scale the frame. Empty for anything that isn't a character.
- */
-export function characterSlots(
-  state: string,
-  size: number,
-  t: number,
-  overrides: Record<string, number> = {}
-): CharacterSlot[] {
-  return JSON.parse(character_slots_json(state, size, t, JSON.stringify(overrides))) as CharacterSlot[];
-}
-
-/**
- * The slot nearest to `(x, y)` (frame units), among `names` when given (an item fits
- * only its own slot), or `null` when none is within `within` (default: anywhere).
- */
-export function nearestSlot(
-  slots: CharacterSlot[],
-  x: number,
-  y: number,
-  opts: { names?: string[]; within?: number } = {}
-): CharacterSlot | null {
-  let best: CharacterSlot | null = null;
-  let bestD = opts.within ?? Infinity;
-  for (const s of slots) {
-    if (opts.names && !opts.names.includes(s.name)) continue;
-    const d = Math.hypot(s.x - x, s.y - y);
-    if (d <= bestD) {
-      best = s;
-      bestD = d;
-    }
-  }
-  return best;
 }
 
 /**

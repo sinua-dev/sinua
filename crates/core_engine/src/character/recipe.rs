@@ -948,61 +948,6 @@ pub fn frame_recipe(r: &Recipe, size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     kit::finish(out, o)
 }
 
-/// Where a slot is this frame, in the frame's units: a cosmetic attached
-/// there is drawn at `(x, y)`, scaled by `scale` and turned by `angle` radians.
-// Cosmetics draw through `Ctx::place`; this stays for tests and the loadout's
-// picker (1.13), which needs a slot's place without drawing.
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq)]
-pub struct SlotAt {
-    pub name: String,
-    pub x: f64,
-    pub y: f64,
-    pub scale: f64,
-    pub angle: f64,
-}
-
-/// Every slot of `r` this frame. A slot follows its chain: `head`/`body` take
-/// the rig's pose (tilt, bob, lean, squash, sway); `face` is also wrapped onto
-/// the recipe's `face` surface when the head turns. Never drawn in 1.12.
-pub fn slots_recipe(r: &Recipe, size: f64, t: f64, o: &ModeOpts) -> Vec<SlotAt> {
-    let ctx = setup(r, size, t, o);
-    // The recipe's own slots; a worn cosmetic's placement (named by its id) isn't one.
-    r.slots
-        .iter()
-        .filter(|s| crate::character::wear::OWN.contains(&s.name.as_str()))
-        .map(|s| {
-            let at = geom::pt(s.at.0, s.at.1);
-            let face = r.surfaces.iter().find(|(n, _)| n == "face").map(|(_, f)| f);
-            let at = match (s.follows, face) {
-                (Space::Face, Some(f)) if !ctx.tn.is_zero() => ctx.tn.map(f, &at),
-                _ => at,
-            };
-            let xf = match s.follows {
-                Space::Ground => ctx.ground,
-                Space::Whole => ctx.whole,
-                Space::Mount => ctx.mount,
-                Space::Body | Space::Face | Space::Slot(_) => ctx.body,
-            };
-            let p = xf.apply(&at);
-            let q = xf.apply(&geom::pt(at.x + 1.0, at.y));
-            let (dx, dy) = (q.x - p.x, q.y - p.y);
-            SlotAt {
-                name: s.name.clone(),
-                x: p.x,
-                y: p.y,
-                scale: s.scale * dx.hypot(dy),
-                angle: s.angle + dy.atan2(dx),
-            }
-        })
-        .collect()
-}
-
-/// The built-in character `mode`'s slots (None when it isn't one).
-pub fn slots(mode: &str, size: f64, t: f64, o: &ModeOpts) -> Option<Vec<SlotAt>> {
-    recipes().get(mode).map(|r| slots_recipe(r, size, t, o))
-}
-
 /// The built-in character `mode`'s frame (None when it isn't one).
 pub fn frame(mode: &str, size: f64, t: f64, o: &ModeOpts) -> Option<OrbFrame> {
     recipes().get(mode).map(|r| frame_recipe(r, size, t, o))
@@ -1100,58 +1045,6 @@ mod tests {
             .unwrap_err();
         assert!(e.contains("/parts/0") && e.contains("teapot"), "{e}");
     }
-
-    #[test]
-    fn every_character_declares_the_four_slots_and_they_follow_the_pose() {
-        for id in ["buzzy", "hum", "wisp", "chirp"] {
-            let at = |o: &ModeOpts, size: f64| {
-                slots(id, size, 1.0, o)
-                    .unwrap()
-                    .into_iter()
-                    .map(|s| (s.name.clone(), s))
-                    .collect::<std::collections::BTreeMap<_, _>>()
-            };
-            let rest = at(&opts(&[("look", 0.0)]), 64.0);
-            assert_eq!(
-                rest.keys().cloned().collect::<Vec<_>>(),
-                ["chest", "face", "headTop", "neck"],
-                "{id}"
-            );
-            // 64 px design units are size / 200: a slot sits inside the frame,
-            // at its own scale (how big a cosmetic is on this character).
-            for s in rest.values() {
-                assert!(
-                    s.x > 0.0 && s.x < 64.0 && s.y > 0.0 && s.y < 64.0,
-                    "{id}: {s:?}"
-                );
-                let own = recipes()[id]
-                    .slots
-                    .iter()
-                    .find(|x| x.name == s.name)
-                    .unwrap()
-                    .scale;
-                assert!((s.scale - own * 64.0 / 200.0).abs() < 0.02, "{id}: {s:?}");
-            }
-            // A tilt turns and moves the head's slot; the head turn moves the face's.
-            let tilted = at(&opts(&[("look", 0.0), ("tilt", 0.3)]), 64.0);
-            assert!(
-                (tilted["headTop"].angle - rest["headTop"].angle).abs() > 0.2,
-                "{id}"
-            );
-            assert!(
-                (tilted["headTop"].x - rest["headTop"].x).abs() > 0.5,
-                "{id}"
-            );
-            let turned = at(&opts(&[("look", 0.0), ("turnYaw", 1.0)]), 64.0);
-            assert!(
-                turned["face"].x - rest["face"].x > 0.5,
-                "{id}: the face slot turns right"
-            );
-            // At 20 px they are still there (the turn is off, the pose is not).
-            assert_eq!(at(&opts(&[]), 20.0).len(), 4, "{id}");
-        }
-    }
-
     /// Chirp's recipe with `extra` merged into its part `i`.
     fn chirp_with(i: usize, extra: serde_json::Value) -> Result<Recipe, String> {
         let mut v: serde_json::Value =

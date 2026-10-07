@@ -58,10 +58,6 @@ pub enum Ty {
     Surf,
     /// A flag, false when absent.
     B,
-    /// An eye style ([`EYE_STYLES`], design note 24), `shape` when absent.
-    Eye,
-    /// A palette colour name, or none.
-    OptC,
     /// A number or `[at 32/64, at 20]`.
     NumOrPair,
     /// A shape: `{ ellipse: [cx, cy, rx, ry, rot, n] }`, `{ roundRect: [x, y, w, h, r, step] }`
@@ -180,9 +176,6 @@ pub fn schema(k: Kind) -> &'static [(&'static str, Ty)] {
             ("ink", C),
             ("glow", NumOrPair),
             ("surface", Surf),
-            ("style", Eye),
-            ("iris", OptC),
-            ("sclera", B),
         ],
         Kind::Feet => &[
             ("x", N),
@@ -335,9 +328,6 @@ pub fn schema(k: Kind) -> &'static [(&'static str, Ty)] {
             ("glassEdge", C),
             ("glint", C),
             ("surface", Surf),
-            ("style", Eye),
-            ("iris", OptC),
-            ("sclera", B),
         ],
         Kind::Steam => &[
             ("at", V(2)),
@@ -412,9 +402,6 @@ pub struct Params {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Part {
     pub kind: Kind,
-    /// What the part is (design note 28), 1 + its index in [`ROLES`]; 0 = unnamed.
-    /// A cosmetic's `behind` / `above` draws against it.
-    pub role: u8,
     pub space: Space,
     pub when: When,
     /// How visible the part is in each voice state (idle, listening, thinking,
@@ -426,17 +413,10 @@ pub struct Part {
     pub inner: Vec<Part>,
 }
 
-/// The roles a part may name (N1's shared vocabulary, design note 28).
-pub const ROLES: [&str; 15] = [
-    "head", "face", "ears", "arms", "legs", "antenna", "hair", "tail", "eyes", "mouth", "nose",
-    "cheeks", "neck", "shadow", "body",
-];
-
 /// What a recipe's parts resolve names against.
 pub struct Names<'a> {
     pub colours: &'a [String],
     pub surfaces: &'a [String],
-    pub slots: &'a [String],
 }
 
 /// Reads a part's fields back in its schema's order.
@@ -495,10 +475,6 @@ impl<'a> Reader<'a> {
         &self.p.names[self.s - 1]
     }
     /// A surface index, or none.
-    /// An optional colour (`OptC`): `None` when absent.
-    pub fn opt_col(&mut self) -> Option<usize> {
-        Some(self.col()).filter(|i| *i != usize::MAX)
-    }
     pub fn surf(&mut self) -> Option<usize> {
         let i = self.n();
         (i >= 0.0).then_some(i as usize)
@@ -576,9 +552,6 @@ fn index_of(names: &[String], v: &Value, at: &str, what: &str) -> Result<usize, 
         .position(|n| n == s)
         .ok_or_else(|| format!("{at}: unknown {what} `{s}`"))
 }
-
-/// The eye styles (design note 24), in `face::Face::style` order.
-pub const EYE_STYLES: [&str; 4] = ["shape", "glossy", "pixel", "dot"];
 
 /// The most entries a list field (feathers, bars, stripes, glints, stops) may hold.
 pub const MAX_LIST: usize = 32;
@@ -676,18 +649,6 @@ fn field(
         Surf => p.nums.push(match v {
             None => -1.0,
             Some(x) => index_of(names.surfaces, x, at, "surface")? as f64,
-        }),
-        Eye => p.nums.push(match v {
-            None => 0.0,
-            Some(x) => x
-                .as_str()
-                .and_then(|s| EYE_STYLES.iter().position(|n| *n == s))
-                .ok_or_else(|| format!("{at}: expected one of {}", EYE_STYLES.join(", ")))?
-                as f64,
-        }),
-        OptC => p.cols.push(match v {
-            None => usize::MAX,
-            Some(x) => index_of(names.colours, x, at, "colour")?,
         }),
         B => p.nums.push(match v.map(Value::as_bool) {
             None => 0.0,
@@ -792,7 +753,7 @@ fn field(
         Inner => {
             if let Some(a) = v {
                 for (i, x) in list(a, at)?.iter().enumerate() {
-                    inner.push(parse_any(x, &format!("{at}/{i}"), names, true, None)?);
+                    inner.push(parse_any(x, &format!("{at}/{i}"), names, true)?);
                 }
             }
         }
@@ -802,7 +763,7 @@ fn field(
 
 /// May a part of kind `k` hold the dotted key `path`?
 fn allowed(path: &str, k: Kind) -> bool {
-    matches!(path, "part" | "space" | "when" | "show" | "role")
+    matches!(path, "part" | "space" | "when" | "show")
         || (k == Kind::Body && path == "turnLight")
         || schema(k)
             .iter()
@@ -817,6 +778,17 @@ fn check_keys(o: &Map<String, Value>, prefix: &str, k: Kind, at: &str) -> Result
         } else {
             format!("{prefix}.{key}")
         };
+        // Removed in 0.1.0-beta.9 (design note 38): a part's `role` (the wardrobe's
+        // behind / above) and the eye styles' `style` / `iris` / `sclera`.
+        let gone = path == "role"
+            || (matches!(k, Kind::Eyes | Kind::FaceScreen)
+                && matches!(path.as_str(), "style" | "iris" | "sclera"));
+        if gone {
+            return Err(format!(
+                "{at}/{path}: {}",
+                crate::character::recipe::removed(&path)
+            ));
+        }
         if !allowed(&path, k) {
             return Err(format!("{at}/{}: unknown field", path.replace('.', "/")));
         }
@@ -828,13 +800,7 @@ fn check_keys(o: &Map<String, Value>, prefix: &str, k: Kind, at: &str) -> Result
     Ok(())
 }
 
-fn parse_any(
-    v: &Value,
-    at: &str,
-    names: &Names,
-    layer: bool,
-    slot: Option<Space>,
-) -> Result<Part, String> {
+fn parse_any(v: &Value, at: &str, names: &Names, layer: bool) -> Result<Part, String> {
     let o = v
         .as_object()
         .ok_or_else(|| format!("{at}: expected an object"))?;
@@ -850,25 +816,11 @@ fn parse_any(
         .ok_or_else(|| format!("{at}/part: unknown part `{name}`"))?;
     check_keys(o, "", kind, at)?;
     let space = match (o.get("space").and_then(Value::as_str), layer) {
-        (Some(_), _) if slot.is_some() => {
-            return Err(format!("{at}/space: a cosmetic draws in its slot"))
-        }
-        (None, false) if slot.is_some() => slot.unwrap(),
-        (Some(s), _) => match s.strip_prefix("slot:") {
-            Some(n) => Space::Slot(
-                names
-                    .slots
-                    .iter()
-                    .position(|x| x == n)
-                    .ok_or_else(|| format!("{at}/space: no slot `{n}`"))? as u8,
-            ),
-            None => Space::parse(s).map_err(|e| format!("{at}/space: {e}"))?,
-        },
+        (Some(s), _) => Space::parse(s).map_err(|e| format!("{at}/space: {e}"))?,
         (None, true) => Space::Body,
         (None, false) => return Err(format!("{at}/space: missing")),
     };
     let when = match o.get("when").and_then(Value::as_str) {
-        None if slot.is_some() => When::NotSmallOrAccessories,
         None => When::Always,
         Some("notSmallOrAccessories") => When::NotSmallOrAccessories,
         Some(w) => return Err(format!("{at}/when: unknown condition `{w}`")),
@@ -890,15 +842,6 @@ fn parse_any(
             Some(w)
         }
     };
-    let role = match o.get("role") {
-        None => 0,
-        Some(r) => {
-            1 + ROLES
-                .iter()
-                .position(|x| Some(*x) == r.as_str())
-                .ok_or_else(|| format!("{at}/role: not a role"))? as u8
-        }
-    };
     let mut params = Params::default();
     let mut inner = Vec::new();
     for (f, ty) in schema(kind) {
@@ -909,7 +852,6 @@ fn parse_any(
     }
     Ok(Part {
         kind,
-        role,
         space,
         when,
         show,
@@ -920,13 +862,7 @@ fn parse_any(
 
 /// A part from its recipe entry at `at` (a JSON pointer, for the errors).
 pub fn parse(v: &Value, at: &str, names: &Names) -> Result<Part, String> {
-    parse_any(v, at, names, false, None)
-}
-
-/// A cosmetic's part (design note 21): drawn in `slot`, left out at 20 px
-/// unless it says otherwise.
-pub fn parse_in(v: &Value, at: &str, names: &Names, slot: Space) -> Result<Part, String> {
-    parse_any(v, at, names, false, Some(slot))
+    parse_any(v, at, names, false)
 }
 
 /// The voice states' weights in this pose: listening = `earGain`, thinking =

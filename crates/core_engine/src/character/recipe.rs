@@ -15,10 +15,6 @@
 //! - `whole`: the character's frame (shake), not its body's pose (feet, notes);
 //! - `body`: the rig's pose (tilt, bob, lean, squash);
 //! - `face`: the body's pose, after the head turn wraps it onto a surface.
-//!
-//! Slots are where cosmetics attach (FX Spec 1.13, design note 21): a recipe's
-//! `cosmetics` are read by `character/cosmetic.rs` into parts drawn in a slot
-//! space of their own (`Space::Slot`), which follows the slot's chain.
 
 use std::collections::HashMap;
 use std::sync::OnceLock;
@@ -51,25 +47,19 @@ pub const MAX_PATH_POINTS: usize = 4096;
 pub const MAX_NUMBER: f64 = 1000.0;
 
 /// The keys a recipe may hold.
-const RECIPE_KEYS: [&str; 17] = [
-    "$schema",
-    "tags",
-    "$comment",
-    "recipe",
-    "id",
-    "profile",
-    "palette",
-    "hue",
-    "rig",
-    "surfaces",
-    "parts",
-    "burst",
-    "slots",
-    "contrast",
-    "cosmetics",
-    "grain",
-    "roles",
+const RECIPE_KEYS: [&str; 14] = [
+    "$schema", "$comment", "recipe", "id", "profile", "palette", "hue", "rig", "surfaces", "parts",
+    "burst", "contrast", "grain", "roles",
 ];
+
+/// Recipe fields removed in 0.1.0-beta.9 (design note 38: the generic wardrobe):
+/// a recipe that still has one is rejected, whatever its version.
+pub const REMOVED_KEYS: [&str; 3] = ["slots", "tags", "cosmetics"];
+
+/// The error for a removed recipe field or part field `k`.
+pub fn removed(k: &str) -> String {
+    format!("`{k}` was removed in 0.1.0-beta.9 (FX Spec 1.14); there is no replacement: delete it from the recipe")
+}
 
 /// The first number outside ±[`MAX_NUMBER`], with its JSON pointer.
 fn too_big(v: &Value, at: &str) -> Option<String> {
@@ -110,13 +100,6 @@ impl<'a> J<'a> {
             .get(k)
             .and_then(Value::as_f64)
             .ok_or_else(|| self.err(k, "expected a number"))
-    }
-    #[inline(never)]
-    pub fn f_or(&self, k: &str, d: f64) -> Result<f64, String> {
-        match self.v.get(k) {
-            None => Ok(d),
-            Some(_) => self.f(k),
-        }
     }
     #[inline(never)]
     pub fn u(&self, k: &str) -> Result<usize, String> {
@@ -217,9 +200,6 @@ pub enum Space {
     Mount,
     Body,
     Face,
-    /// A cosmetic's slot (1.13, design note 21): the recipe's `slots[i]`, in
-    /// its local units, then the chain it follows.
-    Slot(u8),
 }
 
 impl Space {
@@ -234,16 +214,6 @@ impl Space {
             o => return Err(format!("unknown space `{o}`")),
         })
     }
-}
-
-/// A slot: where a cosmetic attaches (design note 21), following one of the chains.
-#[derive(Clone, Debug, PartialEq)]
-pub struct SlotSpec {
-    pub name: String,
-    pub at: (f64, f64),
-    pub scale: f64,
-    pub angle: f64,
-    pub follows: Space,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -262,26 +232,17 @@ pub struct Recipe {
     pub burst_at: (f64, f64),
     pub burst_r: f64,
     pub burst_colors: [usize; 3],
-    pub slots: Vec<SlotSpec>,
     /// The built-in character whose voice-state profile it takes (`None`: the
     /// shared `character` profile).
     pub profile: Option<String>,
     /// Inks and the colour each sits on (palette indices): a palette override
     /// keeps them readable (`character/palette.rs`).
     pub contrast: Vec<(usize, usize)>,
-    /// The whole character drawn this much smaller about its feet, making room
-    /// for a cosmetic above the head (1.13; 1 = as designed).
-    pub zoom: f64,
-    /// Cosmetics that don't fit this character: (pointer, why).
-    pub skipped: Vec<(String, String)>,
     /// Film grain over the character (design note 22), 0–1; the `grain` opt overrides.
     pub grain: f64,
     /// Which palette slot plays each role (`primary`, `secondary`, `accent`;
-    /// design note 23): a named palette or a brand colour reaches it by role.
+    /// design note 23): a brand colour reaches it by role.
     pub roles: Vec<(String, usize)>,
-    /// What the character can wear beyond its slots (design note 26, C1): tags from
-    /// [`crate::character::cosmetic::TAGS`] that a cosmetic's `requires` names.
-    pub tags: Vec<String>,
 }
 
 pub fn hsl_of(v: &Value, at: &str) -> Result<Hsl, String> {
@@ -338,6 +299,9 @@ impl Recipe {
         }
         let v: Value = serde_json::from_str(text).map_err(|e| format!(": not JSON: {e}"))?;
         let top = v.as_object().ok_or(": expected an object")?;
+        if let Some(k) = top.keys().find(|k| REMOVED_KEYS.contains(&k.as_str())) {
+            return Err(format!("/{k}: {}", removed(k)));
+        }
         if let Some(k) = top.keys().find(|k| !RECIPE_KEYS.contains(&k.as_str())) {
             return Err(format!("/{k}: unknown field"));
         }
@@ -406,9 +370,12 @@ impl Recipe {
         let mut roles = Vec::new();
         if let Some(o) = r.get("roles").and_then(Value::as_object) {
             for (k, v) in o {
+                if k == "iris" {
+                    return Err(format!("/roles/iris: {}", removed("iris")));
+                }
                 if !crate::character::palette::ROLES.contains(&k.as_str()) {
                     return Err(format!(
-                        "/roles/{k}: not a role (primary, secondary, accent, iris)"
+                        "/roles/{k}: not a role (primary, secondary, accent)"
                     ));
                 }
                 roles.push((k.clone(), colour(v, &format!("/roles/{k}"))?));
@@ -474,52 +441,17 @@ impl Recipe {
                 ));
             }
         }
-        let mut slots = Vec::new();
-        if let Some(s) = r.get("slots").and_then(Value::as_object) {
-            for (k, v) in s {
-                let j = J::new(v, "/slots");
-                slots.push(SlotSpec {
-                    name: k.clone(),
-                    at: j.p2("at")?,
-                    scale: j.f_or("scale", 1.0)?,
-                    angle: j.f_or("angle", 0.0)?,
-                    follows: match j.s("follows")?.as_str() {
-                        "head" | "body" => Space::Body,
-                        "face" => Space::Face,
-                        o => return Err(format!("/slots/{k}/follows: unknown chain `{o}`")),
-                    },
-                });
-            }
-        }
         let surface_names: Vec<String> = surfaces.iter().map(|(n, _)| n.clone()).collect();
-        let slot_names: Vec<String> = slots.iter().map(|s: &SlotSpec| s.name.clone()).collect();
         let names = parts::Names {
             colours: &colour_names,
             surfaces: &surface_names,
-            slots: &slot_names,
         };
-        let mut parts = r
+        let parts = r
             .arr("parts")?
             .iter()
             .enumerate()
             .map(|(i, p)| parts::parse(p, &format!("/parts/{i}"), &names))
             .collect::<Result<Vec<_>, _>>()?;
-        let (mut zoom, mut skipped) = (1.0, Vec::new());
-        let tags = crate::character::cosmetic::tags(r.get("tags"), "/tags", &mut skipped)?;
-        if let Some(c) = r.get("cosmetics") {
-            crate::character::cosmetic::read(
-                c,
-                crate::character::cosmetic::Into {
-                    id: &id,
-                    palette: &mut palette,
-                    slots: &mut slots,
-                    parts: &mut parts,
-                    zoom: &mut zoom,
-                    skipped: &mut skipped,
-                    tags: &tags,
-                },
-            )?;
-        }
         let count: usize = parts.iter().map(|p| 1 + p.inner.len()).sum();
         if count > MAX_PARTS {
             return Err(format!("/parts: {count} parts, at most {MAX_PARTS}"));
@@ -548,13 +480,9 @@ impl Recipe {
             burst_at: burst.p2("at")?,
             burst_r: burst.f("r")?,
             burst_colors: [name(0)?, name(1)?, name(2)?],
-            slots,
             profile,
             contrast,
-            zoom,
-            skipped,
             roles,
-            tags,
             grain: match r.get("grain") {
                 None => 0.0,
                 Some(_) => r.obj("grain")?.f("strength")?.clamp(0.0, 1.0),
@@ -627,26 +555,6 @@ pub fn recipes() -> &'static HashMap<String, Recipe> {
     })
 }
 
-/// The glossy eye's iris when the recipe names none (design note 24).
-const DEFAULT_IRIS: Hsl = geom::hsl(188.0, 0.75, 0.45);
-
-/// The scale the recipe's eyes are drawn at (their gaze offset is `gx * scale`), 1
-/// without eyes: an `eyes` part's own (a body layer's too) or a face screen's.
-fn eye_scale(parts: &[Part], small: bool) -> f64 {
-    for p in parts {
-        match p.kind {
-            parts::Kind::Eyes => return p.params.nums[if small { 3 } else { 2 }],
-            parts::Kind::FaceScreen => return if small { 1.08 } else { 0.92 },
-            _ => {}
-        }
-        let k = eye_scale(&p.inner, small);
-        if k != 1.0 {
-            return k;
-        }
-    }
-    1.0
-}
-
 /// What a part needs to draw this frame.
 pub struct Ctx<'a> {
     pub o: &'a ModeOpts,
@@ -665,17 +573,8 @@ pub struct Ctx<'a> {
     pub w: (f64, f64, f64, f64, f64),
     /// The float rig's drift this frame (0 for the others).
     pub float: f64,
-    /// The `eyeStyle` opt (design note 24): 0 = the recipe's, else 1 + `face::Face::style`.
-    pub eye_style: u8,
-    /// Where the gaze moves the eyes this frame, design units: a cosmetic on the face
-    /// moves with them (glasses stay on the eyes; design note 26).
-    gaze: (f64, f64),
-    /// Each slot's size during a loadout change (design note 25): `wear.<cosmetic id>`
-    /// pops a cosmetic in or out; 1 = as drawn. Empty when no `wear.` key is given.
-    pops: Vec<f64>,
     pal: Vec<Hsl>,
     surfaces: &'a [(String, Surface)],
-    slots: &'a [SlotSpec],
     ground: Xf,
     whole: Xf,
     mount: Xf,
@@ -683,20 +582,6 @@ pub struct Ctx<'a> {
 }
 
 impl<'a> Ctx<'a> {
-    /// An eyes field group (`style`, `iris`, `sclera`; design note 24): the style
-    /// (the `eyeStyle` opt over the recipe's), the iris colour (teal when not given)
-    /// and whether the glossy eye has a white sclera.
-    pub fn eye_look(&self, r: &mut parts::Reader) -> (u8, Hsl, bool) {
-        let style = r.n() as u8;
-        let iris = r.opt_col().map_or(DEFAULT_IRIS, |i| self.colour(i));
-        let sclera = r.n() >= 0.5;
-        let style = match self.eye_style {
-            0 => style,
-            s => s - 1,
-        };
-        (style, iris, sclera)
-    }
-
     /// A palette colour (after `hue` turned it).
     pub fn colour(&self, i: usize) -> Hsl {
         self.pal[i]
@@ -722,36 +607,6 @@ impl<'a> Ctx<'a> {
                 };
                 geom::transform(f, &self.body)
             }
-            Space::Slot(i) => {
-                let s = &self.slots[i as usize];
-                let k = s.scale * self.pops.get(i as usize).copied().unwrap_or(1.0);
-                // A cosmetic on the face moves with the gaze, as the eyes do (design note 26).
-                let (gx, gy) = if s.follows == Space::Face {
-                    self.gaze
-                } else {
-                    (0.0, 0.0)
-                };
-                let local = Xf::scale(k, k)
-                    .then(Xf::rotate(s.angle))
-                    .then(Xf::translate(s.at.0 + gx, s.at.1 + gy));
-                let face = self.surfaces.iter().position(|(n, _)| n == "face");
-                let mut f = geom::transform(f, &local);
-                // On the head or the body it turns as the parts under it do (B1): through the
-                // `face` surface, like the body's patches, fading as it goes round the back (the
-                // far headphone cup). On the face that happens in `Face`; a frame stays put.
-                let wraps = !matches!(s.follows, Space::Face | Space::Whole);
-                if let (true, Some(i), false) = (wraps, face, self.tn.is_zero()) {
-                    let surf = self.surface(i);
-                    let n = f.points.len().max(1) as f64;
-                    let c = f.points.iter().fold(geom::pt(0.0, 0.0), |a, p| {
-                        geom::pt(a.x + p.x / n, a.y + p.y / n)
-                    });
-                    let front = self.tn.facing(surf, &c);
-                    f = self.tn.map_fill(f, surf);
-                    f.a *= ((front + 0.2) / 0.2).clamp(0.0, 1.0);
-                }
-                self.place(f, s.follows, face)
-            }
         }
     }
 }
@@ -760,7 +615,7 @@ fn get(o: &ModeOpts, key: &str, default: f64) -> f64 {
     *o.get(key).unwrap_or(&default)
 }
 
-/// Everything a frame (or a slot) of `r` needs at `size`, `t`, `o`.
+/// Everything a frame of `r` needs at `size`, `t`, `o`.
 fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
     let pose = rig::pose(o, t);
     let tier = kit::tier(size);
@@ -798,16 +653,7 @@ fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
     let lw = tier.line;
     let tn = turn::angles(o, t, tier);
 
-    let mut scale = Xf::scale(size / 200.0, size / 200.0);
-    // A loadout change eases the zoom between the two loadouts' (design note 25).
-    let zoom = get(o, "wearZoom", r.zoom);
-    if zoom != 1.0 {
-        let (fx, fy) = crate::character::cosmetic::FEET;
-        scale = Xf::translate(-fx, -fy)
-            .then(Xf::scale(zoom, zoom))
-            .then(Xf::translate(fx, fy))
-            .then(scale);
-    }
+    let scale = Xf::scale(size / 200.0, size / 200.0);
     let whole = Xf::translate(pose.shake, 0.0).then(scale);
     let mut float = 0.0;
     let (body, mount) = match &r.rig {
@@ -886,22 +732,8 @@ fn setup<'a>(r: &'a Recipe, size: f64, t: f64, o: &'a ModeOpts) -> Ctx<'a> {
         lw,
         w,
         float,
-        eye_style: get(o, "eyeStyle", 0.0).round().clamp(0.0, 4.0) as u8,
-        gaze: {
-            let k = eye_scale(&r.parts, tier.small);
-            (pose.eyes.gx * k, pose.eyes.gy * k)
-        },
-        pops: if o.keys().any(|k| k.starts_with("wear.")) {
-            r.slots
-                .iter()
-                .map(|s| get(o, &format!("wear.{}", s.name), 1.0))
-                .collect()
-        } else {
-            Vec::new()
-        },
         pal,
         surfaces: &r.surfaces,
-        slots: &r.slots,
         ground: scale,
         whole,
         mount,
@@ -914,20 +746,8 @@ pub fn frame_recipe(r: &Recipe, size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let ctx = setup(r, size, t, o);
     let tier = ctx.tier;
     let mut out: Vec<Fill> = Vec::new();
-    // `wearOnly`: just the cosmetics (the leaving side of a loadout change).
-    let only = get(o, "wearOnly", 0.0) >= 0.5;
     for p in &r.parts {
-        let pop = match p.space {
-            Space::Slot(i) => ctx.pops.get(i as usize).copied().unwrap_or(1.0),
-            _ if only => 0.0,
-            _ => 1.0,
-        };
-        if pop > 0.0 {
-            parts::draw(p, &ctx, &mut out);
-        }
-    }
-    if only {
-        return kit::finish(out, o);
+        parts::draw(p, &ctx, &mut out);
     }
     out.extend(
         kit::celebrate_burst(

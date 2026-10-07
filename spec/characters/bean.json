@@ -3,9 +3,7 @@
   "$comment": "BEAN, a coffee bean on little feet. Drawn from an SVG path, with its S-shaped groove and the groove's lit edge as path patches; aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice. A recipe only.",
   "recipe": 1,
   "id": "bean",
-  "tags": ["round"],
   "palette": {
-    "iris": [188, 0.75, 0.45],
     "body": [24, 0.52, 0.42],
     "bodyLight": [28, 0.6, 0.6],
     "bodyDark": [20, 0.52, 0.27],
@@ -19,7 +17,7 @@
     "eyes": [18, 0.45, 0.1]
   },
   "hue": {"base": 24, "turns": ["body", "bodyLight", "bodyDark", "groove"]},
-  "roles": {"iris": "iris", "primary": "body", "accent": "aroma"},
+  "roles": {"primary": "body", "accent": "aroma"},
   "contrast": [["eyes", "body"]],
   "rig": {"kind": "upright", "base": [100, 174]},
   "surfaces": {"face": {"c": [100, 110], "r": 58, "depth": 0.7}},
@@ -27,10 +25,9 @@
     {"part": "shadow", "space": "ground", "at": [100, 186], "r": [44, 5]},
     {"part": "feet", "space": "whole", "x": 100, "gap": 20, "top": 166, "ground": 182, "toe": [7, 184], "width": 4.5, "color": "bodyDark"},
     {"part": "body", "space": "body", "shape": {"path": "M100 32 C140 30 160 72 158 112 C156 152 132 178 100 178 C68 178 44 152 42 112 C40 72 60 34 100 32 Z"}, "light": {"radial": [72, 64, 124], "stops": [[0, "bodyLight"], [0.55, "body"], [1, "bodyDark"]]}, "turnLight": [-14, 10], "inner": [{"part": "patch", "shape": {"path": "M108 34 C116 46 104 58 98 66 C92 74 96 84 104 88 C96 86 88 78 90 68 C92 58 104 48 98 34 Z"}, "color": "groove"}, {"part": "patch", "shape": {"path": "M110 36 C118 48 108 60 102 68 C97 75 99 82 105 86 L104 88 C96 84 92 74 98 66 C104 58 116 46 108 34 Z"}, "color": "grooveEdge"}, {"part": "glints", "at": [[56, 30]], "rect": [50, 8, 4, 2], "color": "shine", "alpha": 0.3}, {"part": "patch", "shape": {"ellipse": [72, 134, 11, 7, 0, 24]}, "surface": "face", "color": "cheeks"}, {"part": "patch", "shape": {"ellipse": [128, 134, 11, 7, 0, 24]}, "surface": "face", "color": "cheeks"}], "outline": {"width": 3.5, "color": "outline"}},
-    {"part": "eyes", "iris": "iris", "space": "face", "surface": "face", "at": [100, 114], "scale": [0.95, 1.05], "ink": "eyes", "glow": 0.0},
+    {"part": "eyes", "space": "face", "surface": "face", "at": [100, 114], "scale": [0.95, 1.05], "ink": "eyes", "glow": 0.0},
     {"part": "ovalMouth", "space": "face", "surface": "face", "at": [100, 114], "scale": [0.95, 1.05], "halfWidth": 11.0, "ink": "eyes"},
     {"part": "sparkles", "space": "ground", "count": 4, "head": [100, 104], "colors": ["aroma", "foam"]}
   ],
-  "burst": {"at": [100, 108], "r": 86, "colors": ["celebrate", "body", "cheeks"]},
-  "slots": {"headTop": {"at": [100, 34], "scale": 0.85, "follows": "head"}, "face": {"at": [100, 114], "follows": "face"}, "chest": {"at": [100, 150], "follows": "body"}}
+  "burst": {"at": [100, 108], "r": 86, "colors": ["celebrate", "body", "cheeks"]}
 }

@@ -418,7 +418,6 @@ const CHARACTER_PARAMS: &[&str] = &[
     "breath",
     "earGain",
     "eyeAsym",
-    "eyeStyle",
     "eyeH",
     "eyeR",
     "eyeSmile",
@@ -448,14 +447,13 @@ const CHARACTER_PARAMS: &[&str] = &[
 ];
 
 /// BEEP: the shared character keys plus `arms` (design note 17).
-const BEEP_PARAMS: [&str; 33] = [
+const BEEP_PARAMS: [&str; 32] = [
     "accessories",
     "arms",
     "bounceGain",
     "breath",
     "earGain",
     "eyeAsym",
-    "eyeStyle",
     "eyeH",
     "eyeR",
     "eyeSmile",
@@ -485,13 +483,12 @@ const BEEP_PARAMS: [&str; 33] = [
 ];
 
 /// HUM: the shared character keys plus its speaking sway.
-const HUM_PARAMS: [&str; 33] = [
+const HUM_PARAMS: [&str; 32] = [
     "accessories",
     "bounceGain",
     "breath",
     "earGain",
     "eyeAsym",
-    "eyeStyle",
     "eyeH",
     "eyeR",
     "eyeSmile",
@@ -522,14 +519,13 @@ const HUM_PARAMS: [&str; 33] = [
 ];
 
 /// WISP: the shared character keys plus its tail curl.
-const WISP_PARAMS: [&str; 33] = [
+const WISP_PARAMS: [&str; 32] = [
     "accessories",
     "bounceGain",
     "breath",
     "curlGain",
     "earGain",
     "eyeAsym",
-    "eyeStyle",
     "eyeH",
     "eyeR",
     "eyeSmile",
@@ -559,13 +555,12 @@ const WISP_PARAMS: [&str; 33] = [
 ];
 
 /// CHIRP: the shared character keys plus its wing flutter.
-const CHIRP_PARAMS: [&str; 33] = [
+const CHIRP_PARAMS: [&str; 32] = [
     "accessories",
     "bounceGain",
     "breath",
     "earGain",
     "eyeAsym",
-    "eyeStyle",
     "eyeH",
     "eyeR",
     "eyeSmile",
@@ -892,10 +887,6 @@ pub(crate) fn runtime_key(key: &str) -> Option<&'static str> {
         Some("the box ratio of a wide pattern is set by the view")
     } else if key == "stateAge" {
         Some("the time since the state changed is set by the view")
-    } else if key == "still" {
-        Some("a thumbnail's still pose is set by frameStill")
-    } else if key.starts_with("wear") {
-        Some("a loadout change is drawn by the view's transition")
     } else if key == "tapX" || key == "tapY" {
         Some("where the view was tapped is set by the view, during the hop")
     } else if indexed("peak") {
@@ -964,7 +955,7 @@ fn use_recipe(root: &mut Map<String, Value>, r: &Value, object: Option<&str>, di
         );
         return;
     }
-    let Some((key, _)) = register(r, None, diag) else {
+    let Some(key) = register(r, diag) else {
         return;
     };
     let mut used = false;
@@ -1085,131 +1076,34 @@ fn heavy(key: &'static str) -> Option<crate::FxCost> {
     c
 }
 
-/// Registers a recipe's JSON: its key and how many cosmetics didn't fit (each
-/// warns), or the error reported (a `/cosmetics` pointer as it is, the rest
-/// under `/recipe`).
+/// Registers a recipe's JSON: its key, or the error reported under `/recipe`.
 #[inline(never)]
-fn register(r: &Value, basis: Option<&str>, diag: &mut Diag) -> Option<(&'static str, usize)> {
-    let mut skipped = Vec::new();
-    match crate::character::registry::register_with(&r.to_string(), basis, &mut skipped) {
-        Ok(k) => {
-            let n = skipped.len();
-            for (at, why) in skipped {
-                diag.warn(&at, why);
-            }
-            Some((k, n))
-        }
+fn register(r: &Value, diag: &mut Diag) -> Option<&'static str> {
+    match crate::character::registry::register(&r.to_string()) {
+        Ok(k) => Some(k),
         Err(e) => {
             let (at, what) = e.split_once(": ").unwrap_or(("", &e));
-            let pre = if at.starts_with("/cosmetics") {
-                ""
-            } else {
-                "/recipe"
-            };
-            diag.error(&format!("{pre}{at}"), what.to_string());
+            diag.error(&format!("/recipe{at}"), what.to_string());
             None
         }
     }
 }
 
-/// `cosmetics` with each `"<namespace>:<id>"` swapped for a loaded pack's item
-/// (design note 26); one not loaded warns and is left out.
-#[inline(never)]
-fn catalog_refs(c: Value, diag: &mut Diag) -> Value {
-    let Value::Array(a) = c else {
-        return c;
-    };
-    let mut list = Vec::new();
-    for (i, x) in a.into_iter().enumerate() {
-        match x.as_str() {
-            None => list.push(x),
-            Some(key) => match crate::character::catalog::get(key, false) {
-                Some(v) => list.push(v),
-                None => diag.warn(
-                    &format!("/cosmetics/{i}"),
-                    format!("`{key}` isn't a loaded catalog item; skipped"),
-                ),
-            },
-        }
-    }
-    Value::Array(list)
-}
-
-/// 1.13: `cosmetics` (design note 21) go into the file's `recipe`, and into
-/// each built-in character a `pattern` names, which then draws that recipe.
-fn use_cosmetics(root: &mut Map<String, Value>, c: &Value, diag: &mut Diag) {
-    if root.get("object").and_then(Value::as_str) != Some("character") {
-        diag.error("/cosmetics", "`cosmetics` is for `object: character`");
-        return;
-    }
-    if let Some(Value::Object(r)) = root.get_mut("recipe") {
-        r.insert("cosmetics".into(), c.clone());
-        return;
-    }
-    let mut done: Vec<(String, Option<&'static str>)> = Vec::new();
-    wear(root, c, &mut done, diag);
-    if let Some(Value::Object(states)) = root.get_mut("states") {
-        for e in states.values_mut() {
-            if let Value::Object(e) = e {
-                wear(e, c, &mut done, diag);
-            }
-        }
-    }
-}
-
-/// Points `b`'s built-in `pattern` at that character wearing `c`.
-#[inline(never)]
-fn wear(
-    b: &mut Map<String, Value>,
-    c: &Value,
-    done: &mut Vec<(String, Option<&'static str>)>,
-    diag: &mut Diag,
-) {
-    let Some(p) = b.get("pattern").and_then(Value::as_str) else {
-        return;
-    };
-    let key = match done.iter().find(|(n, _)| n == p) {
-        Some(d) => d.1,
-        None => {
-            let mut k = None;
-            if let Some((id, text)) = crate::character::recipe::RECIPES
-                .iter()
-                .find(|(id, _)| *id == p)
-            {
-                if let Ok(Value::Object(mut r)) = serde_json::from_str(text) {
-                    r.insert("cosmetics".into(), c.clone());
-                    r.insert("profile".into(), Value::String(id.to_string()));
-                    // Nothing worn (none fits): the built-in draws as it is.
-                    let worn = c.as_array().map_or(0, Vec::len);
-                    // The key hashes the built-in's id and the cosmetics (see `register_with`).
-                    let basis = format!("{id}+{c}");
-                    k = register(&Value::Object(r), Some(&basis), diag)
-                        .filter(|(_, skipped)| *skipped < worn)
-                        .map(|(k, _)| k);
-                }
-            }
-            done.push((p.to_string(), k));
-            k
-        }
-    };
-    if let Some(k) = key {
-        b.insert("pattern".into(), Value::String(k.into()));
-    }
-}
-
-/// Before 1.13 a palette is slot colours only: a name (`"palette": "sunset"`),
-/// `theme` and `dark` are errors naming the minor they need.
-fn palette_gate(root: &Map<String, Value>, diag: &mut Diag) {
+/// A named palette (`"palette": "sunset"` or `palette.theme`) is an error in any
+/// version: removed in 0.1.0-beta.9 (design note 38). Before 1.13 `dark` is an error
+/// naming the minor it needs.
+fn palette_gate(root: &Map<String, Value>, minor: u64, diag: &mut Diag) {
     let check = |p: Option<&Value>, at: String, diag: &mut Diag| match p {
-        Some(Value::String(_)) => diag.error(&at, "a palette name needs \"fxSpec\": \"1.13\""),
+        Some(Value::String(_)) => removed_material(&at, "a named palette", diag),
         Some(Value::Object(o)) => {
-            for k in ["theme", "dark"] {
-                if o.contains_key(k) {
-                    diag.error(
-                        &ptr(&at, k),
-                        format!("`palette.{k}` needs \"fxSpec\": \"1.13\""),
-                    );
-                }
+            if o.contains_key("theme") {
+                removed_material(&ptr(&at, "theme"), "palette.theme", diag);
+            }
+            if minor < 13 && o.contains_key("dark") {
+                diag.error(
+                    &ptr(&at, "dark"),
+                    "`palette.dark` needs \"fxSpec\": \"1.13\"",
+                );
             }
         }
         _ => {}
@@ -1242,9 +1136,9 @@ fn palette_colours(
     g
 }
 
-/// A character's `palette` block (design notes 19, 23): slots, roles, a named
-/// palette (`theme` or the string shorthand) and a `dark` variant, resolved
-/// through the recipe into `palette.<slot>.*` and `palette.dark.<slot>.*` opts.
+/// A character's `palette` block (design notes 19, 23): slots, roles and a `dark`
+/// variant, resolved through the recipe into `palette.<slot>.*` and
+/// `palette.dark.<slot>.*` opts. A named palette was reported by `palette_gate`.
 #[inline(never)]
 fn palette_block(
     v: &Value,
@@ -1254,38 +1148,12 @@ fn palette_block(
     diag: &mut Diag,
 ) {
     use crate::character::palette;
-    let empty = Map::new();
-    // `"palette": "sunset"` is `{ "theme": "sunset" }`.
-    let (o, theme) = match v {
-        Value::String(n) => (&empty, Some(n.as_str())),
-        _ => match as_object(v, pp, diag) {
-            Some(o) => (o, o.get("theme").map(|t| t.as_str().unwrap_or_default())),
-            None => return,
-        },
-    };
-    let (mut theme_light, mut theme_dark) = (Vec::new(), Vec::new());
-    if let Some(name) = theme {
-        match (palette::theme(name, false), palette::theme(name, true)) {
-            (Some(l), Some(d)) => (theme_light, theme_dark) = (l, d),
-            _ => {
-                let names: Vec<&str> = palette::THEMES.iter().map(|t| t.0).collect();
-                let hint = suggest(name, &names)
-                    .map(|s| format!(" -- did you mean `{s}`?"))
-                    .unwrap_or_default();
-                // A catalog palette that isn't loaded only warns (design note 26).
-                if name.contains(':') {
-                    diag.warn(
-                        &ptr(pp, "theme"),
-                        format!(
-                            "`{name}` isn't a loaded catalog palette; the character's own stays"
-                        ),
-                    );
-                } else {
-                    diag.error(&ptr(pp, "theme"), format!("unknown palette `{name}`{hint}"));
-                }
-            }
-        }
+    if v.is_string() {
+        return;
     }
+    let Some(o) = as_object(v, pp, diag) else {
+        return;
+    };
     let explicit = palette_colours(o, pp, diag);
     let dark_given = match o.get("dark") {
         Some(d) => as_object(d, &ptr(pp, "dark"), diag)
@@ -1294,15 +1162,10 @@ fn palette_block(
         None => Vec::new(),
     };
     let r = palette::with_recipe(mode, |r| {
-        // Light: the theme's roles this character maps, then what the file says.
-        let mut light = palette::mapped(r, &theme_light);
-        light.extend(explicit.iter().cloned());
-        let l = palette::resolve(r, &palette::expand(r, &light));
-        // Dark, when the theme or the file has a dark variant: its roles, the
-        // file's own colours, then the file's `dark`.
-        let d = (!theme_dark.is_empty() || !dark_given.is_empty()).then(|| {
-            let mut dark = palette::mapped(r, &theme_dark);
-            dark.extend(explicit.iter().cloned());
+        let l = palette::resolve(r, &palette::expand(r, &explicit));
+        // Dark, when the file has a dark variant: its own colours, then its `dark`.
+        let d = (!dark_given.is_empty()).then(|| {
+            let mut dark = explicit.clone();
             dark.extend(dark_given.iter().cloned());
             palette::resolve(r, &palette::expand(r, &dark))
         });
@@ -1435,7 +1298,7 @@ fn migrate(mut doc: Value, diag: &mut Diag) -> Value {
 
 // ------------------------------------------------------------ resolving --
 
-const TOP_KEYS: [&str; 25] = [
+const TOP_KEYS: [&str; 23] = [
     "$schema",
     "fxSpec",
     "name",
@@ -1458,8 +1321,6 @@ const TOP_KEYS: [&str; 25] = [
     "recipe",
     "expression",
     "palette",
-    "cosmetics",
-    "wardrobe",
     "silhouette",
 ];
 /// The design keys of a block: the base (top level) and each `states` entry.
@@ -1483,7 +1344,11 @@ pub(crate) const MATERIAL_SECTIONS: [&str; 3] = ["glow", "noise", "pulse"];
 /// still uses one is rejected, whatever its version, rather than drawn without it.
 const REMOVED_MATERIALS: [&str; 3] = ["liquid", "particles", "holographic"];
 
-/// The error for a removed material at `path`.
+/// Top-level keys removed in 0.1.0-beta.9 (FX Spec 1.14; design note 38): the
+/// generic wardrobe. A file that still has one is rejected, whatever its version.
+const REMOVED_TOP_KEYS: [&str; 2] = ["cosmetics", "wardrobe"];
+
+/// The error for a removed material (or other removed feature) at `path`.
 fn removed_material(path: &str, name: &str, diag: &mut Diag) {
     diag.error(
         path,
@@ -1540,335 +1405,8 @@ const SINCE: &[(&str, u64)] = &[
     ("recipe", 12),
     ("expression", 12),
     ("palette", 12),
-    ("cosmetics", 13),
-    ("wardrobe", 13),
     ("silhouette", 13),
 ];
-
-/// The cosmetics a file offers: its `wardrobe.cosmetics`, then its `cosmetics`.
-#[inline(never)]
-fn closet(root: &Map<String, Value>) -> Vec<Value> {
-    let mut out = Vec::new();
-    for list in [
-        entry(root, "wardrobe").and_then(|w| field(w, "cosmetics")),
-        entry(root, "cosmetics"),
-    ] {
-        if let Some(Value::Array(a)) = list {
-            for x in a {
-                // A catalog item by name (design note 26); one not loaded isn't offered.
-                match x.as_str() {
-                    None => out.push(x.clone()),
-                    Some(key) => out.extend(crate::character::catalog::get(key, false)),
-                }
-            }
-        }
-    }
-    out
-}
-
-/// `v[k]`, one lookup for every call here (inlined, each costs code).
-#[inline(never)]
-fn field<'a>(v: &'a Value, k: &str) -> Option<&'a Value> {
-    v.get(k)
-}
-
-/// `m[k]` on a map.
-#[inline(never)]
-fn entry<'a>(m: &'a Map<String, Value>, k: &str) -> Option<&'a Value> {
-    m.get(k)
-}
-
-/// `m.remove(k)`, out of line.
-#[inline(never)]
-fn take(m: &mut Map<String, Value>, k: &str) -> Option<Value> {
-    m.remove(k)
-}
-
-/// `m[k] = v`, out of line for the same reason.
-#[inline(never)]
-fn put(m: &mut Map<String, Value>, k: &str, v: Value) {
-    m.insert(k.to_string(), v);
-}
-
-/// `v[k]` as a string ("" when it isn't one).
-#[inline(never)]
-fn text<'a>(v: &'a Value, k: &str) -> &'a str {
-    field(v, k).and_then(Value::as_str).unwrap_or_default()
-}
-
-/// A loadout (design note 25) applied to an FX Spec: the file with the
-/// loadout's choices in it, and warnings. A loadout is what an end user picked,
-/// stored by the app for months, so nothing in it is an error: an item or a
-/// palette the file no longer offers is skipped with a warning, and the rest
-/// applies. `{ "loadout": 1, "wear": [ids], "palette": name, "eyeStyle": name }`:
-/// - `wear`: cosmetics from the file's `wardrobe` (or its `cosmetics`), one per
-///   slot (a later one replaces an earlier one); `[]` wears none;
-/// - `palette`: a `wardrobe.palettes` name or a built-in palette;
-/// - `eyeStyle`: one of `params.eyeStyle`'s names.
-pub fn apply_loadout(spec: &str, loadout: &str) -> (String, Vec<FxDiagnostic>) {
-    let mut diag = Diag(Vec::new());
-    let (Ok(Value::Object(mut root)), Ok(Value::Object(l))) = (
-        serde_json::from_str::<Value>(spec),
-        serde_json::from_str::<Value>(loadout),
-    ) else {
-        diag.warn(
-            "/loadout",
-            String::from("not a loadout; the file draws as it is"),
-        );
-        return (spec.to_string(), diag.0);
-    };
-    let mut worn: Vec<Value> = Vec::new();
-    let mut iris = None;
-    for (k, v) in &l {
-        let at = format!("/loadout/{k}");
-        let name = v.as_str().unwrap_or_default();
-        let why = match k.as_str() {
-            "loadout" => (v.as_f64().unwrap_or(1.0) > 1.0)
-                .then_some("a newer loadout: what this runtime knows applies".to_string()),
-            "wear" => {
-                let all = closet(&root);
-                let who = character_of(&root);
-                for (i, entry_v) in v.as_array().into_iter().flatten().enumerate() {
-                    let at = format!("{at}/{i}");
-                    // `"id"`, or `{ "id", "offset", "scale", "rotate" }` (C2): a bounded nudge.
-                    let id = match entry_v {
-                        Value::Object(_) => text(entry_v, "id"),
-                        _ => entry_v.as_str().unwrap_or_default(),
-                    };
-                    let Some(c) = all.iter().find(|c| text(c, "id") == id) else {
-                        diag.warn(&at, format!("`{id}` isn't in the wardrobe; skipped"));
-                        continue;
-                    };
-                    if let Some(j) = worn.iter().position(|w| text(w, "slot") == text(c, "slot")) {
-                        diag.warn(
-                            &at,
-                            format!("one per slot: `{id}` replaces `{}`", text(&worn[j], "id")),
-                        );
-                        worn.remove(j);
-                    }
-                    let mut c = c.clone();
-                    if entry_v.is_object() {
-                        nudge(&mut c, entry_v, &who, &at, &mut diag);
-                    }
-                    worn.push(c);
-                }
-                None
-            }
-            "palette" => {
-                let own = entry(&root, "wardrobe")
-                    .and_then(|w| field(w, "palettes"))
-                    .and_then(|p| field(p, name))
-                    .cloned();
-                let built_in = crate::character::palette::THEMES
-                    .iter()
-                    .any(|t| t.0 == name)
-                    || crate::character::catalog::get(name, true).is_some();
-                match own.or_else(|| built_in.then(|| v.clone())) {
-                    Some(p) => {
-                        put(&mut root, "palette", p);
-                        None
-                    }
-                    None => Some(format!("no palette `{name}`; the file's stays")),
-                }
-            }
-            // An eye colour by name (design note 27): the wardrobe's `irises`, else a
-            // catalog palette's `iris`. Applied after `palette`, which it joins.
-            "iris" => {
-                iris = entry(&root, "wardrobe")
-                    .and_then(|w| field(w, "irises"))
-                    .and_then(|p| field(p, name))
-                    .cloned()
-                    .or_else(|| catalog_iris(name));
-                iris.is_none()
-                    .then(|| format!("no eye colour `{name}`; the file's stays"))
-            }
-            "eyeStyle" if EYE_STYLE_NAMES.contains(&name) => {
-                let mut p = match take(&mut root, "params") {
-                    Some(Value::Object(p)) => p,
-                    _ => Map::new(),
-                };
-                put(&mut p, k, v.clone());
-                put(&mut root, "params", Value::Object(p));
-                None
-            }
-            _ => Some("not a loadout choice; ignored".to_string()),
-        };
-        if let Some(why) = why {
-            diag.warn(&at, why);
-        }
-    }
-    if let Some(c) = iris {
-        let mut p = match take(&mut root, "palette") {
-            Some(Value::Object(p)) => p,
-            Some(t @ Value::String(_)) => {
-                let mut p = Map::new();
-                put(&mut p, "theme", t);
-                p
-            }
-            _ => Map::new(),
-        };
-        put(&mut p, "iris", c);
-        put(&mut root, "palette", Value::Object(p));
-    }
-    if entry(&l, "wear").is_some() {
-        take(&mut root, "cosmetics");
-        if !worn.is_empty() {
-            put(&mut root, "cosmetics", Value::Array(worn));
-        }
-    }
-    (Value::Object(root).to_string(), diag.0)
-}
-
-/// A catalog palette's `iris` (the catalog's eye colours are palettes of one role).
-#[inline(never)]
-fn catalog_iris(name: &str) -> Option<Value> {
-    crate::character::catalog::get(name, true)?
-        .get("iris")
-        .cloned()
-}
-
-/// Which character a file draws (its own recipe's id, else `pattern`): the `fit` key
-/// a loadout's nudge goes under.
-fn character_of(root: &Map<String, Value>) -> String {
-    match entry(root, "recipe") {
-        Some(r) => text(r, "id").to_string(),
-        None => entry(root, "pattern")
-            .and_then(Value::as_str)
-            .unwrap_or_default()
-            .to_string(),
-    }
-}
-
-/// A loadout entry's nudge (C2), bounded: `offset` ±10 units, `scale` 0.8–1.2,
-/// `rotate` ±15°, relative to the slot, so the item still follows the rig. Written
-/// into the cosmetic's `fit` for `who` (replacing any fit it had there). Out of range
-/// warns and is clamped; an unknown key warns.
-#[inline(never)]
-fn nudge(c: &mut Value, e: &Value, who: &str, at: &str, diag: &mut Diag) {
-    let o = e.as_object();
-    let mut nums = [0.0, 0.0, 1.0, 0.0];
-    // (key, index into an array value or none, slot in `nums`, bound, bounds as said)
-    for (k, i, n, lo, hi, said) in [
-        ("offset", Some(0), 0, -10.0, 10.0, "-10 to 10"),
-        ("offset", Some(1), 1, -10.0, 10.0, "-10 to 10"),
-        ("scale", None, 2, 0.8, 1.2, "0.8 to 1.2"),
-        ("rotate", None, 3, -15.0, 15.0, "-15 to 15"),
-    ] {
-        let v = match (field(e, k), i) {
-            (Some(Value::Array(a)), Some(i)) => a.get(i).and_then(Value::as_f64),
-            (Some(v), None) => v.as_f64(),
-            _ => None,
-        };
-        if let Some(x) = v {
-            if !(lo..=hi).contains(&x) {
-                diag.warn(
-                    &format!("{at}/{k}"),
-                    format!("out of range ({said}); clamped"),
-                );
-            }
-            nums[n] = x.clamp(lo, hi);
-        }
-    }
-    for k in o.into_iter().flat_map(|o| o.keys()) {
-        if !["id", "offset", "scale", "rotate"].contains(&k.as_str()) {
-            diag.warn(
-                &format!("{at}/{k}"),
-                "not a loadout nudge; ignored".to_string(),
-            );
-        }
-    }
-    let Value::Object(cm) = c else {
-        return;
-    };
-    let mut mine = Map::new();
-    put(
-        &mut mine,
-        "at",
-        Value::Array(vec![nums[0].into(), nums[1].into()]),
-    );
-    put(&mut mine, "scale", nums[2].into());
-    put(&mut mine, "angle", nums[3].to_radians().into());
-    let mut fit = match take(cm, "fit") {
-        Some(Value::Object(f)) => f,
-        _ => Map::new(),
-    };
-    put(&mut fit, who, Value::Object(mine));
-    put(cm, "fit", Value::Object(fit));
-}
-
-/// What the file's wardrobe offers `character` (a built-in id, or the file's own
-/// recipe's id), for a picker (design note 25): one entry per item, `path` its id,
-/// `severity` the reason as a key to translate (`fits`, `not-made-for`, `no-slot`)
-/// and `message` the English text (empty when it fits). The diagnostic record
-/// carries it, so no new record crosses the bridges; the packages give it as
-/// `{ id, fits, reason, why }`. Its label and category are in the file.
-pub fn cosmetics_for(spec: &str, character: &str) -> Vec<FxDiagnostic> {
-    let Ok(Value::Object(root)) = serde_json::from_str::<Value>(spec) else {
-        return Vec::new();
-    };
-    // The character's slots: the file's own recipe's, else the built-in's.
-    let (mut slots, mut tags): (Vec<String>, Vec<String>) = (Vec::new(), Vec::new());
-    match entry(&root, "recipe").filter(|r| text(r, "id") == character) {
-        Some(r) => {
-            if let Some(Value::Object(m)) = field(r, "slots") {
-                slots.extend(m.keys().cloned());
-            }
-            for t in field(r, "tags")
-                .and_then(Value::as_array)
-                .into_iter()
-                .flatten()
-            {
-                tags.push(t.as_str().unwrap_or_default().to_string());
-            }
-        }
-        None => {
-            if let Some(r) = crate::character::recipe::recipes().get(character) {
-                slots.extend(r.slots.iter().map(|s| s.name.clone()));
-                tags.clone_from(&r.tags);
-            }
-        }
-    }
-    // Every character has the `frame` (design note 26).
-    slots.push("frame".into());
-    closet(&root)
-        .iter()
-        .map(|c| {
-            let (id, slot) = (text(c, "id"), text(c, "slot"));
-            let made = field(c, "fits")
-                .and_then(Value::as_array)
-                .is_none_or(|a| a.iter().any(|x| x.as_str() == Some(character)));
-            let (reason, why) = if !made {
-                (
-                    "not-made-for",
-                    format!("`{id}` isn't made for `{character}`"),
-                )
-            } else if !slots.iter().any(|s| s == slot) {
-                ("no-slot", format!("`{character}` has no `{slot}` slot"))
-            } else if let Some(t) = field(c, "requires")
-                .and_then(Value::as_array)
-                .into_iter()
-                .flatten()
-                .filter_map(Value::as_str)
-                .find(|t| !tags.iter().any(|x| x == t))
-            {
-                (
-                    "missing-tag",
-                    format!("`{id}` needs a character tagged `{t}`"),
-                )
-            } else {
-                ("fits", String::new())
-            };
-            FxDiagnostic {
-                severity: reason.into(),
-                path: id.to_string(),
-                message: why,
-            }
-        })
-        .collect()
-}
-
-/// `params.eyeStyle`'s names, in the opt's order (0 = the recipe's own).
-const EYE_STYLE_NAMES: [&str; 5] = ["auto", "shape", "glossy", "pixel", "dot"];
 
 /// A `transitions` entry's keys (1.9).
 const TRANSITION_KEYS: [&str; 2] = ["duration", "curve"];
@@ -2198,8 +1736,8 @@ fn resolve_block(
         .map(|r| r.mode.clone())
         .unwrap_or_default();
 
-    // 1.12: a character's palette, in part (design note 19); 1.13: roles, a named
-    // palette (`theme`, or the string shorthand) and a `dark` variant (design note 23).
+    // 1.12: a character's palette, in part (design note 19); 1.13: roles and a `dark`
+    // variant (design note 23).
     if let Some(v) = b.get("palette") {
         let pp = at("palette");
         if object != Some("character") {
@@ -2446,24 +1984,13 @@ fn resolve_block(
                     );
                     continue;
                 }
-                if family.is_some() && !allowed.contains(&key) && !indexed_param(&mode, key) {
-                    diag.unknown(strict, &path, key, &allowed);
+                // The eye styles were removed in 0.1.0-beta.9 (design note 38).
+                if object == Some("character") && key == "eyeStyle" {
+                    removed_material(&path, "params.eyeStyle", diag);
                     continue;
                 }
-                // A character's eye style may be named (design note 24).
-                if let (true, Some(name)) = (key == "eyeStyle", v.as_str()) {
-                    match EYE_STYLE_NAMES.iter().position(|n| *n == name) {
-                        Some(i) => {
-                            out.insert(key.into(), i as f64);
-                        }
-                        None => diag.error(
-                            &path,
-                            format!(
-                                "unknown eye style `{name}`: one of {}",
-                                EYE_STYLE_NAMES.join(", ")
-                            ),
-                        ),
-                    }
+                if family.is_some() && !allowed.contains(&key) && !indexed_param(&mode, key) {
+                    diag.unknown(strict, &path, key, &allowed);
                     continue;
                 }
                 if let Some(x) = number(v, &path, -1e9, 1e9, diag) {
@@ -2806,7 +2333,9 @@ pub fn resolve_full(
     version_gate(root, minor, SINCE, &mut diag);
 
     for k in root.keys() {
-        if !TOP_KEYS.contains(&k.as_str()) {
+        if REMOVED_TOP_KEYS.contains(&k.as_str()) {
+            removed_material(&ptr("", k), k, &mut diag);
+        } else if !TOP_KEYS.contains(&k.as_str()) {
             diag.unknown(strict, &ptr("", k), k, &TOP_KEYS);
         }
     }
@@ -2817,33 +2346,9 @@ pub fn resolve_full(
             }
         }
     }
-    // 1.13: a named palette and a dark variant (design note 23) need 1.13.
-    if minor < 13 {
-        palette_gate(root, &mut diag);
-    }
-    // `"palette": "sunset"` is `{ "theme": "sunset" }` (a loaded catalog's `"catalog:mint"`
-    // too, design note 26), before `states` merge over it.
-    let named = |p: &mut Value| {
-        if let Value::String(n) = p {
-            *p = serde_json::json!({ "theme": n.clone() });
-        }
-    };
-    if let Some(p) = root.get_mut("palette") {
-        named(p);
-    }
-    if let Some(Value::Object(states)) = root.get_mut("states") {
-        for e in states.values_mut() {
-            if let Some(p) = e.get_mut("palette") {
-                named(p);
-            }
-        }
-    }
-    // 1.13: cosmetics, merged into the character's recipe (design note 21); a
-    // `"<namespace>:<id>"` is a loaded pack's (design note 26).
-    if let Some(c) = root.get("cosmetics").cloned() {
-        let c = catalog_refs(c, &mut diag);
-        use_cosmetics(root, &c, &mut diag);
-    }
+    // Named palettes were removed in 0.1.0-beta.9 (design note 38); a dark variant
+    // (design note 23) needs 1.13.
+    palette_gate(root, minor, &mut diag);
     // 1.12: a character recipe carried in the file (design note 12).
     if let Some(r) = root.get("recipe").cloned() {
         let object = root

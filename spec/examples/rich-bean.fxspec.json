@@ -469,30 +469,6 @@
         "cheeks"
       ]
     },
-    "slots": {
-      "headTop": {
-        "at": [
-          100,
-          34
-        ],
-        "scale": 0.85,
-        "follows": "head"
-      },
-      "face": {
-        "at": [
-          100,
-          114
-        ],
-        "follows": "face"
-      },
-      "chest": {
-        "at": [
-          100,
-          150
-        ],
-        "follows": "body"
-      }
-    },
     "profile": "bean",
     "grain": {
       "strength": 0.08

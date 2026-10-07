@@ -3,9 +3,7 @@
   "$comment": "HUM, a vintage studio microphone that hosts the show. The grille is the mouth; the tally light is red while it listens and blinks amber while it thinks; the capsule tips toward you while listening and sways on its yoke while speaking.",
   "recipe": 1,
   "id": "hum",
-  "tags": ["screen-face"],
   "palette": {
-    "iris": [188, 0.75, 0.45],
     "body": [9.2, 0.759, 0.563],
     "bodyLight": [14.1, 1.0, 0.7],
     "bodyDark": [7.4, 0.688, 0.39],
@@ -20,7 +18,7 @@
     "shine": [0.0, 0.0, 1.0]
   },
   "hue": { "base": 9.0, "turns": ["body", "bodyLight", "bodyDark"] },
-  "roles": {"iris": "iris", "primary": "body", "accent": "tallyListening"},
+  "roles": {"primary": "body", "accent": "tallyListening"},
   "contrast": [["glow", "grille"]],
   "rig": {
     "kind": "pivot", "pivot": [100.0, 94.0], "lean": 0.5, "squash": true,
@@ -53,7 +51,7 @@
           "smallSlot": [6.0, 4.0, 10.0], "rise": [1.5, 4.0], "step": 2.0, "ink": "glow", "surface": "face"
         },
         { "part": "glints", "at": [[40.0, 22.0], [132.0, 12.0]], "rect": [68.0, 10.0, 5.0, 2.0], "color": "shine", "alpha": 0.35 },
-        { "part": "eyes", "iris": "iris", "at": [100.0, 90.0], "scale": [0.82, 0.95], "ink": "glow", "glow": [4.5, 2.0], "surface": "face" }
+        { "part": "eyes", "at": [100.0, 90.0], "scale": [0.82, 0.95], "ink": "glow", "glow": [4.5, 2.0], "surface": "face" }
       ],
       "outline": { "width": 3.5, "color": "outline" }
     },
@@ -62,11 +60,5 @@
       "off": "tallyOff", "listening": "tallyListening", "thinking": "tallyThinking", "outline": { "width": 2.5, "color": "outline" }
     }
   ],
-  "burst": { "space": "body", "at": [100.0, 92.0], "r": 78.0, "colors": ["celebrate", "tallyThinking", "glow"] },
-  "slots": {
-    "headTop": { "at": [100.0, 22.0], "scale": 0.9, "follows": "head" },
-    "face": { "at": [100.0, 96.0], "follows": "face" },
-    "neck": { "at": [100.0, 150.0], "follows": "body" },
-    "chest": { "at": [100.0, 130.0], "follows": "body" }
-  }
+  "burst": { "space": "body", "at": [100.0, 92.0], "r": 78.0, "colors": ["celebrate", "tallyThinking", "glow"] }
 }

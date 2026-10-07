@@ -381,36 +381,6 @@
         "coral"
       ]
     },
-    "slots": {
-      "headTop": {
-        "at": [
-          100.0,
-          52.0
-        ],
-        "follows": "head"
-      },
-      "face": {
-        "at": [
-          100.0,
-          100.0
-        ],
-        "follows": "face"
-      },
-      "neck": {
-        "at": [
-          100.0,
-          150.0
-        ],
-        "follows": "body"
-      },
-      "chest": {
-        "at": [
-          100.0,
-          140.0
-        ],
-        "follows": "body"
-      }
-    },
     "profile": "chirp"
   },
   "params": {

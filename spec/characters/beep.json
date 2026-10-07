@@ -3,9 +3,7 @@
   "$comment": "BEEP, a small tin robot with arms. An antenna light is red while it listens and amber while it thinks; its chest core moves with the voice; its arms move with the conversation: a hand to the ear to listen, to the chin to think, small beats as it speaks, up to celebrate. Drawn from SVG paths and the part library, arms included.",
   "recipe": 1,
   "id": "beep",
-  "tags": ["screen-face", "has-arms"],
   "palette": {
-    "iris": [188, 0.75, 0.45],
     "body": [200, 0.18, 0.72],
     "bodyLight": [200, 0.25, 0.86],
     "bodyDark": [205, 0.2, 0.5],
@@ -21,7 +19,7 @@
     "cheeks": [2, 0.7, 0.66]
   },
   "hue": {"base": 200, "turns": ["body", "bodyLight", "bodyDark", "arms"]},
-  "roles": {"iris": "iris", "primary": "body", "secondary": "arms", "accent": "accent"},
+  "roles": {"primary": "body", "secondary": "arms", "accent": "accent"},
   "contrast": [["glow", "screen"]],
   "rig": {"kind": "upright", "base": [100, 184]},
   "surfaces": {"face": {"c": [100, 78], "r": 52, "depth": 0.6, "cylinder": true}},
@@ -35,10 +33,9 @@
     {"part": "chestCore", "space": "body", "at": [100, 140], "r": 13, "bars": [0.5, 0.9, 0.7, 1.0, 0.6], "colors": ["screen", "accent", "glow"]},
     {"part": "body", "space": "body", "shape": {"roundRect": [90, 106, 20, 16, 4, 2]}, "light": {"linear": [0, 106, 0, 122], "stops": [[0, "bodyDark"], [1, "body"]]}, "inner": [], "outline": {"width": 3, "color": "outline"}},
     {"part": "body", "space": "body", "shape": {"path": "M60 30 H140 C150 30 156 36 156 46 V96 C156 106 150 112 140 112 H60 C50 112 44 106 44 96 V46 C44 36 50 30 60 30 Z"}, "light": {"radial": [74, 40, 110], "stops": [[0, "bodyLight"], [0.6, "body"], [1, "bodyDark"]]}, "turnLight": [-14, 10], "inner": [{"part": "patch", "shape": {"roundRect": [56, 44, 88, 56, 14, 3]}, "surface": "face", "color": "screen"}, {"part": "glints", "at": [[48, 30]], "rect": [150, 4, 2, 2], "color": "bodyLight", "alpha": 0.6}, {"part": "patch", "shape": {"ellipse": [50, 58, 3, 3, 0, 12]}, "color": "rivets"}, {"part": "patch", "shape": {"ellipse": [150, 58, 3, 3, 0, 12]}, "color": "rivets"}], "outline": {"width": 3.5, "color": "outline"}},
-    {"part": "eyes", "iris": "iris", "space": "face", "surface": "face", "at": [100, 64], "scale": [0.85, 1.0], "ink": "glow", "glow": [3, 2]},
+    {"part": "eyes", "space": "face", "surface": "face", "at": [100, 64], "scale": [0.85, 1.0], "ink": "glow", "glow": [3, 2]},
     {"part": "ovalMouth", "space": "face", "surface": "face", "at": [100, 64], "scale": [0.85, 1.0], "halfWidth": 12, "ink": "glow"},
     {"part": "arms", "space": "body", "shoulder": [58, 126], "mirror": 100, "length": [22, 22], "width": 7, "hand": 8, "ear": [166, 70], "chin": [118, 112], "color": "arms", "handColor": "accent", "outline": {"width": 2.5, "color": "outline"}}
   ],
-  "burst": {"at": [100, 80], "r": 86, "colors": ["celebrate", "accent", "glow"]},
-  "slots": {"headTop": {"at": [100, 30], "scale": 0.85, "follows": "head"}, "face": {"at": [100, 72], "follows": "face"}, "chest": {"at": [100, 140], "follows": "body"}}
+  "burst": {"at": [100, 80], "r": 86, "colors": ["celebrate", "accent", "glow"]}
 }

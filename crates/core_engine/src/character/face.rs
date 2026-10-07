@@ -150,14 +150,6 @@ pub struct Face<'a> {
     pub glow: f64,
     /// Everything is clipped to this convex outline (a screen), if given.
     pub clip: Option<&'a [Point]>,
-    /// The eye style (design note 24): 0 shape, 1 glossy, 2 pixel, 3 dot.
-    pub style: u8,
-    /// The glossy eye's iris colour.
-    pub iris: Hsl,
-    /// The glossy eye has a white sclera (else a dark lens).
-    pub sclera: bool,
-    /// The 20 px preset: the glossy eye collapses to the iris and one highlight.
-    pub small: bool,
 }
 
 const EYE_GAP: f64 = 24.0;
@@ -238,21 +230,7 @@ pub fn eye_fills(face: &Face, e: &Eyes) -> Vec<Fill> {
                     geom::stroke(&[pt(k, -k * 0.8), pt(-k, k * 0.8)], w),
                 ]
             }
-            _ => {
-                // The glossy eye is a little bigger and rounder.
-                let k = if face.style == 1 && e.kind == EyeKind::Shape {
-                    1.0
-                } else {
-                    0.0
-                };
-                let e = Eyes {
-                    w: e.w * (1.0 + 0.2 * k),
-                    h: e.h * (1.0 + 0.1 * k),
-                    r: e.r * (1.0 + 0.5 * k),
-                    ..*e
-                };
-                vec![eye_outline(&e, side)]
-            }
+            _ => vec![eye_outline(e, side)],
         };
         for part in parts {
             let placed: Vec<Point> = part
@@ -263,219 +241,13 @@ pub fn eye_fills(face: &Face, e: &Eyes) -> Vec<Fill> {
             if placed.len() < 3 {
                 continue;
             }
-            let style = if e.kind == EyeKind::Shape {
-                face.style
-            } else {
-                0
-            };
-            match style {
-                1 => glossy(face, e, (cx, cy), &placed, &mut out),
-                2 => pixels(face, (cx, cy), e.w * s / 4.5, &placed, &mut out),
-                3 => dot(face, e, side, (cx, cy), &mut out),
-                _ => {
-                    if face.glow > 0.0 {
-                        out.push(blurred(placed.clone(), face.ink, 0.7, face.glow));
-                    }
-                    out.push(solid(placed, face.ink, 1.0));
-                }
+            if face.glow > 0.0 {
+                out.push(blurred(placed.clone(), face.ink, 0.7, face.glow));
             }
+            out.push(solid(placed, face.ink, 1.0));
         }
     }
     out
-}
-
-fn lighter(c: Hsl, d: f64) -> Hsl {
-    Hsl {
-        l: (c.l + d).clamp(0.0, 0.97),
-        ..c
-    }
-}
-
-/// `p` clipped to the eye outline (which a smile makes concave).
-#[inline(never)]
-fn inside_eye(p: Vec<Point>, eye: &[Point]) -> Vec<Vec<Point>> {
-    super::region::clip_poly(&p, eye)
-        .into_iter()
-        .filter(|q| q.len() >= 3)
-        .collect()
-}
-
-/// An ellipse clipped to the eye.
-#[inline(never)]
-fn spot(eye: &[Point], (x, y): (f64, f64), rx: f64, ry: f64) -> Vec<Vec<Point>> {
-    inside_eye(geom::ellipse(x, y, rx, ry, 0.0, 24), eye)
-}
-
-/// The glossy eye (design note 24): a lens or sclera, an iris with a radial
-/// gradient and a pupil that follow the gaze inside the eye, highlights that
-/// stay with the light, and a lid line; all clipped to the eye's shape, so the
-/// blinks and expressions shape it as before.
-#[inline(never)]
-fn glossy(face: &Face, e: &Eyes, (cx, cy): (f64, f64), eye: &[Point], out: &mut Vec<Fill>) {
-    let s = face.scale;
-    let (w, h) = (e.w * 1.2 * s, e.h * 1.1 * s);
-    let lens = if face.sclera {
-        geom::hsl(face.iris.h, 0.15, 0.97)
-    } else {
-        geom::hsl(face.iris.h, 0.35, 0.09)
-    };
-    out.push(solid(eye.to_vec(), lens, 1.0));
-    let ir = w.min(h) * if face.sclera { 0.42 } else { 0.5 };
-    let (ix, iy) = (
-        cx + (e.gx * 0.4 * s).clamp(-w * 0.18, w * 0.18),
-        cy + (e.gy * 0.4 * s).clamp(-h * 0.15, h * 0.15),
-    );
-    let iris = face.iris;
-    let stops = [
-        (0.0, lighter(iris, -iris.l * 0.3)),
-        (0.55, iris),
-        (1.0, lighter(iris, 0.22)),
-    ];
-    for p in spot(eye, (ix, iy), ir, ir * 1.06) {
-        out.push(geom::radial(p, (ix, iy), ir, &stops));
-    }
-    if !face.small {
-        let dark = geom::hsl(iris.h, 0.4, 0.05);
-        for p in spot(eye, (ix, iy), ir * 0.42, ir * 0.46) {
-            out.push(solid(p, dark, 1.0));
-        }
-    }
-    // Highlights ride the eye, not the iris (only a fifth of the gaze): the light stays put.
-    let (hx, hy) = (cx - e.gx * 0.1 * s, cy - e.gy * 0.1 * s);
-    let white = geom::hsl(0.0, 0.0, 1.0);
-    let spots: &[(f64, f64, f64, f64)] = if face.small {
-        &[(0.2, -0.2, 0.16, 0.95)]
-    } else {
-        &[
-            (0.17, -0.17, 0.17, 0.95),
-            (-0.16, 0.2, 0.07, 0.45),
-            (0.24, 0.12, 0.05, 0.45),
-        ]
-    };
-    for &(dx, dy, r, a) in spots {
-        for p in spot(eye, (hx + dx * w, hy + dy * h), r * w, r * w) {
-            out.push(solid(p, white, a));
-        }
-    }
-    // The lid: the eye less itself moved down, a crescent along the top edge.
-    if !face.small {
-        let k = h * 0.09;
-        let moved: Vec<Point> = eye.iter().map(|q| pt(q.x, q.y + k)).collect();
-        let holes = inside_eye(moved, eye);
-        let (c, a) = if face.sclera {
-            (geom::hsl(iris.h, 0.3, 0.08), 0.95)
-        } else {
-            (lighter(iris, 0.2), 0.45)
-        };
-        out.push(Fill {
-            holes,
-            ..solid(eye.to_vec(), c, a)
-        });
-    }
-}
-
-/// Small rounded square cells (octagons) on a grid of pitch `q` through `at`,
-/// lit where they fall inside `p` (a thin mouth line: near it too).
-#[inline(never)]
-fn cells(
-    face: &Face,
-    at: (f64, f64),
-    q: f64,
-    p: &[Point],
-    a: f64,
-    thin: bool,
-    out: &mut Vec<Fill>,
-) {
-    let (mut x0, mut y0, mut x1, mut y1) = (f64::MAX, f64::MAX, f64::MIN, f64::MIN);
-    for v in p {
-        (x0, y0, x1, y1) = (x0.min(v.x), y0.min(v.y), x1.max(v.x), y1.max(v.y));
-    }
-    let (i0, i1) = (
-        ((x0 - at.0) / q).floor() as i32,
-        ((x1 - at.0) / q).ceil() as i32,
-    );
-    let (j0, j1) = (
-        ((y0 - at.1) / q).floor() as i32,
-        ((y1 - at.1) / q).ceil() as i32,
-    );
-    let k = if thin { q * 0.45 } else { 0.0 };
-    let mut lit = 0;
-    for j in j0..=j1 {
-        for i in i0..=i1 {
-            let (x, y) = (at.0 + f64::from(i) * q, at.1 + f64::from(j) * q);
-            let on = [(0.0, 0.0), (k, 0.0), (-k, 0.0), (0.0, k), (0.0, -k)]
-                .iter()
-                .any(|(dx, dy)| super::region::inside(&pt(x + dx, y + dy), p));
-            if on {
-                lit += 1;
-                out.push(solid(cell(x, y, q * 0.4), face.ink, a));
-            }
-        }
-    }
-    // A shut eye is a row of cells.
-    if lit == 0 && !thin {
-        let n = ((x1 - x0) / q / 2.0).floor() as i32;
-        for i in -n..=n {
-            out.push(solid(
-                cell(at.0 + f64::from(i) * q, (y0 + y1) / 2.0, q * 0.4),
-                face.ink,
-                a,
-            ));
-        }
-    }
-}
-
-fn cell(x: f64, y: f64, r: f64) -> Vec<Point> {
-    let c = r * 0.45;
-    vec![
-        pt(x - r + c, y - r),
-        pt(x + r - c, y - r),
-        pt(x + r, y - r + c),
-        pt(x + r, y + r - c),
-        pt(x + r - c, y + r),
-        pt(x - r + c, y + r),
-        pt(x - r, y + r - c),
-        pt(x - r, y - r + c),
-    ]
-}
-
-/// Pixel eyes: the eye's shape lit as a grid of cells, glowing on a screen.
-#[inline(never)]
-fn pixels(face: &Face, at: (f64, f64), q: f64, eye: &[Point], out: &mut Vec<Fill>) {
-    if face.glow > 0.0 {
-        out.push(blurred(eye.to_vec(), face.ink, 0.35, face.glow * 1.5));
-    }
-    cells(face, at, q, eye, 1.0, false, out);
-}
-
-/// A light point: a soft glowing dot; blinks squash it, expressions tilt and
-/// scale it a little.
-#[inline(never)]
-fn dot(face: &Face, e: &Eyes, side: f64, (cx, cy): (f64, f64), out: &mut Vec<Fill>) {
-    let s = face.scale;
-    let r = e.w.min(e.h) * if face.glow > 0.0 { 0.34 } else { 0.3 } * s;
-    let h0 = if side < 0.0 { 1.0 - e.asym } else { 1.0 };
-    let open = e.open.clamp(0.0, 1.0);
-    let ry = (r * h0 * open * (1.0 - e.lid * 0.5) * (1.0 - e.smile * 0.45)).max(0.8 * s);
-    let rx = r * (1.0 + (1.0 - open) * 0.25);
-    let tilt = e.tilt * side * 0.35;
-    let c = face.ink;
-    let core = lighter(c, 0.22);
-    if !face.small && face.glow > 0.0 {
-        let halo = clipped(face, geom::ellipse(cx, cy, rx * 1.7, ry * 1.7, tilt, 24));
-        if halo.len() >= 3 {
-            out.push(blurred(halo, c, 0.5, r * 0.7));
-        }
-    }
-    let p = clipped(face, geom::ellipse(cx, cy, rx, ry, tilt, 24));
-    if p.len() >= 3 {
-        out.push(geom::radial(
-            p,
-            (cx, cy),
-            rx.max(ry),
-            &[(0.0, core), (1.0, c)],
-        ));
-    }
 }
 
 /// The mouth as fills, centred under the eyes (it follows the gaze halfway).
@@ -488,16 +260,6 @@ pub fn mouth_fills(face: &Face, e: &Eyes, mouth: Mouth, half_width: f64) -> Vec<
     let line_w = 3.2 * s;
     let shapes = mouth_shapes(mouth, mx, my, s, line_w, half_width);
     let mut out = Vec::new();
-    if face.style == 2 {
-        let q = 3.0 * s;
-        for (p, a) in shapes {
-            let p = clipped(face, p);
-            if p.len() >= 3 {
-                cells(face, (mx, my), q, &p, a, true, &mut out);
-            }
-        }
-        return out;
-    }
     for (p, a) in shapes {
         let p = clipped(face, p);
         if p.len() < 3 {
@@ -647,10 +409,6 @@ mod tests {
             ink: hsl(185.0, 1.0, 0.7),
             glow: 0.0,
             clip: None,
-            style: 0,
-            iris: hsl(185.0, 1.0, 0.5),
-            sclera: false,
-            small: false,
         }
     }
 

@@ -150,16 +150,6 @@ impl Turn {
         pt(cx + (x * cyaw + z1 * sy) * s.r, cy + y1 * s.r)
     }
 
-    /// How far `p` on `s` faces the viewer after the turn: > 0 in front, < 0 round the
-    /// back (a point past the rim lies flat, so the far side of a hat goes behind).
-    pub fn facing(&self, s: &Surface, p: &Point) -> f64 {
-        let (x, y) = ((p.x - s.c.0) / s.r, (p.y - s.c.1) / s.r);
-        let z = (1.0 - x * x - y * y).max(0.0).sqrt() * s.depth;
-        let (sp, cp) = self.pitch.sin_cos();
-        let (sy, cyaw) = self.yaw.sin_cos();
-        -x * sy + (y * sp + z * cp) * cyaw
-    }
-
     /// How far a part has come round to the front (or gone behind), 0..1 as
     /// the head turns off centre: fades a part across the draw-order switch
     /// so nothing jumps.

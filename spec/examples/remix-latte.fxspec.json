@@ -344,29 +344,6 @@
         "heart"
       ]
     },
-    "slots": {
-      "headTop": {
-        "at": [
-          90,
-          40
-        ],
-        "follows": "head"
-      },
-      "face": {
-        "at": [
-          90,
-          100
-        ],
-        "follows": "face"
-      },
-      "chest": {
-        "at": [
-          90,
-          140
-        ],
-        "follows": "body"
-      }
-    },
     "profile": "cuppa"
   }
 }

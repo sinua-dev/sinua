@@ -3,9 +3,7 @@
   "$comment": "WISP, a helpful spirit. Its sparkles wander at rest, gather in while it listens (closer as the user speaks), orbit its crown while it thinks and stream out with its voice; the tail curls tighter while thinking (curlGain); the mouth is an oval that opens with the level.",
   "recipe": 1,
   "id": "wisp",
-  "tags": ["floats"],
   "palette": {
-    "iris": [188, 0.75, 0.45],
     "body": [252.7, 1.0, 0.712],
     "bodyMid": [227.9, 1.0, 0.718],
     "tail": [174.8, 0.662, 0.524],
@@ -16,7 +14,7 @@
     "shine": [0.0, 0.0, 1.0]
   },
   "hue": { "base": 253.0, "turns": ["body", "bodyMid", "tail", "outline"] },
-  "roles": {"iris": "iris", "primary": "body", "secondary": "bodyMid", "accent": "tail"},
+  "roles": {"primary": "body", "secondary": "bodyMid", "accent": "tail"},
   "contrast": [["eyes", "body"]],
   "rig": { "kind": "float", "center": [100.0, 90.0], "lean": 0.5, "float": { "rate": 2.0, "amp": 4.0 } },
   "surfaces": {
@@ -33,15 +31,9 @@
       "stops": [[0.0, "body"], [0.6, "bodyMid"], [1.0, "tail"]], "line": "outline", "smoke": "tail", "shine": "shine",
       "tail": { "lag": 0.25, "swing": 14.0 }
     },
-    { "part": "eyes", "iris": "iris", "space": "face", "surface": "face", "at": [100.0, 84.0], "scale": [0.9, 1.0], "ink": "eyes", "glow": 0.0 },
+    { "part": "eyes", "space": "face", "surface": "face", "at": [100.0, 84.0], "scale": [0.9, 1.0], "ink": "eyes", "glow": 0.0 },
     { "part": "ovalMouth", "space": "face", "surface": "face", "at": [100.0, 84.0], "scale": [0.9, 1.0], "halfWidth": 12.0, "ink": "eyes" },
     { "part": "sparkles", "space": "ground", "count": 5, "head": [100.0, 82.0], "colors": ["sparkles", "twinkles"] }
   ],
-  "burst": { "at": [100.0, 88.0], "r": 80.0, "colors": ["celebrate", "sparkles", "twinkles"] },
-  "slots": {
-    "headTop": { "at": [100.0, 38.0], "scale": 0.9, "follows": "head" },
-    "face": { "at": [100.0, 88.0], "follows": "face" },
-    "neck": { "at": [100.0, 128.0], "follows": "body" },
-    "chest": { "at": [100.0, 140.0], "follows": "body" }
-  }
+  "burst": { "at": [100.0, 88.0], "r": 80.0, "colors": ["celebrate", "sparkles", "twinkles"] }
 }

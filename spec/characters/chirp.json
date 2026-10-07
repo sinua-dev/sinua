@@ -3,9 +3,7 @@
   "$comment": "CHIRP, a small songbird. The beak is the mouth; listening tilts the head and lifts the crest; thinking drops it and lights three thought dots; speaking floats notes and flutters the wings. A recipe of the character part library: the numbers are the drawing, the parts are the behaviour.",
   "recipe": 1,
   "id": "chirp",
-  "tags": ["round"],
   "palette": {
-    "iris": [188, 0.75, 0.45],
     "body": [11.9, 1.0, 0.675],
     "bodyLight": [14.6, 1.0, 0.767],
     "bodyDark": [11.6, 0.691, 0.518],
@@ -17,7 +15,7 @@
     "eyes": [10.0, 0.273, 0.129]
   },
   "hue": { "base": 12.0, "turns": ["body", "bodyLight", "bodyDark"] },
-  "roles": {"iris": "iris", "primary": "body", "secondary": "belly", "accent": "beak"},
+  "roles": {"primary": "body", "secondary": "belly", "accent": "beak"},
   "contrast": [["eyes", "body"]],
   "rig": { "kind": "pivot", "pivot": [100.0, 170.0], "lean": 0.5 },
   "surfaces": {
@@ -52,7 +50,7 @@
       "segments": 24, "flutter": { "rate": 14.0, "gain": "flutterGain" }, "surface": "ball",
       "turn": { "near": 0.25, "far": 0.6 }, "color": "feathers", "outline": { "width": 3.0, "color": "outline" }
     },
-    { "part": "eyes", "iris": "iris", "space": "face", "surface": "face", "at": [100.0, 96.0], "scale": [0.82, 0.95], "ink": "eyes", "glow": 0.0 },
+    { "part": "eyes", "space": "face", "surface": "face", "at": [100.0, 96.0], "scale": [0.82, 0.95], "ink": "eyes", "glow": 0.0 },
     {
       "part": "beak", "space": "face", "surface": "face",
       "lower": [[90.0, 118.0], [110.0, 118.0], [100.0, 122.0]], "drop": 14.0,
@@ -66,11 +64,5 @@
       "dots": { "at": [146.0, 44.0], "step": [10.0, 6.0], "r": [3.5, 1.0], "segments": 16, "rate": 2.2, "base": 0.3, "gain": 0.7 }
     }
   ],
-  "burst": { "at": [100.0, 104.0], "r": 82.0, "colors": ["celebrate", "beak", "feathers"] },
-  "slots": {
-    "headTop": { "at": [100.0, 52.0], "scale": 1.0, "follows": "head" },
-    "face": { "at": [100.0, 100.0], "follows": "face" },
-    "neck": { "at": [100.0, 150.0], "follows": "body" },
-    "chest": { "at": [100.0, 140.0], "follows": "body" }
-  }
+  "burst": { "at": [100.0, 104.0], "r": 82.0, "colors": ["celebrate", "beak", "feathers"] }
 }

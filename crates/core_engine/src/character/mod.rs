@@ -15,8 +15,6 @@
 //! - `turn`: the head turn (yaw / pitch), a 1.11 candidate prototyped on Buzzy.
 //! - `modes`: one file per character.
 
-pub mod catalog;
-pub mod cosmetic;
 pub mod face;
 pub mod geom;
 pub mod kit;
@@ -33,4 +31,3 @@ pub mod region;
 pub mod registry;
 pub mod rig;
 pub mod turn;
-pub mod wear;

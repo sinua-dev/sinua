@@ -449,10 +449,6 @@ pub fn frame_transition_with_overrides(
     t: f64,
     blend: f64,
 ) -> Option<OrbFrame> {
-    // A loadout change on one character (design note 25).
-    if let Some(f) = character::wear::frame_wear(&from, &to, size, t, blend) {
-        return Some(f);
-    }
     let a = orbs::presets::resolve_preset(&from.state, size)?;
     let b = orbs::presets::resolve_preset(&to.state, size)?;
     let mut oa = a.opts.clone();
@@ -699,65 +695,6 @@ pub fn frame_from_fx_spec(json: String, elapsed: f64) -> Option<OrbFrame> {
     frame_from_fx_spec_with(json, elapsed, None, HashMap::new(), false)
 }
 
-/// A loadout applied to an FX Spec (design note 25): the file with the end
-/// user's choices in it, and warnings for whatever it no longer offers.
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
-pub fn apply_loadout(spec: String, loadout: String) -> LoadoutApplied {
-    let (spec, diagnostics) = fx_spec::apply_loadout(&spec, &loadout);
-    LoadoutApplied { spec, diagnostics }
-}
-
-/// [`apply_loadout`]'s result.
-#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
-#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]
-#[derive(Clone, Debug, PartialEq)]
-pub struct LoadoutApplied {
-    pub spec: String,
-    pub diagnostics: Vec<FxDiagnostic>,
-}
-
-/// Loads a catalog pack (design note 26): `{ "catalog": 1, "namespace": "...",
-/// "cosmetics": [...], "palettes": {...} }`. Files then name its items as
-/// `"<namespace>:<id>"`. Loading a namespace again replaces it; an error loads nothing.
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
-pub fn load_catalog(json: String) -> Vec<FxDiagnostic> {
-    character::catalog::load(&json)
-}
-
-/// Forgets a catalog pack's items; whether it had any.
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
-pub fn unload_catalog(namespace: String) -> bool {
-    character::catalog::unload(&namespace)
-}
-
-/// What a file's wardrobe offers `character`, for a picker (design note 25).
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
-pub fn cosmetics_for(spec: String, character: String) -> Vec<FxDiagnostic> {
-    fx_spec::cosmetics_for(&spec, &character)
-}
-
-/// A thumbnail (design note 25): the spec with `loadout` (may be empty) drawn
-/// once in a still pose (no glance, no blink) at `turn_yaw` (radians, 0 =
-/// facing), without touching the live characters' registry.
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
-pub fn frame_still(spec: String, loadout: String, size: u32, turn_yaw: f64) -> Option<OrbFrame> {
-    let spec = if loadout.is_empty() {
-        spec
-    } else {
-        fx_spec::apply_loadout(&spec, &loadout).0
-    };
-    character::registry::preview(|| {
-        let r = fx_spec::resolve_full(&spec, None, &HashMap::new(), false);
-        if !r.ok {
-            return None;
-        }
-        let mut o = r.overrides;
-        o.insert("still".into(), 1.0);
-        o.insert("turnYaw".into(), turn_yaw);
-        frame_with_overrides(r.state, size, 1.0, o)
-    })
-}
-
 /// FX Spec v1.1+: resolve for the caller's current lifecycle `state` (a key
 /// of the spec's `states`; `None` or an unknown key = the base design), app
 /// `inputs` (drive the spec's `bindings`; a missing input leaves its binding
@@ -982,39 +919,6 @@ mod wasm {
             (Ok(from), Ok(to)) => crate::frame_transition_with_overrides(from, to, size, t, blend),
             _ => None,
         };
-        crate::transport::pack(f.as_ref()).into_boxed_slice()
-    }
-
-    #[wasm_bindgen]
-    pub fn load_catalog_json(json: String) -> String {
-        serde_json::to_string(&crate::load_catalog(json)).unwrap_or_else(|_| "[]".to_string())
-    }
-
-    #[wasm_bindgen]
-    pub fn unload_catalog_json(namespace: String) -> bool {
-        crate::unload_catalog(namespace)
-    }
-
-    #[wasm_bindgen]
-    pub fn apply_loadout_json(spec: String, loadout: String) -> String {
-        serde_json::to_string(&crate::apply_loadout(spec, loadout))
-            .unwrap_or_else(|_| "null".to_string())
-    }
-
-    #[wasm_bindgen]
-    pub fn cosmetics_for_json(spec: String, character: String) -> String {
-        serde_json::to_string(&crate::cosmetics_for(spec, character))
-            .unwrap_or_else(|_| "[]".to_string())
-    }
-
-    #[wasm_bindgen]
-    pub fn frame_still_packed(
-        spec: String,
-        loadout: String,
-        size: u32,
-        turn_yaw: f64,
-    ) -> Box<[f64]> {
-        let f = crate::frame_still(spec, loadout, size, turn_yaw);
         crate::transport::pack(f.as_ref()).into_boxed_slice()
     }
 

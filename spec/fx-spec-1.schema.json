@@ -62,18 +62,12 @@
       "description": "FX Spec 1.8: the whole visual's opacity, 0 to 1. 1 draws it as the pattern defines it; lower fades everything, halos included. A state patches it (a voice assistant's idle typically sits below 1)."
     },
     "palette": {
-      "description": "FX Spec 1.12, `object: character` only: repaint some of the character's colours (its recipe's palette names, e.g. `shell`), as hex or DTCG colours. A slot's Light/Dark tones follow it; the rest stays as drawn. A state patches it. 1.13: role names (`primary`, `secondary`, `accent`, through the recipe's `roles`), a named palette (`\"theme\": \"sunset\"`, or the string shorthand `\"palette\": \"sunset\"`) and a `dark` variant the views pick in a dark theme.",
-      "oneOf": [
-        { "enum": ["sunset", "ocean", "forest", "candy", "mono", "night"] },
-        {
-          "type": "object",
-          "properties": {
-            "theme": { "enum": ["sunset", "ocean", "forest", "candy", "mono", "night"] },
-            "dark": { "type": "object", "additionalProperties": { "$ref": "#/$defs/color" } }
-          },
-          "additionalProperties": { "$ref": "#/$defs/color" }
-        }
-      ]
+      "description": "FX Spec 1.12, `object: character` only: repaint some of the character's colours (its recipe's palette names, e.g. `shell`), as hex or DTCG colours. A slot's Light/Dark tones follow it; the rest stays as drawn. A state patches it. 1.13: role names (`primary`, `secondary`, `accent`, through the recipe's `roles`) and a `dark` variant the views pick in a dark theme. Named palettes (a string, or `theme`) were removed in 0.1.0-beta.9 and are an error.",
+      "type": "object",
+      "properties": {
+        "dark": { "type": "object", "additionalProperties": { "$ref": "#/$defs/color" } }
+      },
+      "additionalProperties": { "$ref": "#/$defs/color" }
     },
     "expression": {
       "enum": ["happy", "surprised", "thoughtful", "sad", "sleepy", "none"],
@@ -111,19 +105,6 @@
     "params": {
       "type": "object",
       "description": "Per-state engine opts (docs/parameters.md). Runtime inputs (pointer*, audio*, history*, interrupt*, muted*, voiceStateCode, peakN) and section-owned keys (color*, gradient*, glow*, noise*, pulse*) are rejected here. FX Spec 1.7: `progress` / `segment` may be arrays.",
-      "properties": {
-        "eyeStyle": {
-          "description": "A character's eye style (FX Spec 1.13): a name, or its number (0-4).",
-          "anyOf": [
-            {
-              "enum": ["auto", "shape", "glossy", "pixel", "dot"]
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      },
       "additionalProperties": {
         "anyOf": [
           {
@@ -167,11 +148,6 @@
       "$ref": "https://sinua.dev/schema/character-recipe-1.json",
       "description": "1.12: a character recipe (the format of spec/characters/*.json) for `object: character`; `pattern` equal to its `id` draws it. Every field: spec/character-recipe-1.schema.json and docs/character-recipe.md."
     },
-    "cosmetics": {
-      "type": "array",
-      "$ref": "https://sinua.dev/schema/character-recipe-1.json#/properties/cosmetics",
-      "description": "FX Spec 1.13, `object: character` only: cosmetics the character wears (a hat, glasses, a badge): `body` and `eyes` parts on one of its slots, in the slot's units. A cosmetic that doesn't fit a character warns and isn't drawn. File-wide. See docs/character-cosmetics.md."
-    },
     "silhouette": {
       "description": "FX Spec 1.13, `pattern: silhouette`: which head and shoulders the dots fill. A built-in by name, or a file's own outline in a 200 × 200 box (start and end the path below the shoulders: the bottom stays open and fades) with its landmarks. File-wide. See docs/fx-spec.md.",
       "oneOf": [
@@ -187,28 +163,6 @@
           }
         }
       ]
-    },
-    "wardrobe": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "FX Spec 1.13, `object: character` only: what an end user may pick. An app applies a loadout (`{ \"loadout\": 1, \"wear\": [ids], \"palette\": name, \"iris\": name, \"eyeStyle\": name }`) to the file; the file's own `cosmetics` are what it wears without one.",
-      "properties": {
-        "cosmetics": {
-          "type": "array",
-          "$ref": "https://sinua.dev/schema/character-recipe-1.json#/properties/cosmetics",
-          "description": "Cosmetics to pick from (the same objects as `cosmetics`)."
-        },
-        "palettes": {
-          "type": "object",
-          "description": "Named palettes to pick from: each the same object as `palette`.",
-          "additionalProperties": { "type": "object" }
-        },
-        "irises": {
-          "type": "object",
-          "description": "Named eye colours to pick from: a loadout's `iris` names one, which colours the `iris` slot (the glossy eye). Each a colour, hex or DTCG.",
-          "additionalProperties": { "anyOf": [{ "$ref": "#/$defs/hex" }, { "$ref": "#/$defs/dtcgColor" }] }
-        }
-      }
     }
   },
   "$defs": {
@@ -587,14 +541,12 @@
           "description": "FX Spec 1.8: this state's opacity; inherits the top-level `ink` when absent."
         },
         "palette": {
-          "description": "FX Spec 1.12: this state's palette override (a character); merged over the top-level `palette`. 1.13: also a palette name, `theme`, role names and `dark`.",
+          "description": "FX Spec 1.12: this state's palette override (a character); merged over the top-level `palette`. 1.13: also role names and `dark`.",
           "oneOf": [
             { "type": "null" },
-            { "enum": ["sunset", "ocean", "forest", "candy", "mono", "night"] },
             {
               "type": "object",
               "properties": {
-                "theme": { "enum": ["sunset", "ocean", "forest", "candy", "mono", "night", null] },
                 "dark": { "type": ["object", "null"], "additionalProperties": { "anyOf": [{ "$ref": "#/$defs/color" }, { "type": "null" }] } }
               },
               "additionalProperties": { "anyOf": [{ "$ref": "#/$defs/color" }, { "type": "null" }] }

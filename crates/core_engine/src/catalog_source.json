@@ -5592,51 +5592,6 @@
    "step": 1,
    "tier": "basic"
   },
-  "eyeStyle@character": {
-   "key": "eyeStyle",
-   "scope": "character",
-   "path": "eyeStyle",
-   "label": "Eye style",
-   "description": "How the eyes are drawn (FX Spec 1.13): `auto` keeps the recipe's; `shape` is the solid shape eye; `glossy` adds an iris and pupil that follow the gaze, highlights that stay with the light and a lid line; `pixel` lights the eye as a grid of cells (and the mouth on a `faceScreen`); `dot` is a soft glowing point. Blinks, the gaze and expressions work in every style.",
-   "category": "appearance",
-   "group": "style",
-   "type": "choice",
-   "min": 0,
-   "max": 4,
-   "unit": null,
-   "fallback": 0,
-   "uiMin": 0,
-   "uiMax": 4,
-   "step": 1,
-   "tier": "basic",
-   "choices": [
-    {
-     "value": 0,
-     "label": "Auto",
-     "spec": "auto"
-    },
-    {
-     "value": 1,
-     "label": "Shape",
-     "spec": "shape"
-    },
-    {
-     "value": 2,
-     "label": "Glossy",
-     "spec": "glossy"
-    },
-    {
-     "value": 3,
-     "label": "Pixel",
-     "spec": "pixel"
-    },
-    {
-     "value": 4,
-     "label": "Dot",
-     "spec": "dot"
-    }
-   ]
-  },
   "arms@character": {
    "key": "arms",
    "scope": "character",

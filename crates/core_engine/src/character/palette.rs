@@ -10,56 +10,11 @@
 //! The result is engine opts, `palette.<slot>.h/.s/.l/.w`, so a state change
 //! blends them like any number (`transition.rs` keeps the colour, moves `w`).
 
-use serde_json::Value;
-
 use crate::character::geom::Hsl;
 use crate::character::recipe::Recipe;
 
 /// The roles a recipe may map to its slots (design note 23).
-pub const ROLES: [&str; 4] = ["primary", "secondary", "accent", "iris"];
-
-// `THEMES`: the named palettes (name, light roles, dark roles), from
-// `spec/palettes.json` by build.rs.
-include!(concat!(env!("OUT_DIR"), "/themes.rs"));
-
-/// A named palette's roles as (role, colour), light or dark; `None` for an unknown name.
-pub fn theme(name: &str, dark: bool) -> Option<Vec<(String, Hsl)>> {
-    let Some(t) = THEMES.iter().find(|t| t.0 == name) else {
-        return catalog_theme(name, dark);
-    };
-    let roles = if dark { t.2 } else { t.1 };
-    Some(
-        roles
-            .iter()
-            .map(|(r, c)| {
-                let h = |i: usize| f64::from(c[i]);
-                (r.to_string(), crate::character::geom::hsl(h(0), h(1), h(2)))
-            })
-            .collect(),
-    )
-}
-
-/// A loaded catalog's palette (design note 26), `"<namespace>:<name>"`: its roles as
-/// hex colours, `dark` the dark variant. It acts like a built-in palette.
-#[inline(never)]
-fn catalog_theme(name: &str, dark: bool) -> Option<Vec<(String, Hsl)>> {
-    let v = crate::character::catalog::get(name, true)?;
-    let side = match v.get("dark") {
-        Some(d) if dark => d,
-        _ => &v,
-    };
-    let mut out = Vec::new();
-    for r in ROLES {
-        if let Some(c) = side
-            .get(r)
-            .and_then(Value::as_str)
-            .and_then(crate::fx_spec::hex_to_hsl)
-        {
-            out.push((r.to_string(), crate::character::geom::hsl(c.h, c.s, c.l)));
-        }
-    }
-    Some(out)
-}
+pub const ROLES: [&str; 3] = ["primary", "secondary", "accent"];
 
 /// `given` (slot or role, colour) as slots of `r`: roles first, through the
 /// recipe's `roles` (a role it doesn't map stays a slot name, so a 1.12 recipe
@@ -88,16 +43,6 @@ pub fn expand(r: &Recipe, given: &[(String, Hsl)]) -> Vec<(String, Hsl)> {
         }
     }
     out
-}
-
-/// A named palette's roles that `r` maps (a character without a `secondary`
-/// skips it).
-pub fn mapped(r: &Recipe, roles: &[(String, Hsl)]) -> Vec<(String, Hsl)> {
-    roles
-        .iter()
-        .filter(|(k, _)| r.roles.iter().any(|(x, _)| x == k))
-        .cloned()
-        .collect()
 }
 
 /// Below this lightness gap an ink isn't readable on its ground.

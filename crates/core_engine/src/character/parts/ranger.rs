@@ -243,7 +243,6 @@ pub fn fin(r: &mut Reader, space: Space, ctx: &Ctx, out: &mut Vec<Fill>) {
 pub fn face_screen(r: &mut Reader, space: Space, ctx: &Ctx, out: &mut Vec<Fill>) {
     let [screen, ink, line, glass, glass_edge, glint_c] = r.cols::<6>();
     let surface = r.surf();
-    let (style, iris, sclera) = ctx.eye_look(r);
     let small = ctx.tier.small;
     let pose = &ctx.pose;
     let mut fills = Vec::new();
@@ -256,10 +255,6 @@ pub fn face_screen(r: &mut Reader, space: Space, ctx: &Ctx, out: &mut Vec<Fill>)
         ink: kit::effect_ink(pose, ctx.colour(ink)),
         glow: if small { 2.0 } else { 4.0 },
         clip: Some(&scr),
-        style,
-        iris,
-        sclera,
-        small,
     };
     fills.extend(face::eye_fills(&f, &pose.eyes));
     fills.extend(face::mouth_fills(

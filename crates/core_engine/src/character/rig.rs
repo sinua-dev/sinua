@@ -203,16 +203,13 @@ pub fn pose(o: &ModeOpts, t: f64) -> Pose {
     let ex = expression_weights(o);
     express_eyes(&mut eyes, ex);
     // Living motion: glances, blinks, breathing.
-    // `still` (design note 25): a thumbnail's pose: no glance, no blink.
-    let still = get(o, "still", 0.0) >= 0.5;
     let look = get(o, "look", 1.0).clamp(0.0, 2.0);
-    if look > 0.0 && !reduced && !still {
+    if look > 0.0 && !reduced {
         let (gx, gy) = glance(t, seed);
         eyes.gx += gx * look;
         eyes.gy += gy * look;
     }
-    // A loadout change swaps the eye style while the eyes are shut (`wearBlink`).
-    let mut shut = if still { 0.0 } else { blink(t, seed) }.max(get(o, "wearBlink", 0.0));
+    let mut shut = blink(t, seed);
     // The turn blink: a new state that asks for it blinks once at its start.
     let turn = get(o, "turnBlink", 0.0).clamp(0.0, 1.0);
     if let Some(&age) = o.get("stateAge") {

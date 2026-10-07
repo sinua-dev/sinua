@@ -3,9 +3,7 @@
   "$comment": "BUZZY, a small space-hero assistant: a rounded-square indigo helmet with an amber fin and chevron ear pods, a glass visor over a face screen, a voice core in the chest. The mouth is a voice line; the chest bars follow the level; while listening, sound arcs light at the ear pods with the user's level.",
   "recipe": 1,
   "id": "buzzy",
-  "tags": ["screen-face"],
   "palette": {
-    "iris": [188, 0.75, 0.45],
     "body": [231.9, 0.566, 0.461],
     "bodyLight": [231.3, 1.0, 0.718],
     "bodyDark": [234.1, 0.631, 0.255],
@@ -18,7 +16,7 @@
     "shine": [0.0, 0.0, 1.0]
   },
   "hue": { "base": 232.0, "turns": ["body", "bodyLight", "bodyDark", "outline", "screen"] },
-  "roles": {"iris": "iris", "primary": "body", "accent": "accent"},
+  "roles": {"primary": "body", "accent": "accent"},
   "contrast": [["glow", "screen"]],
   "rig": { "kind": "upright", "base": [100.0, 184.0] },
   "surfaces": {
@@ -33,15 +31,9 @@
     { "part": "earPods", "space": "body", "front": true, "x": 100.0, "reach": 62.0, "pod": "bodyDark", "line": "outline", "chevron": "accent", "arcs": "glow" },
     { "part": "fin", "space": "body", "color": "accent", "line": "outline" },
     {
-      "part": "faceScreen", "iris": "iris", "space": "face", "surface": "face", "screen": "screen", "ink": "glow", "line": "outline",
+      "part": "faceScreen", "space": "face", "surface": "face", "screen": "screen", "ink": "glow", "line": "outline",
       "glass": "visor", "glassEdge": "visorEdge", "glint": "shine"
     }
   ],
-  "burst": { "space": "body", "at": [100.0, 96.0], "r": 80.0, "colors": ["celebrate", "accent", "glow"] },
-  "slots": {
-    "headTop": { "at": [100.0, 40.0], "scale": 1.0, "follows": "head" },
-    "face": { "at": [100.0, 92.0], "follows": "face" },
-    "neck": { "at": [100.0, 146.0], "follows": "body" },
-    "chest": { "at": [100.0, 168.0], "follows": "body" }
-  }
+  "burst": { "space": "body", "at": [100.0, 96.0], "r": 80.0, "colors": ["celebrate", "accent", "glow"] }
 }

@@ -442,37 +442,6 @@
         "glow"
       ]
     },
-    "slots": {
-      "headTop": {
-        "at": [
-          100.0,
-          40.0
-        ],
-        "scale": 1.0,
-        "follows": "head"
-      },
-      "face": {
-        "at": [
-          100.0,
-          92.0
-        ],
-        "follows": "face"
-      },
-      "neck": {
-        "at": [
-          100.0,
-          146.0
-        ],
-        "follows": "body"
-      },
-      "chest": {
-        "at": [
-          100.0,
-          168.0
-        ],
-        "follows": "body"
-      }
-    },
     "profile": "buzzy",
     "grain": {
       "strength": 0.08

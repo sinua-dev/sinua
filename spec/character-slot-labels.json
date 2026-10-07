@@ -1,10 +1,6 @@
 {
   "$comment": "Human labels for every built-in character's palette slots, for colour pickers: English by default; translate by the key sinua.slot.<character>.<slot>. Every slot has one (a test checks).",
   "buzzy": {
-    "iris": {
-      "label": "Iris",
-      "description": "The coloured part of a glossy eye (eye style: glossy)."
-    },
     "body": {
       "label": "Body",
       "description": "The main colour."
@@ -47,10 +43,6 @@
     }
   },
   "hum": {
-    "iris": {
-      "label": "Iris",
-      "description": "The coloured part of a glossy eye (eye style: glossy)."
-    },
     "body": {
       "label": "Body",
       "description": "The main colour."
@@ -101,10 +93,6 @@
     }
   },
   "wisp": {
-    "iris": {
-      "label": "Iris",
-      "description": "The coloured part of a glossy eye (eye style: glossy)."
-    },
     "body": {
       "label": "Body",
       "description": "The top of the spirit."
@@ -139,10 +127,6 @@
     }
   },
   "chirp": {
-    "iris": {
-      "label": "Iris",
-      "description": "The coloured part of a glossy eye (eye style: glossy)."
-    },
     "body": {
       "label": "Body",
       "description": "The main colour."
@@ -181,10 +165,6 @@
     }
   },
   "cuppa": {
-    "iris": {
-      "label": "Iris",
-      "description": "The coloured part of a glossy eye (eye style: glossy)."
-    },
     "mug": {
       "label": "Mug",
       "description": "The cup."
@@ -247,10 +227,6 @@
     }
   },
   "bean": {
-    "iris": {
-      "label": "Iris",
-      "description": "The coloured part of a glossy eye (eye style: glossy)."
-    },
     "body": {
       "label": "Body",
       "description": "The main colour."
@@ -297,10 +273,6 @@
     }
   },
   "beep": {
-    "iris": {
-      "label": "Iris",
-      "description": "The coloured part of a glossy eye (eye style: glossy)."
-    },
     "body": {
       "label": "Body",
       "description": "The main colour."

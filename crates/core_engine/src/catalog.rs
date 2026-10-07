@@ -11,8 +11,7 @@
 //! - **derived from the engine** here: each pattern's mode, sizes and
 //!   speed, the keys it reads (`fx_spec::mode_params`, the resolved preset
 //!   and the shared radius keys), and every per-size default (the resolved
-//!   preset, else the definition's `fallback`), plus the per-pattern
-//!   particle / liquid defaults.
+//!   preset, else the definition's `fallback`).
 //!
 //! Shaped after Storybook's ArgTypes (control min/max/step, table category
 //! and default, conditional `if`), the DTCG Format Module's naming rule
@@ -270,19 +269,6 @@ fn catalog_with(src: &Value) -> Value {
                     json!({ "ref": ref_id, "default": default })
                 })
                 .collect();
-            let mut material_defaults = Map::new();
-            let particles: Map<String, Value> = crate::particles::defaults_for(&mode)
-                .into_iter()
-                .map(|(k, v)| (k, num(v)))
-                .collect::<std::collections::BTreeMap<_, _>>()
-                .into_iter()
-                .collect();
-            material_defaults.insert("particles".into(), Value::Object(particles));
-            let liquid: Map<String, Value> = crate::liquid::mode_defaults(&mode)
-                .iter()
-                .map(|(k, v)| (k.to_string(), num(*v)))
-                .collect();
-            material_defaults.insert("liquid".into(), Value::Object(liquid));
             let mut pattern = json!({
                 "id": id,
                 "label": p["label"],
@@ -290,7 +276,6 @@ fn catalog_with(src: &Value) -> Value {
                 "speed": num(first.speed),
                 "sizes": resolved.iter().map(|(z, _)| *z).collect::<Vec<_>>(),
                 "params": params,
-                "materialDefaults": material_defaults,
             });
             // The words only when the source has them (the full one, for spec/parameters.json).
             if let Some(d) = p.get("description") {

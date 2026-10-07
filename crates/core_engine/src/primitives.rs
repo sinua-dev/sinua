@@ -178,7 +178,7 @@ pub struct Polyline {
     pub hue: f64,
     /// Per-vertex hue (degrees), one per `points` entry, or empty = the
     /// single `hue` for the whole stroke (every mode emits empty). Set by
-    /// `apply_gradient`/`apply_holo` only when the vertex hues differ, so a
+    /// `apply_gradient` only when the vertex hues differ, so a
     /// ring's track sweeps along its length instead of taking one colour.
     /// `white`, `a`, `w`, `saturation` stay uniform. Paint contract: see
     /// the per-vertex paragraph above. Omitted from JSON when empty.
@@ -2014,275 +2014,6 @@ pub fn apply_gradient(mut frame: OrbFrame, size: f64, opts: &HashMap<String, f64
     frame
 }
 
-/// Material: **holographic-lite** (2026-09-19, materials phase 4) -- a
-/// foil/iridescent hue sweep over each element's *existing* lightness, no
-/// shader. Thin-film iridescence shifts colour with the view angle,
-/// `thickness = min + range * (1 - cos(theta))` (Papadopoulos, "Implementing
-/// a foil sticker effect"), and a phase walks the hue wheel (Quilez's cosine
-/// palette); in this HSL ink model both reduce to a per-element **hue
-/// offset**:
-///
-/// `hue = holoHue + holoSpan * (holoDepth * d + holoFacing * f) + 360 * holoSpeed * t`
-///
-/// - `d` (depth) = `(z + 1) / 2` clamped, a dot's `z` (orbs' sphere is
-///   `-1..1`); lines, polylines and fills have no `z` and take `0.5`.
-/// - `f` (facing, Fresnel-like `1 - cos(theta)`) = `1 - sqrt(1 - rho^2)`,
-///   `rho` = distance from the *view point* over `0.75 * size`, clamped --
-///   elements far from where the viewer looks shift most. The view point
-///   circles the frame centre at radius `size / 4`, angle
-///   `2 pi * holoSpeed * t` (a tilting card), starting to the right of
-///   centre. Position: a dot's centre, a line's midpoint, a polyline's
-///   vertex mean, a fill's centroid (for its ink and stops). Frame
-///   geometry, not a bbox, for the same no-flicker reason as
-///   `apply_gradient`.
-///
-/// Keys: `holoStrength` (`0..1`; absent or `0` = no-op), `holoHue`
-/// (default `180`), `holoSpan` (`300`), `holoSaturation` (`0.7`),
-/// `holoDepth` (`0.5`), `holoFacing` (`0.5`), `holoSpeed` (turns per
-/// second of engine time, `0.05`). Per element, exactly `apply_gradient`'s
-/// rule: `saturation -> lerp(sat, holoSaturation, strength)`, hue snaps
-/// when the element was achromatic and eases via `lerp_hue` otherwise;
-/// `white`, alpha, geometry and `color_mode` are untouched. Runs after
-/// `apply_gradient` (it's the top tint) and before `apply_glow`, so halos
-/// inherit it, and before `apply_interrupt`/`apply_muted`.
-pub fn apply_holo(mut frame: OrbFrame, size: f64, t: f64, opts: &HashMap<String, f64>) -> OrbFrame {
-    let strength = opts
-        .get("holoStrength")
-        .copied()
-        .unwrap_or(0.0)
-        .clamp(0.0, 1.0);
-    if strength <= 0.0 || size <= 0.0 {
-        return frame;
-    }
-    let get = |k: &str, d: f64| opts.get(k).copied().unwrap_or(d);
-    let base = get("holoHue", 180.0);
-    let span = get("holoSpan", 300.0);
-    let hsat = get("holoSaturation", 0.7).clamp(0.0, 1.0);
-    let wd = get("holoDepth", 0.5).clamp(0.0, 1.0);
-    let wf = get("holoFacing", 0.5).clamp(0.0, 1.0);
-    let turns = cycles(opts, "holoSpeedCycles").unwrap_or(get("holoSpeed", 0.05) * t);
-    let drift = 360.0 * turns;
-    let c = size * 0.5;
-    // The view point circles the centre at half the frame's half-width --
-    // a card tilting in the hand -- so a flat, centred shape (a ring, whose
-    // every element is equidistant from the centre) still gets a sweep.
-    let a = std::f64::consts::TAU * turns;
-    let (vx, vy) = (c + 0.5 * c * a.cos(), c + 0.5 * c * a.sin());
-    let color = |sat: f64, hue: f64, x: f64, y: f64, z: Option<f64>| -> (f64, f64) {
-        let d = z.map_or(0.5, |z| ((z + 1.0) * 0.5).clamp(0.0, 1.0));
-        let rho = (((x - vx).powi(2) + (y - vy).powi(2)).sqrt() / (1.5 * c)).min(1.0);
-        let f = 1.0 - (1.0 - rho * rho).sqrt();
-        let target = (base + span * (wd * d + wf * f) + drift).rem_euclid(360.0);
-        let h = if sat > 0.0 {
-            lerp_hue(hue, target, strength)
-        } else {
-            target
-        };
-        (lerp(sat, hsat, strength), h)
-    };
-
-    for d in frame.dots.iter_mut() {
-        (d.saturation, d.hue) = color(d.saturation, d.hue, d.x, d.y, Some(d.z));
-    }
-    for l in frame.lines.iter_mut() {
-        let (x, y) = ((l.x1 + l.x2) * 0.5, (l.y1 + l.y2) * 0.5);
-        (l.saturation, l.hue) = color(l.saturation, l.hue, x, y, None);
-    }
-    for p in frame.polylines.iter_mut() {
-        if p.points.is_empty() {
-            continue;
-        }
-        let n = p.points.len() as f64;
-        let (x, y) = p
-            .points
-            .iter()
-            .fold((0.0, 0.0), |(ax, ay), q| (ax + q.x, ay + q.y));
-        // Per vertex, as in `apply_gradient`: each vertex takes the hue at
-        // its own position (a sweep along a ring), `hue` the vertex mean.
-        let sat = p.saturation;
-        let prev = p.hues.clone();
-        let base = p.hue;
-        p.set_hues(|i, q| color(sat, prev.get(i).copied().unwrap_or(base), q.x, q.y, None).1);
-        (p.saturation, p.hue) = color(sat, base, x / n, y / n, None);
-    }
-    for f in frame.fills.iter_mut() {
-        let Some((x, y)) = f.centroid() else {
-            continue;
-        };
-        f.map_ink(|w, sat, hue| {
-            let (s, h) = color(sat, hue, x, y, None);
-            (w, s, h)
-        });
-    }
-    frame
-}
-
-#[cfg(test)]
-mod holo_tests {
-    use super::*;
-
-    fn opts(pairs: &[(&str, f64)]) -> HashMap<String, f64> {
-        pairs.iter().map(|(k, v)| (k.to_string(), *v)).collect()
-    }
-
-    fn dot(x: f64, y: f64, z: f64, sat: f64, hue: f64) -> Dot {
-        Dot {
-            x,
-            y,
-            z,
-            r: 2.0,
-            white: 0.3,
-            a: 1.0,
-            saturation: sat,
-            hue,
-        }
-    }
-
-    fn sample() -> OrbFrame {
-        let mut f = OrbFrame {
-            dots: vec![
-                dot(50.0, 50.0, -1.0, 0.0, 0.0),
-                dot(50.0, 50.0, 1.0, 0.0, 0.0),
-                dot(0.0, 50.0, 0.0, 0.0, 0.0),
-                dot(50.0, 50.0, 0.0, 0.8, 10.0),
-            ],
-            ..Default::default()
-        };
-        f.lines = vec![Line {
-            x1: 40.0,
-            y1: 50.0,
-            x2: 60.0,
-            y2: 50.0,
-            white: 0.4,
-            a: 1.0,
-            w: 1.0,
-            saturation: 0.0,
-            hue: 0.0,
-        }];
-        f.polylines = vec![Polyline {
-            points: vec![Point { x: 0.0, y: 50.0 }, Point { x: 10.0, y: 50.0 }],
-            white: 0.5,
-            a: 1.0,
-            w: 1.0,
-            saturation: 0.0,
-            hue: 0.0,
-            hues: Vec::new(),
-        }];
-        f.fills = vec![Fill {
-            points: vec![
-                Point { x: 40.0, y: 40.0 },
-                Point { x: 60.0, y: 40.0 },
-                Point { x: 60.0, y: 60.0 },
-            ],
-            white: 0.6,
-            a: 1.0,
-            gradient: Some(FillGradient {
-                stops: vec![GradientStop {
-                    offset: 0.0,
-                    white: 0.7,
-                    a: 1.0,
-                    saturation: 0.0,
-                    hue: 0.0,
-                }],
-                ..Default::default()
-            }),
-            ..Default::default()
-        }];
-        f
-    }
-
-    #[test]
-    fn absent_or_zero_strength_is_a_no_op() {
-        let f = sample();
-        assert_eq!(apply_holo(f.clone(), 100.0, 3.0, &opts(&[])), f);
-        assert_eq!(
-            apply_holo(f.clone(), 100.0, 3.0, &opts(&[("holoStrength", 0.0)])),
-            f
-        );
-    }
-
-    #[test]
-    fn hue_from_depth_facing_and_time_over_kept_lightness() {
-        let o = opts(&[("holoStrength", 1.0), ("holoSpeed", 0.0)]);
-        let src = sample();
-        let out = apply_holo(src.clone(), 100.0, 0.0, &o);
-        // Lightness, alpha and geometry untouched on every element kind.
-        for (a, b) in src.dots.iter().zip(&out.dots) {
-            assert_eq!(
-                (a.x, a.y, a.z, a.r, a.white, a.a),
-                (b.x, b.y, b.z, b.r, b.white, b.a)
-            );
-            assert!((b.saturation - 0.7).abs() < 1e-12);
-        }
-        assert_eq!(out.lines[0].white, 0.4);
-        assert_eq!(out.polylines[0].white, 0.5);
-        let g = out.fills[0].gradient.as_ref().unwrap();
-        assert_eq!((out.fills[0].white, g.stops[0].white), (0.6, 0.7));
-        // At t = 0 the view point is (75, 50): the centre is rho 1/3 from it.
-        let fc = 1.0 - (1.0 - 1.0_f64 / 9.0).sqrt();
-        let hue = |d: f64, f: f64| (180.0 + 300.0 * (0.5 * d + 0.5 * f)).rem_euclid(360.0);
-        // Depth: centre dots, far (z -1) vs near (z 1): the span x depth weight apart.
-        let (far, near) = (out.dots[0].hue, out.dots[1].hue);
-        assert!((far - hue(0.0, fc)).abs() < 1e-9, "{far}");
-        assert!((near - hue(1.0, fc)).abs() < 1e-9, "{near}");
-        // Facing: a dot 75 away from the view point (rho 1, f 1) vs the centre one.
-        assert!((out.dots[2].hue - hue(0.5, 1.0)).abs() < 1e-9);
-        // Elements without z take neutral depth; a fill's stops follow its ink.
-        assert!((out.lines[0].hue - hue(0.5, fc)).abs() < 1e-9);
-        assert!((g.stops[0].hue - out.fills[0].hue).abs() < 1e-9);
-        // The polyline sits far from the view point, so it is shifted past the line.
-        assert!(out.polylines[0].hue != out.lines[0].hue);
-        // The view point circles the centre: a quarter turn later (speed 0.25,
-        // t 1) it sits below the centre, so the left dot's facing changes.
-        let o_q = opts(&[
-            ("holoStrength", 1.0),
-            ("holoSpeed", 0.25),
-            ("holoSpan", 0.0),
-            ("holoDepth", 0.0),
-        ]);
-        let o_q2 = opts(&[
-            ("holoStrength", 1.0),
-            ("holoSpeed", 0.25),
-            ("holoDepth", 0.0),
-        ]);
-        let q0 = apply_holo(src.clone(), 100.0, 1.0, &o_q);
-        let q1 = apply_holo(src.clone(), 100.0, 1.0, &o_q2);
-        assert!(
-            (q0.dots[2].hue - (180.0 + 90.0)).abs() < 1e-9,
-            "span 0 = drift only"
-        );
-        let rho = ((50.0_f64.powi(2) + 25.0_f64.powi(2)).sqrt() / 75.0).min(1.0);
-        let fq = 1.0 - (1.0 - rho * rho).sqrt();
-        assert!((q1.dots[2].hue - (270.0 + 300.0 * 0.5 * fq).rem_euclid(360.0)).abs() < 1e-9);
-        // Time: speed 1 turn/s for 2 s = two whole turns -- the view point is
-        // back where it started, so only the 720-degree drift (a no-op) remains.
-        let o2 = opts(&[("holoStrength", 1.0), ("holoSpeed", 1.0)]);
-        let later = apply_holo(src, 100.0, 2.0, &o2);
-        for (a, b) in out.dots.iter().zip(&later.dots) {
-            assert!((a.hue - b.hue).abs() < 1e-6, "{} {}", a.hue, b.hue);
-        }
-    }
-
-    #[test]
-    fn coloured_elements_ease_along_the_shorter_arc() {
-        let src = sample();
-        let o = opts(&[
-            ("holoStrength", 0.5),
-            ("holoSpeed", 0.0),
-            ("holoHue", 0.0),
-            ("holoDepth", 0.0),
-            ("holoFacing", 0.0),
-        ]);
-        let out = apply_holo(src, 100.0, 0.0, &o);
-        // Coloured hue 10 -> target 0 at half strength: 5, not 185.
-        assert!((out.dots[3].hue - 5.0).abs() < 1e-9);
-        assert!((out.dots[3].saturation - 0.75).abs() < 1e-12);
-        // Achromatic snaps to the target at any strength.
-        assert!(out.dots[0].hue.abs() < 1e-9);
-        assert!((out.dots[0].saturation - 0.35).abs() < 1e-12);
-    }
-}
-
 #[cfg(test)]
 mod glow_tests {
     use super::*;
@@ -4110,9 +3841,8 @@ mod per_vertex_hue_tests {
         }
     }
 
-    /// A dot at the vertex's position with `z = 0` gets holo's `d = 0.5`,
-    /// the same depth term strokes use -- so it's an independent oracle
-    /// for the vertex hue. Gradient has no depth term at all.
+    /// A dot at the vertex's position: the gradient colours it by position alone,
+    /// so it's an independent oracle for the vertex hue.
     fn dot_at(q: &Point) -> Dot {
         Dot {
             x: q.x,
@@ -4139,8 +3869,7 @@ mod per_vertex_hue_tests {
     }
 
     #[test]
-    fn holo_and_gradient_colour_each_vertex_at_its_own_position() {
-        check_vertices_match_dots(|f| apply_holo(f, 64.0, 0.0, &opts(&[("holoStrength", 1.0)])));
+    fn the_gradient_colours_each_vertex_at_its_own_position() {
         check_vertices_match_dots(|f| apply_gradient(f, 64.0, &opts(&[("gradientStrength", 1.0)])));
     }
 
@@ -4151,7 +3880,7 @@ mod per_vertex_hue_tests {
         let mut f = ring_frame();
         f.polylines.truncate(1);
         f.dots = vec![dot_at(&Point { x: 32.0, y: 32.0 })];
-        let out = apply_holo(f, 64.0, 0.0, &opts(&[("holoStrength", 1.0)]));
+        let out = apply_gradient(f, 64.0, &opts(&[("gradientStrength", 1.0)]));
         let mean = out.polylines[0]
             .points
             .iter()
@@ -4161,26 +3890,8 @@ mod per_vertex_hue_tests {
     }
 
     #[test]
-    fn holo_over_gradient_eases_each_vertex_from_its_own_hue() {
-        let g = apply_gradient(ring_frame(), 64.0, &opts(&[("gradientStrength", 1.0)]));
-        let before = g.polylines[0].hues.clone();
-        let sat = g.polylines[0].saturation;
-        let out = apply_holo(g, 64.0, 0.0, &opts(&[("holoStrength", 0.5)]));
-        let full = apply_holo(ring_frame(), 64.0, 0.0, &opts(&[("holoStrength", 1.0)]));
-        assert!(sat > 0.0);
-        for ((h, b), t) in out.polylines[0]
-            .hues
-            .iter()
-            .zip(&before)
-            .zip(&full.polylines[0].hues)
-        {
-            assert!((h - lerp_hue(*b, *t, 0.5)).abs() < 1e-9);
-        }
-    }
-
-    #[test]
     fn muted_interrupt_and_glow_carry_or_drop_the_hues() {
-        let holo = || apply_holo(ring_frame(), 64.0, 0.0, &opts(&[("holoStrength", 1.0)]));
+        let holo = || apply_gradient(ring_frame(), 64.0, &opts(&[("gradientStrength", 1.0)]));
         let n = holo().polylines[0].points.len();
         // Muted keeps the sweep (its colour rule is applied per vertex).
         let m = apply_muted(holo(), &opts(&[("muted", 1.0)]));

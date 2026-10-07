@@ -80,7 +80,6 @@
           "ink": 1.0,
           "look": 1.0,
           "muted": 0.0,
-          "particleStrength": 0.0,
           "pulseOpacity": 0.25,
           "pulsePeriod": 4.5,
           "pulseScale": 0.04,
@@ -114,7 +113,6 @@
           "ink": 1.0,
           "look": 1.0,
           "muted": 0.0,
-          "particleStrength": 0.0,
           "pulseOpacity": 0.25,
           "pulsePeriod": 4.5,
           "pulseScale": 0.04,
@@ -149,7 +147,6 @@
           "lid": 0.5,
           "look": 0.0,
           "muted": 0.0,
-          "particleStrength": 0.0,
           "pulseStrength": 0.0,
           "seed": 3.0
         },
@@ -180,7 +177,6 @@
           "lid": 0.5,
           "look": 0.0,
           "muted": 0.0,
-          "particleStrength": 0.0,
           "pulseStrength": 0.0,
           "seed": 3.0
         },
@@ -216,7 +212,6 @@
           "lean": 4.0,
           "look": 0.0,
           "muted": 0.0,
-          "particleStrength": 0.0,
           "pulseStrength": 0.0,
           "seed": 3.0,
           "tilt": -0.05,
@@ -254,7 +249,6 @@
           "lean": 4.0,
           "look": 0.0,
           "muted": 0.0,
-          "particleStrength": 0.0,
           "pulseStrength": 0.0,
           "seed": 3.0,
           "tilt": -0.05,
@@ -291,7 +285,6 @@
           "mouthGain": 1.0,
           "mouthTalk": 1.0,
           "muted": 0.0,
-          "particleStrength": 0.0,
           "pulseStrength": 0.0,
           "seed": 3.0,
           "squashGain": 0.045,
@@ -329,7 +322,6 @@
           "mouthGain": 1.0,
           "mouthTalk": 1.0,
           "muted": 0.0,
-          "particleStrength": 0.0,
           "pulseStrength": 0.0,
           "seed": 3.0,
           "squashGain": 0.045,
@@ -370,7 +362,6 @@
           "look": 0.0,
           "mouthDots": 1.0,
           "muted": 0.0,
-          "particleStrength": 0.0,
           "pulseOpacity": 0.45,
           "pulsePeriod": 1.8,
           "pulseScale": 0.015,
@@ -415,7 +406,6 @@
           "look": 0.0,
           "mouthDots": 1.0,
           "muted": 0.0,
-          "particleStrength": 0.0,
           "pulseOpacity": 0.45,
           "pulsePeriod": 1.8,
           "pulseScale": 0.015,
@@ -558,290 +548,6 @@
         ]
       }
     },
-    "holo-orb.fxspec.json": {
-      "": {
-        "diagnostics": [],
-        "disabledMaterials": [],
-        "inactiveBindings": [],
-        "maxFps": null,
-        "ok": true,
-        "overrides": {
-          "holoHue": 200.0,
-          "holoSpan": 300.0,
-          "holoSpeed": 0.08,
-          "holoStrength": 1.0
-        },
-        "size": 64,
-        "speed": 1.0,
-        "state": "composing",
-        "stateKey": "",
-        "stateKeys": [
-          "speaking"
-        ]
-      },
-      "speaking": {
-        "diagnostics": [],
-        "disabledMaterials": [],
-        "inactiveBindings": [],
-        "maxFps": null,
-        "ok": true,
-        "overrides": {
-          "audioStrength": 0.5,
-          "barCount": 28.0,
-          "glowMode": 1.0,
-          "glowStrength": 0.6,
-          "holoDepth": 0.2,
-          "holoFacing": 0.8,
-          "holoHue": 200.0,
-          "holoSpan": 300.0,
-          "holoSpeed": 0.08,
-          "holoStrength": 1.0,
-          "ink": 1.0,
-          "jumpSpeed": 5.0,
-          "particleAudio": 1.0,
-          "particleCount": 32.0,
-          "particleLife": 1.4,
-          "particleStrength": 1.0,
-          "particleStyle": 0.0
-        },
-        "size": 64,
-        "speed": 1.15,
-        "state": "speaking",
-        "stateKey": "speaking",
-        "stateKeys": [
-          "speaking"
-        ]
-      },
-      "speaking|lowPower": {
-        "diagnostics": [],
-        "disabledMaterials": [
-          "glow"
-        ],
-        "inactiveBindings": [],
-        "maxFps": 30.0,
-        "ok": true,
-        "overrides": {
-          "audioStrength": 0.5,
-          "barCount": 28.0,
-          "glowMode": 1.0,
-          "glowStrength": 0.0,
-          "holoDepth": 0.2,
-          "holoFacing": 0.8,
-          "holoHue": 200.0,
-          "holoSpan": 300.0,
-          "holoSpeed": 0.08,
-          "holoStrength": 1.0,
-          "ink": 1.0,
-          "jumpSpeed": 5.0,
-          "particleAudio": 1.0,
-          "particleCount": 32.0,
-          "particleLife": 1.4,
-          "particleStrength": 1.0,
-          "particleStyle": 0.0
-        },
-        "size": 64,
-        "speed": 1.15,
-        "state": "speaking",
-        "stateKey": "speaking",
-        "stateKeys": [
-          "speaking"
-        ]
-      },
-      "|lowPower": {
-        "diagnostics": [],
-        "disabledMaterials": [
-          "glow"
-        ],
-        "inactiveBindings": [],
-        "maxFps": 30.0,
-        "ok": true,
-        "overrides": {
-          "holoHue": 200.0,
-          "holoSpan": 300.0,
-          "holoSpeed": 0.08,
-          "holoStrength": 1.0
-        },
-        "size": 64,
-        "speed": 1.0,
-        "state": "composing",
-        "stateKey": "",
-        "stateKeys": [
-          "speaking"
-        ]
-      }
-    },
-    "liquid-orb.fxspec.json": {
-      "": {
-        "diagnostics": [],
-        "disabledMaterials": [],
-        "inactiveBindings": [],
-        "maxFps": 60.0,
-        "ok": true,
-        "overrides": {
-          "liquidReach": 2.5,
-          "liquidStrength": 1.0,
-          "liquidStyle": 1.0
-        },
-        "size": 64,
-        "speed": 1.0,
-        "state": "glowing",
-        "stateKey": "",
-        "stateKeys": [
-          "speaking",
-          "thinking"
-        ]
-      },
-      "speaking": {
-        "diagnostics": [],
-        "disabledMaterials": [],
-        "inactiveBindings": [],
-        "maxFps": 60.0,
-        "ok": true,
-        "overrides": {
-          "audioStrength": 0.5,
-          "barCount": 28.0,
-          "glowStrength": 0.4,
-          "ink": 1.0,
-          "jumpSpeed": 5.0,
-          "liquidKeep": 1.0,
-          "liquidReach": 2.5,
-          "liquidStrength": 1.0,
-          "liquidStyle": 0.0,
-          "particleAudio": 1.0,
-          "particleCount": 32.0,
-          "particleLife": 1.4,
-          "particleStrength": 1.0,
-          "particleStyle": 0.0
-        },
-        "size": 64,
-        "speed": 1.15,
-        "state": "speaking",
-        "stateKey": "speaking",
-        "stateKeys": [
-          "speaking",
-          "thinking"
-        ]
-      },
-      "speaking|lowPower": {
-        "diagnostics": [],
-        "disabledMaterials": [
-          "liquid"
-        ],
-        "inactiveBindings": [],
-        "maxFps": 24.0,
-        "ok": true,
-        "overrides": {
-          "audioStrength": 0.5,
-          "barCount": 28.0,
-          "glowStrength": 0.4,
-          "ink": 1.0,
-          "jumpSpeed": 5.0,
-          "liquidKeep": 1.0,
-          "liquidReach": 2.5,
-          "liquidStrength": 0.0,
-          "liquidStyle": 0.0,
-          "particleAudio": 1.0,
-          "particleCount": 32.0,
-          "particleLife": 1.4,
-          "particleStrength": 1.0,
-          "particleStyle": 0.0
-        },
-        "size": 64,
-        "speed": 1.15,
-        "state": "speaking",
-        "stateKey": "speaking",
-        "stateKeys": [
-          "speaking",
-          "thinking"
-        ]
-      },
-      "thinking": {
-        "diagnostics": [],
-        "disabledMaterials": [],
-        "inactiveBindings": [],
-        "maxFps": 60.0,
-        "ok": true,
-        "overrides": {
-          "colorHue": 271.9,
-          "glowStrength": 0.25,
-          "ink": 1.0,
-          "liquidBlur": 0.6,
-          "liquidReach": 2.5,
-          "liquidStrength": 1.0,
-          "liquidStyle": 0.0,
-          "particleCount": 16.0,
-          "particleStrength": 0.8,
-          "particleStyle": 2.0,
-          "pulseOpacity": 0.45,
-          "pulsePeriod": 1.8,
-          "pulseScale": 0.015,
-          "pulseStrength": 0.6
-        },
-        "size": 64,
-        "speed": 1.05,
-        "state": "drifting",
-        "stateKey": "thinking",
-        "stateKeys": [
-          "speaking",
-          "thinking"
-        ]
-      },
-      "thinking|lowPower": {
-        "diagnostics": [],
-        "disabledMaterials": [
-          "liquid"
-        ],
-        "inactiveBindings": [],
-        "maxFps": 24.0,
-        "ok": true,
-        "overrides": {
-          "colorHue": 271.9,
-          "glowStrength": 0.25,
-          "ink": 1.0,
-          "liquidBlur": 0.6,
-          "liquidReach": 2.5,
-          "liquidStrength": 0.0,
-          "liquidStyle": 0.0,
-          "particleCount": 16.0,
-          "particleStrength": 0.8,
-          "particleStyle": 2.0,
-          "pulseOpacity": 0.45,
-          "pulsePeriod": 1.8,
-          "pulseScale": 0.015,
-          "pulseStrength": 0.6
-        },
-        "size": 64,
-        "speed": 1.05,
-        "state": "drifting",
-        "stateKey": "thinking",
-        "stateKeys": [
-          "speaking",
-          "thinking"
-        ]
-      },
-      "|lowPower": {
-        "diagnostics": [],
-        "disabledMaterials": [
-          "liquid"
-        ],
-        "inactiveBindings": [],
-        "maxFps": 24.0,
-        "ok": true,
-        "overrides": {
-          "liquidReach": 2.5,
-          "liquidStrength": 0.0,
-          "liquidStyle": 1.0
-        },
-        "size": 64,
-        "speed": 1.0,
-        "state": "glowing",
-        "stateKey": "",
-        "stateKeys": [
-          "speaking",
-          "thinking"
-        ]
-      }
-    },
     "orb-brand-fixed.fxspec.json": {
       "": {
         "diagnostics": [],
@@ -878,172 +584,6 @@
         "state": "working",
         "stateKey": "",
         "stateKeys": []
-      }
-    },
-    "particles-orb.fxspec.json": {
-      "": {
-        "diagnostics": [],
-        "disabledMaterials": [],
-        "inactiveBindings": [],
-        "maxFps": 60.0,
-        "ok": true,
-        "overrides": {
-          "particleCount": 32.0,
-          "particleStrength": 1.0,
-          "particleStyle": 0.0
-        },
-        "size": 64,
-        "speed": 1.0,
-        "state": "glowing",
-        "stateKey": "",
-        "stateKeys": [
-          "listening",
-          "speaking"
-        ]
-      },
-      "listening": {
-        "diagnostics": [],
-        "disabledMaterials": [],
-        "inactiveBindings": [],
-        "maxFps": 60.0,
-        "ok": true,
-        "overrides": {
-          "audioStrength": -0.35,
-          "glowStrength": 0.3,
-          "ink": 1.0,
-          "particleAudio": 1.0,
-          "particleCount": 32.0,
-          "particleLife": 1.8,
-          "particleSize": 1.4,
-          "particleSpread": 0.3,
-          "particleStrength": 1.0,
-          "particleStyle": 1.0
-        },
-        "size": 64,
-        "speed": 0.9,
-        "state": "listening",
-        "stateKey": "listening",
-        "stateKeys": [
-          "listening",
-          "speaking"
-        ]
-      },
-      "listening|lowPower": {
-        "diagnostics": [],
-        "disabledMaterials": [
-          "particles",
-          "blur"
-        ],
-        "inactiveBindings": [],
-        "maxFps": 30.0,
-        "ok": true,
-        "overrides": {
-          "audioStrength": -0.35,
-          "blurScale": 0.0,
-          "glowStrength": 0.3,
-          "ink": 1.0,
-          "particleAudio": 1.0,
-          "particleCount": 32.0,
-          "particleLife": 1.8,
-          "particleSize": 1.4,
-          "particleSpread": 0.3,
-          "particleStrength": 0.0,
-          "particleStyle": 1.0
-        },
-        "size": 64,
-        "speed": 0.9,
-        "state": "listening",
-        "stateKey": "listening",
-        "stateKeys": [
-          "listening",
-          "speaking"
-        ]
-      },
-      "speaking": {
-        "diagnostics": [],
-        "disabledMaterials": [],
-        "inactiveBindings": [],
-        "maxFps": 60.0,
-        "ok": true,
-        "overrides": {
-          "audioStrength": 0.5,
-          "barCount": 28.0,
-          "glowBlend": 1.0,
-          "glowMode": 1.0,
-          "glowStrength": 0.7,
-          "ink": 1.0,
-          "jumpSpeed": 5.0,
-          "particleAudio": 1.0,
-          "particleCount": 48.0,
-          "particleLife": 1.4,
-          "particleStrength": 1.0,
-          "particleStyle": 0.0
-        },
-        "size": 64,
-        "speed": 1.15,
-        "state": "speaking",
-        "stateKey": "speaking",
-        "stateKeys": [
-          "listening",
-          "speaking"
-        ]
-      },
-      "speaking|lowPower": {
-        "diagnostics": [],
-        "disabledMaterials": [
-          "particles",
-          "blur"
-        ],
-        "inactiveBindings": [],
-        "maxFps": 30.0,
-        "ok": true,
-        "overrides": {
-          "audioStrength": 0.5,
-          "barCount": 28.0,
-          "blurScale": 0.0,
-          "glowBlend": 1.0,
-          "glowMode": 1.0,
-          "glowStrength": 0.7,
-          "ink": 1.0,
-          "jumpSpeed": 5.0,
-          "particleAudio": 1.0,
-          "particleCount": 48.0,
-          "particleLife": 1.4,
-          "particleStrength": 0.0,
-          "particleStyle": 0.0
-        },
-        "size": 64,
-        "speed": 1.15,
-        "state": "speaking",
-        "stateKey": "speaking",
-        "stateKeys": [
-          "listening",
-          "speaking"
-        ]
-      },
-      "|lowPower": {
-        "diagnostics": [],
-        "disabledMaterials": [
-          "particles",
-          "blur"
-        ],
-        "inactiveBindings": [],
-        "maxFps": 30.0,
-        "ok": true,
-        "overrides": {
-          "blurScale": 0.0,
-          "particleCount": 32.0,
-          "particleStrength": 0.0,
-          "particleStyle": 0.0
-        },
-        "size": 64,
-        "speed": 1.0,
-        "state": "glowing",
-        "stateKey": "",
-        "stateKeys": [
-          "listening",
-          "speaking"
-        ]
       }
     },
     "radar-wedge-blur.fxspec.json": {
@@ -1390,7 +930,6 @@
           "muted": 0.0,
           "nodeCount": 160.0,
           "nodeSize": 1.0,
-          "particleStrength": 0.0,
           "saturation": 0.4,
           "surfaceScale": 1.2,
           "surfaceSpeed": 0.6
@@ -1425,7 +964,6 @@
           "muted": 0.0,
           "nodeCount": 160.0,
           "nodeSize": 1.0,
-          "particleStrength": 0.0,
           "saturation": 0.4,
           "surfaceScale": 1.2,
           "surfaceSpeed": 0.6
@@ -1462,13 +1000,6 @@
           "muted": 0.0,
           "nodeCount": 260.0,
           "nodeSize": 1.3,
-          "particleAudio": 1.0,
-          "particleCount": 36.0,
-          "particleLife": 1.8,
-          "particleSize": 1.4,
-          "particleSpread": 0.4,
-          "particleStrength": 1.0,
-          "particleStyle": 1.0,
           "saturation": 0.6,
           "surfaceScale": 1.2,
           "surfaceSpeed": 0.28
@@ -1505,13 +1036,6 @@
           "muted": 0.0,
           "nodeCount": 260.0,
           "nodeSize": 1.3,
-          "particleAudio": 1.0,
-          "particleCount": 36.0,
-          "particleLife": 1.8,
-          "particleSize": 1.4,
-          "particleSpread": 0.4,
-          "particleStrength": 1.0,
-          "particleStyle": 1.0,
           "saturation": 0.6,
           "surfaceScale": 1.2,
           "surfaceSpeed": 0.28
@@ -1548,11 +1072,6 @@
           "muted": 0.0,
           "nodeCount": 260.0,
           "nodeSize": 1.5,
-          "particleAudio": 1.0,
-          "particleCount": 32.0,
-          "particleLife": 1.4,
-          "particleStrength": 1.0,
-          "particleStyle": 0.0,
           "saturation": 0.62,
           "surfaceScale": 1.5,
           "surfaceSpeed": 0.5
@@ -1589,11 +1108,6 @@
           "muted": 0.0,
           "nodeCount": 260.0,
           "nodeSize": 1.5,
-          "particleAudio": 1.0,
-          "particleCount": 32.0,
-          "particleLife": 1.4,
-          "particleStrength": 1.0,
-          "particleStyle": 0.0,
           "saturation": 0.62,
           "surfaceScale": 1.5,
           "surfaceSpeed": 0.5
@@ -1628,9 +1142,6 @@
           "muted": 0.0,
           "nodeCount": 340.0,
           "nodeSize": 1.05,
-          "particleCount": 16.0,
-          "particleStrength": 0.0,
-          "particleStyle": 2.0,
           "pulseOpacity": 0.45,
           "pulsePeriod": 1.8,
           "pulseScale": 0.015,
@@ -1669,9 +1180,6 @@
           "muted": 0.0,
           "nodeCount": 340.0,
           "nodeSize": 1.05,
-          "particleCount": 16.0,
-          "particleStrength": 0.0,
-          "particleStyle": 2.0,
           "pulseOpacity": 0.45,
           "pulsePeriod": 1.8,
           "pulseScale": 0.015,
@@ -1822,8 +1330,7 @@
           "glowRadius": 3.0,
           "glowStrength": 0.25,
           "ink": 0.7,
-          "muted": 0.0,
-          "particleStrength": 0.0
+          "muted": 0.0
         },
         "size": 64,
         "speed": 0.8,
@@ -1850,8 +1357,7 @@
           "glowRadius": 3.0,
           "glowStrength": 0.25,
           "ink": 0.7,
-          "muted": 0.0,
-          "particleStrength": 0.0
+          "muted": 0.0
         },
         "size": 64,
         "speed": 0.8,
@@ -1880,14 +1386,7 @@
           "glowRadius": 3.0,
           "glowStrength": 0.25,
           "ink": 1.0,
-          "muted": 0.0,
-          "particleAudio": 1.0,
-          "particleCount": 36.0,
-          "particleLife": 1.8,
-          "particleSize": 1.4,
-          "particleSpread": 0.4,
-          "particleStrength": 1.0,
-          "particleStyle": 1.0
+          "muted": 0.0
         },
         "size": 64,
         "speed": 0.9,
@@ -1916,14 +1415,7 @@
           "glowRadius": 3.0,
           "glowStrength": 0.25,
           "ink": 1.0,
-          "muted": 0.0,
-          "particleAudio": 1.0,
-          "particleCount": 36.0,
-          "particleLife": 1.8,
-          "particleSize": 1.4,
-          "particleSpread": 0.4,
-          "particleStrength": 1.0,
-          "particleStyle": 1.0
+          "muted": 0.0
         },
         "size": 64,
         "speed": 0.9,
@@ -1954,12 +1446,7 @@
           "glowStrength": 0.4,
           "ink": 1.0,
           "jumpSpeed": 5.0,
-          "muted": 0.0,
-          "particleAudio": 1.0,
-          "particleCount": 32.0,
-          "particleLife": 1.4,
-          "particleStrength": 1.0,
-          "particleStyle": 0.0
+          "muted": 0.0
         },
         "size": 64,
         "speed": 1.1,
@@ -1990,12 +1477,7 @@
           "glowStrength": 0.4,
           "ink": 1.0,
           "jumpSpeed": 5.0,
-          "muted": 0.0,
-          "particleAudio": 1.0,
-          "particleCount": 32.0,
-          "particleLife": 1.4,
-          "particleStrength": 1.0,
-          "particleStyle": 0.0
+          "muted": 0.0
         },
         "size": 64,
         "speed": 1.1,
@@ -2021,9 +1503,6 @@
           "colorSaturation": 0.558,
           "ink": 1.0,
           "muted": 0.0,
-          "particleCount": 16.0,
-          "particleStrength": 0.8,
-          "particleStyle": 2.0,
           "pulseOpacity": 0.45,
           "pulsePeriod": 1.8,
           "pulseScale": 0.015,
@@ -2053,9 +1532,6 @@
           "colorSaturation": 0.558,
           "ink": 1.0,
           "muted": 0.0,
-          "particleCount": 16.0,
-          "particleStrength": 0.8,
-          "particleStyle": 2.0,
           "pulseOpacity": 0.45,
           "pulsePeriod": 1.8,
           "pulseScale": 0.015,

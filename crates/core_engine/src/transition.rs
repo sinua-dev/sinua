@@ -178,7 +178,6 @@ pub fn mix(
 static RATES: &[(&str, &str, bool)] = &[
     ("pulsePeriod", "pulsePeriodCycles", true),
     ("noiseSpeed", "noiseSpeedCycles", false),
-    ("holoSpeed", "holoSpeedCycles", false),
     ("spin", "spinCycles", false),
     ("scanMul", "scanMulCycles", false),
     ("holdDuration", "holdDurationCycles", true),
@@ -380,7 +379,7 @@ fn blend_core(
 fn rates(mode: &str, o: &HashMap<String, f64>, preset_speed: f64) -> HashMap<String, f64> {
     let mut out = HashMap::new();
     let warp = mode == "warp";
-    // The pulse, the noise and the holographic drift run in wall-clock seconds (engine
+    // The pulse and the noise run in wall-clock seconds (engine
     // time over the preset speed): their cycles per second of engine time are scaled.
     let wall = if preset_speed > 0.0 {
         1.0 / preset_speed
@@ -395,7 +394,7 @@ fn rates(mode: &str, o: &HashMap<String, f64>, preset_speed: f64) -> HashMap<Str
                 _ => None,
             }
         } else {
-            let k = if matches!(key, "pulsePeriod" | "noiseSpeed" | "holoSpeed") {
+            let k = if matches!(key, "pulsePeriod" | "noiseSpeed") {
                 wall
             } else {
                 1.0
@@ -507,12 +506,12 @@ mod tests {
         let a = side(
             "glowing",
             1.0,
-            &[("nodeCount", 220.0), ("particleStyle", 1.0), ("ink", 0.7)],
+            &[("nodeCount", 220.0), ("glowMode", 0.0), ("ink", 0.7)],
         );
         let b = side(
             "glowing",
             1.0,
-            &[("nodeCount", 260.0), ("particleStyle", 2.0), ("ink", 1.0)],
+            &[("nodeCount", 260.0), ("glowMode", 1.0), ("ink", 1.0)],
         );
         for (u, swap) in [(0.2, 0.0), (0.4, 0.0), (0.5, 0.5), (0.6, 1.0), (0.8, 1.0)] {
             let m = mix(&a, &b, 64, u, "linear").unwrap();
@@ -522,7 +521,7 @@ mod tests {
                 "the base frame keeps the from count"
             );
             assert_eq!(m.structural_to["nodeCount"], 260.0);
-            assert_eq!(m.structural_to["particleStyle"], 2.0);
+            assert_eq!(m.structural_to["glowMode"], 1.0);
             assert!(
                 !m.structural_to.contains_key("ink"),
                 "continuous keys never swap"
@@ -651,11 +650,7 @@ mod tests {
             serde_json::from_str(include_str!("../../../spec/parameters.json")).unwrap();
         let defs = cat["definitions"].as_object().unwrap();
         // Materials on, so their keys are exercised too.
-        let materials = [
-            ("pulseStrength", 0.6),
-            ("noiseStrength", 1.0),
-            ("holoStrength", 1.0),
-        ];
+        let materials = [("pulseStrength", 0.6), ("noiseStrength", 1.0)];
         let known: Vec<&str> = RATES.iter().map(|r| r.0).chain(["warpSpeed"]).collect();
         let shift = |f: &crate::OrbFrame, g: &crate::OrbFrame| -> Option<f64> {
             if f.dots.len() != g.dots.len()
@@ -863,11 +858,8 @@ mod tests {
         );
         assert!(m.structural_to.is_empty(), "a density never swaps");
         let mut o = m.overrides.clone();
-        // The lattice alone (no glow halos, no particles).
-        o.extend([
-            ("glowStrength".to_string(), 0.0),
-            ("particleStrength".to_string(), 0.0),
-        ]);
+        // The lattice alone (no glow halos).
+        o.extend([("glowStrength".to_string(), 0.0)]);
         let f = crate::frame_with_overrides("glowing".into(), 64, 3.0, o).unwrap();
         assert_eq!(f.dots.len(), 280);
         // Without the layout (an older file's states) the count swaps as before.

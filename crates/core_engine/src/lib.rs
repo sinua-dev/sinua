@@ -24,9 +24,7 @@ mod core_fx;
 mod cost;
 pub mod effects;
 mod fx_spec;
-mod liquid;
 mod orbs;
-mod particles;
 mod primitives;
 pub mod reactive;
 mod ring;
@@ -42,7 +40,6 @@ use std::collections::HashMap;
 
 pub use cost::FxCost;
 pub use fx_spec::{FxDiagnostic, FxHsl, FxSpecResolved};
-pub use liquid::LiquidSuitability;
 pub use orbs::presets::{resolve_preset, Resolved};
 pub use primitives::{
     ColorMode, Dot, EffectRun, Fill, FillGradient, GradientStop, Line, OrbFrame, Point, Polyline,
@@ -66,14 +63,12 @@ uniffi::setup_scaffolding!();
 /// `t` is the mode's clock: callers pass `elapsed * presetSpeed` (times a
 /// spec's own `speed`). `preset_speed` undoes the preset part for the
 /// post-processes that live in **wall-clock seconds** -- `pulsePeriod`,
-/// `noiseSpeed`, particles' `particleLife` and holographic's `holoSpeed` --
-/// so a pulse or a particle takes the same real time on a 3.3x `drifting`
+/// `noiseSpeed` -- so a pulse takes the same real time on a 3.3x `drifting`
 /// as on a 1x ring (orchestrator 2026-09-19: "too fast" on fast orbs;
 /// pulse/noise followed with the user's go). A spec's `speed` still scales
 /// them: it is the user's "whole object slower/faster" knob. Interrupt and
 /// decay don't read `t` at all -- their `interruptAge`/`decayAge` are
-/// seconds on the caller's clock by design (a one-shot event's age), and
-/// liquid has no time input (it follows the geometry).
+/// seconds on the caller's clock by design (a one-shot event's age).
 fn render(
     mode: &str,
     size: u32,
@@ -163,7 +158,7 @@ fn render(
     Some(post(frame, mode, size, wall, opts))
 }
 
-/// Everything after a mode's geometry: pointer, audio, pulse, particles,
+/// Everything after a mode's geometry: pointer, audio, pulse,
 /// materials, ink and the one-shot cues, in their fixed order. Shared by
 /// [`render`] and the lattice morph ([`frame_transition_with_overrides`]),
 /// so a morph frame is finished exactly like any other.
@@ -185,30 +180,14 @@ fn post(
     // A periodic pulse swells geometry, so it runs before the materials copy
     // or color it -- a glow halo then breathes with its source.
     let frame = primitives::apply_pulse(frame, wall, opts);
-    // Particles (materials phase 3) emit from the geometry so far -- after
-    // pulse so they breathe with it, before noise/liquid/colour/glow so
-    // those jitter, melt, tint and halo them like any other dot.
-    // Per-mode particle defaults fill in only what the caller left unset.
-    let frame = particles::apply_particles(
-        frame,
-        size as f64,
-        wall,
-        &particles::with_mode_defaults(mode, opts),
-    );
     // Materials (see `docs/materials.md`), in dependency order: noise moves
     // geometry, so it runs before anything that copies geometry; gradient
     // colors elements by their final position and runs before glow so a
     // halo inherits its source's ramped color; glow splices halos in last
     // of the three.
     let frame = primitives::apply_noise(frame, size as f64, wall, opts);
-    // Liquid (materials phase 2) melts the (jittered) dots into metaball
-    // contours before colour/gradient/glow, so those apply to the liquid.
-    // Per-mode tuned liquid defaults fill in only what the caller left unset.
-    let frame = liquid::apply_liquid(frame, size as f64, &liquid::with_mode_defaults(mode, opts));
     // Colour is the base tint (and carries the ink|fixed paint mode); the
-    // gradient is more specific and wins where it's set; holographic-lite
-    // (materials phase 4) is the top tint, a hue sweep by depth/facing/time
-    // over the kept lightness; glow inherits all three.
+    // gradient is more specific and wins where it's set; glow inherits both.
     // A character's palette is drawn, not tinted: a frame-wide colour or
     // gradient would repaint its eyes and screen (`hue` turns its shell). The
     // FX Spec rejects both sections on a character; this covers raw overrides.
@@ -222,7 +201,6 @@ fn post(
     } else {
         frame
     };
-    let frame = primitives::apply_holo(frame, size as f64, wall, opts);
     let frame = primitives::apply_glow(frame, opts);
     // `ink` (FX Spec 1.8) fades the finished visual as one thing, halos
     // included -- hence after glow. It sits *before* the barge-in flash and
@@ -865,28 +843,6 @@ pub fn fx_spec_cost(
     cost::estimate_spec(&json, state.as_deref(), &inputs, low_power)
 }
 
-/// How well the liquid material suits `state` (`"recommended"` / `"ok"` /
-/// `"notRecommended"`, a one-line reason, and the state's tuned liquid
-/// defaults) -- from contact sheets, see docs/materials.md. For a Studio
-/// badge. `None` only for an unknown state.
-#[cfg_attr(all(not(target_arch = "wasm32"), feature = "dev"), uniffi::export)]
-pub fn liquid_suitability(state: String) -> Option<LiquidSuitability> {
-    let mode = resolve_any(&state, 64)?.mode;
-    Some(liquid::suitability(mode))
-}
-
-/// Every particle knob's default on `state` -- the engine-wide defaults with
-/// the state's own over them (ring states rise, scanning attracts, notifying
-/// bursts, speaking follows `audioLevel`, ...; see `particles::mode_defaults`
-/// and docs/materials.md). They apply only to keys a caller leaves unset, so
-/// the Studio shows them as the knob defaults. `None` only for an unknown
-/// state.
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
-pub fn particle_defaults(state: String) -> Option<HashMap<String, f64>> {
-    let mode = resolve_any(&state, 64)?.mode;
-    Some(particles::defaults_for(mode))
-}
-
 /// The **parameter catalog** (docs/parameters.md, *Parameter catalog*) as
 /// JSON text: every object, pattern and tunable with labels, descriptions,
 /// ranges, groups, paths and per-size defaults. `spec/parameters.json` is a
@@ -1279,23 +1235,6 @@ mod wasm {
             .unwrap_or_else(|_| "[]".to_string())
     }
 
-    #[wasm_bindgen]
-    pub fn particle_defaults_json(state: String) -> String {
-        match crate::particle_defaults(state) {
-            Some(d) => serde_json::to_string(&d).unwrap_or_else(|_| "null".to_string()),
-            None => "null".to_string(),
-        }
-    }
-
-    #[cfg(feature = "dev")]
-    #[wasm_bindgen]
-    pub fn liquid_suitability_json(state: String) -> String {
-        match crate::liquid_suitability(state) {
-            Some(s) => serde_json::to_string(&s).unwrap_or_else(|_| "null".to_string()),
-            None => "null".to_string(),
-        }
-    }
-
     /// The tuned default opts for `(state, size)`, before any override --
     /// `frame`/`frame_with_overrides` only return the rendered frame, not
     /// the values that produced it, so a caller building an override UI
@@ -1346,28 +1285,6 @@ mod wall_clock_tests {
     use super::*;
 
     #[test]
-    fn particles_run_on_wall_clock_seconds_not_the_preset_clock() {
-        // `drifting` runs its mode clock ~3.3x: callers pass
-        // t = elapsed * presetSpeed. The particles must be exactly those of
-        // the unscaled elapsed time -- i.e. apply_particles(base, elapsed).
-        let size = 64;
-        let r = resolve_any("drifting", size).unwrap();
-        assert!(r.speed > 3.0, "drifting is a fast preset: {}", r.speed);
-        let elapsed = 1.7;
-        let on = HashMap::from([("particleStrength".to_string(), 1.0)]);
-        let with =
-            frame_with_overrides("drifting".into(), size, elapsed * r.speed, on.clone()).unwrap();
-        let base = frame_with_overrides("drifting".into(), size, elapsed * r.speed, HashMap::new())
-            .unwrap();
-        let mut opts = r.opts.clone();
-        opts.extend(on);
-        let opts = particles::with_mode_defaults(r.mode, &opts);
-        let want = particles::apply_particles(base.clone(), size as f64, elapsed, &opts);
-        assert_eq!(with.dots, want.dots);
-        assert!(with.dots.len() > base.dots.len());
-    }
-
-    #[test]
     fn pulse_and_noise_run_on_wall_clock_seconds() {
         // `breathing` runs its mode clock 3.24x; a 2 s pulse and the noise
         // drift must be those of the unscaled elapsed time.
@@ -1391,47 +1308,6 @@ mod wall_clock_tests {
         assert_eq!(
             got,
             primitives::apply_noise(base, size as f64, wall, &noise)
-        );
-    }
-
-    #[test]
-    fn particle_defaults_are_per_state_and_explicit_keys_win() {
-        let d = |st: &str| particle_defaults(st.into()).unwrap();
-        assert_eq!(d("tracking")["particleStyle"], 3.0, "ring states rise");
-        assert_eq!(d("scanning")["particleStyle"], 1.0, "scanning attracts");
-        assert_eq!(d("notifying")["particleSync"], 1.0, "notifying bursts");
-        assert_eq!(
-            d("speaking")["particleAudio"],
-            1.0,
-            "speaking follows audio"
-        );
-        assert_eq!(d("breathing")["particleStyle"], 2.0, "ambient orbs orbit");
-        assert_eq!(d("working")["particleLife"], 4.5, "base defaults elsewhere");
-        assert_eq!(d("working").len(), particles::BASE_DEFAULTS.len());
-        assert!(particle_defaults("nope".into()).is_none());
-        // A key the caller sets wins over the state's default.
-        let on = |extra: &[(&str, f64)]| {
-            let mut o = HashMap::from([("particleStrength".to_string(), 1.0)]);
-            o.extend(extra.iter().map(|(k, v)| (k.to_string(), *v)));
-            frame_with_overrides("tracking".into(), 64, 2.0, o).unwrap()
-        };
-        let rise = on(&[]);
-        let explicit = on(&[
-            ("particleStyle", 3.0),
-            ("particleCount", 12.0),
-            ("particleLife", 5.0),
-            ("particleSpread", 0.2),
-        ]);
-        assert_eq!(rise, explicit, "unset keys take the state's defaults");
-        assert_ne!(
-            on(&[("particleStyle", 0.0)]),
-            rise,
-            "an explicit style wins"
-        );
-        // Off: the defaults never touch a frame.
-        assert_eq!(
-            frame_with_overrides("tracking".into(), 64, 2.0, HashMap::new()),
-            frame("tracking".into(), 64, 2.0)
         );
     }
 }

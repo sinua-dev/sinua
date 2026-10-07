@@ -33,7 +33,6 @@
     "initializing": {
       "speed": 0.8,
       "overrides": {
-        "particleStrength": 0,
         "ink": 0.7
       }
     },
@@ -53,8 +52,7 @@
       "overrides": {
         "glowStrength": 0.3,
         "ink": 1,
-        "audioStrength": -0.35,
-        "particleStrength": 0
+        "audioStrength": -0.35
       }
     },
     "thinking": {
@@ -66,8 +64,7 @@
         "pulsePeriod": 1.8,
         "pulseScale": 0.015,
         "pulseOpacity": 0.45,
-        "ink": 1,
-        "particleStrength": 0
+        "ink": 1
       }
     },
     "speaking": {
@@ -76,8 +73,7 @@
       "overrides": {
         "glowStrength": 0.4,
         "ink": 1,
-        "audioStrength": 0.5,
-        "particleStrength": 0
+        "audioStrength": 0.5
       }
     }
   },
@@ -146,7 +142,6 @@
             "nodeCount": 340,
             "nodeSize": 1.05,
             "saturation": 0.8,
-            "particleStrength": 0,
             "glowStrength": 0.28,
             "ink": 1
           }
@@ -202,7 +197,6 @@
       "states": {
         "listening": {
           "overrides": {
-            "particleStrength": 0,
             "ink": 0.95,
             "barCount": 20,
             "jumpSpeed": 3
@@ -343,15 +337,13 @@
           "overrides": {
             "shimmer": 0.6,
             "flow": 0,
-            "particleStrength": 0,
             "idleOpacity": 0.25
           }
         },
         "idle": {
           "overrides": {
             "shimmer": 0,
-            "flow": 0,
-            "particleStrength": 0
+            "flow": 0
           }
         },
         "listening": {
@@ -359,7 +351,6 @@
             "flow": -1,
             "shimmer": 0,
             "audioStrength": 0,
-            "particleStrength": 0,
             "idleOpacity": 0.5,
             "reach": 0.02,
             "glowStrength": 0.15
@@ -368,8 +359,7 @@
         "thinking": {
           "overrides": {
             "shimmer": 1,
-            "flow": 0,
-            "particleStrength": 0
+            "flow": 0
           }
         },
         "speaking": {
@@ -377,7 +367,6 @@
             "flow": 1,
             "shimmer": 0,
             "audioStrength": 0,
-            "particleStrength": 0,
             "reach": 0.045,
             "glowStrength": 0.2
           }
@@ -389,32 +378,27 @@
       "states": {
         "initializing": {
           "overrides": {
-            "audioStrength": 0,
-            "particleStrength": 0
+            "audioStrength": 0
           }
         },
         "idle": {
           "overrides": {
-            "audioStrength": 0,
-            "particleStrength": 0
+            "audioStrength": 0
           }
         },
         "listening": {
           "overrides": {
-            "audioStrength": 0,
-            "particleStrength": 0
+            "audioStrength": 0
           }
         },
         "thinking": {
           "overrides": {
-            "audioStrength": 0,
-            "particleStrength": 0
+            "audioStrength": 0
           }
         },
         "speaking": {
           "overrides": {
-            "audioStrength": 0,
-            "particleStrength": 0
+            "audioStrength": 0
           }
         }
       }
@@ -428,7 +412,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 0.85,
             "lid": 0.5,
             "look": 0,
@@ -441,7 +424,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "breath": 1,
             "look": 1,
@@ -454,7 +436,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "lean": 4,
             "tilt": -0.05,
@@ -473,7 +454,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": 0.07,
             "eyeH": 24,
@@ -496,7 +476,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "eyeW": 21,
             "eyeSmile": 0.45,
@@ -520,7 +499,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 0.85,
             "lid": 0.5,
             "look": 0,
@@ -533,7 +511,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "breath": 1,
             "look": 1,
@@ -546,7 +523,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": -0.13,
             "lean": 3,
@@ -565,7 +541,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": 0.1,
             "eyeH": 24,
@@ -588,7 +563,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "eyeW": 21,
             "eyeSmile": 0.45,
@@ -613,7 +587,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 0.85,
             "lid": 0.5,
             "look": 0,
@@ -626,7 +599,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "breath": 1,
             "look": 1,
@@ -640,7 +612,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": -0.12,
             "lean": 3,
@@ -660,7 +631,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "eyeH": 24,
             "eyeR": 7,
@@ -683,7 +653,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "eyeW": 21,
             "eyeSmile": 0.45,
@@ -708,7 +677,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 0.85,
             "lid": 0.5,
             "look": 0,
@@ -721,7 +689,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "breath": 1.4,
             "look": 1,
@@ -734,7 +701,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": -0.2,
             "eyeW": 22,
@@ -752,7 +718,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": 0.08,
             "eyeH": 24,
@@ -775,7 +740,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "eyeW": 21,
             "eyeSmile": 0.45,
@@ -799,7 +763,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 0.85,
             "lid": 0.5,
             "look": 0,
@@ -812,7 +775,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "breath": 1.4,
             "look": 1,
@@ -825,7 +787,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": -0.05,
             "eyeW": 22,
@@ -843,7 +804,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": 0.02,
             "eyeH": 24,
@@ -866,7 +826,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "eyeW": 21,
             "eyeSmile": 0.45,
@@ -890,7 +849,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 0.85,
             "lid": 0.5,
             "look": 0,
@@ -903,7 +861,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "breath": 1.4,
             "look": 1,
@@ -916,7 +873,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": -0.2,
             "eyeW": 22,
@@ -934,7 +890,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": 0.08,
             "eyeH": 24,
@@ -957,7 +912,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "eyeW": 21,
             "eyeSmile": 0.45,
@@ -981,7 +935,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 0.85,
             "lid": 0.5,
             "look": 0,
@@ -994,7 +947,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "breath": 1,
             "look": 1,
@@ -1007,7 +959,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "lean": 4,
             "tilt": -0.05,
@@ -1026,7 +977,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": 0.07,
             "eyeH": 24,
@@ -1049,7 +999,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "eyeW": 21,
             "eyeSmile": 0.45,
@@ -1073,7 +1022,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 0.85,
             "lid": 0.5,
             "look": 0,
@@ -1086,7 +1034,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "breath": 1,
             "look": 1,
@@ -1099,7 +1046,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "lean": 4,
             "tilt": -0.05,
@@ -1118,7 +1064,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "tilt": 0.07,
             "eyeH": 24,
@@ -1141,7 +1086,6 @@
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "particleStrength": 0,
             "ink": 1,
             "eyeW": 21,
             "eyeSmile": 0.45,
@@ -1152,51 +1096,6 @@
             "look": 0.3,
             "turnNod": 1,
             "turnWander": 0.25
-          }
-        }
-      }
-    }
-  },
-  "before1_10": {
-    "$comment": "FX Spec 1.8 and 1.9 files resolved their voice states with particles; from 1.10 (and in plain views) the shared profile has none. These are the old particle values, applied only for a file that declares fxSpec 1.8 or 1.9, so its meaning doesn't change (the identity locks hold it). Order: generic state, then these, then the pattern's own entry, then its entry here.",
-    "states": {
-      "listening": {
-        "overrides": {
-          "particleStrength": 1,
-          "particleStyle": 1,
-          "particleCount": 36,
-          "particleSize": 1.4,
-          "particleSpread": 0.4,
-          "particleLife": 1.8,
-          "particleAudio": 1
-        }
-      },
-      "thinking": {
-        "overrides": {
-          "particleStrength": 0.8,
-          "particleStyle": 2,
-          "particleCount": 16
-        }
-      },
-      "speaking": {
-        "overrides": {
-          "particleStrength": 1,
-          "particleStyle": 0,
-          "particleCount": 32,
-          "particleLife": 1.4,
-          "particleAudio": 1
-        }
-      }
-    },
-    "patterns": {
-      "generating": {
-        "states": {
-          "listening": {
-            "overrides": {
-              "particleCount": 16,
-              "particleSize": 1.0,
-              "particleSpread": 0.25
-            }
           }
         }
       }

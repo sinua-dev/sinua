@@ -224,14 +224,11 @@ pub fn sampled(size: u32, mut render: impl FnMut(f64) -> Option<OrbFrame>) -> Op
 
 /// Cost of `(state, size)` with `overrides` (the Studio's live knobs).
 /// The material master keys a baseline turns off.
-/// Liquid is a material too (naming split): the baseline turns it off.
-const MATERIAL_STRENGTHS: [&str; 6] = [
+const MATERIAL_STRENGTHS: [&str; 4] = [
     "glowStrength",
     "noiseStrength",
     "pulseStrength",
     "gradientStrength",
-    "liquidStrength",
-    "particleStrength",
 ];
 
 /// `sampled` for `(state, size, speed, overrides)`, with the no-materials
@@ -352,19 +349,6 @@ mod tests {
         .unwrap();
         assert_eq!((sh.fills, sh.polylines, sh.elements), (2, 0, 2));
         assert!(sh.coverage > 0.0);
-        // Liquid counts as a material in the baseline.
-        let liq = estimate(
-            "drifting",
-            64,
-            &HashMap::from([("liquidStrength".to_string(), 1.0)]),
-        )
-        .unwrap();
-        let plain_drift = estimate("drifting", 64, &HashMap::new()).unwrap();
-        assert_eq!(
-            (liq.base_elements, liq.base_coverage),
-            (plain_drift.elements, plain_drift.coverage)
-        );
-        assert_ne!(liq.elements, liq.base_elements);
         let sc = estimate("scrolling", 64, &HashMap::new()).unwrap();
         assert!(sc.polylines > 0 && sc.points > sc.polylines);
     }

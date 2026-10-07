@@ -921,10 +921,6 @@ fn section_owner(key: &str) -> Option<&'static str> {
         "pulseStrength" | "pulsePeriod" | "pulseOpacity" | "pulseScale" | "pulsePhase" => {
             Some("/materials/pulse")
         }
-        k if k.starts_with("liquid") => Some("/materials/liquid"),
-        k if k.starts_with("particle") => Some("/materials/particles"),
-        // The silhouette's own `hologram` look (design note 32) is a pattern key.
-        k if k.starts_with("holo") && k != "hologram" => Some("/materials/holographic"),
         _ => None,
     }
 }
@@ -1482,29 +1478,26 @@ const ENTRY_KEYS: [&str; 10] = [
 const BINDING_KEYS: [&str; 4] = ["input", "inputRange", "outputRange", "curve"];
 const COLOR_KEYS: [&str; 4] = ["value", "mix", "lightness", "mode"];
 const GRADIENT_KEYS: [&str; 6] = ["stops", "angle", "strength", "saturation", "mid", "path"];
-pub(crate) const MATERIAL_SECTIONS: [&str; 6] = [
-    "glow",
-    "noise",
-    "pulse",
-    "liquid",
-    "particles",
-    "holographic",
-];
-/// 1.5: particles' word key -> `particleStyle`.
-const PARTICLE_STYLES: [&str; 4] = ["drift", "attract", "orbit", "rise"];
-/// 1.4: liquid's word/boolean keys -> `liquidStyle` / `liquidKeep`.
-const LIQUID_ENUM_KEYS: [&str; 2] = ["style", "keep"];
+pub(crate) const MATERIAL_SECTIONS: [&str; 3] = ["glow", "noise", "pulse"];
+/// Materials removed in 0.1.0-beta.9 (FX Spec 1.14; design note 38): a file that
+/// still uses one is rejected, whatever its version, rather than drawn without it.
+const REMOVED_MATERIALS: [&str; 3] = ["liquid", "particles", "holographic"];
+
+/// The error for a removed material at `path`.
+fn removed_material(path: &str, name: &str, diag: &mut Diag) {
+    diag.error(
+        path,
+        format!("`{name}` was removed in 0.1.0-beta.9 (FX Spec 1.14); there is no replacement: delete it from the file"),
+    );
+}
 
 /// Every key a material section accepts: its numeric keys plus its word keys.
 /// The resolver reads its allowlist from here, and so does
 /// `accepted_key_paths`, so the version gate can't miss a key.
 fn section_key_names(section: &str) -> Vec<&'static str> {
     let mut names: Vec<&'static str> = material_keys(section).iter().map(|k| k.0).collect();
-    match section {
-        "glow" => names.extend(GLOW_ENUM_KEYS),
-        "liquid" => names.extend(LIQUID_ENUM_KEYS),
-        "particles" => names.push("style"),
-        _ => {}
+    if section == "glow" {
+        names.extend(GLOW_ENUM_KEYS);
     }
     names
 }
@@ -2054,36 +2047,6 @@ pub(crate) fn material_keys(section: &str) -> &'static [(&'static str, &'static 
             ("scale", "pulseScale", 0.0, 1.0),
             ("phase", "pulsePhase", -1e9, 1e9),
         ],
-        "liquid" => &[
-            ("strength", "liquidStrength", 0.0, 1.0),
-            ("reach", "liquidReach", 1.0, 12.0),
-            ("threshold", "liquidThreshold", 0.05, 4.0),
-            ("cells", "liquidCells", 8.0, 96.0),
-            ("spacing", "liquidSpacing", 0.5, 12.0),
-            ("width", "liquidWidth", 0.05, 8.0),
-            ("blur", "liquidBlur", 0.0, 32.0),
-        ],
-        "particles" => &[
-            ("strength", "particleStrength", 0.0, 1.0),
-            ("count", "particleCount", 0.0, 200.0),
-            ("size", "particleSize", 0.05, 4.0),
-            ("spread", "particleSpread", 0.0, 1.0),
-            ("life", "particleLife", 0.1, 30.0),
-            ("seed", "particleSeed", -1e9, 1e9),
-            // 1.6: burst sync and audio coupling.
-            ("sync", "particleSync", 0.0, 1.0),
-            ("audio", "particleAudio", 0.0, 1.0),
-        ],
-        // 1.6: holographic-lite, a hue sweep over the kept lightness.
-        "holographic" => &[
-            ("strength", "holoStrength", 0.0, 1.0),
-            ("hue", "holoHue", 0.0, 360.0),
-            ("span", "holoSpan", 0.0, 720.0),
-            ("saturation", "holoSaturation", 0.0, 1.0),
-            ("depth", "holoDepth", 0.0, 1.0),
-            ("facing", "holoFacing", 0.0, 1.0),
-            ("speed", "holoSpeed", -4.0, 4.0),
-        ],
         _ => &[],
     }
 }
@@ -2389,6 +2352,10 @@ fn resolve_block(
                     );
                     continue;
                 }
+                if REMOVED_MATERIALS.contains(&section.as_str()) {
+                    removed_material(&path, section, diag);
+                    continue;
+                }
                 if !MATERIAL_SECTIONS.contains(&section.as_str()) {
                     diag.unknown(strict, &path, section, &MATERIAL_SECTIONS);
                     continue;
@@ -2399,50 +2366,6 @@ fn resolve_block(
                 let keys = material_keys(section);
                 let names = section_key_names(section);
                 for (k, v) in bo {
-                    // 1.5: particles' style is a word.
-                    if section == "particles" && k == "style" {
-                        match v
-                            .as_str()
-                            .and_then(|w| PARTICLE_STYLES.iter().position(|x| *x == w))
-                        {
-                            Some(i) => {
-                                out.insert("particleStyle".into(), i as f64);
-                            }
-                            None => diag.error(
-                                &ptr(&path, k),
-                                format!("`style` is one of {}", PARTICLE_STYLES.join(", ")),
-                            ),
-                        }
-                        continue;
-                    }
-                    // 1.4: liquid's style is a word, keep a boolean.
-                    if section == "liquid" && LIQUID_ENUM_KEYS.contains(&k.as_str()) {
-                        let kp = ptr(&path, k);
-                        if k == "style" {
-                            match v.as_str() {
-                                Some("fill") => {
-                                    out.insert("liquidStyle".into(), 0.0);
-                                }
-                                Some("outline") => {
-                                    out.insert("liquidStyle".into(), 1.0);
-                                }
-                                Some("dots") => {
-                                    out.insert("liquidStyle".into(), 2.0);
-                                }
-                                _ => {
-                                    diag.error(&kp, "`style` is \"outline\", \"dots\" or \"fill\"")
-                                }
-                            }
-                        } else {
-                            match v.as_bool() {
-                                Some(b) => {
-                                    out.insert("liquidKeep".into(), if b { 1.0 } else { 0.0 });
-                                }
-                                None => diag.error(&kp, "`keep` is true or false"),
-                            }
-                        }
-                        continue;
-                    }
                     // 1.3: glow's paint mode and blend are words, not numbers.
                     if section == "glow" && GLOW_ENUM_KEYS.contains(&k.as_str()) {
                         let kp = ptr(&path, k);
@@ -2674,15 +2597,7 @@ fn resolve_block(
 const PERFORMANCE_KEYS: [&str; 2] = ["maxFps", "lowPower"];
 const LOW_POWER_KEYS: [&str; 2] = ["maxFps", "disable"];
 /// The materials a low-power host may shed (their `*Strength` goes to 0).
-const SHEDDABLE: [&str; 7] = [
-    "glow",
-    "noise",
-    "pulse",
-    "gradient",
-    "blur",
-    "liquid",
-    "particles",
-];
+const SHEDDABLE: [&str; 5] = ["glow", "noise", "pulse", "gradient", "blur"];
 /// 1.3: glow's word-valued keys (`mode`: stacked | blur, `blend`: normal |
 /// additive) -> `glowMode` / `glowBlend`.
 const GLOW_ENUM_KEYS: [&str; 2] = ["mode", "blend"];
@@ -2727,10 +2642,9 @@ fn performance(v: &Value, strict: bool, diag: &mut Diag) -> Performance {
                         for (i, m) in a.iter().enumerate() {
                             let path = format!("/performance/lowPower/disable/{i}");
                             match m.as_str() {
-                                Some("holographic") => diag.error(
-                                    &path,
-                                    "`holographic` only recolours (no elements, no blur), so there is nothing to shed",
-                                ),
+                                Some(m) if REMOVED_MATERIALS.contains(&m) => {
+                                    removed_material(&path, m, diag)
+                                }
                                 Some(m) if SHEDDABLE.contains(&m) => {
                                     if !out.disable.iter().any(|x| x == m) {
                                         out.disable.push(m.to_string());
@@ -3086,7 +3000,6 @@ pub fn resolve_full(
     // `or_insert`, so a profile `audioStrength` (negative while listening)
     // survives the `audioLevel` companion's positive default.
     if !key.is_empty() {
-        // 1.10: the shared profile lost its particles; a 1.8/1.9 file keeps them.
         if let Some(p) = crate::voice_state::profile_for_minor(&block.state, &key, minor) {
             for (k, v) in p.overrides {
                 if !removed.contains(&k) {
@@ -3130,12 +3043,7 @@ pub fn resolve_full(
                 out.insert("blurScale".into(), 0.0);
                 continue;
             }
-            // The engine key is singular for particles (`particleStrength`).
-            let key = if m == "particles" {
-                "particleStrength".to_string()
-            } else {
-                format!("{m}Strength")
-            };
+            let key = format!("{m}Strength");
             if out.contains_key(&key) {
                 out.insert(key.clone(), 0.0);
             }
@@ -3650,7 +3558,7 @@ mod tests {
         }
     }
 
-    const EXAMPLES: [(&str, &str); 16] = [
+    const EXAMPLES: [(&str, &str); 13] = [
         (
             "coffee-shop",
             include_str!("../../../spec/examples/coffee-shop.fxspec.json"),
@@ -3702,18 +3610,6 @@ mod tests {
         (
             "radar-wedge-blur",
             include_str!("../../../spec/examples/radar-wedge-blur.fxspec.json"),
-        ),
-        (
-            "liquid-orb",
-            include_str!("../../../spec/examples/liquid-orb.fxspec.json"),
-        ),
-        (
-            "particles-orb",
-            include_str!("../../../spec/examples/particles-orb.fxspec.json"),
-        ),
-        (
-            "holo-orb",
-            include_str!("../../../spec/examples/holo-orb.fxspec.json"),
         ),
     ];
 
@@ -3876,45 +3772,59 @@ mod tests {
         // wordings left to hold (release decision 0.1). All 13
         // examples declare 1.8. Captured once 1.8 was stable;
         // a later minor adds its own.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.8-resolved.json"), 13);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.8-resolved.json"), 10);
     }
 
+    /// 0.1.0-beta.9 (design note 38): a file using a removed material is rejected,
+    /// whatever its version, with the path and what to do.
     #[test]
-    fn from_1_10_the_voice_states_have_no_particles_and_older_files_keep_theirs() {
-        let file = |minor: &str| {
-            format!(
-                r##"{{ "fxSpec": "{minor}", "object": "signal", "pattern": "waveform", "states": {{ "listening": {{}} }} }}"##
-            )
-        };
-        let particles = |minor: &str| {
-            let r = resolve_full(&file(minor), Some("listening"), &HashMap::new(), false);
-            assert!(r.ok, "{:?}", r.diagnostics);
-            r.overrides.get("particleStrength").copied()
-        };
-        assert_eq!(particles("1.9"), Some(1.0), "1.9 keeps its meaning");
-        assert_eq!(particles("1.10"), Some(0.0), "1.10: particles off");
+    fn removed_materials_are_errors_in_any_version() {
+        for (minor, m) in [
+            ("1.8", "liquid"),
+            ("1.13", "particles"),
+            ("1.10", "holographic"),
+        ] {
+            let r = resolve(&format!(
+                r##"{{ "fxSpec": "{minor}", "object": "orb", "pattern": "glowing", "materials": {{ "{m}": {{ "strength": 1 }} }} }}"##
+            ));
+            assert!(!r.ok, "{m} in {minor}");
+            let e = errors(&r);
+            assert!(
+                e.iter().any(|d| d.path == format!("/materials/{m}")
+                    && d.message.contains("removed in 0.1.0-beta.9")),
+                "{m}: {e:?}"
+            );
+        }
+        let shed = resolve(
+            r##"{ "fxSpec": "1.13", "object": "orb", "pattern": "glowing",
+                  "performance": { "lowPower": { "disable": ["glow", "liquid"] } } }"##,
+        );
+        assert!(!shed.ok);
+        assert!(errors(&shed)
+            .iter()
+            .any(|d| d.path == "/performance/lowPower/disable/1"
+                && d.message.contains("removed in 0.1.0-beta.9")));
     }
 
     #[test]
     fn v1_9_examples_resolve_identically() {
-        // 1.9 shipped in 0.1.0-beta.6; 1.10 changed the shared voice-state profile
-        // (no particles), and older files keep theirs (`voice_state::profile_for_minor`).
-        // This holds the 1.9 runtime's lock so that change can't leak into it.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.9-resolved.json"), 13);
+        // 1.9 shipped in 0.1.0-beta.6. This holds the 1.9 runtime's lock (minus what
+        // 0.1.0-beta.9 removed: particles, liquid, holographic; design note 38).
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.9-resolved.json"), 10);
     }
 
     #[test]
     fn v1_10_examples_resolve_identically() {
         // 1.10 shipped in 0.1.0-beta.7; 1.11 adds the `character` object and
         // must not change how any 1.10 file resolves.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.10-resolved.json"), 13);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.10-resolved.json"), 10);
     }
 
     #[test]
     fn v1_11_examples_resolve_identically() {
         // 1.11 is the runtime 0.1.0-beta.8's characters were made with; 1.12 adds
         // `recipe` and must not change how any 1.11 file resolves.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.11-resolved.json"), 14);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.11-resolved.json"), 11);
     }
 
     /// A file carrying `recipe` (Chirp's own, renamed `id`, plus `extra` keys).
@@ -4266,8 +4176,6 @@ mod tests {
         assert!(!live.ok);
     }
 
-    const HOLO: &str = include_str!("../../../spec/examples/holo-orb.fxspec.json");
-
     #[test]
     fn catalog_path_targets_and_array_params_resolve_to_engine_keys() {
         let x = HashMap::from([("x".to_string(), 0.5)]);
@@ -4286,116 +4194,6 @@ mod tests {
             r##"{ "fxSpec": "1.8", "object": "ring", "pattern": "tracking", "params": { "progress": [1, 1, 1, 1, 1] } }"##,
         );
         assert!(!long.ok && errors(&long)[0].message.contains("1 to 4 values"));
-    }
-
-    #[test]
-    fn v1_6_holographic_material() {
-        let none = HashMap::new();
-        let r = resolve_full(HOLO, None, &none, false);
-        assert!(r.ok, "{:?}", r.diagnostics);
-        assert_eq!(
-            (
-                r.overrides["holoStrength"],
-                r.overrides["holoHue"],
-                r.overrides["holoSpeed"]
-            ),
-            (1.0, 200.0, 0.08)
-        );
-        // Holographic keeps geometry and lightness: same frame minus hue/sat.
-        let f =
-            crate::frame_from_fx_spec_with(HOLO.into(), 1.0, None, none.clone(), false).unwrap();
-        let off = HOLO.replacen("\"strength\": 1", "\"strength\": 0", 1);
-        let plain = crate::frame_from_fx_spec_with(off, 1.0, None, none.clone(), false).unwrap();
-        assert_eq!(f.dots.len(), plain.dots.len());
-        for (a, b) in f.dots.iter().zip(&plain.dots) {
-            assert_eq!((a.x, a.y, a.r, a.white, a.a), (b.x, b.y, b.r, b.white, b.a));
-        }
-        assert!(f.dots.iter().any(|d| d.saturation > 0.0));
-        // States merge; low power sheds the glow but keeps the holographic.
-        let sp = resolve_full(HOLO, Some("speaking"), &none, true);
-        assert_eq!(
-            (sp.overrides["holoFacing"], sp.overrides["holoStrength"]),
-            (0.8, 1.0)
-        );
-        assert_eq!(sp.overrides["glowStrength"], 0.0);
-        // Can't-shed, validation, and holo keys don't belong in params.
-        // 1.6 particle keys resolve.
-        let p = r##"{ "fxSpec": "1.8", "object": "orb", "pattern": "speaking",
-                  "materials": { "particles": { "strength": 1, "sync": 0.5, "audio": 1 } } }"##;
-        let ok = resolve(p);
-        assert!(ok.ok, "{:?}", ok.diagnostics);
-        assert_eq!(
-            (ok.overrides["particleSync"], ok.overrides["particleAudio"]),
-            (0.5, 1.0)
-        );
-        let bad = resolve(
-            r##"{ "fxSpec": "1.8", "object": "orb", "pattern": "glowing",
-                  "materials": { "holographic": { "span": 900, "hue2": 3 } },
-                  "params": { "holoHue": 30 },
-                  "performance": { "lowPower": { "disable": ["holographic"] } } }"##,
-        );
-        let e = errors(&bad);
-        assert!(e.iter().any(|d| d.path == "/materials/holographic/span"));
-        assert!(e
-            .iter()
-            .any(|d| d.path == "/materials/holographic/hue2" && d.message.contains("`hue`")));
-        assert!(e
-            .iter()
-            .any(|d| d.path == "/params/holoHue" && d.message.contains("/materials/holographic")));
-        assert!(e.iter().any(|d| d.path == "/performance/lowPower/disable/0"
-            && d.message.contains("nothing to shed")));
-    }
-
-    const PARTICLES: &str = include_str!("../../../spec/examples/particles-orb.fxspec.json");
-
-    #[test]
-    fn v1_5_particles_material_and_shedding() {
-        let none = HashMap::new();
-        let r = resolve_full(PARTICLES, None, &none, false);
-        assert!(r.ok, "{:?}", r.diagnostics);
-        assert_eq!(
-            (
-                r.overrides["particleStrength"],
-                r.overrides["particleCount"],
-                r.overrides["particleStyle"]
-            ),
-            (1.0, 32.0, 0.0)
-        );
-        // Same spec with particles shed (low power) has exactly the orb's own dots.
-        let f = crate::frame_from_fx_spec_with(PARTICLES.into(), 1.0, None, none.clone(), false)
-            .unwrap();
-        let shed = crate::frame_from_fx_spec_with(PARTICLES.into(), 1.0, None, none.clone(), true)
-            .unwrap();
-        assert!(f.dots.len() > shed.dots.len(), "particles add dots");
-        assert_eq!(
-            &f.dots[..shed.dots.len()],
-            &shed.dots[..],
-            "the orb's own dots are untouched"
-        );
-        let l = resolve_full(PARTICLES, Some("listening"), &none, false);
-        assert_eq!(
-            (l.overrides["particleStyle"], l.overrides["particleSpread"]),
-            (1.0, 0.3)
-        );
-        // Low power sheds particles (and blur): strength 0.
-        let low = resolve_full(PARTICLES, Some("speaking"), &none, true);
-        assert_eq!(low.overrides["particleStrength"], 0.0);
-        assert_eq!(low.overrides["blurScale"], 0.0);
-        assert_eq!(low.disabled_materials, ["particles", "blur"]);
-        // Validation, and particle keys don't belong in params.
-        let bad = resolve(
-            r##"{ "fxSpec": "1.8", "object": "orb", "pattern": "glowing",
-                  "materials": { "particles": { "style": "swirl", "cuont": 3 } },
-                  "params": { "particleCount": 3 } }"##,
-        );
-        let e = errors(&bad);
-        assert!(e.iter().any(|d| d.path == "/materials/particles/style"));
-        assert!(e
-            .iter()
-            .any(|d| d.path == "/materials/particles/cuont" && d.message.contains("`count`")));
-        assert!(e.iter().any(
-            |d| d.path == "/params/particleCount" && d.message.contains("/materials/particles")
-        ));
     }
 
     fn resolves_like_snapshot(snapshot: &str, count: usize) {
@@ -4445,70 +4243,6 @@ mod tests {
                 );
             }
         }
-    }
-
-    const LIQUID: &str = include_str!("../../../spec/examples/liquid-orb.fxspec.json");
-
-    #[test]
-    fn v1_4_liquid_material_and_shedding() {
-        let none = HashMap::new();
-        let r = resolve_full(LIQUID, None, &none, false);
-        assert!(r.ok, "{:?}", r.diagnostics);
-        assert_eq!(
-            (r.overrides["liquidStrength"], r.overrides["liquidStyle"]),
-            (1.0, 1.0)
-        );
-        let f =
-            crate::frame_from_fx_spec_with(LIQUID.into(), 1.0, None, none.clone(), false).unwrap();
-        assert!(
-            !f.polylines.is_empty() && f.dots.is_empty(),
-            "outline contours replace the dots"
-        );
-        // The speaking state: a liquid ring -- a filled band with a hole,
-        // source dots kept on top.
-        let sp = resolve_full(LIQUID, Some("speaking"), &none, false);
-        assert_eq!(
-            (sp.overrides["liquidStyle"], sp.overrides["liquidKeep"]),
-            (0.0, 1.0)
-        );
-        let sf = crate::frame_from_fx_spec_with(
-            LIQUID.into(),
-            1.0,
-            Some("speaking".into()),
-            none.clone(),
-            false,
-        )
-        .unwrap();
-        assert!(
-            sf.fills.iter().any(|x| !x.holes.is_empty()),
-            "a band with a hole"
-        );
-        assert!(!sf.dots.is_empty());
-        // Low power sheds liquid: plain dots, 24 fps.
-        let low = resolve_full(LIQUID, None, &none, true);
-        assert_eq!(low.overrides["liquidStrength"], 0.0);
-        assert_eq!(
-            (low.max_fps, low.disabled_materials.clone()),
-            (Some(24.0), vec!["liquid".to_string()])
-        );
-        let lf =
-            crate::frame_from_fx_spec_with(LIQUID.into(), 1.0, None, none.clone(), true).unwrap();
-        assert!(lf.polylines.is_empty() && !lf.dots.is_empty());
-        // Validation, and liquid keys don't belong in params.
-        let bad = resolve(
-            r##"{ "fxSpec": "1.8", "object": "orb", "pattern": "glowing",
-                  "materials": { "liquid": { "style": "goo", "keep": 1, "reech": 2 } },
-                  "params": { "liquidReach": 3 } }"##,
-        );
-        let e = errors(&bad);
-        assert!(e.iter().any(|d| d.path == "/materials/liquid/style"));
-        assert!(e.iter().any(|d| d.path == "/materials/liquid/keep"));
-        assert!(e
-            .iter()
-            .any(|d| d.path == "/materials/liquid/reech" && d.message.contains("`reach`")));
-        assert!(e
-            .iter()
-            .any(|d| d.path == "/params/liquidReach" && d.message.contains("/materials/liquid")));
     }
 
     const MATERIALS: &str = include_str!("../../../spec/examples/radar-wedge-blur.fxspec.json");
@@ -5013,12 +4747,6 @@ mod tests {
             if m == "glow" {
                 names.extend(GLOW_ENUM_KEYS);
             }
-            if m == "liquid" {
-                names.extend(LIQUID_ENUM_KEYS);
-            }
-            if m == "particles" {
-                names.push("style");
-            }
             assert_eq!(keys(&defs[m]), sorted(&names), "materials.{m}");
         }
         // v1.1
@@ -5065,12 +4793,7 @@ mod tests {
     #[test]
     fn material_and_section_keys_exist_in_the_engine() {
         // Every engine key a section writes is one the post-processes read.
-        let src = concat!(
-            include_str!("primitives.rs"),
-            include_str!("lib.rs"),
-            include_str!("liquid.rs"),
-            include_str!("particles.rs")
-        );
+        let src = concat!(include_str!("primitives.rs"), include_str!("lib.rs"));
         for m in MATERIAL_SECTIONS {
             for (_, engine, _, _) in material_keys(m) {
                 assert!(
@@ -5135,9 +4858,18 @@ mod tests {
                 (false, Some(m)) => assert!((FLOOR_MINOR + 1..=RUNTIME_MINOR).contains(&m), "`{k}`: SINCE 1.{m} is outside 1.{}..=1.{RUNTIME_MINOR}", FLOOR_MINOR + 1),
             }
         }
+        // 0.1.0-beta.9 removed these on purpose (design note 38): a file using one is
+        // rejected with an error naming the removal, so they leave the accepted set.
+        let removed = |k: &str| {
+            REMOVED_MATERIALS.iter().any(|m| {
+                k == format!("materials.{m}")
+                    || k.starts_with(&format!("materials.{m}."))
+                    || k == format!("performance.lowPower.disable:{m}")
+            })
+        };
         for k in &frozen {
             assert!(
-                accepted.iter().any(|a| a == k),
+                removed(k) || accepted.iter().any(|a| a == k),
                 "`{k}` was a 1.8 key and is no longer accepted: 1.8 files using it break"
             );
         }
@@ -5174,7 +4906,7 @@ mod tests {
     fn the_version_gate_drops_newer_keys_with_an_error() {
         let since: &[(&str, u64)] = &[
             ("ink", 9),
-            ("materials.holographic", 9),
+            ("materials.noise", 9),
             ("materials.glow.mode", 9),
             ("bindings:glowStrength", 9),
             ("bindings.curve", 9),
@@ -5182,7 +4914,7 @@ mod tests {
         ];
         let doc = json!({
             "ink": 0.5,
-            "materials": { "holographic": { "strength": 1 }, "glow": { "strength": 1, "mode": "blur" } },
+            "materials": { "noise": { "strength": 1 }, "glow": { "strength": 1, "mode": "blur" } },
             "bindings": { "glowStrength": { "input": "x" }, "audioLevel": { "input": "y", "curve": "easeOut" } },
             "states": { "a": { "ink": 0.3 } },
             "performance": { "lowPower": { "disable": ["glow", "blur"] } }
@@ -5196,7 +4928,7 @@ mod tests {
                 let paths: Vec<&str> = diag.0.iter().map(|x| x.path.as_str()).collect();
                 for p in [
                     "/ink",
-                    "/materials/holographic",
+                    "/materials/noise",
                     "/materials/glow/mode",
                     "/bindings/glowStrength",
                     "/bindings/audioLevel/curve",

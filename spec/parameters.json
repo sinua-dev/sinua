@@ -2180,174 +2180,6 @@
       "uiMin": 0.5,
       "unit": "s"
     },
-    "holoDepth@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Weight of the depth term (near vs far dots).",
-      "fallback": 0.5,
-      "group": "style",
-      "if": null,
-      "key": "holoDepth",
-      "label": "Depth",
-      "material": "holographic",
-      "max": 1,
-      "min": 0,
-      "path": "holographic.depth",
-      "scope": "shared",
-      "specPath": "/materials/holographic/depth",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "holoFacing@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Weight of the facing term (the tilting-card sheen).",
-      "fallback": 0.5,
-      "group": "style",
-      "if": null,
-      "key": "holoFacing",
-      "label": "Facing",
-      "material": "holographic",
-      "max": 1,
-      "min": 0,
-      "path": "holographic.facing",
-      "scope": "shared",
-      "specPath": "/materials/holographic/facing",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "holoHue@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Starting hue of the sweep.",
-      "fallback": 180,
-      "group": "style",
-      "if": null,
-      "key": "holoHue",
-      "label": "Base hue",
-      "material": "holographic",
-      "max": 360,
-      "min": 0,
-      "path": "holographic.hue",
-      "scope": "shared",
-      "specPath": "/materials/holographic/hue",
-      "step": 1,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "holoSaturation@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Saturation the sweep blends toward.",
-      "fallback": 0.7,
-      "group": "style",
-      "if": null,
-      "key": "holoSaturation",
-      "label": "Saturation",
-      "material": "holographic",
-      "max": 1,
-      "min": 0,
-      "path": "holographic.saturation",
-      "scope": "shared",
-      "specPath": "/materials/holographic/saturation",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "holoSpan@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Degrees of the colour wheel the sweep covers.",
-      "fallback": 300,
-      "group": "style",
-      "if": null,
-      "key": "holoSpan",
-      "label": "Span",
-      "material": "holographic",
-      "max": 720,
-      "min": 0,
-      "path": "holographic.span",
-      "scope": "shared",
-      "specPath": "/materials/holographic/span",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 720,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "holoSpeed@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Turns per second of the hue drift and view point.",
-      "fallback": 0.05,
-      "group": "style",
-      "if": null,
-      "key": "holoSpeed",
-      "label": "Speed",
-      "material": "holographic",
-      "max": 4,
-      "min": -4,
-      "path": "holographic.speed",
-      "scope": "shared",
-      "specPath": "/materials/holographic/speed",
-      "step": 0.01,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 4,
-      "uiMin": -4,
-      "unit": "turns/s"
-    },
-    "holoStrength@shared": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "Amount of the foil hue sweep; 0 turns it off.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "holoStrength",
-      "label": "Holographic",
-      "material": "holographic",
-      "max": 1,
-      "min": 0,
-      "path": "holographic.strength",
-      "scope": "shared",
-      "specPath": "/materials/holographic/strength",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "hologram@silhouette": {
       "aliases": [],
       "category": "appearance",
@@ -3672,253 +3504,6 @@
       "uiMin": 0.01,
       "unit": "fraction"
     },
-    "liquidBlur@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Edge softness of the fill, as a blur sigma.",
-      "fallback": 0,
-      "group": "style",
-      "if": {
-        "in": [
-          0
-        ],
-        "key": "liquidStyle"
-      },
-      "key": "liquidBlur",
-      "label": "Blur",
-      "material": "liquid",
-      "max": 32,
-      "min": 0,
-      "path": "liquid.blur",
-      "scope": "shared",
-      "specPath": "/materials/liquid/blur",
-      "step": 0.1,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 32,
-      "uiMin": 0,
-      "unit": null
-    },
-    "liquidCells@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Grid cells across the frame for the contour.",
-      "fallback": 40,
-      "group": "style",
-      "if": null,
-      "key": "liquidCells",
-      "label": "Resolution",
-      "material": "liquid",
-      "max": 96,
-      "min": 8,
-      "path": "liquid.cells",
-      "scope": "shared",
-      "specPath": "/materials/liquid/cells",
-      "step": 1,
-      "tier": "basic",
-      "type": "integer",
-      "uiMax": 96,
-      "uiMin": 8,
-      "unit": null
-    },
-    "liquidKeep@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Keep the original geometry under the melt.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "liquidKeep",
-      "label": "Keep originals",
-      "material": "liquid",
-      "max": 1,
-      "min": 0,
-      "path": "liquid.keep",
-      "scope": "shared",
-      "specPath": "/materials/liquid/keep",
-      "step": 1,
-      "tier": "basic",
-      "type": "boolean",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "liquidReach@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far each element's field reaches, as a multiple of its size.",
-      "fallback": 2.5,
-      "group": "style",
-      "if": null,
-      "key": "liquidReach",
-      "label": "Reach",
-      "material": "liquid",
-      "max": 12,
-      "min": 1,
-      "path": "liquid.reach",
-      "scope": "shared",
-      "specPath": "/materials/liquid/reach",
-      "step": 0.1,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 12,
-      "uiMin": 1,
-      "unit": "x"
-    },
-    "liquidSpacing@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Spacing of resampled dots (dots style).",
-      "fallback": 2.25,
-      "group": "style",
-      "if": {
-        "in": [
-          2
-        ],
-        "key": "liquidStyle"
-      },
-      "key": "liquidSpacing",
-      "label": "Dot spacing",
-      "material": "liquid",
-      "max": 12,
-      "min": 0.5,
-      "path": "liquid.spacing",
-      "scope": "shared",
-      "specPath": "/materials/liquid/spacing",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 12,
-      "uiMin": 0.5,
-      "unit": null
-    },
-    "liquidStrength@shared": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "Amount of the metaball melt; 0 turns it off.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "liquidStrength",
-      "label": "Liquid",
-      "material": "liquid",
-      "max": 1,
-      "min": 0,
-      "path": "liquid.strength",
-      "scope": "shared",
-      "specPath": "/materials/liquid/strength",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "liquidStyle@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": [
-        {
-          "label": "Fill",
-          "spec": "fill",
-          "value": 0
-        },
-        {
-          "label": "Outline",
-          "spec": "outline",
-          "value": 1
-        },
-        {
-          "label": "Dots",
-          "spec": "dots",
-          "value": 2
-        }
-      ],
-      "deprecated": null,
-      "description": "Filled blobs, contour outlines, or resampled dots.",
-      "fallback": 1,
-      "group": "style",
-      "if": null,
-      "key": "liquidStyle",
-      "label": "Style",
-      "material": "liquid",
-      "max": 2,
-      "min": 0,
-      "path": "liquid.style",
-      "scope": "shared",
-      "specPath": "/materials/liquid/style",
-      "step": 1,
-      "tier": "basic",
-      "type": "choice",
-      "uiMax": 2,
-      "uiMin": 0,
-      "unit": null
-    },
-    "liquidThreshold@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Field level of the contour; lower merges more.",
-      "fallback": 0.5,
-      "group": "style",
-      "if": null,
-      "key": "liquidThreshold",
-      "label": "Threshold",
-      "material": "liquid",
-      "max": 4,
-      "min": 0.05,
-      "path": "liquid.threshold",
-      "scope": "shared",
-      "specPath": "/materials/liquid/threshold",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 4,
-      "uiMin": 0.05,
-      "unit": null
-    },
-    "liquidWidth@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Stroke width of the outline (outline style).",
-      "fallback": 0.8,
-      "group": "style",
-      "if": {
-        "in": [
-          1
-        ],
-        "key": "liquidStyle"
-      },
-      "key": "liquidWidth",
-      "label": "Outline width",
-      "material": "liquid",
-      "max": 8,
-      "min": 0.05,
-      "path": "liquid.width",
-      "scope": "shared",
-      "specPath": "/materials/liquid/width",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 8,
-      "uiMin": 0.05,
-      "unit": null
-    },
     "lonDensity@globe": {
       "aliases": [],
       "category": "appearance",
@@ -4779,243 +4364,6 @@
       "tier": "advanced",
       "type": "number",
       "unit": null
-    },
-    "particleAudio@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "How much brightness follows the audio level.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "particleAudio",
-      "label": "Audio",
-      "material": "particles",
-      "max": 1,
-      "min": 0,
-      "path": "particles.audio",
-      "scope": "shared",
-      "specPath": "/materials/particles/audio",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "particleCount@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Particles alive at once.",
-      "fallback": 28,
-      "group": "style",
-      "if": null,
-      "key": "particleCount",
-      "label": "Count",
-      "material": "particles",
-      "max": 200,
-      "min": 0,
-      "path": "particles.count",
-      "scope": "shared",
-      "specPath": "/materials/particles/count",
-      "step": 1,
-      "tier": "basic",
-      "type": "integer",
-      "uiMax": 200,
-      "uiMin": 0,
-      "unit": null
-    },
-    "particleLife@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Seconds each particle lives (wall clock).",
-      "fallback": 4.5,
-      "group": "style",
-      "if": null,
-      "key": "particleLife",
-      "label": "Life",
-      "material": "particles",
-      "max": 30,
-      "min": 0.1,
-      "path": "particles.life",
-      "scope": "shared",
-      "specPath": "/materials/particles/life",
-      "step": 0.1,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 30,
-      "uiMin": 0.1,
-      "unit": "s"
-    },
-    "particleSeed@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Seed of the particle layout.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "particleSeed",
-      "label": "Seed",
-      "material": "particles",
-      "max": 1000000000,
-      "min": -1000000000,
-      "path": "particles.seed",
-      "scope": "shared",
-      "specPath": "/materials/particles/seed",
-      "step": 1,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 100,
-      "uiMin": 0,
-      "unit": null
-    },
-    "particleSize@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Particle size, relative to the object's dots.",
-      "fallback": 0.8,
-      "group": "style",
-      "if": null,
-      "key": "particleSize",
-      "label": "Size",
-      "material": "particles",
-      "max": 4,
-      "min": 0.05,
-      "path": "particles.size",
-      "scope": "shared",
-      "specPath": "/materials/particles/size",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 4,
-      "uiMin": 0.05,
-      "unit": "x"
-    },
-    "particleSpread@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far particles travel, as a fraction of the frame.",
-      "fallback": 0.18,
-      "group": "style",
-      "if": null,
-      "key": "particleSpread",
-      "label": "Spread",
-      "material": "particles",
-      "max": 1,
-      "min": 0,
-      "path": "particles.spread",
-      "scope": "shared",
-      "specPath": "/materials/particles/spread",
-      "step": 0.01,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "particleStrength@shared": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "Amount of the particle layer; 0 turns it off.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "particleStrength",
-      "label": "Particles",
-      "material": "particles",
-      "max": 1,
-      "min": 0,
-      "path": "particles.strength",
-      "scope": "shared",
-      "specPath": "/materials/particles/strength",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "particleStyle@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": [
-        {
-          "label": "Drift",
-          "spec": "drift",
-          "value": 0
-        },
-        {
-          "label": "Attract",
-          "spec": "attract",
-          "value": 1
-        },
-        {
-          "label": "Orbit",
-          "spec": "orbit",
-          "value": 2
-        },
-        {
-          "label": "Rise",
-          "spec": "rise",
-          "value": 3
-        }
-      ],
-      "deprecated": null,
-      "description": "How particles move: drift out, attract in, orbit, or rise.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "particleStyle",
-      "label": "Motion",
-      "material": "particles",
-      "max": 3,
-      "min": 0,
-      "path": "particles.style",
-      "scope": "shared",
-      "specPath": "/materials/particles/style",
-      "step": 1,
-      "tier": "basic",
-      "type": "choice",
-      "uiMax": 3,
-      "uiMin": 0,
-      "unit": null
-    },
-    "particleSync@shared": {
-      "aliases": [],
-      "category": "material",
-      "choices": null,
-      "deprecated": null,
-      "description": "Pulls births together; 1 = one burst per life.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "particleSync",
-      "label": "Sync",
-      "material": "particles",
-      "max": 1,
-      "min": 0,
-      "path": "particles.sync",
-      "scope": "shared",
-      "specPath": "/materials/particles/sync",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
     },
     "particles@orbits": {
       "aliases": [],
@@ -8419,58 +7767,6 @@
         "colorSaturation@shared"
       ],
       "specSection": "/color"
-    },
-    {
-      "description": "Metaball contours: dots and strokes melt into blobs.",
-      "id": "liquid",
-      "label": "Liquid",
-      "master": "liquidStrength@shared",
-      "params": [
-        "liquidBlur@shared",
-        "liquidCells@shared",
-        "liquidKeep@shared",
-        "liquidReach@shared",
-        "liquidSpacing@shared",
-        "liquidStrength@shared",
-        "liquidStyle@shared",
-        "liquidThreshold@shared",
-        "liquidWidth@shared"
-      ],
-      "specSection": "/materials/liquid"
-    },
-    {
-      "description": "A stateless particle layer emitted from the pattern.",
-      "id": "particles",
-      "label": "Particles",
-      "master": "particleStrength@shared",
-      "params": [
-        "particleAudio@shared",
-        "particleCount@shared",
-        "particleLife@shared",
-        "particleSeed@shared",
-        "particleSize@shared",
-        "particleSpread@shared",
-        "particleStrength@shared",
-        "particleStyle@shared",
-        "particleSync@shared"
-      ],
-      "specSection": "/materials/particles"
-    },
-    {
-      "description": "A foil hue sweep over each element's own lightness.",
-      "id": "holographic",
-      "label": "Holographic",
-      "master": "holoStrength@shared",
-      "params": [
-        "holoDepth@shared",
-        "holoFacing@shared",
-        "holoHue@shared",
-        "holoSaturation@shared",
-        "holoSpan@shared",
-        "holoSpeed@shared",
-        "holoStrength@shared"
-      ],
-      "specSection": "/materials/holographic"
     }
   ],
   "objects": [
@@ -8483,21 +7779,6 @@
           "description": "Busy on a task: particles circle on tilted orbits while the agent works.",
           "id": "working",
           "label": "Working",
-          "materialDefaults": {
-            "liquid": {
-              "liquidReach": 4,
-              "liquidThreshold": 0.4
-            },
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "orbits",
           "params": [
             {
@@ -8592,20 +7873,6 @@
           "description": "Looking something up: a scan line sweeps across a globe of dots.",
           "id": "searching",
           "label": "Searching",
-          "materialDefaults": {
-            "liquid": {
-              "liquidReach": 4
-            },
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "globe",
           "params": [
             {
@@ -8716,18 +7983,6 @@
           "description": "Reasoning through a problem: bands twist like a puzzle cube, then settle.",
           "id": "solving",
           "label": "Solving",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "rubik",
           "params": [
             {
@@ -8830,18 +8085,6 @@
           "description": "The agent is listening: a wave rolls through rings while the user talks.",
           "id": "listening",
           "label": "Listening",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "wave",
           "params": [
             {
@@ -8912,18 +8155,6 @@
           "description": "Joining a session or linking ideas: a constellation wires itself together.",
           "id": "connecting",
           "label": "Connecting",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "web",
           "params": [
             {
@@ -9018,18 +8249,6 @@
           "description": "Combining sources: three strands braid around the sphere.",
           "id": "weaving",
           "label": "Weaving",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "braid",
           "params": [
             {
@@ -9108,21 +8327,6 @@
           "description": "Writing a reply: a ribbon of dots flows around the sphere.",
           "id": "composing",
           "label": "Composing",
-          "materialDefaults": {
-            "liquid": {
-              "liquidReach": 5,
-              "liquidThreshold": 0.6
-            },
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "ribbon",
           "params": [
             {
@@ -9233,18 +8437,6 @@
           "description": "Idle and ready: a calm ring that slowly breathes.",
           "id": "breathing",
           "label": "Breathing",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 20,
-              "particleLife": 6,
-              "particleSize": 0.8,
-              "particleSpread": 0.12,
-              "particleStyle": 2,
-              "particleSync": 0
-            }
-          },
           "mode": "ring",
           "params": [
             {
@@ -9355,18 +8547,6 @@
           "description": "Reshaping or formatting: an outline morphs from circle to triangle to square.",
           "id": "shaping",
           "label": "Shaping",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "morph",
           "params": [
             {
@@ -9429,18 +8609,6 @@
           "description": "An ambient presence: a colored nebula drifting on a sphere.",
           "id": "glowing",
           "label": "Glowing",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 20,
-              "particleLife": 6,
-              "particleSize": 0.8,
-              "particleSpread": 0.12,
-              "particleStyle": 2,
-              "particleSync": 0
-            }
-          },
           "mode": "aurora",
           "params": [
             {
@@ -9551,19 +8719,6 @@
           "description": "A looser constellation: its nodes wander on a smooth noise field.",
           "id": "drifting",
           "label": "Drifting",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAnchor": 1,
-              "particleAudio": 0,
-              "particleCount": 22,
-              "particleLife": 6,
-              "particleSize": 0.8,
-              "particleSpread": 0.22,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "webflow",
           "params": [
             {
@@ -9658,18 +8813,6 @@
           "description": "The agent is speaking: circular EQ bars pulse while it talks.",
           "id": "speaking",
           "label": "Speaking",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 1,
-              "particleCount": 32,
-              "particleLife": 3,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "spectrum",
           "params": [
             {
@@ -9756,18 +8899,6 @@
           "description": "Done or received: a ping ring expands and fades.",
           "id": "confirming",
           "label": "Confirming",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "sonar",
           "params": [
             {
@@ -9846,18 +8977,6 @@
           "description": "Starting a session: a starfield streams outward from the center.",
           "id": "initializing",
           "label": "Initializing",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "warp",
           "params": [
             {
@@ -9928,18 +9047,6 @@
           "description": "Tuning in: a standing-wave pattern snaps into new resonances.",
           "id": "calibrating",
           "label": "Calibrating",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "chladni",
           "params": [
             {
@@ -10002,18 +9109,6 @@
           "description": "Progress on a sphere: a day and night line sweeps left to right as the app sets progress (0 to 1).",
           "id": "progressing",
           "label": "Progressing",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "eclipse",
           "params": [
             {
@@ -10076,18 +9171,6 @@
           "description": "Wrapping up: loose dots snap into a crystal, hold, then let go.",
           "id": "concluding",
           "label": "Concluding",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "crystallize",
           "params": [
             {
@@ -10158,18 +9241,6 @@
           "description": "Mic muted or connection lost: a still, dimmed sphere.",
           "id": "muted",
           "label": "Muted",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "hush",
           "params": [
             {
@@ -10272,18 +9343,6 @@
           "description": "A head and shoulders of evenly spread dots that lives with the voice: waves come in while it listens, flicker at the eyes while it thinks and spread from the mouth while it speaks.",
           "id": "silhouette",
           "label": "Silhouette",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "silhouette",
           "params": [
             {
@@ -10457,18 +9516,6 @@
           "description": "Live audio as a row of rounded bars, like an equalizer.",
           "id": "signaling",
           "label": "Bars",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 1,
-              "particleCount": 32,
-              "particleLife": 3,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "bar",
           "params": [
             {
@@ -10531,18 +9578,6 @@
           "description": "Live audio as a continuous oscilloscope wave.",
           "id": "waveform",
           "label": "Waveform",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 1,
-              "particleCount": 32,
-              "particleLife": 3,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "waveform",
           "params": [
             {
@@ -10613,18 +9648,6 @@
           "description": "A recording's history: level pills scroll left, like a voice message.",
           "id": "scrolling",
           "label": "Scrolling",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 1,
-              "particleCount": 32,
-              "particleLife": 3,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "scroll",
           "params": [
             {
@@ -10687,20 +9710,6 @@
           "description": "Levels on an LED dot grid, like a vintage spectrum analyzer.",
           "id": "metering",
           "label": "Meter",
-          "materialDefaults": {
-            "liquid": {
-              "liquidKeep": 1
-            },
-            "particles": {
-              "particleAudio": 1,
-              "particleCount": 32,
-              "particleLife": 3,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "matrix",
           "params": [
             {
@@ -10780,18 +9789,6 @@
           "id": "playing",
           "label": "Playing",
           "layout": "box",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 1,
-              "particleCount": 32,
-              "particleLife": 3,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "playback",
           "params": [
             {
@@ -10893,18 +9890,6 @@
           "description": "Determinate progress: an arc fills clockwise from 0 to 1.",
           "id": "completing",
           "label": "Completing",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 12,
-              "particleLife": 5,
-              "particleSize": 0.8,
-              "particleSpread": 0.2,
-              "particleStyle": 3,
-              "particleSync": 0
-            }
-          },
           "mode": "arc",
           "params": [
             {
@@ -10975,18 +9960,6 @@
           "description": "Indeterminate loading: an arc that grows, shrinks and keeps spinning.",
           "id": "loading",
           "label": "Loading",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 12,
-              "particleLife": 5,
-              "particleSize": 0.8,
-              "particleSpread": 0.2,
-              "particleStyle": 3,
-              "particleSync": 0
-            }
-          },
           "mode": "spinner",
           "params": [
             {
@@ -11049,18 +10022,6 @@
           "description": "Several values at once as concentric rings, such as daily goals.",
           "id": "tracking",
           "label": "Tracking",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 12,
-              "particleLife": 5,
-              "particleSize": 0.8,
-              "particleSpread": 0.2,
-              "particleStyle": 3,
-              "particleSync": 0
-            }
-          },
           "mode": "nested",
           "params": [
             {
@@ -11155,18 +10116,6 @@
           "description": "Steps filling in order, like 3 of 5 done.",
           "id": "stepping",
           "label": "Stepping",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 12,
-              "particleLife": 5,
-              "particleSize": 0.8,
-              "particleSpread": 0.2,
-              "particleStyle": 3,
-              "particleSync": 0
-            }
-          },
           "mode": "segmented",
           "params": [
             {
@@ -11253,18 +10202,6 @@
           "description": "A value on an open dial, like a gauge or a volume meter.",
           "id": "measuring",
           "label": "Measuring",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 12,
-              "particleLife": 5,
-              "particleSize": 0.8,
-              "particleSpread": 0.2,
-              "particleStyle": 3,
-              "particleSync": 0
-            }
-          },
           "mode": "gauge",
           "params": [
             {
@@ -11359,18 +10296,6 @@
           "description": "Who is speaking: a ring around an avatar that thickens with the voice and never covers the face.",
           "id": "talking",
           "label": "Talking",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 12,
-              "particleLife": 5,
-              "particleSize": 0.8,
-              "particleSpread": 0.2,
-              "particleStyle": 3,
-              "particleSync": 0
-            }
-          },
           "mode": "speaker",
           "params": [
             {
@@ -11480,18 +10405,6 @@
           "description": "Content loading inline: a skeleton shimmer glides across a pill.",
           "id": "generating",
           "label": "Generating",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 8,
-              "particleLife": 5,
-              "particleSize": 0.8,
-              "particleSpread": 0.1,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "shimmer",
           "params": [
             {
@@ -11578,18 +10491,6 @@
           "description": "Someone is typing: three dots bounce in sequence.",
           "id": "typing",
           "label": "Typing",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 8,
-              "particleLife": 5,
-              "particleSize": 0.8,
-              "particleSpread": 0.1,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "dots",
           "params": [
             {
@@ -11683,18 +10584,6 @@
           "description": "Something new arrived: a badge with ripples that expand and fade.",
           "id": "notifying",
           "label": "Notifying",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 16,
-              "particleLife": 2.4,
-              "particleSize": 0.8,
-              "particleSpread": 0.28,
-              "particleStyle": 0,
-              "particleSync": 1
-            }
-          },
           "mode": "ping",
           "params": [
             {
@@ -11781,18 +10670,6 @@
           "description": "Connection quality or reconnecting: a pulsing dot in a four-part ring.",
           "id": "reconnecting",
           "label": "Reconnecting",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 14,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "pulse",
           "params": [
             {
@@ -11879,18 +10756,6 @@
           "description": "A location and its accuracy: a dot in a halo that pulses outward.",
           "id": "locating",
           "label": "Locating",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 14,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "halo",
           "params": [
             {
@@ -11969,18 +10834,6 @@
           "description": "Scanning nearby: a radar beam sweeps over a dot-field scope.",
           "id": "scanning",
           "label": "Scanning",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 24,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.3,
-              "particleStyle": 1,
-              "particleSync": 0
-            }
-          },
           "mode": "radar",
           "params": [
             {
@@ -12075,18 +10928,6 @@
           "description": "Live or on air: a dot with radio arcs that light in sequence.",
           "id": "broadcasting",
           "label": "Broadcasting",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 18,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.24,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "broadcast",
           "params": [
             {
@@ -12212,18 +11053,6 @@
           "description": "A small space-hero assistant with a face screen: shape eyes, a gaze that knows whose turn it is, and a voice line for a mouth.",
           "id": "buzzy",
           "label": "Buzzy",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "buzzy",
           "params": [
             {
@@ -12502,18 +11331,6 @@
           "description": "A vintage studio microphone that hosts the show: its grille lights with the voice, and a tally light shows when it's listening.",
           "id": "hum",
           "label": "Hum",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "hum",
           "params": [
             {
@@ -12800,18 +11617,6 @@
           "description": "A helpful spirit with a curling smoke tail: its sparkles gather in while it listens, orbit while it thinks and stream out with its voice.",
           "id": "wisp",
           "label": "Wisp",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "wisp",
           "params": [
             {
@@ -13098,18 +11903,6 @@
           "description": "A small songbird: its beak opens with the voice and notes float out, it tilts its head to listen, and its crest droops while it thinks.",
           "id": "chirp",
           "label": "Chirp",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "chirp",
           "params": [
             {
@@ -13396,18 +12189,6 @@
           "description": "A coffee mug on its saucer: its steam rises while it listens, curls while it thinks and thickens with its voice.",
           "id": "cuppa",
           "label": "Cuppa",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "cuppa",
           "params": [
             {
@@ -13686,18 +12467,6 @@
           "description": "A coffee bean on little feet: aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice.",
           "id": "bean",
           "label": "Bean",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "bean",
           "params": [
             {
@@ -13976,18 +12745,6 @@
           "description": "A small tin robot with arms: a hand to the ear to listen, to the chin to think, small beats as it speaks; its antenna light shows when it listens and thinks.",
           "id": "beep",
           "label": "Beep",
-          "materialDefaults": {
-            "liquid": {},
-            "particles": {
-              "particleAudio": 0,
-              "particleCount": 28,
-              "particleLife": 4.5,
-              "particleSize": 0.8,
-              "particleSpread": 0.18,
-              "particleStyle": 0,
-              "particleSync": 0
-            }
-          },
           "mode": "beep",
           "params": [
             {

@@ -29,7 +29,7 @@
 //! - effects `nEffects x 5` `target start count blur blend`
 //!
 //! Version 3 (materials phase 2) is emitted **only** when some fill has
-//! holes (liquid bands): v2 plus `nHoleRings` at header[11] (header 12),
+//! holes (a character's ring shapes, e.g. a cup's rim): v2 plus `nHoleRings` at header[11] (header 12),
 //! fills `x 15` (v2's 14 + `holeRingCount`), and after the fill points a
 //! hole-ring table `nHoleRings x 1` (each ring's pointCount; fills in order,
 //! rings in order) then the hole points `x 2`; stops and effects as v2.
@@ -425,14 +425,18 @@ mod tests {
         let o = |pairs: &[(&str, f64)]| -> HashMap<String, f64> {
             pairs.iter().map(|(k, v)| (k.to_string(), *v)).collect()
         };
-        // Holo sweeps a ring's tracks per vertex; add a blurred glow (effect
-        // runs) and a liquid fill with holes so every section is populated.
+        // A gradient colours a ring's tracks per vertex; add a blurred glow (effect
+        // runs) so every section is populated.
         for extra in [
             vec![],
             vec![("glowStrength", 0.8), ("glowMode", 1.0)],
             vec![("glowStrength", 0.8)],
         ] {
-            let mut pairs = vec![("holoStrength", 1.0)];
+            let mut pairs = vec![
+                ("gradientStrength", 1.0),
+                ("gradientHue", 20.0),
+                ("gradientHue2", 200.0),
+            ];
             pairs.extend(extra);
             let f = crate::frame_with_overrides("tracking".into(), 64, 0.6, o(&pairs)).unwrap();
             assert!(f.polylines.iter().any(|p| !p.hues.is_empty()));
@@ -448,27 +452,6 @@ mod tests {
 
     #[test]
     fn v3_only_when_a_fill_has_holes() {
-        let o = |pairs: &[(&str, f64)]| -> HashMap<String, f64> {
-            pairs.iter().map(|(k, v)| (k.to_string(), *v)).collect()
-        };
-        // Radar scope rings melt into bands with holes.
-        let f = crate::frame_with_overrides(
-            "scanning".into(),
-            64,
-            0.6,
-            o(&[
-                ("liquidStrength", 1.0),
-                ("liquidStyle", 0.0),
-                ("liquidKeep", 0.0),
-            ]),
-        )
-        .unwrap();
-        let holes = f.fills.iter().map(|x| x.holes.len()).sum::<usize>();
-        if holes > 0 {
-            let v = pack(Some(&f));
-            assert_eq!(v[0], PACKED_LAYOUT_VERSION_3);
-            assert_eq!(unpack(&v).as_ref(), Some(&f));
-        }
         // A synthetic fill with two holes, a gradient, and an effect run.
         let ring = |c: f64, r: f64| -> Vec<Point> {
             (0..8)

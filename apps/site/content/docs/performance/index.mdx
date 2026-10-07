@@ -24,7 +24,7 @@ Measured on the web, 50 orbs at 32 px went from 869 to 459 ms of work per second
 When the device is in Low Power Mode (iOS) or Battery Saver (Android), views switch to low power automatically. On the web there is no reliable signal, so pass `lowPower: true` yourself when your app knows. In low power:
 
 - the frame rate drops to 30 fps;
-- the costly finishes are shed: glow and particles by default, or exactly what your FX Spec lists in `performance.lowPower.disable`.
+- the costly finishes are shed: glow by default, or exactly what your FX Spec lists in `performance.lowPower.disable`.
 
 <include lang="json" meta='title="low-power.fxspec.json"'>../../../snippets/spec/low-power.fxspec.json</include>
 
@@ -32,7 +32,7 @@ On iOS and Android, `lowPower` follows the system by default; force it with `.on
 
 ## Know the cost
 
-Every pattern and material combination has an estimated cost class (**light**, **medium**, **heavy**) from the number of elements it draws, how much of the canvas they cover, and how much blur they need. `estimateCost(pattern, size, overrides)` from `@sinua/core/dev` returns it (the third argument takes engine keys, as the Studio exports them), and the Studio shows it as a badge. Glow is by far the biggest multiplier. Liquid is the exception: it computes a lot while drawing little, so the badge can rank it too low.
+Every pattern and material combination has an estimated cost class (**light**, **medium**, **heavy**) from the number of elements it draws, how much of the canvas they cover, and how much blur they need. `estimateCost(pattern, size, overrides)` from `@sinua/core/dev` returns it (the third argument takes engine keys, as the Studio exports them), and the Studio shows it as a badge. Glow is by far the biggest multiplier.
 
 Low power:
 

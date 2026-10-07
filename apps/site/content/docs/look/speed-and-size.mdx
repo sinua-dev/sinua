@@ -11,7 +11,7 @@ Every pattern has a tuned speed: the rate its designer intended. `speed` multipl
 
 <Demo spec="spec/speed-size.fxspec.json" />
 
-Materials with their own timing (a pulse's period, a particle's life, noise drift, the holographic sweep) are set in **real seconds**, so they read the same on a fast pattern and a slow one. `speed` scales them along with the pattern, so "the whole thing, faster" stays one knob.
+Materials with their own timing (a pulse's period, noise drift) are set in **real seconds**, so they read the same on a fast pattern and a slow one. `speed` scales them along with the pattern, so "the whole thing, faster" stays one knob.
 
 A view's clock only runs while it's on screen and your app is in the foreground. Pausing resumes from the same pose. With the system's reduced-motion setting on, views draw one still frame (a voice cue keeps redrawing, gently, because it carries information).
 

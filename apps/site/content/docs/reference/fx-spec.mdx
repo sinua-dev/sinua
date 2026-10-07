@@ -14,7 +14,7 @@ An **FX Spec** is a small JSON file that describes a visual completely: the obje
 - **`size`** (20 · 32 · 64) and **`speed`**: see [Speed & size](/docs/look/speed-and-size).
 - **`ink`** (1.8): how present the visual is, `0` to `1` (default `1`). It fades everything, halos included, and a state can patch it — an assistant rests below full ink when idle and comes to full ink when it listens.
 - **`color`**, **`gradient`**: see [Colour & theme](/docs/look/color-and-theme).
-- **`materials`**: `glow`, `noise`, `pulse`, `liquid`, `particles`, `holographic`. See [Materials](/docs/look/materials).
+- **`materials`**: `glow`, `noise`, `pulse`. See [Materials](/docs/look/materials).
 - **`params`**: the pattern's own props (the catalog's style props), e.g. `"ringCount": 3`.
 - **`bindings`**: map your app's inputs onto values. See [Bindings](/docs/connect/bindings).
 - **`states`**: a patch per lifecycle state. See [States vs patterns](/docs/connect/states-vs-patterns).
@@ -28,7 +28,7 @@ Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor com
 
 ## Versioning
 
-`fxSpec` is `"1.13"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.13"` and use whatever this page documents. An older file stays valid and renders the same, with one exception: [`object: "edge"`](#removed-the-edge-object) was removed during the beta.
+`fxSpec` is `"1.13"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.13"` and use whatever this page documents. An older file stays valid and renders the same, with two exceptions from before 1.0: [`object: "edge"`](#removed-the-edge-object) (0.1.0-beta.8) and [the liquid, particles and holographic materials](#removed-three-materials) (0.1.0-beta.9). A file that uses a removed section gets an error and isn't drawn, and the message says what to delete. After 1.0, a removal only comes in a major version (FX Spec 2.0), after a minor of deprecation warnings.
 
 ### 1.13: cosmetics, wardrobes and silhouettes
 
@@ -74,7 +74,11 @@ Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor com
 
 #### Removed: the edge object
 
-`object: "edge"` (the screen-edge glow, `SinuaEdge`, `<sinua-edge>`) was removed in 0.1.0-beta.8. A file with it fails at every version, with an error at `/object`. There's no replacement: draw a screen-edge glow in your app. It's the one time a minor version took something away, during the beta; after 1.0 a removal only comes in a major version (FX Spec 2.0), after a minor of deprecation warnings.
+`object: "edge"` (the screen-edge glow, `SinuaEdge`, `<sinua-edge>`) was removed in 0.1.0-beta.8. A file with it fails at every version, with an error at `/object`. There's no replacement: draw a screen-edge glow in your app. It was the first of two removals before 1.0 (see [Versioning](#versioning)).
+
+#### Removed: three materials
+
+The `liquid`, `particles` and `holographic` materials were removed in 0.1.0-beta.9 (FX Spec 1.14). A file that uses `materials.liquid`, `materials.particles` or `materials.holographic`, or names `liquid` or `particles` in `performance.lowPower.disable`, is rejected at every version, with an error naming the section. Delete the section; there's no replacement. Under low power the host now turns off glow only.
 
 ### 1.11: characters
 
@@ -90,11 +94,7 @@ Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor com
 
 ### 1.10: calmer voice states
 
-1.10 adds no keys. It changes the built-in look of the voice states: `listening`, `thinking` and `speaking` no longer add particles (see [How the states look](/docs/connect/voice#how-the-states-look-and-changing-it)).
-
-- **A `"1.10"` file:** its voice states have no particles. To keep them, set them in the state's entry: `"listening": { "materials": { "particles": { "strength": 1 } } }`.
-- **A `"1.8"` or `"1.9"` file:** renders exactly as before, particles included.
-- **A view without a spec** (`pattern` + `state`) follows the current look; `overrides` turns particles back on for that view.
+1.10 adds no keys. It made the built-in voice states calmer: `listening`, `thinking` and `speaking` stopped adding particles (see [How the states look](/docs/connect/voice#how-the-states-look-and-changing-it)). The particles material itself was [removed](#removed-three-materials) in 0.1.0-beta.9, so no version draws them any more.
 
 ## Transitions
 

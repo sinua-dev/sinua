@@ -15,13 +15,6 @@ import { VOICE_STATES, type VoiceState } from "@/lib/voice-state";
 import { LiveVisual } from "./live-visual";
 import { SWATCHES, swatchOverrides } from "./swatches";
 
-/**
- * With the simulated level off, the particles go too: in listening and speaking they are
- * the audio's visual (glowing's profile turns them on with `particleAudio`), and without a
- * level they only add motion.
- */
-const QUIET = { particleStrength: 0 };
-
 export function Hero({ patternCount }: { patternCount: number }) {
   const [hold, setHold] = useState<VoiceState | null>(null);
   const [swatch, setSwatch] = useState(SWATCHES[0].id);
@@ -74,7 +67,7 @@ export function Hero({ patternCount }: { patternCount: number }) {
           pattern="glowing"
           state={convo.state}
           level={sound ? convo.level : 0}
-          overrides={sound ? swatchOverrides(swatch) : { ...swatchOverrides(swatch), ...QUIET }}
+          overrides={swatchOverrides(swatch)}
           pointer={pointer}
           className="lp-hero-visual"
           label={`A voice agent, ${convo.state}`}

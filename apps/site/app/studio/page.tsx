@@ -24,7 +24,7 @@ function TrialButton() {
 }
 
 const FEATURES: [string, string][] = [
-  ["Every prop, every material", "Appearance, motion and energy, then glow, noise, particles, liquid, holographic and pulse, with the advanced controls the basic export leaves out."],
+  ["Every prop, every material", "Appearance, motion and energy, then glow, noise and pulse, with the advanced controls the basic export leaves out."],
   ["Colour and gradients", "Pick a colour or build a gradient and see it on light and dark, at every size."],
   ["States, bindings and transitions", "Give each state of your app its own look, bind your values to the visual, and set how one state flows into the next."],
   ["A live voice", "Preview with your microphone, a test tone or a simulated conversation, or connect an OpenAI, Gemini, ElevenLabs or LiveKit session (beta)."],

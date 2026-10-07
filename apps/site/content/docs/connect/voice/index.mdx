@@ -65,7 +65,7 @@ Every pattern follows the four states with the same built-in profile, on top of 
 | thinking | 1.05× | a glow and a quicker pulse |
 | speaking | 1.15× | a stronger glow; the agent's voice moves the shape |
 
-Since FX Spec 1.10 the states add no particles; files written for 1.8 or 1.9 keep the particles they had.
+The states add no particles.
 
 A [character](/docs/catalog/character) has its own state language instead: it looks at you while listening, looks away while thinking and talks while speaking.
 
@@ -86,7 +86,7 @@ Your `overrides` go on top of the profile, in every state and on every platform.
 </Tab>
 </Tabs>
 
-The keys are the materials' master strengths: `glowStrength`, `pulseStrength`, `particleStrength` (0 turns one off; `particleStrength: 1` brings particles back). With a `spec` instead of a `pattern`, the file decides: put the same values in its [states](/docs/connect/states-vs-patterns).
+The keys are the materials' master strengths: `glowStrength`, `pulseStrength` (0 turns one off). With a `spec` instead of a `pattern`, the file decides: put the same values in its [states](/docs/connect/states-vs-patterns).
 
 ## Driving the visual yourself
 

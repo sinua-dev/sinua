@@ -1,7 +1,7 @@
 {
   "fxSpec": "1.8",
   "name": "Voice orb",
-  "description": "One shape for the whole conversation: the pattern stays `glowing` and the agent's state changes how it behaves -- speed, density, glow, particles, `ink` and which voice drives it.",
+  "description": "One shape for the whole conversation: the pattern stays `glowing` and the agent's state changes how it behaves -- speed, density, glow, `ink` and which voice drives it.",
   "object": "orb",
   "pattern": "glowing",
   "size": 64,
@@ -64,15 +64,6 @@
       "materials": {
         "glow": {
           "strength": 0.3
-        },
-        "particles": {
-          "strength": 1,
-          "style": "attract",
-          "count": 36,
-          "size": 1.4,
-          "spread": 0.4,
-          "life": 1.8,
-          "audio": 1
         }
       },
       "bindings": {
@@ -116,13 +107,6 @@
       "materials": {
         "glow": {
           "strength": 0.45
-        },
-        "particles": {
-          "strength": 1,
-          "style": "drift",
-          "count": 32,
-          "life": 1.4,
-          "audio": 1
         }
       },
       "bindings": {

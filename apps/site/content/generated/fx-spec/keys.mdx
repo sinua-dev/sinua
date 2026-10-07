@@ -110,46 +110,6 @@ Deprecated aliases (FX Spec 1.6 and earlier; still accepted, with a warning in a
 | `scale` | number | 0–1 |  |
 | `phase` | number |  |  |
 
-### `materials.liquid`
-
-| Key | Type | Range | Description |
-|---|---|---|---|
-| `strength` | number | 0–1 | 0 = off; also the liquid ink's alpha multiplier. |
-| `reach` | number | 1–12 | Influence radius x max(dot radius, half the median nearest-neighbour distance). |
-| `threshold` | number | 0.05–4 |  |
-| `cells` | number | 8–96 | Field grid resolution across the frame. |
-| `style` | enum | `outline` · `dots` · `fill` |  |
-| `spacing` | number | 0.5–12 | dots style: spacing x median dot diameter. |
-| `width` | number | 0.05–8 | outline style: stroke x median dot radius. |
-| `keep` | boolean |  | Keep the source dots on top. |
-| `blur` | number | 0–32 | fill style: Gaussian sigma for a soft edge (paint effect). |
-
-### `materials.particles`
-
-| Key | Type | Range | Description |
-|---|---|---|---|
-| `strength` | number | 0–1 | 0 = off; alpha master. |
-| `count` | number | 0–200 |  |
-| `size` | number | 0.05–4 | x the state's dot size (0.6 = the base radius, clamped to 0.8-1.8% of the frame; default 0.8). |
-| `spread` | number | 0–1 | Travel distance as a fraction of the frame. |
-| `life` | number | 0.1–30 | Real (wall-clock) seconds per life: the engine divides the state's preset speed back out; a spec's own `speed` still scales it. |
-| `style` | enum | `drift` · `attract` · `orbit` · `rise` |  |
-| `seed` | number |  |  |
-| `sync` | number | 0–1 | 1.6: 0 = staggered births; 1 = every particle born together (a burst each life). |
-| `audio` | number | 0–1 | 1.6: couples brightness to the host's audioLevel when present (alpha x lerp(1, 0.25 + 0.75 level, audio)); positions never depend on it. |
-
-### `materials.holographic`
-
-| Key | Type | Range | Description |
-|---|---|---|---|
-| `strength` | number | 0–1 | 0 = off; how far saturation/hue move to the sweep. |
-| `hue` | number | 0–360 | Base hue, degrees. |
-| `span` | number | 0–720 | Degrees of the wheel the sweep covers. |
-| `saturation` | number | 0–1 |  |
-| `depth` | number | 0–1 | Weight of the z (depth) term; dots only. |
-| `facing` | number | 0–1 | Weight of the Fresnel-like distance-from-view-point term. |
-| `speed` | number | -4–4 | Turns per second of engine time: hue drift and the view point's orbit. |
-
 ### `performance`
 
 | Key | Type | Range | Description |

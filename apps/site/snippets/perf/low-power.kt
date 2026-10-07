@@ -11,6 +11,6 @@ import dev.sinua.view.generated.SinuaOrbPattern
 @Composable
 fun LowPowerOrb() {
     // AUTO (default) follows Battery Saver; ON / OFF force it.
-    // Low power = the spec's `performance.lowPower` block, else 30 fps with glow and particles off.
+    // Low power = the spec's `performance.lowPower` block, else 30 fps with glow off.
     SinuaOrb(pattern = SinuaOrbPattern.SPEAKING, lowPower = FxLowPower.AUTO, modifier = Modifier.size(160.dp))
 }

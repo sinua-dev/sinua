@@ -22,9 +22,6 @@ const MATERIALS: { id: string; label: string; keys: Record<string, number> }[] =
   { id: "glow", label: "Glow", keys: { glowStrength: 0.7 } },
   { id: "noise", label: "Noise", keys: { noiseStrength: 0.6 } },
   { id: "pulse", label: "Pulse", keys: { pulseStrength: 0.7 } },
-  { id: "liquid", label: "Liquid", keys: { liquidStrength: 1 } },
-  { id: "particles", label: "Particles", keys: { particleStrength: 1 } },
-  { id: "holographic", label: "Holographic", keys: { holoStrength: 1 } },
 ];
 
 const SHOWCASE: Record<string, Record<string, number>> = { completing: { progress: 0.7 }, metering: { audioLevel: 0.75 } };
@@ -57,7 +54,7 @@ export function Look() {
           Your colours, your finish
         </h2>
         <p className="lp-lead">
-          Every pattern takes a colour or a ramp, and wears any of the materials: glow, noise, pulse, liquid, particles, holographic. They are ordinary props,
+          Every pattern takes a colour or a ramp, and wears any of the materials: glow, noise and pulse. They are ordinary props,
           so the design lives in your code, or in one FX Spec file every platform reads the same way.
         </p>
       </header>

@@ -79,8 +79,8 @@ if (gallery !== "ok" && gallery !== "skipped") failed++;
 const found = await (async () => {
   await page.goto(base + pages[0], { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /search/i }).first().click({ timeout: 5000 });
-  await page.keyboard.type("liquid");
-  await page.locator('[role="dialog"]').getByText("Liquid", { exact: true }).first().waitFor({ timeout: 5000 });
+  await page.keyboard.type("glow");
+  await page.locator('[role="dialog"]').getByText("Glow", { exact: true }).first().waitFor({ timeout: 5000 });
   return true;
 })().catch(() => false);
 if (!found) failed++;

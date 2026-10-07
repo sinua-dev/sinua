@@ -21,8 +21,8 @@
     },
     "packages/android/view/src/main/kotlin/dev/sinua/view/generated/SinuaCharacter.kt": {
       "(top level)": [
-        "@Composable fun SinuaCharacter(pattern:SinuaCharacterPattern,modifier:Modifier,size:SinuaSize,accessories:Boolean?,eyeStyle:SinuaCharacterProps.EyeStyle?,grain:Double?,hue:Double?,ink:Double?,mouth:Boolean?,shading:Boolean?,look:Double?,seed:Int?,turn:Double?,eyeAsym:Double?,eyeH:Double?,eyeR:Double?,eyeSmile:Double?,eyeTilt:Double?,eyeW:Double?,lid:Double?,mouthDots:Double?,mouthTalk:Double?,gazeX:Double?,gazeY:Double?,lean:Double?,tilt:Double?,turnBlink:Double?,turnNod:Double?,turnPitch:Double?,turnWander:Double?,turnYaw:Double?,bounceGain:Double?,breath:Double?,earGain:Double?,mouthGain:Double?,squashGain:Double?,swayGain:Double?,curlGain:Double?,flutterGain:Double?,arms:Boolean?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?,tap:Boolean,expression:String?,palette:Map<String,String>)",
-        "@Composable fun SinuaCharacter(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,rules:Boolean,effect:SinuaEffectTrigger?,tap:Boolean,expression:String?,palette:Map<String,String>,loadout:SinuaLoadout?)"
+        "@Composable fun SinuaCharacter(pattern:SinuaCharacterPattern,modifier:Modifier,size:SinuaSize,accessories:Boolean?,grain:Double?,hue:Double?,ink:Double?,mouth:Boolean?,shading:Boolean?,look:Double?,seed:Int?,turn:Double?,eyeAsym:Double?,eyeH:Double?,eyeR:Double?,eyeSmile:Double?,eyeTilt:Double?,eyeW:Double?,lid:Double?,mouthDots:Double?,mouthTalk:Double?,gazeX:Double?,gazeY:Double?,lean:Double?,tilt:Double?,turnBlink:Double?,turnNod:Double?,turnPitch:Double?,turnWander:Double?,turnYaw:Double?,bounceGain:Double?,breath:Double?,earGain:Double?,mouthGain:Double?,squashGain:Double?,swayGain:Double?,curlGain:Double?,flutterGain:Double?,arms:Boolean?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?,tap:Boolean,expression:String?,palette:Map<String,String>)",
+        "@Composable fun SinuaCharacter(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,rules:Boolean,effect:SinuaEffectTrigger?,tap:Boolean,expression:String?,palette:Map<String,String>)"
       ],
       "SinuaCharacterPattern": [
         "decl enum class SinuaCharacterPattern(val id:String)",
@@ -35,16 +35,8 @@
         "entry WISP(\"wisp\")"
       ],
       "SinuaCharacterProps": [
-        "decl data class SinuaCharacterProps(val pattern:SinuaCharacterPattern,val size:SinuaSize,val accessories:Boolean?,val eyeStyle:SinuaCharacterProps.EyeStyle?,val grain:Double?,val hue:Double?,val ink:Double?,val mouth:Boolean?,val shading:Boolean?,val look:Double?,val seed:Int?,val turn:Double?,val eyeAsym:Double?,val eyeH:Double?,val eyeR:Double?,val eyeSmile:Double?,val eyeTilt:Double?,val eyeW:Double?,val lid:Double?,val mouthDots:Double?,val mouthTalk:Double?,val gazeX:Double?,val gazeY:Double?,val lean:Double?,val tilt:Double?,val turnBlink:Double?,val turnNod:Double?,val turnPitch:Double?,val turnWander:Double?,val turnYaw:Double?,val bounceGain:Double?,val breath:Double?,val earGain:Double?,val mouthGain:Double?,val squashGain:Double?,val swayGain:Double?,val curlGain:Double?,val flutterGain:Double?,val arms:Boolean?,val glow:SinuaGlow?,val noise:SinuaNoise?,val pulse:SinuaPulse?,val gradient:SinuaGradient?,val color:SinuaColor?)",
+        "decl data class SinuaCharacterProps(val pattern:SinuaCharacterPattern,val size:SinuaSize,val accessories:Boolean?,val grain:Double?,val hue:Double?,val ink:Double?,val mouth:Boolean?,val shading:Boolean?,val look:Double?,val seed:Int?,val turn:Double?,val eyeAsym:Double?,val eyeH:Double?,val eyeR:Double?,val eyeSmile:Double?,val eyeTilt:Double?,val eyeW:Double?,val lid:Double?,val mouthDots:Double?,val mouthTalk:Double?,val gazeX:Double?,val gazeY:Double?,val lean:Double?,val tilt:Double?,val turnBlink:Double?,val turnNod:Double?,val turnPitch:Double?,val turnWander:Double?,val turnYaw:Double?,val bounceGain:Double?,val breath:Double?,val earGain:Double?,val mouthGain:Double?,val squashGain:Double?,val swayGain:Double?,val curlGain:Double?,val flutterGain:Double?,val arms:Boolean?,val glow:SinuaGlow?,val noise:SinuaNoise?,val pulse:SinuaPulse?,val gradient:SinuaGradient?,val color:SinuaColor?)",
         "fun toOverrides():Map<String,Double>"
-      ],
-      "SinuaCharacterProps.EyeStyle": [
-        "decl enum class EyeStyle(val value:Int)",
-        "entry AUTO(0)",
-        "entry DOT(4)",
-        "entry GLOSSY(2)",
-        "entry PIXEL(3)",
-        "entry SHAPE(1)"
       ]
     },
     "packages/android/view/src/main/kotlin/dev/sinua/view/generated/SinuaCore.kt": {
@@ -263,8 +255,8 @@
       "SinuaCharacter": [
         "decl public struct SinuaCharacter:View",
         "public func overrides()->[String:Double]",
-        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],accessories:Bool?,arms:Bool?,bounceGain:Double?,breath:Double?,curlGain:Double?,earGain:Double?,eyeAsym:Double?,eyeH:Double?,eyeR:Double?,eyeSmile:Double?,eyeStyle:EyeStyle?,eyeTilt:Double?,eyeW:Double?,flutterGain:Double?,gazeX:Double?,gazeY:Double?,grain:Double?,hue:Double?,ink:Double?,lean:Double?,lid:Double?,look:Double?,mouth:Bool?,mouthDots:Double?,mouthGain:Double?,mouthTalk:Double?,seed:Int?,shading:Bool?,squashGain:Double?,swayGain:Double?,tilt:Double?,turn:Double?,turnBlink:Double?,turnNod:Double?,turnPitch:Double?,turnWander:Double?,turnYaw:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,noise:SinuaNoise?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?,tap:Bool,expression:String?,palette:[String:String],loadout:SinuaLoadout?)",
-        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,rules:Bool,effect:SinuaEffectTrigger?,tap:Bool,expression:String?,palette:[String:String],loadout:SinuaLoadout?)",
+        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],accessories:Bool?,arms:Bool?,bounceGain:Double?,breath:Double?,curlGain:Double?,earGain:Double?,eyeAsym:Double?,eyeH:Double?,eyeR:Double?,eyeSmile:Double?,eyeTilt:Double?,eyeW:Double?,flutterGain:Double?,gazeX:Double?,gazeY:Double?,grain:Double?,hue:Double?,ink:Double?,lean:Double?,lid:Double?,look:Double?,mouth:Bool?,mouthDots:Double?,mouthGain:Double?,mouthTalk:Double?,seed:Int?,shading:Bool?,squashGain:Double?,swayGain:Double?,tilt:Double?,turn:Double?,turnBlink:Double?,turnNod:Double?,turnPitch:Double?,turnWander:Double?,turnYaw:Double?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,noise:SinuaNoise?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?,tap:Bool,expression:String?,palette:[String:String])",
+        "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,rules:Bool,effect:SinuaEffectTrigger?,tap:Bool,expression:String?,palette:[String:String])",
         "public var accessibilityLabel:String?",
         "public var accessories:Bool?",
         "public var announce:Bool?",
@@ -281,7 +273,6 @@
         "public var eyeH:Double?",
         "public var eyeR:Double?",
         "public var eyeSmile:Double?",
-        "public var eyeStyle:EyeStyle?",
         "public var eyeTilt:Double?",
         "public var eyeW:Double?",
         "public var flutterGain:Double?",
@@ -297,7 +288,6 @@
         "public var labels:[String:String]",
         "public var lean:Double?",
         "public var lid:Double?",
-        "public var loadout:SinuaLoadout?",
         "public var look:Double?",
         "public var lowPower:FxLowPower",
         "public var maxFps:Double?",
@@ -331,14 +321,6 @@
         "public var turnYaw:Double?",
         "public var voice:VoiceSource?",
         "public var voiceOverrides:VoiceOverrides?"
-      ],
-      "SinuaCharacter.EyeStyle": [
-        "case auto=0",
-        "case dot=4",
-        "case glossy=2",
-        "case pixel=3",
-        "case shape=1",
-        "decl public enum EyeStyle:Int,CaseIterable,Sendable"
       ],
       "SinuaCharacter.Pattern": [
         "case bean=\"bean\"",
@@ -855,7 +837,6 @@
         "eyeH?:number",
         "eyeR?:number",
         "eyeSmile?:number",
-        "eyeStyle?:\"auto\"|\"shape\"|\"glossy\"|\"pixel\"|\"dot\"",
         "eyeTilt?:number",
         "eyeW?:number",
         "flutterGain?:number",
@@ -1220,7 +1201,6 @@
         "param eyeH",
         "param eyeR",
         "param eyeSmile",
-        "param eyeStyle",
         "param eyeTilt",
         "param eyeW",
         "param flutterGain",
@@ -1493,7 +1473,6 @@
         "eyeH?:number",
         "eyeR?:number",
         "eyeSmile?:number",
-        "eyeStyle?:\"auto\"|\"shape\"|\"glossy\"|\"pixel\"|\"dot\"",
         "eyeTilt?:number",
         "eyeW?:number",
         "flutterGain?:number",

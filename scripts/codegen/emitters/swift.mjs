@@ -128,12 +128,10 @@ function emitComponent(m, models, naming) {
   const firstPattern = m.patterns[0].caseName;
   // Tap to hop (design note 15): characters only, on by default.
   const tapOn = m.object === "character";
-  const tapProp = tapOn ? "\n    /// Tap to hop: a tap plays `hop`, glancing toward it (design note 15). On by default.\n    public var tap: Bool\n    /// The expression (design note 16): \"happy\", \"surprised\", \"thoughtful\", \"sad\", \"sleepy\" or \"none\"; nil = the spec's.\n    public var expression: String?\n    /// The palette, in part (design note 19): slot -> hex, e.g. [\"shell\": \"#E63946\"]; empty = the character's own.\n    public var palette: [String: String]\n    /// An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a `wardrobe`; nil = the file as it is.\n    public var loadout: SinuaLoadout?" : "";
-  const tapParam = tapOn ? ",\n        tap: Bool = true,\n        expression: String? = nil,\n        palette: [String: String] = [:],\n        loadout: SinuaLoadout? = nil" : "";
-  const tapAssign = tapOn ? "\n        self.tap = tap\n        self.expression = expression\n        self.palette = palette\n        self.loadout = loadout" : "";
-  // A loadout picks from a spec's wardrobe: the spec path only.
-  const tapArgPlain = tapOn ? ", tap: tap, expression: expression, palette: palette" : "";
-  const tapArg = tapOn ? `${tapArgPlain}, loadout: loadout` : "";
+  const tapProp = tapOn ? "\n    /// Tap to hop: a tap plays `hop`, glancing toward it (design note 15). On by default.\n    public var tap: Bool\n    /// The expression (design note 16): \"happy\", \"surprised\", \"thoughtful\", \"sad\", \"sleepy\" or \"none\"; nil = the spec's.\n    public var expression: String?\n    /// The palette, in part (design note 19): slot -> hex, e.g. [\"shell\": \"#E63946\"]; empty = the character's own.\n    public var palette: [String: String]" : "";
+  const tapParam = tapOn ? ",\n        tap: Bool = true,\n        expression: String? = nil,\n        palette: [String: String] = [:]" : "";
+  const tapAssign = tapOn ? "\n        self.tap = tap\n        self.expression = expression\n        self.palette = palette" : "";
+  const tapArg = tapOn ? ", tap: tap, expression: expression, palette: palette" : "";
   const contents = `${header()}
 
 import SwiftUI
@@ -246,9 +244,9 @@ ${propAssigns}
     ) {
         self.init(pattern: .${firstPattern}, voice: voice, voiceOverrides: voiceOverrides, theme: theme, paused: paused,
                   reducedMotion: reducedMotion, accessibilityLabel: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-                  labels: labels, announce: announce, haptics: haptics, effect: effect${tapArgPlain})
+                  labels: labels, announce: announce, haptics: haptics, effect: effect${tapArg})
         self.rules = rules
-        self.spec = spec${tapOn ? "\n        self.loadout = loadout" : ""}
+        self.spec = spec
         self.state = state
         self.inputs = inputs
         self.voiceLevelInput = voiceLevelInput
@@ -285,7 +283,7 @@ ${groupWrites}
             SinuaView(pattern: pattern.rawValue, size: size.rawValue, overrides: overrides(), speed: speed, state: state, inputs: inputs, voice: voice,
                    voiceOverrides: voiceOverrides, theme: theme, paused: paused, reducedMotion: reducedMotion,
                    accessibilityLabel: accessibilityLabel, maxFps: maxFps, lowPower: lowPower, onFrame: onFrame,
-                   labels: labels, announce: announce, haptics: haptics, effect: effect${tapArgPlain})
+                   labels: labels, announce: announce, haptics: haptics, effect: effect${tapArg})
         }
     }
 }

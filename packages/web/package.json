@@ -44,10 +44,6 @@
       "types": "./dist/element-define.d.ts",
       "default": "./dist/element-define.js"
     },
-    "./catalog": {
-      "types": "./dist/catalog.d.ts",
-      "default": "./dist/catalog.js"
-    },
     "./components": {
       "types": "./dist/generated/index.d.ts",
       "default": "./dist/generated/index.js"
@@ -77,7 +73,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
-    "test": "node --experimental-wasm-modules --test test/mount.test.mjs test/perf.test.mjs test/materials.test.mjs test/hues.test.mjs test/element.test.mjs test/generated.test.mjs test/materials-cases.test.mjs test/react-helpers.test.mjs test/catalog.test.mjs",
+    "test": "node --experimental-wasm-modules --test test/mount.test.mjs test/perf.test.mjs test/materials.test.mjs test/hues.test.mjs test/element.test.mjs test/generated.test.mjs test/materials-cases.test.mjs test/react-helpers.test.mjs",
     "example": "vite example"
   },
   "peerDependencies": {

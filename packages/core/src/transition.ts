@@ -7,7 +7,6 @@
 //
 //   const tr = new StateTransition();
 //   onStateChange: tr.start(duration, curve, authored) // before the new side renders
-//   loadout change: tr.wear()                           // before the new loadout renders
 //   per frame:     tr.advance(dt);
 //                  phase += dt * tr.speed(toSide, size);
 //                  const out = tr.frames(toSide, size, phase, extra) // { frame, previous, blend }
@@ -20,9 +19,6 @@ export interface TransitionFrames {
   previous: OrbFrame | null;
   blend: number;
 }
-
-/** How long a loadout change takes (design note 25), seconds. */
-export const WEAR_S = 0.35;
 
 /**
  * The transition clock (design note 31): three first-order lags in a row per weight, so
@@ -71,13 +67,8 @@ export class StateTransition {
   private size: OrbSize = 64;
   private rates = new Map<string, Rates>();
   private lastT: number | null = null;
-  /** What was on screen when the loadout last changed, while its change runs. */
-  private wearFrom: TransitionSide | null = null;
-  private wearAge = Infinity;
   /** Seconds since the last state change (any change, cut or not); infinite before the first. */
   private since = Infinity;
-  /** The side last drawn (`frames`' `to`, or `settle`'s). */
-  private shown: TransitionSide | null = null;
 
   /**
    * A state change happened: the weights head for the new state from where they are.
@@ -101,38 +92,21 @@ export class StateTransition {
     }
   }
 
-  /**
-   * The loadout changed (design note 25): the character eases from what is on screen
-   * now -- a hat pops in, colours blend, a new eye style swaps in a blink. It runs on its
-   * own clock, so a state change in the middle of it doesn't cut it, and the reverse.
-   */
-  wear(): void {
-    const shown = this.shown;
-    if (!shown) return;
-    this.wearFrom = shown;
-    this.wearAge = 0;
-  }
-
   /** Stop any transition now (reduced motion, a new design). */
   cancel(): void {
     const t = this.target;
     this.entries = t ? [entry(t.side, 1)] : [];
     this.authored = null;
-    this.wearAge = Infinity;
-    this.wearFrom = null;
   }
 
   /** No transition running: remember `to` as what is on screen (a caller that draws `to` itself). */
   settle(to: TransitionSide): void {
     if (!this.active) this.entries = [entry(to, 1)];
-    this.shown = to;
   }
 
   advance(dt: number): void {
     const raw = Math.max(0, dt);
     this.since += raw;
-    this.wearAge += raw;
-    if (this.wearAge >= WEAR_S) this.wearFrom = null;
     if (raw > SETTLE_GAP_S) {
       const t = this.target;
       if (t) this.entries = [entry(t.side, 1)];
@@ -184,11 +158,6 @@ export class StateTransition {
     return Number.isFinite(this.since) ? this.since : null;
   }
 
-  /** A loadout change is easing in (`wear`). */
-  get wearing(): boolean {
-    return this.wearFrom !== null;
-  }
-
   /** More than one state is on screen. */
   get active(): boolean {
     return this.entries.length > 1;
@@ -227,7 +196,6 @@ export class StateTransition {
     if (!this.entries.length) this.entries = [entry(to, 1)];
     const target = this.target!;
     target.side = to;
-    this.shown = to;
     const extra = Number.isFinite(this.since) ? { ...live, stateAge: this.since } : live;
     const dp = this.tick(t);
 
@@ -245,7 +213,7 @@ export class StateTransition {
       .slice(0, 2);
     const blended = drawn.map((g) => this.blend(g.pattern, g.es, target, size, t, dp));
     const withExtra = (o: Record<string, number>) => ({ ...o, ...extra });
-    const draw = (pattern: string, o: Record<string, number>) => this.draw(pattern, size, t, withExtra(o), extra);
+    const draw = (pattern: string, o: Record<string, number>) => frameWithOverrides(pattern as OrbState, size, t, withExtra(o));
 
     if (drawn.length === 1) {
       const { pattern } = drawn[0];
@@ -311,22 +279,6 @@ export class StateTransition {
       r.last[k] = rate;
     }
     return { mix, overrides: { ...mix.overrides, ...r.acc } };
-  }
-
-  /** One frame, eased from a loadout change in progress (the engine answers only for two loadouts of one character). */
-  private draw(pattern: string, size: OrbSize, t: number, o: Record<string, number>, extra: Record<string, number>): OrbFrame | null {
-    const wearFrom = this.wearFrom;
-    return (
-      (wearFrom &&
-        frameTransitionWithOverrides(
-          { ...wearFrom, overrides: { ...wearFrom.overrides, ...extra } },
-          { state: pattern, speed: 1, overrides: o },
-          size,
-          t,
-          this.wearAge / WEAR_S
-        )) ||
-      frameWithOverrides(pattern as OrbState, size, t, o)
-    );
   }
 
   /** A CSS keyword curve at `s`, as the engine eases it. */

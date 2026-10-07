@@ -48,7 +48,7 @@ let package = Package(
             path: "Sources/Sinua",
             // Sinua's catalog pack, read with Bundle.module, and the
             // Apple privacy manifest (systemUptime, 35F9.1).
-            resources: [.copy("Resources/catalog-1.json"), .process("PrivacyInfo.xcprivacy")]
+            resources: [.process("PrivacyInfo.xcprivacy")]
         ),
         .target(
             name: "SinuaGeminiLive",

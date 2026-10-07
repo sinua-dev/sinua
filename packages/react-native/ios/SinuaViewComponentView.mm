@@ -83,9 +83,7 @@ static NSString *_Nullable str(const std::string &s) {
              effectKey:p.effectKey
                    tap:p.tap
             expression:str(p.expression)
-           paletteJson:str(p.paletteJson)
-           loadoutJson:str(p.loadoutJson)
-          catalogsJson:str(p.catalogsJson)];
+           paletteJson:str(p.paletteJson)];
   [super updateProps:props oldProps:oldProps];
 }
 

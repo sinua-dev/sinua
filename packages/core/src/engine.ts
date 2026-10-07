@@ -26,11 +26,6 @@ import {
   a11y_state_words_json,
   a11y_announce_step_json,
   effect_info_json,
-  apply_loadout_json,
-  cosmetics_for_json,
-  frame_still_packed,
-  load_catalog_json,
-  unload_catalog_json,
 } from "../pkg/sinua_core_inline.js";
 import { asPacked, frameWithOverridesPacked, unpackFrame } from "./packed.js";
 import type {
@@ -207,99 +202,4 @@ export interface EffectInfo {
 /** `success`, `error` or `celebrate`; `null` for an unknown name. Mirrors `core_engine::effect_info`. */
 export function effectInfo(name: string): EffectInfo | null {
   return JSON.parse(effect_info_json(name)) as EffectInfo | null;
-}
-
-/**
- * An end user's choice for a character (FX Spec 1.13, design note 25): small, so the
- * app stores it in its own account and hands it back next launch. `wear`: ids from the
- * spec's `wardrobe` (or its `cosmetics`), one per slot; `palette`: a `wardrobe.palettes`
- * name or a built-in palette (`sunset`, `ocean`, ...); `iris`: an eye colour by name, a
- * `wardrobe.irises` name or a catalog one (`catalog:eyes-hazel`, design note 27), joining the
- * palette; `eyeStyle`: an eye style.
- */
-export interface Loadout {
-  /** The loadout format, 1. */
-  loadout?: number;
-  /**
-   * Ids, or `{ id, offset, scale, rotate }` for a bounded nudge relative to the slot
-   * (C2: `offset` ±10 units, `scale` 0.8–1.2, `rotate` ±15°; out of range warns and is
-   * clamped). It still follows the rig.
-   */
-  wear?: (string | { id: string; offset?: [number, number]; scale?: number; rotate?: number })[];
-  palette?: string;
-  /** An eye colour by name (never a colour): it colours the glossy eye. */
-  iris?: string;
-  eyeStyle?: "auto" | "shape" | "glossy" | "pixel" | "dot";
-}
-
-/** A loadout applied: the spec with the choices in it, and warnings. */
-export interface LoadoutApplied {
-  spec: string;
-  /** Warnings only: what the spec no longer offers is skipped, the rest applies. */
-  diagnostics: FxDiagnostic[];
-}
-
-/**
- * `loadout` applied to `spec` (design note 25). Nothing in a loadout is an error: an
- * item or palette the spec no longer offers, a newer format or an unknown key warns and
- * is skipped, and the spec still draws. The views do this for their `loadout` option.
- */
-export function applyLoadout(spec: FxSpec | string, loadout: Loadout | unknown): LoadoutApplied {
-  return JSON.parse(apply_loadout_json(specText(spec), JSON.stringify(loadout ?? null))) as LoadoutApplied;
-}
-
-/** One wardrobe item for a picker: whether it fits a character, and why not. */
-export interface CosmeticFit {
-  id: string;
-  fits: boolean;
-  /**
-   * A key to translate: `fits`, `no-slot` (the character has no such slot),
-   * `not-made-for` (its `fits` leaves it out) or `missing-tag` (it `requires` a tag the
-   * character lacks).
-   */
-  reason: "fits" | "no-slot" | "not-made-for" | "missing-tag";
-  /** The reason in English ("" when it fits). */
-  why: string;
-}
-
-/**
- * What `spec`'s wardrobe (and its `cosmetics`) offers `character` (a built-in id, or the
- * spec's own recipe's id), for a picker screen. Labels and categories are in the spec.
- */
-export function cosmeticsFor(spec: FxSpec | string, character: string): CosmeticFit[] {
-  // The engine carries each row in the diagnostic record: path = id, severity = reason.
-  const rows = JSON.parse(cosmetics_for_json(specText(spec), character)) as { path: string; severity: CosmeticFit["reason"]; message: string }[];
-  return rows.map((d) => ({ id: d.path, fits: d.severity === "fits", reason: d.severity, why: d.message }));
-}
-
-/**
- * A thumbnail's frame (design note 25): `spec` with `loadout` in a still pose (no blink,
- * no glance) at `size`, turned `turnYaw` radians (0 = facing; about ±0.5 shows another
- * angle). It never takes the live characters' place in the engine. `null` if the spec
- * doesn't resolve. Paint it with your renderer, or use `@sinua/web`'s `characterThumbnail`.
- */
-export function frameStill(
-  spec: FxSpec | string,
-  size: OrbSize,
-  opts: { loadout?: Loadout; turnYaw?: number } = {}
-): OrbFrame | null {
-  const lo = opts.loadout ? JSON.stringify(opts.loadout) : "";
-  return unpackFrame(asPacked(frame_still_packed(specText(spec), lo, size, opts.turnYaw ?? 0)));
-}
-
-/**
- * Loads a catalog pack (FX Spec 1.13, design note 26): ready cosmetics and palettes as
- * data, `{ "catalog": 1, "namespace": "...", "cosmetics": [...], "palettes": {...} }`.
- * Specs then name its items as `"<namespace>:<id>"` in `cosmetics`, `wardrobe.cosmetics`
- * and `palette` (a loadout's too). Loading a namespace again replaces it; an error loads
- * nothing. Sinua's own pack is `@sinua/web/catalog`; a brand loads its own the same way,
- * from a bundled file or a URL.
- */
-export function loadCatalog(pack: string | object): FxDiagnostic[] {
-  return JSON.parse(load_catalog_json(typeof pack === "string" ? pack : JSON.stringify(pack))) as FxDiagnostic[];
-}
-
-/** Forgets a catalog pack's items; whether it had any. */
-export function unloadCatalog(namespace: string): boolean {
-  return unload_catalog_json(namespace);
 }

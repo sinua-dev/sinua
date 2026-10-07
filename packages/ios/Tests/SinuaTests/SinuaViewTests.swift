@@ -213,14 +213,13 @@ final class SinuaViewTests: XCTestCase {
         }
     }
 
-    /// A named palette's dark variant (design note 23): the view passes `dark` in a dark
-    /// theme and the engine picks it. Cuppa in ocean: the sleeve is #D4EDF7 light, #72ADCA dark.
+    /// A palette's dark variant (design note 23): the view passes `dark` in a dark theme and
+    /// the engine picks it. Cuppa's sleeve (its `secondary`): #D4EDF7 light, #72ADCA dark.
     func testADarkThemePicksThePalettesDarkVariant() throws {
-        let url = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("spec/examples/themed-cuppa.fxspec.json")
-        guard let json = try? String(contentsOf: url, encoding: .utf8) else { throw XCTSkip("spec not readable") }
+        let json = """
+            {"fxSpec": "1.13", "object": "character", "pattern": "cuppa",
+             "palette": {"secondary": "#D4EDF7", "dark": {"secondary": "#72ADCA"}}}
+            """
         func sleeve(_ theme: FxTheme) throws -> Double {
             let r = ImageRenderer(
                 content: SinuaView(spec: json, theme: theme, reducedMotion: .always).frame(width: 160, height: 160))

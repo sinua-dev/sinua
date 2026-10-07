@@ -56,19 +56,6 @@ export type SinuaViewProps = ViewProps & {
   expression?: string | null;
   /** A character's palette, in part (design note 19): slot -> hex, e.g. `{ body: "#E63946" }`. Wins over the spec's; a change is immediate. */
   palette?: Record<string, string> | null;
-  /**
-   * An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a `wardrobe`:
-   * `{ loadout: 1, wear: ["party-hat"], palette: "sunset", eyeStyle: "glossy" }`. Store it in
-   * your app and pass it back next launch. A change eases (a hat pops in, colours blend). What
-   * the spec no longer offers is skipped with a native log warning, and the rest applies.
-   */
-  loadout?: { loadout?: number; wear?: string[]; palette?: string; iris?: string; eyeStyle?: "auto" | "shape" | "glossy" | "pixel" | "dot" } | null;
-  /**
-   * Catalog packs to load into the native engine (FX Spec 1.13, design note 26): Sinua's own
-   * (`SINUA_CATALOG` from `@sinua/react-native/catalog`) or a brand's. A spec may then name
-   * their items as `"<namespace>:<id>"`. Loading again is harmless.
-   */
-  catalogs?: object[] | null;
   theme?: "auto" | "light" | "dark";
   paused?: boolean;
   reducedMotion?: "auto" | "always" | "never";
@@ -96,12 +83,11 @@ export function nativeLabels(p: Pick<SinuaViewProps, "spec" | "pattern" | "state
   return { state: p.pattern ?? p.state, specState: p.specState };
 }
 
-export function SinuaView({ spec, pattern, state, specState, overrides, inputs, onFrame, accessibilityLabel, maxFps, voice, labels: words, announce, effect, expression, palette, loadout, catalogs, ...rest }: SinuaViewProps) {
+export function SinuaView({ spec, pattern, state, specState, overrides, inputs, onFrame, accessibilityLabel, maxFps, voice, labels: words, announce, effect, expression, palette, ...rest }: SinuaViewProps) {
   const labels = nativeLabels({ spec, pattern, state, specState });
   const specText = React.useMemo(() => (spec == null ? undefined : typeof spec === "string" ? spec : JSON.stringify(spec)), [spec]);
   const overridesJson = React.useMemo(() => (overrides ? JSON.stringify(overrides) : undefined), [overrides]);
   const inputsJson = React.useMemo(() => (inputs ? JSON.stringify(inputs) : undefined), [inputs]);
-  const catalogsJson = React.useMemo(() => (catalogs?.length ? JSON.stringify(catalogs) : ""), [catalogs]);
   const a11y = React.useMemo(() => a11yNativeProps(words, announce), [words, announce]);
   const handler = React.useCallback((e: NativeSyntheticEvent<FrameEvent>) => onFrame?.(e.nativeEvent), [onFrame]);
   // A handle is bound by id through the native registry; the shorthands stay as they were.
@@ -122,8 +108,6 @@ export function SinuaView({ spec, pattern, state, specState, overrides, inputs, 
       effectKey={effect?.key ?? 0}
       expression={expression === undefined ? "" : (expression ?? "none")}
       paletteJson={palette ? JSON.stringify(palette) : ""}
-      loadoutJson={loadout ? JSON.stringify({ loadout: 1, ...loadout }) : ""}
-      catalogsJson={catalogsJson}
       maxFps={maxFps ?? 0}
       label={accessibilityLabel}
       accessibilityLabel={accessibilityLabel}

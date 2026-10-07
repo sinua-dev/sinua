@@ -38,7 +38,6 @@ final class FxHostModel: ObservableObject {
     @Published var tap = false
     @Published var expression: String?
     @Published var palette: [String: String] = [:]
-    @Published var loadout: SinuaLoadout?
     @Published var effect: SinuaEffectTrigger?
     /// The app's real activity. SinuaView runs only while `scenePhase == .active`,
     /// and a UIHostingController inside a scene-less UIKit app (React Native's
@@ -65,7 +64,7 @@ struct FxHostContent: View {
                    maxFps: model.maxFps, lowPower: model.lowPower, onFrame: frame,
                    labels: model.labels, announce: model.announce, haptics: model.haptics, rules: model.rules,
                    effect: model.effect, tap: model.tap, expression: model.expression,
-                   palette: model.palette, loadout: model.loadout)
+                   palette: model.palette)
         } else {
             SinuaView(pattern: model.state, size: model.size, overrides: model.overrides, speed: model.speed,
                    state: model.specState, voice: model.voice, voiceOverrides: model.voiceOverrides,
@@ -85,7 +84,6 @@ public final class FxHostView: UIView {
     private var voiceMode = "none"
     /// A source the app created and owns: bound, never connected or disconnected here.
     private var boundSourceId: String?
-    private var lastCatalogs = ""
     private var lastEffectKey = 0
     private var lastFrameEvent: CFTimeInterval = 0
 
@@ -136,7 +134,7 @@ public final class FxHostView: UIView {
                             audioStrength: Double, voice: String, voiceSourceId: String?, theme: String, paused: Bool, reducedMotion: String, maxFps: Double,
                             lowPower: String, label: String?, reportFrames: Bool, labelsJson: String?, announce: String,
                             haptics: Bool, rules: Bool, effectName: String?, effectKey: Int, tap: Bool,
-                            expression: String?, paletteJson: String?, loadoutJson: String?, catalogsJson: String?) {
+                            expression: String?, paletteJson: String?) {
         let m = model
         m.spec = (spec?.isEmpty ?? true) ? nil : spec
         m.state = (state?.isEmpty ?? true) ? "working" : state!
@@ -162,19 +160,6 @@ public final class FxHostView: UIView {
         m.expression = (expression?.isEmpty ?? true) ? nil : expression
         let pal = (paletteJson?.data(using: .utf8)).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
         m.palette = pal?.compactMapValues { $0 as? String } ?? [:]
-        // Catalog packs first, so the spec and loadout below can name their items.
-        if let c = catalogsJson, !c.isEmpty, c != lastCatalogs {
-            lastCatalogs = c
-            let packs = (try? JSONSerialization.jsonObject(with: Data(c.utf8))) as? [Any] ?? []
-            for p in packs {
-                if let d = try? JSONSerialization.data(withJSONObject: p) {
-                    _ = loadCatalog(json: String(decoding: d, as: UTF8.self))
-                }
-            }
-        }
-        let lo = (loadoutJson?.isEmpty ?? true) ? nil : loadoutJson?.data(using: .utf8)
-        let loadout = lo.flatMap { try? JSONDecoder().decode(SinuaLoadout.self, from: $0) }
-        if m.loadout != loadout { m.loadout = loadout }
         // A new key plays the effect once (a fresh trigger value).
         if effectKey != lastEffectKey {
             lastEffectKey = effectKey

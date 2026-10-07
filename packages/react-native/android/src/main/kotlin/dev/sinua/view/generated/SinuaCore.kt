@@ -60,9 +60,6 @@ data class SinuaCoreProps(
     val pulse: SinuaPulse? = null,
     val gradient: SinuaGradient? = null,
     val color: SinuaColor? = null,
-    val liquid: SinuaLiquid? = null,
-    val particles: SinuaParticles? = null,
-    val holographic: SinuaHolographic? = null,
 ) {
     fun toOverrides(): Map<String, Double> {
         val o = LinkedHashMap<String, Double>()
@@ -85,9 +82,6 @@ data class SinuaCoreProps(
         pulse?.writeTo(o)
         gradient?.writeTo(o)
         color?.writeTo(o)
-        liquid?.writeTo(o)
-        particles?.writeTo(o)
-        holographic?.writeTo(o)
         return o
     }
 }
@@ -120,9 +114,6 @@ fun SinuaCore(
     pulse: SinuaPulse? = null,
     gradient: SinuaGradient? = null,
     color: SinuaColor? = null,
-    liquid: SinuaLiquid? = null,
-    particles: SinuaParticles? = null,
-    holographic: SinuaHolographic? = null,
     speed: Double = 1.0,
     /**
      * The agent's lifecycle state ("listening", "speaking", ...): the built-in voice-state
@@ -149,7 +140,7 @@ fun SinuaCore(
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
     effect: SinuaEffectTrigger? = null,
 ) {
-    val overrides = SinuaCoreProps(pattern = pattern, size = size, highlightFill = highlightFill, highlightLength = highlightLength, hue = hue, ink = ink, saturation = saturation, thickness = thickness, trackOpacity = trackOpacity, period = period, length = length, bounceAmplitude = bounceAmplitude, delay = delay, dotCount = dotCount, dotSize = dotSize, spacing = spacing, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
+    val overrides = SinuaCoreProps(pattern = pattern, size = size, highlightFill = highlightFill, highlightLength = highlightLength, hue = hue, ink = ink, saturation = saturation, thickness = thickness, trackOpacity = trackOpacity, period = period, length = length, bounceAmplitude = bounceAmplitude, delay = delay, dotCount = dotCount, dotSize = dotSize, spacing = spacing, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,

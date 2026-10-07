@@ -960,35 +960,3 @@ test("palette: the prop on a file's own recipe draws as the file's palette", () 
   assert.notDeepEqual(fills(a.calls), fills(c.calls));
   for (const v of [prop, file, plain]) v.destroy();
 });
-
-test("loadout (FX Spec 1.13): a change eases without rebuilding; a stale one warns once and still draws", () => {
-  const { step } = env();
-  const wardrobe = readFileSync(new URL("../../../spec/examples/wardrobe-bean.fxspec.json", import.meta.url), "utf8");
-  const warns = [];
-  const warn = console.warn;
-  console.warn = (m) => warns.push(String(m));
-  try {
-    const c = canvas();
-    const fx = mount(c.el, { spec: wardrobe, theme: "light", loadout: { loadout: 1, wear: [] } });
-    step(5);
-    const fills = () => c.calls.filter((x) => x[0] === "fill").length;
-    c.calls.length = 0;
-    step(1);
-    const bare = fills();
-    fx.update({ loadout: { loadout: 1, wear: ["party-hat"] } });
-    step(30); // past the 0.35 s change
-    c.calls.length = 0;
-    step(1);
-    assert.ok(fills() > bare, "the hat is drawn");
-    fx.update({ loadout: { loadout: 1, wear: ["top-hat"] } });
-    fx.update({ loadout: { loadout: 1, wear: ["top-hat"] } }); // pushed again (React does): no second warning
-    step(2);
-    assert.equal(warns.filter((m) => m.includes("loadout")).length, 1, warns.join("\n"));
-    c.calls.length = 0;
-    step(1);
-    assert.ok(fills() > 0, "it still draws");
-    fx.destroy();
-  } finally {
-    console.warn = warn;
-  }
-});

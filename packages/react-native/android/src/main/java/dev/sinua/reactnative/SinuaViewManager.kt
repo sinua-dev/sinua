@@ -79,23 +79,6 @@ class SinuaViewManager : SimpleViewManager<FxHostView>(), SinuaViewManagerInterf
         val o = value?.ifEmpty { null }?.let { runCatching { org.json.JSONObject(it) }.getOrNull() }
         view.palette = o?.keys()?.asSequence()?.associateWith { o.optString(it) } ?: emptyMap()
     }
-    override fun setCatalogsJson(view: FxHostView, value: String?) {
-        // Catalog packs (design note 26): each loads into the engine once per change.
-        val packs = value?.ifEmpty { null }?.let { runCatching { org.json.JSONArray(it) }.getOrNull() } ?: return
-        for (i in 0 until packs.length()) uniffi.core_engine.loadCatalog(packs.get(i).toString())
-    }
-
-    override fun setLoadoutJson(view: FxHostView, value: String?) {
-        val o = value?.ifEmpty { null }?.let { runCatching { org.json.JSONObject(it) }.getOrNull() }
-        view.loadout = o?.let {
-            val wear = it.optJSONArray("wear")?.let { a -> List(a.length()) { i -> a.optString(i) } }
-            dev.sinua.view.SinuaLoadout(
-                wear = wear,
-                palette = it.optString("palette").ifEmpty { null },
-                eyeStyle = it.optString("eyeStyle").ifEmpty { null },
-            )
-        }
-    }
     // The name is stored; a changed key plays it (setters run in the spec's order, name first).
     override fun setEffectName(view: FxHostView, value: String?) { view.setEffectName(value?.ifEmpty { null }) }
     override fun setEffectKey(view: FxHostView, value: Int) { view.setEffect(null, value) }

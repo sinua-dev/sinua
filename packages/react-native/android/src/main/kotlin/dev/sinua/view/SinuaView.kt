@@ -135,15 +135,8 @@ fun SinuaView(
      * The slots' tones follow; it wins over a spec's `palette`. A change is immediate.
      */
     palette: Map<String, String> = emptyMap(),
-    /**
-     * An end user's loadout (FX Spec 1.13, design note 25), with a spec that has a `wardrobe`.
-     * A change eases (a hat pops in, colours blend; a cut under reduced motion). What the spec
-     * no longer offers is skipped with a logged warning, and the rest applies.
-     */
-    loadout: SinuaLoadout? = null,
 ) {
     val model = remember(spec, voice, voiceOverrides) { FxModel(FxInput.Spec(spec), voice, voiceOverrides) }
-    model.setLoadout(loadout)
     model.crossFade = crossFade
     model.specState = state
     model.inputs = inputs
@@ -492,32 +485,11 @@ internal class FxModel(private val input: FxInput, source: VoiceSource?, given: 
     /** The view's theme is dark: a palette's dark variant is picked (design note 23). */
     var dark = false
 
-    /** The spec draws a character (it may name a palette with a dark variant). */
+    /** The spec draws a character (its palette may have a dark variant). */
     private var specIsCharacter = false
 
-    /** The spec as drawn: the given one with the loadout applied (design note 25). */
-    private var specJson: String = (input as? FxInput.Spec)?.json ?: ""
-    private var loadout: SinuaLoadout? = null
-    private var loadoutSet = false
-
-    /** An end user's loadout: a change eases from what is showing. */
-    fun setLoadout(l: SinuaLoadout?) {
-        if (loadoutSet && l == loadout) return
-        val first = !loadoutSet
-        loadoutSet = true
-        loadout = l
-        val file = (input as? FxInput.Spec)?.json ?: return
-        specJson = if (l == null) {
-            file
-        } else {
-            val (out, warnings) = l.applyTo(file)
-            if (warnings.isNotEmpty()) {
-                android.util.Log.w("SinuaView", "loadout: ${warnings.joinToString { "${it.path}: ${it.message}" }}")
-            }
-            out
-        }
-        if (!first) player.wear()
-    }
+    /** The spec as given. */
+    private val specJson: String = (input as? FxInput.Spec)?.json ?: ""
 
     /** Frames the pacer let through (tests / diagnostics). */
     internal var pacedFrames = 0
@@ -1014,9 +986,6 @@ internal class FxStatePlayer {
 
     /** The rate sums the transition keeps for [pattern] (design note 31); for tests. */
     internal fun rateSums(pattern: String) = transition.rateSums(pattern)
-
-    /** The loadout changed: ease from what is showing (design note 25). */
-    fun wear() = transition.wear()
 
     /** The current state as a transition side (effective speed), or null if the spec has errors. */
     private fun side(spec: String, inputs: Map<String, Double>): Pair<TransitionSide, UInt>? {

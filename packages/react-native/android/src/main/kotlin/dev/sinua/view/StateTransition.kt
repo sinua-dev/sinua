@@ -10,9 +10,6 @@ import uniffi.core_engine.voiceBlend
 import kotlin.math.exp
 import kotlin.math.min
 
-/** How long a loadout change takes (design note 25), seconds. */
-internal const val WEAR_SECONDS = 0.35
-
 /** The transition clock reaches ~95 % of the way when `ωt ≈ 6.3`: `ω = 6.3 / duration`. */
 internal const val LAG_95 = 6.3
 
@@ -63,15 +60,8 @@ internal class StateTransition {
     private val rates = HashMap<String, Rates>()
     private var lastT: Double? = null
 
-    /** What was on screen when the loadout last changed, while its change runs. */
-    private var wearFrom: TransitionSide? = null
-    private var wearAge = Double.POSITIVE_INFINITY
-
     /** Seconds since the last state change (cut or not); infinite before the first. */
     private var since = Double.POSITIVE_INFINITY
-
-    /** The side last drawn. */
-    private var shown: TransitionSide? = null
 
     /**
      * A state change happened: the weights head for the new state from where they are.
@@ -94,40 +84,21 @@ internal class StateTransition {
         }
     }
 
-    /**
-     * The loadout changed (design note 25): the character eases from what is on screen now
-     * (a hat pops in, colours blend, a new eye style swaps in a blink), on its own clock, so a
-     * state change in the middle of it doesn't cut it, and the reverse.
-     */
-    fun wear() {
-        val s = shown ?: return
-        wearFrom = s
-        wearAge = 0.0
-    }
-
-    /** A loadout change is easing in. */
-    val wearing: Boolean get() = wearFrom != null
-
     /** Stop any transition now (reduced motion, a new design). */
     fun cancel() {
         val t = entries.lastOrNull()
         entries = if (t != null) mutableListOf(Entry(t.side, 1.0)) else mutableListOf()
         authored = null
-        wearAge = Double.POSITIVE_INFINITY
-        wearFrom = null
     }
 
     /** No transition running: remember [to] as what is on screen. */
     fun settle(to: TransitionSide) {
         if (!active) entries = mutableListOf(Entry(to, 1.0))
-        shown = to
     }
 
     fun advance(dt: Double) {
         val raw = maxOf(0.0, dt)
         since += raw
-        wearAge += raw
-        if (wearAge >= WEAR_SECONDS) wearFrom = null
         if (raw > SETTLE_GAP_SECONDS) {
             entries.lastOrNull()?.let { entries = mutableListOf(Entry(it.side, 1.0)) }
             authored = null
@@ -219,7 +190,6 @@ internal class StateTransition {
         if (entries.isEmpty()) entries = mutableListOf(Entry(to, 1.0))
         val target = entries.size - 1
         entries[target].side = to
-        shown = to
         val extra = if (since.isFinite()) live + ("stateAge" to since) else live
         val dp = tick(t)
 
@@ -237,22 +207,8 @@ internal class StateTransition {
                 .sortedByDescending { it.w } // stable: ties keep their order
                 .take(2)
         val blended = drawn.map { blend(it.pattern, it.idx, size, t, dp) }
-        val wf = wearFrom
-        val ww = wearAge / WEAR_SECONDS
 
-        fun draw(pattern: String, o: Map<String, Double>): OrbFrame? {
-            val with = o + extra
-            if (wf != null) {
-                frameTransitionWithOverrides(
-                    TransitionSide(wf.state, wf.speed, wf.overrides + extra),
-                    TransitionSide(pattern, 1.0, with),
-                    size,
-                    t,
-                    ww,
-                )?.let { return it }
-            }
-            return frameWithOverrides(pattern, size, t, with)
-        }
+        fun draw(pattern: String, o: Map<String, Double>): OrbFrame? = frameWithOverrides(pattern, size, t, o + extra)
         if (drawn.size == 1) {
             val (m, o) = blended[0]
             val pattern = drawn[0].pattern

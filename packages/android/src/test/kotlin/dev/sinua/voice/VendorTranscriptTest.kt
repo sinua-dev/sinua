@@ -92,7 +92,7 @@ class VendorTranscriptTest {
     }
 
     @Test fun realtimeTurnsInputTranscriptionOnOnceAndCutsOnABargeIn() {
-        val s = OpenAIRealtimeSession()
+        val s = OpenAIRealtimeSession(transcribeUser = "gpt-4o-mini-transcribe")
         val sent = mutableListOf<String>()
         s.onSend = { sent += it }
         val got = mutableListOf<TranscriptUpdate>()
@@ -123,7 +123,8 @@ class VendorTranscriptTest {
         s.connecting()
         s.handle("""{"type":"session.created","session":{"audio":{"input":{"transcription":{"model":"whisper-1"}}}}}""")
         assertEquals("a session with its own transcription is left alone", 1, sent.size)
-        val off = OpenAIRealtimeSession(transcribeUser = null)
+        // Off by default: OpenAI bills it, so only an opt-in turns it on.
+        val off = OpenAIRealtimeSession()
         var offSent = 0
         off.onSend = { offSent++ }
         off.onTranscript = {}

@@ -135,16 +135,13 @@ export interface OpenAIRealtimeVoiceSourceOptions extends CredentialOptions {
    */
   syncToAudio?: boolean;
   /**
-   * The user's side of transcripts needs the session's input transcription, which OpenAI bills
-   * per minute. When something listens to `onTranscript` and the session has none, it is turned
-   * on with this model (`true`: `gpt-4o-mini-transcribe`); `false` leaves the session as your
-   * backend made it. Default true.
+   * Opt in to the user's side of transcripts: the input transcription model (e.g.
+   * `"gpt-4o-mini-transcribe"`) turned on when something listens to `onTranscript` and the
+   * session has none. OpenAI bills it per minute, so Sinua never turns it on by itself: unset,
+   * transcripts carry the assistant's text only (unless your backend's session transcribes).
    */
-  transcribeUser?: boolean | string;
+  transcribeUser?: string;
 }
-
-/** The input transcription model turned on for the user's transcript (`transcribeUser: true`). */
-const REALTIME_USER_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
 
 const CALLS_URL = "https://api.openai.com/v1/realtime/calls";
 const DATA_CHANNEL_LABEL = "oai-events";
@@ -231,8 +228,7 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     this.callsUrl = opts.callsUrl ?? CALLS_URL;
     this.warp = opts.warp ?? false;
     this.captions = new TranscriptAssembler("none", opts.syncToAudio ?? true, true);
-    const tu = opts.transcribeUser ?? true;
-    this.transcribeModel = tu === false ? null : tu === true ? REALTIME_USER_TRANSCRIPTION_MODEL : tu;
+    this.transcribeModel = opts.transcribeUser ?? null;
   }
 
   /**

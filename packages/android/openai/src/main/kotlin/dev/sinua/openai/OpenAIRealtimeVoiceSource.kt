@@ -98,10 +98,11 @@ class OpenAIRealtimeVoiceSource(
     /** Transcripts pace the model's text over its audible audio; `false`: as it arrives. */
     syncToAudio: Boolean = true,
     /**
-     * The input transcription model turned on (billed per minute by OpenAI) when something listens
-     * to transcripts and the session has none; `null` leaves the session as your backend made it.
+     * Opt in to the user's side of transcripts with an input transcription model (e.g.
+     * "gpt-4o-mini-transcribe"; billed per minute by OpenAI), turned on when something listens and
+     * the session has none. Off by default.
      */
-    transcribeUser: String? = OpenAIRealtimeSession.USER_TRANSCRIPTION_MODEL,
+    transcribeUser: String? = null,
 ) : VoiceSource {
     /** A fresh `ek_` from your code (e.g. your backend), called again on every reconnect. */
     constructor(
@@ -111,7 +112,7 @@ class OpenAIRealtimeVoiceSource(
         http: OpenAIHttp = OpenAIHttp(),
         warp: Boolean = false,
         syncToAudio: Boolean = true,
-        transcribeUser: String? = OpenAIRealtimeSession.USER_TRANSCRIPTION_MODEL,
+        transcribeUser: String? = null,
     ) : this(
         context,
         CredentialSource.provider { SinuaCredential(runBlocking { credentialProvider() }) },

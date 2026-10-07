@@ -23,6 +23,7 @@ class OpenaiFactory : VoiceRegistry.VendorFactory {
         val source = OpenAIRealtimeVoiceSource(
             context,
             VoiceRegistry.credentialSource(config, credentials, "openai needs a credential or credentialUrl (an ek_… from your backend)"),
+            transcribeUser = if (config.hasKey("transcribeUser")) config.getString("transcribeUser") else null,
         )
         source.onError { errors(it.message ?: it.toString()) }
         return source

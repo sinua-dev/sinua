@@ -167,7 +167,8 @@ final class VoiceRegistry {
             #if SINUA_OPENAI
                 return OpenAIRealtimeVoiceSource(
                     credential: try credentialSource(
-                        id: id, config: config, missing: ("openai", "a credential or credentialUrl")))
+                        id: id, config: config, missing: ("openai", "a credential or credentialUrl")),
+                    transcribeUser: config["transcribeUser"] as? String)
             #else
                 throw RegistryError.vendorNotInstalled(vendor: "OpenAI Realtime", subspec: "OpenAI")
             #endif

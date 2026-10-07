@@ -486,9 +486,9 @@ test("gemini transcripts: setup asks for both transcriptions; the reply is paced
   }
 });
 
-test("openai realtime transcripts: input transcription turned on once per session; both speakers; a barge-in cuts the reply", async () => {
+test("openai realtime transcripts: opted-in input transcription turned on once per session; both speakers; a barge-in cuts the reply", async () => {
   const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
-  const src = new OpenAIRealtimeVoiceSource({ credential: "ek_test", reconnect: false });
+  const src = new OpenAIRealtimeVoiceSource({ credential: "ek_test", reconnect: false, transcribeUser: "gpt-4o-mini-transcribe" });
   const got = [];
   src.onTranscript((u) => got.push(u));
   assert.equal(src.transcriptTiming, "none");
@@ -526,11 +526,11 @@ test("openai realtime transcripts: input transcription turned on once per sessio
   }
 });
 
-test("openai realtime transcripts: a session with its own input transcription is left alone; transcribeUser false never turns it on", async () => {
+test("openai realtime transcripts: never turned on by default (billed); a session with its own is left alone", async () => {
   const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
   for (const [opts, session, want] of [
-    [{}, { audio: { input: { transcription: { model: "whisper-1" } } } }, 0],
-    [{ transcribeUser: false }, { audio: { input: { transcription: null } } }, 0],
+    [{}, { audio: { input: { transcription: null } } }, 0],
+    [{ transcribeUser: "gpt-4o-mini-transcribe" }, { audio: { input: { transcription: { model: "whisper-1" } } } }, 0],
     [{ transcribeUser: "gpt-4o-transcribe" }, {}, 1],
   ]) {
     const src = new OpenAIRealtimeVoiceSource({ credential: "ek_test", reconnect: false, ...opts });

@@ -7,14 +7,12 @@ package dev.sinua.voice
 import org.json.JSONObject
 
 /**
- * [transcribeUser]: the user's side of transcripts needs the session's input transcription,
- * which OpenAI bills per minute; when something listens and the session has none, it is turned
- * on with this model. `null` leaves the session as your backend made it.
+ * [transcribeUser]: opt in to the user's side of transcripts with an input transcription model
+ * (e.g. "gpt-4o-mini-transcribe"), turned on when something listens and the session has none.
+ * OpenAI bills it per minute, so it is never turned on by default: `null` (the default) gives the
+ * assistant's text only, unless your backend's session transcribes.
  */
-class OpenAIRealtimeSession(
-    syncToAudio: Boolean = true,
-    private val transcribeUser: String? = USER_TRANSCRIPTION_MODEL,
-) {
+class OpenAIRealtimeSession(syncToAudio: Boolean = true, private val transcribeUser: String? = null) {
     var state: AgentState = AgentState.IDLE
         private set
     val transcript = TranscriptLog()
@@ -191,8 +189,6 @@ class OpenAIRealtimeSession(
     }
 
     companion object {
-        /** The input transcription model turned on for the user's transcript by default. */
-        const val USER_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe"
         const val SPEAKING_LEVEL = 0.05
         const val SPEAKING_TAIL_FRAMES = OpenAILiveSession.SPEAKING_TAIL_FRAMES
     }

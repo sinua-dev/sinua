@@ -93,7 +93,7 @@ final class VendorTranscriptTests: XCTestCase {
     }
 
     func testRealtimeTurnsInputTranscriptionOnOnceAndCutsOnABargeIn() {
-        let s = OpenAIRealtimeSession()
+        let s = OpenAIRealtimeSession(transcribeUser: "gpt-4o-mini-transcribe")
         var sent: [String] = []
         s.onSend = { sent.append($0) }
         var got: [TranscriptUpdate] = []
@@ -135,7 +135,8 @@ final class VendorTranscriptTests: XCTestCase {
                 "type": "session.created", "session": ["audio": ["input": ["transcription": ["model": "whisper-1"]]]],
             ]))
         XCTAssertEqual(sent.count, 1)
-        let off = OpenAIRealtimeSession(transcribeUser: nil)
+        // Off by default: OpenAI bills it, so only an opt-in turns it on.
+        let off = OpenAIRealtimeSession()
         var offSent = 0
         off.onSend = { _ in offSent += 1 }
         off.onTranscript = { _ in }

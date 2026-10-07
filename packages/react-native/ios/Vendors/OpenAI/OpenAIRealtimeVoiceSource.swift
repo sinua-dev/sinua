@@ -74,9 +74,9 @@ final class OpenAIRealtimeVoiceSource: NSObject, VoiceSource, @unchecked Sendabl
     /// `audioSession`: how the app's audio session is set up before the call (default: the
     /// loudspeaker; `.unmanaged` if your app does it).
     /// `syncToAudio`: transcripts pace the model's text over its audible audio (default);
-    /// `false` shows it as it arrives. `transcribeUser`: the input transcription model turned
-    /// on (billed per minute by OpenAI) when something listens to transcripts and the session
-    /// has none; `nil` leaves the session as your backend made it.
+    /// `false` shows it as it arrives. `transcribeUser`: opt in to the user's side of transcripts
+    /// with an input transcription model (e.g. "gpt-4o-mini-transcribe"; billed per minute by
+    /// OpenAI), turned on when something listens and the session has none. Off by default.
     public init(
         credential: CredentialSource,
         callsURL: URL = OpenAIRealtimeSignaling.callsURL,
@@ -85,7 +85,7 @@ final class OpenAIRealtimeVoiceSource: NSObject, VoiceSource, @unchecked Sendabl
         requestPermission: @escaping () async -> Bool = AVPcmAudioDevice.requestPermission,
         audioSession: VoiceAudioSession = .speaker,
         syncToAudio: Bool = true,
-        transcribeUser: String? = OpenAIRealtimeSession.userTranscriptionModel
+        transcribeUser: String? = nil
     ) {
         session = OpenAIRealtimeSession(syncToAudio: syncToAudio, transcribeUser: transcribeUser)
         self.audioSession = audioSession
@@ -112,7 +112,7 @@ final class OpenAIRealtimeVoiceSource: NSObject, VoiceSource, @unchecked Sendabl
         requestPermission: @escaping () async -> Bool = AVPcmAudioDevice.requestPermission,
         audioSession: VoiceAudioSession = .speaker,
         syncToAudio: Bool = true,
-        transcribeUser: String? = OpenAIRealtimeSession.userTranscriptionModel
+        transcribeUser: String? = nil
     ) {
         self.init(
             credential: .provider { SinuaCredential(credential: try await credentialProvider()) },

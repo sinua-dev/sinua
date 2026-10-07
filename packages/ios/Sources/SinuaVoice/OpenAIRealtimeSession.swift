@@ -29,8 +29,6 @@ public final class OpenAIRealtimeSession {
     /// Events for the data channel (the glue sends them): turning the input transcription on.
     public var onSend: ((String) -> Void)?
 
-    /// The input transcription model turned on for the user's transcript by default.
-    public static let userTranscriptionModel = "gpt-4o-mini-transcribe"
     /// Live transcripts (design note 39; not the replay log above): no times from Realtime, so
     /// `none` timing; the user's turn ends at `.completed`.
     public let captions: TranscriptAssembler
@@ -49,10 +47,11 @@ public final class OpenAIRealtimeSession {
     /// This session's input transcription is on (its own, or ours).
     private var userTranscribed = false
 
-    /// `transcribeUser`: the user's side of transcripts needs the session's input transcription,
-    /// which OpenAI bills per minute; when something listens and the session has none, it is
-    /// turned on with this model. `nil` leaves the session as your backend made it.
-    public init(syncToAudio: Bool = true, transcribeUser: String? = OpenAIRealtimeSession.userTranscriptionModel) {
+    /// `transcribeUser`: opt in to the user's side of transcripts with an input transcription model
+    /// (e.g. "gpt-4o-mini-transcribe"), turned on when something listens and the session has none.
+    /// OpenAI bills it per minute, so it is never turned on by default: `nil` (the default) gives the
+    /// assistant's text only, unless your backend's session transcribes.
+    public init(syncToAudio: Bool = true, transcribeUser: String? = nil) {
         captions = TranscriptAssembler(timing: .none, sync: syncToAudio, explicitUserEnd: true)
         transcribeModel = transcribeUser
     }

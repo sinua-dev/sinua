@@ -89,6 +89,11 @@ export type VoiceSourceConfig =
       vendor: "openai";
       /** @deprecated Pass the same function as `credential`. */
       getCredential?: () => Promise<string>;
+      /**
+       * Opt in to the user's side of transcripts: an input transcription model (e.g.
+       * `"gpt-4o-mini-transcribe"`), billed per minute by OpenAI. Unset: the assistant's text only.
+       */
+      transcribeUser?: string;
     } & CredentialOptions)
   /** Gemini Live: an ephemeral `auth_tokens/…` from your backend, which locks the model, voice and instructions. */
   | ({

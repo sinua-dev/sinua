@@ -20,10 +20,16 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
     - `supportsTranscript` and `transcriptTiming`;
     - the shape is `{ role, text, final, turnId, truncated?, startMs?, endMs? }`.
   - **Modes:** synced to the played audio by default, or raw with `syncToAudio: false`. A barge-in ends the assistant's turn `truncated`, with only what was played.
-  - **Sources:** `OpenAILiveVoiceSource` (GPT-Live) on Web, iOS and Android; `SimulatedVoiceSource` everywhere, including the React Native handle (`onTranscript`).
-  - **Your own source:** `@sinua/voice` exports `TranscriptAssembler`; the rules live in `spec/transcript-cases.json`.
+  - **Sources,** on Web, iOS and Android, and on the React Native handle (`onTranscript`):
+    - `OpenAILiveVoiceSource` (GPT-Live): `segments`, from GPT-Live's `start_ms`/`end_ms`;
+    - `ElevenLabsVoiceSource`: `chars`, character-exact from ElevenLabs' alignment;
+    - `GeminiLiveVoiceSource`: `none`, paced over the reply's audio. The Live setup now also asks for `outputAudioTranscription`;
+    - `OpenAIRealtimeVoiceSource`: `none`, paced while audible. For the user's side it turns on the session's input transcription (`gpt-4o-mini-transcribe`, billed by OpenAI per minute) only when something subscribes and the session has none; `transcribeUser` picks the model or turns this off;
+    - `LiveKitVoiceSource`: `synced`, the agent's own `lk.transcription` streams passed through;
+    - `SimulatedVoiceSource`.
+  - **Your own source:** `@sinua/voice` exports `TranscriptAssembler` (and `alignmentFragments` for per-character times); the rules live in `spec/transcript-cases.json` and `spec/transcript-assembler-cases.json`.
   - **Privacy:** display only. Sinua keeps nothing beyond the current turn and sends nothing anywhere.
-  - **Measured on GPT-Live:** synced is within 250 ms for most words in Turkish (median 82 ms, p95 191 ms); English is looser (median ~190 ms, p95 ~515 ms). Raw text arrives ~650 ms ahead of the audio.
+  - **Measured on GPT-Live:** synced is within 250 ms for most words in Turkish (median 82 ms, p95 191 ms); English is looser (median ~190 ms, p95 ~515 ms). Raw text arrives ~650 ms ahead of the audio. The other vendors are not measured live yet.
 
 - **iOS: Apple privacy manifests.** Every Swift target (`sinua-swift`, `-livekit`, `-openai`)
   and the React Native pod ship a `PrivacyInfo.xcprivacy`, so an App Store upload no longer

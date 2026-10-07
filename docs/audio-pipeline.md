@@ -774,18 +774,39 @@ await voice.connect();                 // subscribing before connect() catches t
 - **When a turn ends.**
   - An assistant turn ends when the source leaves `speaking`, after its quiet tail (up to ~1.7 s). The text is already complete by then; only `final` waits, so a natural pause doesn't split the turn.
   - A backend delegation ("let me check" → thinking → the answer) gives two assistant turns.
-  - On GPT-Live, which sends no turn-end event, a user turn ends after 4 s without new text, or when a new assistant reply reaches 12 characters (a "mhm" doesn't count).
+  - Where the vendor says when the user's turn ends (Realtime's `.completed`, ElevenLabs' `user_transcript`, LiveKit's final segment), that ends it, with the vendor's full text.
+  - On GPT-Live and Gemini, which send no user turn-end event, a user turn ends after 4 s without new text, or when a new assistant reply reaches 12 characters (a "mhm" doesn't count).
   - When GPT-Live is cut off and goes straight on to a new reply (full duplex, no silence in between), text that starts ≥600 ms after the cut-off part, on its own timeline, opens the next assistant turn.
 - **`supportsTranscript` / `transcriptTiming`** say what a source gives.
 
 | Source | `transcriptTiming` | How the assistant's text follows the audio |
 |---|---|---|
 | `OpenAILiveVoiceSource` (GPT-Live) | `segments` | GPT-Live's `start_ms`/`end_ms`, anchored at the local audio onset of each turn, 300 ms behind (that timeline runs ahead of the played audio) |
+| `ElevenLabsVoiceSource` | `chars` | ElevenLabs' per-character times (each audio chunk's `alignment`), against the played audio: character-exact |
+| `GeminiLiveVoiceSource` | `none` | no times from Gemini: the reply's text is paced over its received audio (text length ÷ audio length) |
+| `OpenAIRealtimeVoiceSource` | `none` | no times from Realtime, and the audio arrives over WebRTC: paced at ~14 characters a second while the model is audible, caught up when it stops |
+| `LiveKitVoiceSource` | `synced` | the agent's `lk.transcription` streams, which LiveKit Agents already sync to its speech and truncate on a barge-in (`sync_transcription`, its default); passed through as they come |
 | `SimulatedVoiceSource` | `synced` | the script's line as it is said |
-| mic, test tone, the other vendors (for now) | — | `supportsTranscript` false |
+| mic, test tone | — | `supportsTranscript` false |
+
+- **Gemini** asks for `outputAudioTranscription` (and, as before, `inputAudioTranscription`) in the
+  Live setup; nothing else is requested. Its user transcript can come late or not at all on long
+  speech (a known Gemini issue).
+- **Realtime** needs the session's input transcription for the user's side, which OpenAI bills per
+  minute. When something subscribes to transcripts and the session has none, the source turns it
+  on with `gpt-4o-mini-transcribe` (`transcribeUser`: another model, or `false` / `nil` / `null` to
+  leave the session as your backend made it). Without it, only the assistant's side comes.
+- **LiveKit**: a Room takes one handler per text-stream topic. On an attached Room (`{ room }`)
+  whose app already reads `lk.transcription`, the source's transcript stays empty (a console
+  warning); read your own handler instead. Raw mode is the agent's setting
+  (`sync_transcription=False`), not the source's.
+- **Raw mode** shows the text as it arrives on every vendor. At a barge-in, `chars` keeps the
+  characters that were played by then and `none` keeps the text that had arrived.
+- Only GPT-Live was measured live (below). The timing of the others follows from what each vendor
+  sends; it has not been measured on live sessions yet.
 
 On React Native, `createVoiceSource(...)`'s handle has `onTranscript`, `supportsTranscript` and
-`transcriptTiming`; today the simulated source sends transcripts there.
+`transcriptTiming`, the same per vendor as above (the simulated source too).
 
 **How close the GPT-Live text follows the audio** (measured 2026-10-07 on live sessions in headless
 Chrome against whisper word timings, which carry ±100–200 ms of their own):
@@ -801,8 +822,9 @@ syllables, envelope peaks and per-session lag estimates were all measured and lo
 synced English figures as a known limit; device numbers may differ.
 
 For your own `VoiceSource`, `@sinua/voice` exports `TranscriptAssembler`: feed it your vendor's
-fragments and 30 Hz level ticks, and it applies these rules. `spec/transcript-cases.json` holds
-them; Web, iOS and Android run it.
+fragments and 30 Hz level ticks, and it applies these rules. `spec/transcript-cases.json` (through
+GPT-Live) and `spec/transcript-assembler-cases.json` (the timings and turn ends of the other
+vendors) hold them; Web, iOS and Android run both.
 
 ## Mute
 

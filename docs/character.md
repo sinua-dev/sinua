@@ -75,7 +75,7 @@ A character is **data** (FX Spec 1.12). Its recipe,
 - the **surfaces** its face turns on;
 - an ordered list of **parts** from the library, each with its numbers, in a **space**
   (`ground`, `whole`, `mount`, `body`, `face`);
-- the celebrate **burst**, and its **slots**.
+- the celebrate **burst**.
 
 The parts are the behaviour; the recipe says where, how big, what colour and how much. A new
 look (shape, colour, size, which parts, how they react) is a new recipe. A new behaviour (a
@@ -121,10 +121,6 @@ new kind of sparkle, a new mouth mechanism) is a new part in Rust.
   - **Size:** path cost +9.3 KB gzip in the wasm (parser 3.1, clipping 3.0, miter 1.0, shape
     wiring 2.2).
   - **Test recipe:** `recipe_tests/cat.json`.
-- **Slots** (`headTop`, `face`, `neck`, `chest`): where 1.13's cosmetics will attach. Each one
-  follows its chain (`head`/`body` take the rig's pose; `face` also wraps onto the face
-  surface), resolved per frame by `character::recipe::slots` as a position, scale and angle.
-  They are not drawn and not public yet.
 - **Same drawing.** The four launch characters were hand-written Rust. Before that code
   went, a test compared the recipes with it on 900 frames (3 sizes × 5 times × 15 poses ×
   4), and they matched exactly. The golden cases are byte-identical too. A bit-exact
@@ -153,25 +149,6 @@ stars with a burst.
 
 The face is independent of any body: a character gives it an anchor, a scale, a colour
 and an optional clip (BUZZY's screen), and gets fills back.
-
-### Eye styles (FX Spec 1.13)
-
-The shape eye is the default. Three more styles draw inside or over the same eye shape, so
-blinks, the gaze, the turn blink, the startle and every expression work unchanged; the
-effect eyes (stars, the X) stay as they are.
-
-| Style | Looks like | At 20 px |
-|---|---|---|
-| `glossy` | a dark lens (or a white `sclera`), a radial-gradient iris and a pupil that slide inside the eye with the gaze, one big and two small highlights that stay with the light, a lid line | the lens, the iris and one highlight |
-| `pixel` | the eye lit as a grid of rounded cells, glowing on a screen; a shut eye is a row of cells; on a `faceScreen` the mouth goes pixel too | the same, fewer cells |
-| `dot` | a soft glowing point on a screen, a crisp dot on a body; blinks squash it | the dot without its halo |
-
-A recipe sets its own on its `eyes` part (or `faceScreen`): `"style"`, `"iris"` (a palette
-name; teal when absent) and `"sclera"`. The `eyeStyle` option (a prop on every platform, or
-`params.eyeStyle` by name or number) overrides it on any character: `auto` (0) keeps the
-recipe's. The built-ins keep the shape eye; `spec/examples/glossy-bean.fxspec.json`,
-`pixel-beep.fxspec.json` and `dot-hum.fxspec.json` show the others. Every style stays a
-`light` frame.
 
 ## The rig (`character/rig.rs`)
 
@@ -266,7 +243,6 @@ and mouth, with heavier lines.
 | `turn` | 0.71 | how far the head turns (see *The head turn*; 0 = flat) |
 | `seed` | 0 | when it blinks and glances |
 | `arms` | 1 | 0 takes the arms off (a character with an `arms` part: Beep) |
-| `eyeStyle` | 0 | the eye style: 0 = the recipe's, 1 shape, 2 glossy, 3 pixel, 4 dot (see *Eye styles*) |
 
 ## Palette (FX Spec 1.12)
 
@@ -275,7 +251,7 @@ and mouth, with heavier lines.
 the `palette` prop on a view.
 - **Slots** are the recipe's palette names (`characterRecipe(id).palette` on the Web), named by
   the part they paint, never by colour: `body` is every character's main
-  colour, `outline`, `cheeks`, `shine` and `iris` mean the same everywhere, and the eyes are
+  colour, `outline`, `cheeks` and `shine` mean the same everywhere, and the eyes are
   `eyes` on a body face and `glow` on a screen face. An unknown slot is an error with a "did you mean".
 - **Labels:** `spec/character-slot-labels.json` gives every slot a label and a one-line
   description for a colour picker (`{ "buzzy": { "body": { "label": "Body", "description": … } } }`),
@@ -295,76 +271,49 @@ the `palette` prop on a view.
 
 | Character | Slots (a `+Light/Dark` slot's tones follow it) |
 |---|---|
-| buzzy | body (+Light/Dark), outline, screen, accent, glow, visor, visorEdge, shine, iris |
-| hum | body (+Light/Dark), stand (+Dark), grille, glow, outline, tallyListening, tallyThinking, tallyOff, shine, iris |
-| wisp | body, bodyMid, tail, outline, eyes, sparkles, twinkles, shine, iris |
-| chirp | body (+Light/Dark), belly, feathers, beak (+Dark), outline, eyes, iris |
-| cuppa | mug (+Light/Dark), coffee, crema, sleeve (+Dark), heart, shine, cheeks, saucer (+Dark), outline, eyes, steam, iris |
-| bean | body (+Light/Dark), groove, grooveEdge, shine, cheeks, aroma, foam, outline, eyes, iris |
-| beep | body (+Light/Dark), arms, screen, glow, accent, tallyOff, tallyListening, tallyThinking, outline, rivets, cheeks, iris |
+| buzzy | body (+Light/Dark), outline, screen, accent, glow, visor, visorEdge, shine |
+| hum | body (+Light/Dark), stand (+Dark), grille, glow, outline, tallyListening, tallyThinking, tallyOff, shine |
+| wisp | body, bodyMid, tail, outline, eyes, sparkles, twinkles, shine |
+| chirp | body (+Light/Dark), belly, feathers, beak (+Dark), outline, eyes |
+| cuppa | mug (+Light/Dark), coffee, crema, sleeve (+Dark), heart, shine, cheeks, saucer (+Dark), outline, eyes, steam |
+| bean | body (+Light/Dark), groove, grooveEdge, shine, cheeks, aroma, foam, outline, eyes |
+| beep | body (+Light/Dark), arms, screen, glow, accent, tallyOff, tallyListening, tallyThinking, outline, rivets, cheeks |
 
-`iris` colours the glossy eye (`eyeStyle: glossy`); the other eye styles have no iris and
-ignore it. Beep's `arms` paints only its arms.
+Beep's `arms` paints only its arms.
 
-### Named palettes and roles (FX Spec 1.13)
+### Roles and the dark variant (FX Spec 1.13)
 
 A palette can also be written over **roles**, so one palette fits every character: each
-recipe's `roles` maps `primary`, `secondary`, `accent` and `iris` to its own slots.
-- `"palette": "sunset"` (or `{ "theme": "sunset" }`) applies a built-in named palette:
-  `sunset`, `ocean`, `forest`, `candy`, `mono`, `night`.
+recipe's `roles` maps `primary`, `secondary` and `accent` to its own slots.
 - `{ "primary": "#E63946" }` paints by role, without knowing the slot names.
-- Precedence: the theme's roles < roles written out < slots written out.
-- A role a character doesn't map is skipped from a theme (Buzzy and Bean have no
-  `secondary`); written outright, it is read as a slot name.
-- **Dark theme:** every built-in palette has a dark variant, and
-  `"dark": { "primary": "#B5202D" }` gives a file's own. The views pass `dark` in a dark theme
-  and the engine picks the variant, so no re-resolve is needed. A character without a variant
-  draws the same in both themes, as before.
-- On a view, the `palette` prop takes the same keys (`{ theme: "ocean", accent: "#FF6B6B" }`).
-- **A slot named like a role:** Buzzy's and Beep's accent role is their `accent` slot, and every
-  character's `iris` role is its `iris` slot, so `{ "accent": "#FF6B6B" }` paints the same slot
-  either way. The precedence only matters when a role points elsewhere: on Hum,
-  `{ "accent": … }` paints `tallyListening`.
-- **Eye colour (E4):** `{ "iris": "#7A4BD6" }` gives any character purple glossy eyes; a theme
-  or a catalog palette may carry `iris` too.
+- Precedence: roles written out < slots written out.
+- A role a character doesn't map (Buzzy and Bean have no `secondary`) is read as a slot name,
+  so writing it is an error.
+- **Dark theme:** `"dark": { "primary": "#B5202D" }` gives a file's own dark variant. The views
+  pass `dark` in a dark theme and the engine picks the variant, so no re-resolve is needed. A
+  character without a variant draws the same in both themes.
+- On a view, the `palette` prop takes the same keys (`{ primary: "#2E87C2", dark: { primary: "#2E6A9E" } }`).
+- **A slot named like a role:** Buzzy's and Beep's accent role is their `accent` slot, so
+  `{ "accent": "#FF6B6B" }` paints the same slot either way. The precedence only matters when
+  a role points elsewhere: on Hum, `{ "accent": … }` paints `tallyListening`.
 
-| Character | primary | secondary | accent | iris |
-|---|---|---|---|---|
-| buzzy | body | — | accent | iris |
-| hum | body | — | tallyListening | iris |
-| wisp | body | bodyMid | tail | iris |
-| chirp | body | belly | beak | iris |
-| cuppa | mug | sleeve | heart | iris |
-| bean | body | — | aroma | iris |
-| beep | body | arms | accent | iris |
+| Character | primary | secondary | accent |
+|---|---|---|---|
+| buzzy | body | — | accent |
+| hum | body | — | tallyListening |
+| wisp | body | bodyMid | tail |
+| chirp | body | belly | beak |
+| cuppa | mug | sleeve | heart |
+| bean | body | — | aroma |
+| beep | body | arms | accent |
 
-| Palette | primary · secondary · accent (light) | dark |
-|---|---|---|
-| sunset | #F1774B · #FFD6AD · #D5346A | #DD562C · #D89264 · #EE6391 |
-| ocean | #2E87C2 · #D4EDF7 · #17C4B3 | #2E6A9E · #72ADCA · #3CDDC7 |
-| forest | #3E8E5B · #E3F1DA · #F1AF3B | #387551 · #90B280 · #F5BB47 |
-| candy | #F490B1 · #FFF0F7 · #7E56C2 | #E56C98 · #DF9FC3 · #A07CDE |
-| mono | #8B9098 · #E8EAED · #2F3237 | #737882 · #ACB1B9 · #D8DADF |
-| night | #3B3F7D · #1F2242 · #F5C451 | #404696 · #363A63 · #F8D062 |
-
-The palettes live in `spec/palettes.json` (embedded by `build.rs` as constants).
+Named palettes (`"palette": "sunset"`, `theme`) were removed in 0.1.0-beta.9; a file that still
+names one is an error.
 
 A frame-wide `color` or `gradient` doesn't apply to a character. The FX Spec reports it
 as an error, and raw `colorMix` / `gradientStrength` overrides are ignored. The generic
 effect drawing (ring, tick, burst) and the interrupt flash are skipped too
 (`effects::draws_own`): the face is the effect.
-
-## Cosmetics (FX Spec 1.13)
-
-End users pick from a file's `wardrobe` with a `loadout`: see [`character-cosmetics.md`](character-cosmetics.md), *Let end users pick*.
-
-A character can wear a hat, glasses or a badge: `cosmetics` in an FX Spec file, `body` and
-`eyes` parts drawn on one of its slots (`headTop`, `face`, `neck`, `chest`) in the slot's
-units. They move with the slot (pose, hop, head turn), take `palette` as `<id>.<name>`, and
-are left out at 20 px unless `accessories` is on. A cosmetic on `headTop` zooms the character
-out about its feet so the hat fits. The guide is [`character-cosmetics.md`](character-cosmetics.md);
-the slots of each character are in [`character-recipe.md`](character-recipe.md), *Slots and
-cosmetics*.
 
 ## The richer look (FX Spec 1.13)
 
@@ -394,7 +343,7 @@ drawing tool into a body.
   clipping, effect eyes), `rig` (the seeded blink rate and de-sync, the turn blink, the
   mouth rules, the startle, effects, the mute squint, glance bounds), the recipes (every
   built-in recipe parses; bad recipes say where; every recipe in every pose is
-  deterministic, fills only, `Fixed` and in its box; slots follow tilt and turn; `show`
+  deterministic, fills only, `Fixed` and in its box; `show`
   fades a part by voice state; `path` is reserved) and each character's own claims in
   `character/recipe_tests/` (in its box, detail by size, `hue`, ear arcs, the grille, the
   tally, the sparkles, the beak, the crest, mute, colour overrides ignored, determinism).
@@ -404,10 +353,6 @@ drawing tool into a body.
 - `turn`: every character in its box and "light" at every corner of the turn, `turn: 0`
   equal to the flat frame, 20 px never turning, no part popping across yaw 0, Wisp's tail
   lag; `cost_table` and `bench_turn_all` (ignored) measure it.
-- Eye styles (`character/recipe_tests/eyes.rs`): every style inside the eye's bounds, a blink
-  shuts each one, the glossy iris follows the gaze while the highlights stay, the 20 px
-  collapse, expressions reshape each style, effect eyes ignore it, `eyeStyle` over a recipe's
-  `style` / `iris` / `sclera`, unknown names, the three showcases light and frozen.
 - FX Spec: the 1.11 gate, `color` rejected, `hue` and rig params accepted, `stateAge`
   rejected in `params`, and `spec/examples/buzzy-assistant.fxspec.json` on every platform.
 - `packages/core/test/character.test.mjs`: through wasm, and `StateTransition.stateAge`.

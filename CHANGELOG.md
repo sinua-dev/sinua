@@ -28,9 +28,9 @@ used by DevinFit (glowing + colour / gradient + GPT-Live), so DevinFit needs no 
 
 - `characterSlots`, `nearestSlot` and the `CharacterSlot` type (`@sinua/core`; `characterSlots`
   on iOS and Android). Migration: none; drag-to-dress comes back with the per-character
-  wardrobe in a later version. A loadout's `wear` nudges (`offset`, `scale`, `rotate`) still work.
+  wardrobe in a later version.
 - `docs/character-svg-guides.md`. Migration: none; the SVG import was a Studio feature and is
-  gone. The recipe format it produced (a part's `role`, a cosmetic's `behind` / `above`) stays.
+  gone.
 - **The liquid, particles and holographic materials.** An FX Spec file that uses
   `materials.liquid`, `materials.particles` or `materials.holographic`, or names `liquid` or
   `particles` in `performance.lowPower.disable`, is now **rejected** (an error naming the
@@ -40,6 +40,32 @@ used by DevinFit (glowing + colour / gradient + GPT-Live), so DevinFit needs no 
   keys do nothing as raw overrides. The low-power host default is now glow off only.
   An FX Spec 1.8 or 1.9 file with `states` drew particles in its voice states; it now
   resolves without them. The `liquid-orb`, `particles-orb` and `holo-orb` examples are gone.
+- **The character wardrobe: cosmetics, loadouts and catalog packs.** An FX Spec file with a
+  top-level `cosmetics` or `wardrobe` is now **rejected**, whatever its `fxSpec` version, and
+  so is a recipe with `slots`, `tags`, `cosmetics` or a part's `role`. Gone with them:
+  `applyLoadout`, `cosmeticsFor`, `frameStill`, `loadCatalog`, `unloadCatalog` and the
+  `Loadout` / `LoadoutApplied` / `CosmeticFit` types (`@sinua/core`); `characterThumbnail`
+  and `@sinua/web/catalog`; the views' `loadout` option (web, React, `<sinua-view>`, the
+  typed character components); `SinuaLoadout`, `SinuaThumbnail`, `SinuaCatalog` and the
+  `loadout` parameter (iOS, Android); `loadout`, `catalogs` and `@sinua/react-native/catalog`
+  (React Native); `FxSpecPlayer`'s `loadout` option, `setLoadout` and `loadoutDiagnostics`;
+  `StateTransition.wear()`, `wearing` and `WEAR_S`; `spec/catalog/catalog-1.json`,
+  `spec/loadout-vectors.json` and `docs/character-cosmetics.md`. Migration: delete the keys
+  and stop passing a loadout; a character-specific wardrobe is planned for a later version.
+  The `party-hat` and `wardrobe-bean` examples are gone.
+- **Named palettes.** `"palette": "sunset"` and `palette.theme` are now **rejected**, whatever
+  the file's version, and `spec/palettes.json` is gone. Migration: write the colours out,
+  by slot or by role (`{ "primary": "#F1774B", "dark": { "primary": "#DD562C" } }`); roles
+  and the `dark` variant stay. The `themed-cuppa` example is gone.
+- **Eye styles.** `params.eyeStyle` (and the typed components' `eyeStyle` prop and
+  `EyeStyle` enum), a recipe's eye `style`, `iris` and `sclera`, the `iris` role and the
+  built-ins' `iris` slot are gone; a file or recipe that still uses one is **rejected**.
+  Migration: delete them; every character draws the shape eye it always drew by default.
+  The `glossy-bean`, `pixel-beep` and `dot-hum` examples are gone.
+- The built-in recipes lose their `tags`, `slots` and `iris` colour, and the
+  `rich-bean`, `rich-buzzy`, `custom-character` and `remix-latte` examples their `slots`: the
+  frames are unchanged (golden `sinua` byte-identical), but a file carrying one of these
+  recipes resolves to a new registry key (`recipe:<id>:<hash>`).
 
 ## 0.1.0-beta.8
 

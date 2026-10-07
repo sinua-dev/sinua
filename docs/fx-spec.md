@@ -83,9 +83,9 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 
 - Major ≠ 1 → error; this runtime doesn't load it.
 - **The floor is 1.8** (`fx_spec.rs`'s `FLOOR_MINOR`). A `1.0`–`1.7` file is one error at `/fxSpec` (``FX Spec 1.7 isn't supported; this runtime reads 1.8 and later``) and nothing resolves. Those minors were never published; their acceptance was dropped before the first release instead of becoming a promise (docs/release-roadmap.md, decision 0.1). A missing or malformed `fxSpec` is an error too, and the rest of the file is still read as the current minor so its other problems show.
-- The runtime is **1.13** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`; 1.12's `recipe`, `expression`, `palette`; 1.13's `cosmetics`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
+- The runtime is **1.13** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`; 1.12's `recipe`, `expression`, `palette`; 1.13's `silhouette`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
 - A **newer 1.x** file (`1.9`) → unknown keys are **warnings** and the rest renders (graceful degradation).
-- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is six locks, `spec/fx-spec-1.8-resolved.json` to `-1.13-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`, 1.12 over those 14 (byte-identical rows) plus `coffee-shop`, `custom-character` and `remix-latte`, 1.13 over those 17 (byte-identical rows) plus `party-hat`, `rich-bean`, `rich-buzzy`, `themed-cuppa`, `glossy-bean`, `pixel-beep`, `dot-hum` and `wardrobe-bean`; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
+- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is six locks, `spec/fx-spec-1.8-resolved.json` to `-1.13-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`, 1.12 over those 14 (byte-identical rows) plus `coffee-shop`, `custom-character` and `remix-latte`, 1.13 over those (byte-identical rows) plus `rich-bean` and `rich-buzzy`; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
 - **A key added in a later minor is gated automatically.** `spec/fx-spec-1.8-keys.json`
   freezes every key path a 1.8 file may use (103 today, built from the resolver's own
   tables). A new key (a material, a section key, a binding target, something low power
@@ -94,7 +94,7 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
   one gate in `resolve` then turns it into an error in older files ("`materials.frost`
   needs "fxSpec": "1.9" (this file says 1.8)") and drops it. Removing a frozen key fails
   too: 1.8 files would break.
-- **Minor versions only add, with two exceptions before 1.0.** Both remove something
+- **Minor versions only add, with three exceptions before 1.0.** Each removes something
   outright: a file that uses a removed section fails at every version, and the error says
   what to delete.
   - The `edge` object, in 1.12 (0.1.0-beta.8): "`object: edge` was removed in 0.1.0-beta.8
@@ -102,6 +102,11 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
   - The `liquid`, `particles` and `holographic` materials, in 1.14 (0.1.0-beta.9): "`<name>`
     was removed in 0.1.0-beta.9 (FX Spec 1.14); there is no replacement: delete it from the
     file".
+  - The character wardrobe, named palettes and eye styles, in 1.14 (0.1.0-beta.9), with the
+    same message (a recipe's ends "delete it from the recipe"): the top-level `cosmetics` and
+    `wardrobe`; a named palette (`"palette": "sunset"` or `palette.theme`); `params.eyeStyle`;
+    and in a recipe `slots`, `tags`, `cosmetics`, a part's `role`, the `eyes` / `faceScreen`
+    fields `style`, `iris` and `sclera`, and the `iris` role.
 
   After 1.0 a removal only happens in a major (FX Spec 2.0), after a minor of deprecation
   warnings.
@@ -348,90 +353,29 @@ voice states only change how it moves, so a state change never adds or drops a d
   pulse off for it. Glow material on every dot makes it heavy.
 - A 1.12 file that names the pattern or the key gets an error.
 
-## v1.13: cosmetics
+## v1.13: the richer look, roles and voice states
 
-A character can **wear things**: a hat, glasses, a badge. The new top-level key
-**`cosmetics`** lists them as data: `body` and `eyes` parts (a body with its layers) drawn
-on one of the character's **slots** (`headTop`, `face`, `neck`, `chest`). The engine embeds
-no cosmetic; the file carries each one. The guide is
-[`character-cosmetics.md`](character-cosmetics.md); every field is in
-[`character-recipe.md`](character-recipe.md) (*Cosmetics*) and in the recipe schema
-(`#/$defs/cosmetic`), which this file's schema refers to.
-
-```json
-{ "fxSpec": "1.13", "object": "character", "pattern": "bean",
-  "cosmetics": [{ "id": "party-hat", "label": "party hat", "slot": "headTop",
-    "palette": { "felt": [330, 0.72, 0.62], "trim": [48, 0.95, 0.62], "outline": [330, 0.5, 0.2] },
-    "parts": [{ "part": "body", "shape": { "path": "M-20 2 L0 -33 L20 2 Q0 8 -20 2 Z" }, … }] }] }
-```
-(`spec/examples/party-hat.fxspec.json`)
-
-- **`cosmetics` needs `"fxSpec": "1.13"`** and `object: "character"`. It is file-wide in
-  1.13 (not in `states` entries).
-- **A cosmetic's parts draw in its slot's units**: the slot point is (0, 0), up is −y, and
-  the character's slot `scale` and `angle` size and turn them. On `headTop` a hat has 40 units
-  of height. They move with the slot: the pose, the hop, the head turn (on `face`).
-- **Room for a hat:** a cosmetic on `headTop` zooms the whole character out about its feet,
-  just enough that the hat and the tap hop fit in the box (none for CHIRP, 15 % for HUM).
-- **Colours:** a cosmetic's own `palette` names join the character's palette as
-  `<id>.<name>`, so `palette` repaints them (`"palette": { "party-hat.felt": "#2E8B57" }`).
-  Its parts may also name the character's colours.
-- **Fit:** `fits` lists the characters it is made for; `fit` nudges it on one character
-  (`at` in local units, `scale`, `angle`). A cosmetic a character can't wear (not in `fits`,
-  or no such slot) is a **warning** and isn't drawn; when none is worn, the plain character
-  draws.
-- **Small sizes:** cosmetics are left out at 20 px unless `accessories` is on (a part's own
-  `when` decides otherwise).
-- **Errors point into `cosmetics`**: `/cosmetics/0/parts/1/part: a cosmetic draws `body` (with
-  its layers) and `eyes``. `space` and `surface` aren't allowed (a cosmetic draws in its slot
-  and turns with it). The recipe limits apply to the whole character with its cosmetics
-  (96 parts, 4,096 path points, 64 KB).
-- **How it resolves:** the cosmetics go into the character's recipe (a built-in's, or the
-  file's `recipe`), which registers under its content key (`recipe:<id>:<hash>`) like a 1.12
-  recipe. Platform code doesn't change. A recipe may also carry `cosmetics` itself (always
-  worn); a file's come after them.
 - **The richer look**: a recipe may draw soft `shade` masses, `rim` light,
   elliptical lights and `grain` ([`character-recipe.md`](character-recipe.md), *The richer
   look*; `spec/examples/rich-bean.fxspec.json`, `rich-buzzy.fxspec.json`). `params` take
   `grain` (0–1) and `shading` (0/1) for any character. **Under low power** a character that has
   grain or soft layers gets `grain` 0 and `shading` 0, and `disabledMaterials` lists `grain`
   and `shading`, whatever the file's `performance` says; other characters resolve as before.
-- **Named palettes and roles**: `palette` also takes role names
-  (`primary`, `secondary`, `accent`, through the recipe's `roles`), a built-in named palette
-  (`"theme": "sunset"` or the shorthand `"palette": "sunset"`; `sunset`, `ocean`, `forest`,
-  `candy`, `mono`, `night`) and a `dark` variant. The theme's roles < roles written out < slots
-  written out. The dark variant resolves to `palette.dark.<slot>.*`; the views pass `dark` in a
-  dark theme and the engine picks it. An unknown palette name gets a "did you mean". A name,
-  `theme` or `dark` in a file before 1.13 is an error. See [`character.md`](character.md),
-  *Named palettes and roles*.
-- **Eye styles**: `params.eyeStyle` takes a name (`auto`, `shape`, `glossy`,
-  `pixel`, `dot`) or its number (0–4) on any character; an unknown name is an error. A recipe's
-  `eyes` / `faceScreen` part takes `style`, `iris` and `sclera`. See
-  [`character.md`](character.md), *Eye styles*; `spec/examples/glossy-bean.fxspec.json`,
-  `pixel-beep.fxspec.json`, `dot-hum.fxspec.json`.
-- **Wardrobe and loadout**: the top-level `wardrobe` (`object: character`)
-  holds what an end user may pick (`cosmetics`, named `palettes`, named eye colours
-  `irises`). A loadout
-  (`{ "loadout": 1, "wear": [ids], "palette": name, "iris": name, "eyeStyle": name }`) is applied by the
-  views (`loadout`) or `applyLoadout`; it only ever warns. A cosmetic may name its `category`.
-  See [`character-cosmetics.md`](character-cosmetics.md), *Let end users pick*.
-- **Catalog packs**: after `loadCatalog`, `"<namespace>:<id>"` names a pack's
-  cosmetic in `cosmetics` / `wardrobe.cosmetics`, and `"<namespace>:<name>"` a pack's palette in
-  `palette` (a loadout's too). A name not loaded warns and is skipped. A cosmetic may say
-  `slot: "frame"` (round the whole character, behind it), `requires` (capability tags against a
-  recipe's `tags`), `season`, and `behind` / `above` (depth against the recipe parts' `role`). A loadout's `wear` entry may
-  carry a bounded nudge. See [`character-cosmetics.md`](character-cosmetics.md).
+- **Roles and the dark variant**: `palette` also takes role names
+  (`primary`, `secondary`, `accent`, through the recipe's `roles`) and a `dark` variant. Roles
+  written out < slots written out. The dark variant resolves to `palette.dark.<slot>.*`; the
+  views pass `dark` in a dark theme and the engine picks it. `dark` in a file before 1.13 is an
+  error. See [`character.md`](character.md), *Roles and the dark variant*. (1.13's named
+  palettes, eye styles, `cosmetics` and `wardrobe` were removed in 0.1.0-beta.9: see
+  *Versioning*.)
 - **Voice states without `states`**: in a 1.13 file, a voice state
   (`idle`, `listening`, `thinking`, `speaking`, `initializing`) the file has no `states` entry
   for resolves as an empty entry, so it takes the voice profile: a character file without
   `states` still listens, thinks and speaks. A key that isn't a voice state still warns and
   draws the base. 1.8–1.12 files keep the old behaviour (the base design).
 - **Recipe limits**: 96 parts (was 48) and 4,096 path points in all.
-- **Registry keys** of a built-in wearing cosmetics hash the character's id and the cosmetics,
-  not its recipe text, so an edit to a built-in that draws the same leaves them (and the lock)
-  as they were.
 - 1.8–1.12 files resolve exactly as before (their locks are unchanged; the 1.13 lock has the
-  same rows for them and adds `party-hat`, `rich-bean`, `rich-buzzy`, `themed-cuppa`, `glossy-bean`, `pixel-beep`, `dot-hum` and `wardrobe-bean`).
+  same rows for them and adds `rich-bean` and `rich-buzzy`).
 
 ## v1.12: character recipes
 

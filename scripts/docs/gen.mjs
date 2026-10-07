@@ -224,7 +224,6 @@ for (const m of catalog.materials) {
     "character-remix.md": "/docs/catalog/own-character",
     "character.md": "/docs/catalog/character",
     "character-recipe.md": "/docs/reference/character-recipe",
-    "character-cosmetics.md": "/docs/catalog/cosmetics",
     "fx-spec.md": "/docs/reference/fx-spec",
   };
   const fromDoc = (doc, first, { stopAt } = {}) => {
@@ -246,8 +245,6 @@ for (const m of catalog.materials) {
   if (!readFileSync(join(root, "docs/character-recipe.md"), "utf8").includes("<!-- generated:parts"))
     throw new Error("docs/character-recipe.md: the generated part tables moved; update gen.mjs");
   files.set("character-recipe.mdx", HEADER("docs/character-recipe.md") + fromDoc("docs/character-recipe.md", "## The box and the spaces") + "\n");
-  // "Next in …" is the families' own to-do list, not something an app developer can use.
-  files.set("cosmetics.mdx", HEADER("docs/character-cosmetics.md") + fromDoc("docs/character-cosmetics.md", "## A hat in one file", { stopAt: "\n## Next in" }) + "\n");
 }
 
 // ---- public text

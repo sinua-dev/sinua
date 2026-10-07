@@ -158,14 +158,6 @@ effects", families). This section covers how each renderer draws it.
   key `dark` = 1 when the frame may have a palette's dark variant (a character from an FX Spec,
   or `palette.dark.*` among its keys); the engine then reads `palette.dark.<slot>.*`. Other
   frames are untouched. Web `mount.ts`, iOS `SinuaView` (`specIsCharacter`), Android `FxModel.dark`.
-- **Loadout** (FX Spec 1.13): the `loadout` option applies an end user's
-  choice to the spec (`applyLoadout`) and, when it changes, starts the transition's separate
-  wear clock (`StateTransition.wear()`, 0.35 s): the frames for the new side are drawn with
-  `frameTransitionWithOverrides` from what was shown, which for two loadouts of one character
-  pops cosmetics in and out, eases the zoom and colours, and swaps the eye style mid-blink.
-  Reduced motion cancels it. Web `mount.ts` (only a different value counts, so React's
-  per-render push is free), iOS `SinuaView` (`SinuaLoadout`), Android `FxModel.setLoadout`,
-  React Native `loadout` → `loadoutJson`.
 - **Grain tile**: 64 × 64, one tile pixel per CSS px / pt / dp
   however large the character is drawn (the pattern undoes the engine scale),
   anchored at the origin; pixel (x, y) is the integer hash `grainValue(x, y)`

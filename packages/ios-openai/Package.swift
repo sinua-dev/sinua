@@ -23,7 +23,8 @@ let package = Package(
                 .product(name: "SinuaVoice", package: "ios"),
                 .product(name: "LiveKitWebRTC", package: "webrtc-xcframework"),
             ],
-            path: "Sources/SinuaOpenAI"
+            path: "Sources/SinuaOpenAI",
+            resources: [.process("PrivacyInfo.xcprivacy")]
         )
     ]
 )

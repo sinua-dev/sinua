@@ -24,7 +24,8 @@ let package = Package(
                 .product(name: "SinuaVoice", package: "ios"),
                 .product(name: "LiveKit", package: "client-sdk-swift"),
             ],
-            path: "Sources/SinuaLiveKit"
+            path: "Sources/SinuaLiveKit",
+            resources: [.process("PrivacyInfo.xcprivacy")]
         )
     ]
 )

@@ -23,7 +23,9 @@ let package = Package(
         .target(
             name: "CoreEngine",
             dependencies: ["core_engineFFI"],
-            path: "Sources/CoreEngine"
+            path: "Sources/CoreEngine",
+            // Apple privacy manifest: Rust std reads the binary's own file metadata (C617.1).
+            resources: [.process("PrivacyInfo.xcprivacy")]
         ),
         // The voice *types* only (VoiceSource, VoiceOverrides, AgentState): Foundation, no
         // audio I/O. The views depend on this, not on SinuaVoice, so an app that only draws
@@ -31,29 +33,34 @@ let package = Package(
         // SinuaVoice and Sinua both re-export it, so it's never imported directly.
         .target(
             name: "SinuaVoiceTypes",
-            path: "Sources/SinuaVoiceTypes"
+            path: "Sources/SinuaVoiceTypes",
+            resources: [.process("PrivacyInfo.xcprivacy")]
         ),
         .target(
             name: "SinuaVoice",
             dependencies: ["SinuaVoiceTypes"],
-            path: "Sources/SinuaVoice"
+            path: "Sources/SinuaVoice",
+            resources: [.process("PrivacyInfo.xcprivacy")]
         ),
         .target(
             name: "Sinua",
             dependencies: ["CoreEngine", "SinuaVoiceTypes"],
             path: "Sources/Sinua",
-            // Sinua's catalog pack (design note 26), read with Bundle.module.
-            resources: [.copy("Resources/catalog-1.json")]
+            // Sinua's catalog pack, read with Bundle.module, and the
+            // Apple privacy manifest (systemUptime, 35F9.1).
+            resources: [.copy("Resources/catalog-1.json"), .process("PrivacyInfo.xcprivacy")]
         ),
         .target(
             name: "SinuaGeminiLive",
             dependencies: ["SinuaVoice"],
-            path: "Sources/SinuaGeminiLive"
+            path: "Sources/SinuaGeminiLive",
+            resources: [.process("PrivacyInfo.xcprivacy")]
         ),
         .target(
             name: "SinuaElevenLabs",
             dependencies: ["SinuaVoice"],
-            path: "Sources/SinuaElevenLabs"
+            path: "Sources/SinuaElevenLabs",
+            resources: [.process("PrivacyInfo.xcprivacy")]
         ),
         .testTarget(
             name: "CoreEngineTests",

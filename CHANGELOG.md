@@ -9,6 +9,18 @@ tag `beta`, and it may still change incompatibly.
 
 How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
+## Unreleased
+
+### Added
+
+- **iOS: Apple privacy manifests.** Every Swift target (`sinua-swift`, `-livekit`, `-openai`)
+  and the React Native pod ship a `PrivacyInfo.xcprivacy`, so an App Store upload no longer
+  needs the app to declare Sinua's use for it (ITMS-91053). Declared: system boot time
+  (`35F9.1`, `systemUptime` as the animation clock) and file timestamps (`C617.1`, Rust's
+  standard library reading the app binary's own metadata). No tracking, no collected data.
+  A CI check keeps the manifests in step with the sources and the engine's symbols. See
+  [`docs/publishing.md`](docs/publishing.md), *Apple privacy manifests*.
+
 ## 0.1.0-beta.8
 
 Size: web 511,877 B (gzip 382,107), Android arm64 .so 2,124,360 B, iOS .a 4,393,832 B (release builds).

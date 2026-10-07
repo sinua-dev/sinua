@@ -52,6 +52,12 @@ print("Sinua depends on: " + ", ".join(sorted(seen)))
 step "ios: packages/ios/build.sh (bindings + xcframework)"
 packages/ios/build.sh
 
+# Apple privacy manifests (ITMS-91053 otherwise): every Swift target has one, and
+# each required-reason API in the sources or in the engine's symbols (Rust std's
+# stat/fstat) is declared. After build.sh: it reads the xcframework just built.
+step "ios: privacy manifests cover the sources and the engine's symbols"
+scripts/check-privacy-manifests.py
+
 udid="${IOS_SIM_UDID:-}"
 if [ -z "$udid" ]; then
   udid="$(xcrun simctl list devices available -j | python3 -c '

@@ -173,8 +173,16 @@ jobs:
         run: packages/ios/build.sh
       - name: Size budget (device .a, release variant; spec/size-budget.json)
         run: node scripts/size-budget.mjs --ios packages/ios/core_engineFFI.xcframework/ios-arm64/libcore_engine.a
+      - name: Privacy manifests (every target; sources + the release xcframework's symbols)
+        run: scripts/check-privacy-manifests.py
       - name: Zip, checksum, distribution trees
         run: scripts/release/build.sh --only swift
+      - name: Privacy manifests made it into the distribution trees (one per target)
+        run: |
+          out="out/release/${{ needs.version.outputs.version }}/swift"
+          n="$(find "$out" -path '*/Sources/*/PrivacyInfo.xcprivacy' | wc -l | tr -d ' ')"
+          want="$(find packages/ios*/Sources -mindepth 2 -maxdepth 2 -name PrivacyInfo.xcprivacy | wc -l | tr -d ' ')"
+          [ "$n" = "$want" ] || { echo "::error::$n privacy manifests in $out, expected $want"; exit 1; }
       - uses: actions/upload-artifact@v4
         with:
           name: swift-${{ needs.version.outputs.version }}

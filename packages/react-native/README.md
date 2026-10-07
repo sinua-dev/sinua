@@ -20,3 +20,5 @@ const voice = createVoiceSource({ vendor: "mic" });
 - Voice vendors are opt-in per platform: CocoaPods subspecs on iOS, the
   `sinua.voiceVendors` Gradle property on Android.
 - iOS 15+, Android API 24+, React Native with the New Architecture. Apache-2.0.
+- iOS privacy manifest included (`SinuaCore_Privacy` bundle): system boot time (`35F9.1`)
+  and file timestamps (`C617.1`, the engine's own binary); no tracking, no collected data.

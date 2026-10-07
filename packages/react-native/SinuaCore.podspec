@@ -20,6 +20,11 @@ Pod::Spec.new do |s|
   s.source_files = "ios/*.{h,m,mm,swift}", "ios/CoreEngine/*.swift", "ios/Sinua/*.swift",
                    "ios/SinuaVoiceTypes/*.swift", "ios/SinuaVoice/*.swift", "ios/Vendors/GeminiLive/*.swift", "ios/Vendors/ElevenLabs/*.swift"
   s.vendored_frameworks = "core_engineFFI.xcframework"
+  # Apple privacy manifest for the whole pod (one module): systemUptime (35F9.1) from
+  # the copied Swift, and the engine's Rust std file metadata (C617.1). The SwiftPM
+  # targets carry the same declarations per target; scripts/check-privacy-manifests.py
+  # checks both against the sources and the engine's symbols.
+  s.resource_bundles = { "SinuaCore_Privacy" => ["ios/PrivacyInfo.xcprivacy"] }
   s.frameworks = "SwiftUI", "AVFoundation", "Accelerate"
 
   # Voice vendors are opt-in (docs/fx-view.md, *React Native*). Gemini Live and

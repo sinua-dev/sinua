@@ -219,6 +219,27 @@ local `path:` binary target, and the apps and tests build against it by path.
 CocoaPods (used by React Native) is separate: `SinuaCore.podspec` carries the pod's
 version, source and subspecs, and its `source` URL is brand-dependent.
 
+### Apple privacy manifests
+
+App Store Connect rejects an upload (ITMS-91053) when a binary calls one of Apple's
+[required-reason APIs](https://developer.apple.com/documentation/bundleresources/describing-use-of-required-reason-api)
+without a declared reason, and an SDK has to declare its own use. Every Swift target ships
+a `PrivacyInfo.xcprivacy` as a resource (`Sources/<Target>/`); the pod ships one for its
+single module (`ios/PrivacyInfo.xcprivacy`, bundled as `SinuaCore_Privacy`).
+
+| Target | Declares | Why |
+|---|---|---|
+| `CoreEngine` | File timestamp, `C617.1` | Rust's standard library reads the app binary's own file metadata (backtrace symbolization: `stat`, `fstat`, `fstatat`, `lstat`) |
+| `Sinua`, `SinuaElevenLabs`, `SinuaOpenAI` | System boot time, `35F9.1` | `ProcessInfo.systemUptime` as the animation and session clock: time between in-app events, never sent off the device |
+| `SinuaVoiceTypes`, `SinuaVoice`, `SinuaGeminiLive`, `SinuaLiveKit` | nothing | none of the listed APIs |
+
+Every manifest says no tracking, no tracking domains and no collected data: Sinua sends
+nothing anywhere itself. Microphone use, and what the app's voice vendor collects, is
+the app's to declare (its own manifest and App Store privacy answers).
+`scripts/check-privacy-manifests.py` (the `ios` CI leg and the release's `swift` job) fails
+when a target lacks its manifest, or when the sources or the engine's imported symbols
+use a category no manifest declares.
+
 ## Rust (crates.io): deliberately nothing
 
 The engine reaches users as `@sinua/core` (wasm), the SwiftPM package and the Maven

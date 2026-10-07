@@ -237,7 +237,7 @@ for (const m of catalog.materials) {
   files.set("diagnostics.mdx", s);
 }
 
-// ---- character docs: character-recipe.mdx, cosmetics.mdx, character-svg.mdx
+// ---- character docs: character-recipe.mdx, cosmetics.mdx
 // The site's pages for these repo docs are the docs themselves (from a given heading on),
 // so the two can't disagree. character-recipe.md's part tables are in turn generated from
 // the engine (recipe_schema.rs + spec/character-recipe-descriptions.json, kept current by a
@@ -249,7 +249,6 @@ for (const m of catalog.materials) {
     "character.md": "/docs/catalog/character",
     "character-recipe.md": "/docs/reference/character-recipe",
     "character-cosmetics.md": "/docs/catalog/cosmetics",
-    "character-svg-guides.md": "/docs/catalog/character-svg",
     "fx-spec.md": "/docs/reference/fx-spec",
   };
   const fromDoc = (doc, first, { stopAt } = {}) => {
@@ -273,7 +272,6 @@ for (const m of catalog.materials) {
   files.set("character-recipe.mdx", HEADER("docs/character-recipe.md") + fromDoc("docs/character-recipe.md", "## The box and the spaces") + "\n");
   // "Next in …" is the families' own to-do list, not something an app developer can use.
   files.set("cosmetics.mdx", HEADER("docs/character-cosmetics.md") + fromDoc("docs/character-cosmetics.md", "## A hat in one file", { stopAt: "\n## Next in" }) + "\n");
-  files.set("character-svg.mdx", HEADER("docs/character-svg-guides.md") + fromDoc("docs/character-svg-guides.md", "## Export settings") + "\n");
 }
 
 // ---- public text

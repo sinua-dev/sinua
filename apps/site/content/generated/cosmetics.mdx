@@ -232,12 +232,11 @@ A recipe's parts may name a `role` (`head`, `face`, `ears`, `arms`, `legs`, `ant
   everything after them) cover it: a beanie with the fox's ears poking through;
 - `"above": ["head"]` draws it after the last `head` part;
 - `behind` wins when both match; a character without such a part draws it on top, as before.
-  The built-ins name no roles, so nothing about them changes. An imported character
-  (`docs/character-svg-guides.md`) gets its roles from its layer names.
+  The built-ins name no roles, so nothing about them changes.
 
 ## A nudge per item
 
-A loadout's `wear` entry may be an object, for drag-to-dress screens:
+A loadout's `wear` entry may be an object, to fine-tune where an item sits:
 
 ```json
 { "loadout": 1, "wear": [{ "id": "party-hat", "offset": [2, -1], "scale": 1.05, "rotate": 5 }] }
@@ -246,13 +245,3 @@ A loadout's `wear` entry may be an object, for drag-to-dress screens:
 The nudge is relative to the slot and bounded (`offset` ±10 units, `scale` 0.8–1.2, `rotate`
 ±15°); out of range warns and is clamped. The item still follows the rig: the tilt, the hop, the
 head turn.
-
-## Drag to dress: snapping a dropped item
-
-`characterSlots(state, size, t, overrides)` (`@sinua/core`; `characterSlots` on iOS and Android)
-gives a character's slots where it draws them at `t`: `{ name, x, y, scale, angle }` in frame
-units at `size`, following the pose and the head turn. `state` is a built-in or the registry key
-`resolveFxSpec` returns for a recipe file. A drag-to-dress screen scales the units to its view
-and snaps a dropped item to the nearest slot it fits (`nearestSlot(slots, x, y, { names: [item.slot] })`
-on the Web); the drop's offset from the slot becomes the item's bounded nudge in the loadout
-(*A nudge per item*).

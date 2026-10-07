@@ -21,6 +21,17 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   A CI check keeps the manifests in step with the sources and the engine's symbols. See
   [`docs/publishing.md`](docs/publishing.md), *Apple privacy manifests*.
 
+### Removed
+
+1.14 takes out what the 1.14 review found unused or about to be replaced. None of it is
+used by DevinFit (glowing + colour / gradient + GPT-Live), so DevinFit needs no change.
+
+- `characterSlots`, `nearestSlot` and the `CharacterSlot` type (`@sinua/core`; `characterSlots`
+  on iOS and Android). Migration: none; drag-to-dress comes back with the per-character
+  wardrobe in a later version. A loadout's `wear` nudges (`offset`, `scale`, `rotate`) still work.
+- `docs/character-svg-guides.md`. Migration: none; the SVG import was a Studio feature and is
+  gone. The recipe format it produced (a part's `role`, a cosmetic's `behind` / `above`) stays.
+
 ## 0.1.0-beta.8
 
 Size: web 511,877 B (gzip 382,107), Android arm64 .so 2,124,360 B, iOS .a 4,393,832 B (release builds).

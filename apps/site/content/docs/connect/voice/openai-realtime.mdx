@@ -26,7 +26,7 @@ The OpenAI source opens a Realtime session over WebRTC with a short-lived client
 
 It sends [transcripts](/docs/connect/voice/transcripts) of both speakers (`transcriptTiming` `none`), synced to the played audio by default.
 
-**Billing note:** for the user's side, Realtime needs the session's input transcription, which OpenAI bills per minute. When you subscribe to transcripts and your session has none, the source turns it on with `gpt-4o-mini-transcribe`. Set `transcribeUser` to another model, or to `false` (Swift / Kotlin: `nil`) to leave the session as your backend made it.
+**The user's side is off by default.** It needs the session's input transcription, which OpenAI bills per minute, so Sinua never turns it on by itself. To opt in, pass `transcribeUser: "gpt-4o-mini-transcribe"` (or another model) on the source, on every platform; it's turned on once per session when you subscribe. Without it you get the assistant's side, plus the user's if your backend already enabled input transcription.
 
 ## Credentials
 

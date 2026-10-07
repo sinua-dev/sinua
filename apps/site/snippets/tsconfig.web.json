@@ -49,6 +49,7 @@
     "voice/credentials-provider-web.ts",
     "voice/credentials-server.ts",
     "voice/simulated-web.ts",
+    "voice/transcripts-web.ts",
     "voice/simulated-script-web.ts",
     "voice/voice-button-web.ts",
     "voice/voice-button-react.tsx",

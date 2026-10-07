@@ -1,0 +1,61 @@
+---
+title: Transcripts
+description: "What both speakers say, live, for captions under your visual: one shape on every platform, synced to the audio by default."
+---
+
+A voice source can report what both speakers say as they say it, so you can put captions under the visual. It's a data layer only: Sinua draws no captions. **Display only: Sinua keeps nothing beyond the current turn's text and sends it nowhere.**
+
+<Tabs groupId="platform" items={["Web", "iOS", "Android", "React Native"]} persist>
+<Tab value="Web">
+<include lang="ts" meta='title="transcripts-web.ts"'>../../../../snippets/voice/transcripts-web.ts</include>
+</Tab>
+<Tab value="iOS">
+<include lang="swift" meta='title="transcripts.swift"'>../../../../snippets/voice/transcripts.swift</include>
+</Tab>
+<Tab value="Android">
+<include lang="kotlin" meta='title="transcripts.kt"'>../../../../snippets/voice/transcripts.kt</include>
+</Tab>
+<Tab value="React Native">
+<include lang="tsx" meta='title="transcripts-react-native.tsx"'>../../../../snippets/voice/transcripts-react-native.tsx</include>
+</Tab>
+</Tabs>
+
+- **Where:** `onTranscript` on a source or on `SharedVoiceSource` (Web; it returns its unsubscribe), `listenTranscript` on `SharedVoiceSource` (iOS, Android), and `onTranscript` on a React Native voice handle. Subscribing before `connect()` catches the first turn.
+- **Callbacks** arrive on the main actor (iOS), the Main dispatcher (Android) or the event loop (Web), like every other callback.
+
+## The update
+
+Every update has the same shape on every platform and vendor: `{ role, text, final, turnId, truncated?, startMs?, endMs? }`.
+
+- **`text` is the whole turn so far**, never a diff: replace what you show, don't append.
+- **`turnId`** (`"u3"`, `"a4"`) stays the same for the whole turn and keeps counting for the source's lifetime, reconnects included.
+- **`final: true`** comes exactly once per turn, and nothing follows it.
+- **Both speakers at once.** User and assistant turns are independent, so both can grow at the same time.
+- **Barge-in.** When the user cuts the assistant off, its turn ends with one update, `truncated: true` and `final: true`, whose `text` is the part that was actually played. An unspoken word doesn't flash up.
+- **When a turn ends.** An assistant turn ends when the source stops speaking, after its short quiet tail, so a natural pause doesn't split it. A "let me check" followed by the answer gives two assistant turns.
+- Text is NFC-normalized and otherwise left as the vendor sent it.
+
+## Synced or raw
+
+By default the assistant's text appears **with the played audio**, word by word. With `syncToAudio: false` (Web option, iOS init, Android constructor) it appears as soon as the vendor sends it, with the vendor's own timing in `startMs` / `endMs`. The user's text shows as it arrives in both modes.
+
+How close the synced text follows the audio on GPT-Live, measured against word timings (which carry ±100–200 ms of their own):
+
+| Mode | Turkish | English |
+|---|---|---|
+| synced (default) | median 82 ms, p95 191 ms | median ~190 ms, p95 ~515 ms |
+| raw (`syncToAudio: false`) | text ~650 ms ahead of the audio | text ~690 ms ahead |
+
+GPT-Live's word timings are approximate and how far they run ahead varies from session to session, so treat the English figures as a known limit.
+
+## Which sources send transcripts
+
+`supportsTranscript` says whether a source sends them, and `transcriptTiming` how it times the text.
+
+| Source | `transcriptTiming` | How the assistant's text follows the audio |
+|---|---|---|
+| [GPT-Live](/docs/connect/voice/openai-live) (`OpenAILiveVoiceSource`) | `segments` | GPT-Live's word timings, anchored at each turn's audio onset |
+| [Simulated](/docs/connect/voice/simulated) (`SimulatedVoiceSource`) | `synced` | the script's line as it is said |
+| mic, test tone, the other vendors | — | `supportsTranscript` is false |
+
+For your own voice source, `@sinua/voice` exports `TranscriptAssembler`: feed it your vendor's events and it gives the same updates.

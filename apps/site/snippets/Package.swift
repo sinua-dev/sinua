@@ -18,6 +18,7 @@ let topics: [(folder: String, target: String, exclude: [String])] = [
                         "elevenlabs-react-native.tsx", "livekit-react-native.tsx", "mic-and-tone-react-native.tsx",
                         "credentials-provider-web.ts", "credentials-server.ts", "credentials-provider.kt", "credentials-provider-react-native.tsx",
                         "simulated-web.ts", "simulated-script-web.ts", "simulated.kt", "simulated-react-native.tsx",
+                        "transcripts-web.ts", "transcripts.kt", "transcripts-react-native.tsx",
                         "voice-button-web.ts", "voice-button-react.tsx", "voice-button.kt", "voice-button-react-native.tsx",
                         "sharing-web.ts", "avatar-react.tsx", "avatar.kt",
                         "character-react.tsx", "character.kt", "character-react-native.tsx"]),

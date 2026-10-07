@@ -175,7 +175,7 @@ time* below).
 
 Displacement is computed from each point's *pre-jitter* position, so a
 dot and a line endpoint or polyline vertex at the same coordinate move
-together — `web`/`crystallize` edges stay attached to their dots (unit
+together — `web` edges stay attached to their dots (unit
 test). Only `x`/`y` move; `z`, radius and alpha are untouched, so the
 frame's z-sort still holds. The default amplitude (`0.04` of `size`) is
 deliberately subtle — a living tremor, not a scramble; raise `noiseAmplitude`

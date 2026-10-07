@@ -35,7 +35,6 @@ Each of the engine's "states" (the public API surface -- what a caller asks for)
 | `initializing` | `warp` | `modes/warp.rs` | **Not a port.** A depth-motion starfield tunnel — dots spawn near center and streak outward to the silhouette edge, then recycle. Every other mode moves dots tangentially on a fixed-radius shell; this is the only one with genuine radial depth throughput. Reads as "spinning up" (session cold start). |
 | `calibrating` | `chladni` | `modes/chladni.rs` | **Not a port.** Fixed Fibonacci-lattice dots, brightness modulated by a cheap sum-of-cosines standing wave whose mode numbers snap (not drift) to a new pair on a fixed cadence — a kaleidoscope-like "settling into resonance," the cymatics metaphor. |
 | `progressing` | `eclipse` | `modes/eclipse.rs` | **Not a port, and functionally new, not just visually.** A day/night terminator sweep driven by an actual `progress: 0..1` opt (not elapsed time) — the first *determinate* state; every other mode (ported or additive) is indeterminate. Dark-side dots are dimmed, not removed. The terminator is in view space: the lit side grows from the screen's left while the sphere spins under it. |
-| `concluding` | `crystallize` | `modes/crystallize.rs` | **Not a port.** Dots drift loosely (borrowing `web.rs`'s value-noise technique) around their resting vertex of an icosahedron/octahedron, periodically pull into exact rigidity (edges drawn as `Line`s via nearest-neighbor topology, not a hand-typed edge list — see the mode's header), hold, then release. Alternates polyhedra each cycle. |
 | `muted` | `hush` | `modes/hush.rs` | **Not a port, and the first *negative/attention* state.** A dimmed, **still** (fixed camera, no spin), grey-or-tinted Fibonacci lattice with an optional slow breathing pulse (`pulseAmplitude`, `0` = fully static) — the "mic muted / connection lost / permission denied" resting pose. Mirrors the pattern Google Nest ("4 solid orange lights: the microphone is off") and Amazon Echo (solid red ring) share: active states animate, muted holds still in one flat color. Grey by default; `saturation`/`hue` give Echo red (8) or Nest amber (~35). Composes with the `muted` opts *flag* (`primitives::apply_muted`, which dims any state in place). `beacon` may later generalize this — see the mode's header. |
 
 Every mode shares `finalize_frame(dots, lines, r_min)` — drops invisible marks (alpha < 0.02), clamps radii to the mode's floor, and **z-sorts** dots far-to-near into draw order. This is the one place with a genuine cross-platform numerical footgun — see [`testing.md`](testing.md#the-z-sort-tie-break-problem). It lives in `crates/core_engine/src/primitives.rs`, not `orbs/core.rs` — see [`architecture.md`'s *family pattern*](architecture.md#the-family-pattern) for why it (and `Dot`/`Line`/`OrbFrame`/the noise functions) moved to a family-agnostic module once `signal` (see [`signal.md`](signal.md)) needed them too. `OrbFrame` also carries a `polylines` list (`primitives::Polyline`, a continuous round-capped stroke; draw order is polylines, then lines, then dots), attached via `OrbFrame::with_polylines` by the modes that emit them — only `signal`'s today; every `orbs` mode leaves it empty, so nothing here touched the golden suite. See [`signal.md`](signal.md#the-polyline-primitive-why-signal-needed-one) for why it exists. What's left in `orbs::core` is genuinely sphere-specific: `Proj` — the shared spin/tilt/orthographic projection every `orbs` mode uses to place points on screen — and `fib_dir`, the Fibonacci sphere lattice.
@@ -79,24 +78,18 @@ why this didn't touch `spec/orbs-golden.json` or need re-vendoring:
   not to mean "slower" here — don't assume it does elsewhere either without
   measuring.
 
-Six more states (`speaking`/`spectrum`, `confirming`/`sonar`,
-`initializing`/`warp`, `calibrating`/`chladni`, `progressing`/`eclipse`,
-`concluding`/`crystallize`) followed, one per new-shape concept surveyed in
-`docs/effects-research.md`'s "New `orbs` modes" section — all six proposed
-there are now built. None needed a new primitive (`Dot`/`Line` and the
-color fields above were enough for all of them); none have a golden vector,
-same tradeoff as `aurora`/`webflow`. Two are worth calling out specifically:
-`eclipse` is the one *functionally* new addition in the whole set — every
+Five more states (`speaking`/`spectrum`, `confirming`/`sonar`,
+`initializing`/`warp`, `calibrating`/`chladni`, `progressing`/`eclipse`)
+followed, one per new-shape concept surveyed in
+`docs/effects-research.md`'s "New `orbs` modes" section. A sixth,
+`concluding`/`crystallize`, was built and then removed in 0.1.0-beta.9.
+None needed a new primitive (`Dot`/`Line` and the color fields above were
+enough for all of them); none have a golden vector, same tradeoff as
+`aurora`/`webflow`. One is worth calling out specifically: `eclipse` is the one *functionally* new addition in the whole set — every
 other state (ported or additive) is indeterminate ("something is
 happening"); `eclipse`'s `progress: 0..1` opt makes it the first
 determinate ("N% done") state, threaded through the existing
-`frame_with_overrides` entry point rather than a new API. `crystallize`'s
-icosahedron/octahedron edge topology is derived at runtime by connecting
-each vertex to its nearest neighbors by distance, not from a hand-typed
-edge-index list — the same "generate, don't hand-transcribe" reasoning as
-the Perlin permutation table above, checked by `crystallize.rs`'s topology
-tests (30 edges/degree 5 for the icosahedron, 12/degree 4 for the
-octahedron — the well-known properties of those two solids).
+`frame_with_overrides` entry point rather than a new API.
 
 **Color renders on every platform now.** This was a Web-only capability for
 a while (the native Studios had regenerated their FFI bindings before the
@@ -188,8 +181,8 @@ centroid, so orb output is unchanged. Before 2026-09-18 such dot-less frames
 returned early and never breathed. Polylines also get the dots'
 radius/alpha glimmer (stroke width standing in for radius) rather than just scaling each dot's radius in place — a pure
 size change reads as static; a position change reads as motion. `Line`
-endpoints get the identical transform so line-based modes (`web`/`webflow`,
-`crystallize`'s edges) don't visually detach from the dots they connect.
+endpoints get the identical transform so line-based modes (`web`/`webflow`)
+don't visually detach from the dots they connect.
 The position swell is deliberately the smallest-weighted of three cues
 (position, radius, alpha) — a subtle glimmer-and-swell reads better than a
 large, jarring displacement; a caller controls overall intensity via
@@ -322,9 +315,9 @@ different shapes on purpose, tuned by eye, and were left alone.
 
 **Paint contract, updated 2026-09-18:**
 - **`Line` has `saturation`/`hue`**, with the same semantics as `Dot` and
-  `Polyline`. Every mode emits 0, which is exactly the old grey. The four
+  `Polyline`. Every mode emits 0, which is exactly the old grey. The three
   mode literals (`web.rs`, which is a ported file and got a two-line
-  mechanical edit; `webflow.rs`, `crystallize.rs`, `warp.rs`) pass `0.0`,
+  mechanical edit; `webflow.rs`, `warp.rs`) pass `0.0`,
   and `golden.rs` proves `web` is unchanged. Colour arrives only through
   post-processes: `apply_color`, `apply_gradient`, glow tint, muted and
   interrupt now treat lines like polylines.
@@ -451,7 +444,7 @@ were deliberately built on the same lattice; see
 no `slerp` is even needed here and why depth-shading still uses each
 mode's own camera while final position uses one shared, blended camera).
 Returns `None` for any other pair — there's no point correspondence
-between, say, `orbits`' particles and `crystallize`'s 12 vertices, so no
+between, say, `orbits`' particles and `sonar`'s rings, so no
 per-point blend would be meaningful. A caller should fall back to
 cross-dissolving two independent `frame()` calls for those pairs, which
 works for all 18 states uniformly since it never looks inside either

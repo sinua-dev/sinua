@@ -66,6 +66,12 @@ used by DevinFit (glowing + colour / gradient + GPT-Live), so DevinFit needs no 
   `rich-bean`, `rich-buzzy`, `custom-character` and `remix-latte` examples their `slots`: the
   frames are unchanged (golden `sinua` byte-identical), but a file carrying one of these
   recipes resolves to a new registry key (`recipe:<id>:<hash>`).
+- **The `concluding` pattern** (the crystallize mode: dots that snap into a crystal and let
+  go). An FX Spec file whose `pattern` (base or a `states` entry) is `concluding` is now
+  **rejected**, whatever its `fxSpec` version. Migration: pick another orb pattern
+  (`progressing` or `confirming` read as "wrapping up"). The typed orb components lose
+  `concluding` and the `driftAmplitude` / `lineWidth` props only it read. Golden `sinua`
+  4.0.0 drops its 12 cases; every other case is unchanged.
 
 ## 0.1.0-beta.8
 

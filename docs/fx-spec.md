@@ -107,6 +107,8 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
     `wardrobe`; a named palette (`"palette": "sunset"` or `palette.theme`); `params.eyeStyle`;
     and in a recipe `slots`, `tags`, `cosmetics`, a part's `role`, the `eyes` / `faceScreen`
     fields `style`, `iris` and `sclera`, and the `iris` role.
+  - The `concluding` pattern, in 1.14 (0.1.0-beta.9), with the same message, at the base's or
+    a `states` entry's `pattern`.
 
   After 1.0 a removal only happens in a major (FX Spec 2.0), after a minor of deprecation
   warnings.

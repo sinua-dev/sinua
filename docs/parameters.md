@@ -245,7 +245,6 @@ are the shared radius-scale keys every orb mode reads):
 | `initializing` / `warp` | `starCount`, `period`, `warpSpeed`, `decay` |
 | `calibrating` / `chladni` | `nodeCount`, `nodeSize`, `holdDuration` |
 | `progressing` / `eclipse` | `nodeCount`, `nodeSize`, `progress` |
-| `concluding` / `crystallize` | `period`, `driftAmplitude`, `dotSize`, `lineWidth` |
 | `muted` / `hush` | `nodeCount`, `nodeSize`, `pulseAmplitude`, `period`, `dim`, `yaw`, `hue`, `saturation` |
 
 `nodeCount`/`nodeSize` are in the size-preset scaling lists
@@ -311,7 +310,6 @@ forward with a "renamed" warning, and reports any other unknown key.
 | warp | `starN`, `trail` | `starCount`, `decay` |
 | chladni | `nodeN`, `nodeR`, `holdTime` | `nodeCount`, `nodeSize`, `holdDuration` |
 | eclipse | `nodeN`, `nodeR` | `nodeCount`, `nodeSize` |
-| crystallize | `cycle`, `driftAmp`, `dotR`, `lineW` | `period`, `driftAmplitude`, `dotSize`, `lineWidth` |
 | hush | `nodeN`, `nodeR`, `pulseAmp`, `pulsePeriod` | `nodeCount`, `nodeSize`, `pulseAmplitude`, `period` |
 | signal | `barWidthFrac`, `minHeightFrac`, `fadeFrac`, `lineWidthFrac`, `amplitudeFrac`, `layers` | `barWidth`, `minHeight`, `fadeWidth`, `lineWidth`, `amplitude`, `layerCount` |
 | ring | `strokeFrac`, `trackAlpha`, `gapFrac` | `strokeWidth`, `trackOpacity`, `gap` |

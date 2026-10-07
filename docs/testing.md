@@ -208,7 +208,7 @@ iterating) holds the transition contract:
   of that size and duration would show, and *path*, how far the picture travels during
   the change over what it needs to. Bounds: peak <= 2.7 and path <= 2.25 (about 12 % over the measured worst), with named
   exceptions in the script for motion that is meant to travel (the spectrum's joining bars,
-  muted's turn, crystallize's cycle, the rings' thinking pulse, step patterns) and
+  muted's turn, the rings' thinking pulse, step patterns) and
   calibrating's snap (a smoothing is the next step).
 - **Realistic conversations** (`spec/transition-scenarios.json`): pauses of 300-1500 ms,
   a barge-in mid-sentence, quick turns, a 40 s monologue, a thinking pause, jittered

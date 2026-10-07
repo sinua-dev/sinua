@@ -14,7 +14,7 @@
     <dev.sinua.view.SinuaViewLayout
         android:id="@+id/fx_spec"
         android:layout_width="120dp" android:layout_height="120dp"
-        app:fxSpecAsset="holo-orb.fxspec.json"
+        app:fxSpecAsset="voice-assistant-glowing.fxspec.json"
         app:fxState="listening"
         app:fxPaused="true" app:fxReducedMotion="never" />
 </LinearLayout>

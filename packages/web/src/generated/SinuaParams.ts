@@ -83,71 +83,9 @@ export interface SinuaColor {
   saturation?: number;
 }
 
-/** Liquid: Metaball contours: dots and strokes melt into blobs. (`liquid.*`; unset fields keep the pattern's value). */
-export interface SinuaLiquid {
-  /** Edge softness of the fill, as a blur sigma. Range 0...32. */
-  blur?: number;
-  /** Grid cells across the frame for the contour. Range 8...96. */
-  cells?: number;
-  /** Keep the original geometry under the melt. */
-  keep?: boolean;
-  /** How far each element's field reaches, as a multiple of its size. Range 1...12 (x). */
-  reach?: number;
-  /** Spacing of resampled dots (dots style). Range 0.5...12. */
-  spacing?: number;
-  /** Amount of the metaball melt; 0 turns it off. Range 0...1 (fraction). */
-  strength?: number;
-  /** Filled blobs, contour outlines, or resampled dots. */
-  style?: "fill" | "outline" | "dots";
-  /** Field level of the contour; lower merges more. Range 0.05...4. */
-  threshold?: number;
-  /** Stroke width of the outline (outline style). Range 0.05...8. */
-  width?: number;
-}
-
-/** Particles: A stateless particle layer emitted from the pattern. (`particles.*`; unset fields keep the pattern's value). */
-export interface SinuaParticles {
-  /** How much brightness follows the audio level. Range 0...1 (fraction). */
-  audio?: number;
-  /** Particles alive at once. Range 0...200. */
-  count?: number;
-  /** Seconds each particle lives (wall clock). Range 0.1...30 (s). */
-  life?: number;
-  /** Seed of the particle layout. Range -1000000000...1000000000. */
-  seed?: number;
-  /** Particle size, relative to the object's dots. Range 0.05...4 (x). */
-  size?: number;
-  /** How far particles travel, as a fraction of the frame. Range 0...1 (fraction). */
-  spread?: number;
-  /** Amount of the particle layer; 0 turns it off. Range 0...1 (fraction). */
-  strength?: number;
-  /** How particles move: drift out, attract in, orbit, or rise. */
-  style?: "drift" | "attract" | "orbit" | "rise";
-  /** Pulls births together; 1 = one burst per life. Range 0...1 (fraction). */
-  sync?: number;
-}
-
-/** Holographic: A foil hue sweep over each element's own lightness. (`holographic.*`; unset fields keep the pattern's value). */
-export interface SinuaHolographic {
-  /** Weight of the depth term (near vs far dots). Range 0...1 (fraction). */
-  depth?: number;
-  /** Weight of the facing term (the tilting-card sheen). Range 0...1 (fraction). */
-  facing?: number;
-  /** Starting hue of the sweep. Range 0...360 (deg). */
-  hue?: number;
-  /** Saturation the sweep blends toward. Range 0...1 (fraction). */
-  saturation?: number;
-  /** Degrees of the colour wheel the sweep covers. Range 0...720 (deg). */
-  span?: number;
-  /** Turns per second of the hue drift and view point. Range -4...4 (turns/s). */
-  speed?: number;
-  /** Amount of the foil hue sweep; 0 turns it off. Range 0...1 (fraction). */
-  strength?: number;
-}
-
 type Entry = { key: string; choices?: Record<string, number>; keys?: string[]; listPatterns?: string[] };
 type Table = Record<string, Entry>;
-const GROUPS: Record<string, Table> = {"glow":{"blend":{"key":"glowBlend","choices":{"normal":0,"additive":1}},"hue":{"key":"glowHue"},"layers":{"key":"glowLayers"},"mode":{"key":"glowMode","choices":{"stacked":0,"blur":1}},"radius":{"key":"glowRadius"},"strength":{"key":"glowStrength"},"tint":{"key":"glowTint"}},"noise":{"amplitude":{"key":"noiseAmplitude"},"scale":{"key":"noiseScale"},"seed":{"key":"noiseSeed"},"speed":{"key":"noiseSpeed"},"strength":{"key":"noiseStrength"}},"pulse":{"opacity":{"key":"pulseOpacity"},"period":{"key":"pulsePeriod"},"phase":{"key":"pulsePhase"},"scale":{"key":"pulseScale"},"strength":{"key":"pulseStrength"}},"gradient":{"angle":{"key":"gradientAngle"},"hue2":{"key":"gradientHue2"},"hue3":{"key":"gradientHue3"},"hue":{"key":"gradientHue"},"mid":{"key":"gradientMid"},"saturation":{"key":"gradientSaturation"},"strength":{"key":"gradientStrength"}},"color":{"hue":{"key":"colorHue"},"lightness":{"key":"colorLightness"},"mix":{"key":"colorMix"},"mode":{"key":"colorMode","choices":{"ink":0,"fixed":1}},"saturation":{"key":"colorSaturation"}},"liquid":{"blur":{"key":"liquidBlur"},"cells":{"key":"liquidCells"},"keep":{"key":"liquidKeep"},"reach":{"key":"liquidReach"},"spacing":{"key":"liquidSpacing"},"strength":{"key":"liquidStrength"},"style":{"key":"liquidStyle","choices":{"fill":0,"outline":1,"dots":2}},"threshold":{"key":"liquidThreshold"},"width":{"key":"liquidWidth"}},"particles":{"audio":{"key":"particleAudio"},"count":{"key":"particleCount"},"life":{"key":"particleLife"},"seed":{"key":"particleSeed"},"size":{"key":"particleSize"},"spread":{"key":"particleSpread"},"strength":{"key":"particleStrength"},"style":{"key":"particleStyle","choices":{"drift":0,"attract":1,"orbit":2,"rise":3}},"sync":{"key":"particleSync"}},"holographic":{"depth":{"key":"holoDepth"},"facing":{"key":"holoFacing"},"hue":{"key":"holoHue"},"saturation":{"key":"holoSaturation"},"span":{"key":"holoSpan"},"speed":{"key":"holoSpeed"},"strength":{"key":"holoStrength"}}};
+const GROUPS: Record<string, Table> = {"glow":{"blend":{"key":"glowBlend","choices":{"normal":0,"additive":1}},"hue":{"key":"glowHue"},"layers":{"key":"glowLayers"},"mode":{"key":"glowMode","choices":{"stacked":0,"blur":1}},"radius":{"key":"glowRadius"},"strength":{"key":"glowStrength"},"tint":{"key":"glowTint"}},"noise":{"amplitude":{"key":"noiseAmplitude"},"scale":{"key":"noiseScale"},"seed":{"key":"noiseSeed"},"speed":{"key":"noiseSpeed"},"strength":{"key":"noiseStrength"}},"pulse":{"opacity":{"key":"pulseOpacity"},"period":{"key":"pulsePeriod"},"phase":{"key":"pulsePhase"},"scale":{"key":"pulseScale"},"strength":{"key":"pulseStrength"}},"gradient":{"angle":{"key":"gradientAngle"},"hue2":{"key":"gradientHue2"},"hue3":{"key":"gradientHue3"},"hue":{"key":"gradientHue"},"mid":{"key":"gradientMid"},"saturation":{"key":"gradientSaturation"},"strength":{"key":"gradientStrength"}},"color":{"hue":{"key":"colorHue"},"lightness":{"key":"colorLightness"},"mix":{"key":"colorMix"},"mode":{"key":"colorMode","choices":{"ink":0,"fixed":1}},"saturation":{"key":"colorSaturation"}}};
 
 function put(o: Record<string, number>, e: Entry, v: unknown, pattern: string): void {
   if (v === undefined || v === null) return;
@@ -373,9 +311,6 @@ export interface SinuaOrbParams {
   pulse?: SinuaPulse;
   gradient?: SinuaGradient;
   color?: SinuaColor;
-  liquid?: SinuaLiquid;
-  particles?: SinuaParticles;
-  holographic?: SinuaHolographic;
 }
 
 const ORB_TABLE: Table = {"ghostA":{"key":"ghostA"},"ink":{"key":"ink"},"orbitParticles":{"key":"particles"},"ghostN":{"key":"ghostN"},"ghostR":{"key":"ghostR"},"orbitN":{"key":"orbitN"},"partR":{"key":"partR"},"partRDepth":{"key":"partRDepth"},"rMin":{"key":"rMin"},"rsPow":{"key":"rsPow"},"dimBase":{"key":"dimBase"},"scanMul":{"key":"scanMul"},"inkFar":{"key":"inkFar"},"inkSpan":{"key":"inkSpan"},"latRings":{"key":"latRings"},"lonDensity":{"key":"lonDensity"},"rBase":{"key":"rBase"},"rDepth":{"key":"rDepth"},"rBoost":{"key":"rBoost"},"moveCount":{"key":"moveCount"},"rActive":{"key":"rActive"},"rings":{"key":"rings"},"lineW":{"key":"lineW"},"spread":{"key":"spread"},"thr":{"key":"thr"},"signals":{"key":"signals"},"nodeN":{"key":"nodeN"},"nodeR":{"key":"nodeR"},"nodeRDepth":{"key":"nodeRDepth"},"turns":{"key":"turns"},"strandN":{"key":"strandN"},"bandMul":{"key":"bandMul"},"spin":{"key":"spin"},"wobMul":{"key":"wobMul"},"faceOn":{"key":"faceOn"},"lanes":{"key":"lanes"},"segs":{"key":"segs"},"iconD":{"key":"iconD"},"rDot":{"key":"rDot"},"depthTone":{"key":"depthTone"},"hueOffset":{"key":"hueOffset"},"hueSpread":{"key":"hueSpread"},"saturation":{"key":"saturation"},"surfaceScale":{"key":"surfaceScale"},"hueSpeed":{"key":"hueSpeed"},"surfaceSpeed":{"key":"surfaceSpeed"},"nodeCount":{"key":"nodeCount"},"nodeSize":{"key":"nodeSize"},"barCount":{"key":"barCount"},"hue":{"key":"hue"},"jumpSpeed":{"key":"jumpSpeed"},"barDotCount":{"key":"barDotCount"},"dotSize":{"key":"dotSize"},"period":{"key":"period"},"echoCount":{"key":"echoCount"},"coreSize":{"key":"coreSize"},"ringCount":{"key":"ringCount"},"echoSpacing":{"key":"echoSpacing"},"starCount":{"key":"starCount"},"warpSpeed":{"key":"warpSpeed"},"decay":{"key":"decay"},"holdDuration":{"key":"holdDuration"},"progress":{"key":"progress"},"driftAmplitude":{"key":"driftAmplitude"},"lineWidth":{"key":"lineWidth"},"dim":{"key":"dim"},"pulseAmplitude":{"key":"pulseAmplitude"},"yaw":{"key":"yaw"},"hologram":{"key":"hologram"},"rim":{"key":"rim"},"scanlines":{"key":"scanlines"},"wire":{"key":"wire"},"breath":{"key":"breath"},"waveSpeed":{"key":"waveSpeed"},"glint":{"key":"glint"},"inward":{"key":"inward"},"neuron":{"key":"neuron"},"speech":{"key":"speech"},"scanSpeed":{"key":"scanSpeed"},"turnYaw":{"key":"turnYaw"}};
@@ -439,9 +374,6 @@ export interface SinuaSignalParams {
   pulse?: SinuaPulse;
   gradient?: SinuaGradient;
   color?: SinuaColor;
-  liquid?: SinuaLiquid;
-  particles?: SinuaParticles;
-  holographic?: SinuaHolographic;
 }
 
 const SIGNAL_TABLE: Table = {"barCount":{"key":"barCount"},"barWidth":{"key":"barWidth"},"hue":{"key":"hue"},"ink":{"key":"ink"},"minHeight":{"key":"minHeight"},"saturation":{"key":"saturation"},"layerCount":{"key":"layerCount"},"lineWidth":{"key":"lineWidth"},"pointCount":{"key":"pointCount"},"amplitude":{"key":"amplitude"},"fadeWidth":{"key":"fadeWidth"},"columnCount":{"key":"columnCount"},"ledCount":{"key":"ledCount"},"ledSize":{"key":"ledSize"},"minLevel":{"key":"minLevel"},"mirror":{"key":"mirror"},"playhead":{"key":"playhead"},"unplayedOpacity":{"key":"unplayedOpacity"},"progress":{"key":"progress"},"envelope":{"key":"envelope","keys":["envelope0","envelope1","envelope2","envelope3","envelope4","envelope5","envelope6","envelope7","envelope8","envelope9","envelope10","envelope11","envelope12","envelope13","envelope14","envelope15","envelope16","envelope17","envelope18","envelope19","envelope20","envelope21","envelope22","envelope23","envelope24","envelope25","envelope26","envelope27","envelope28","envelope29","envelope30","envelope31","envelope32","envelope33","envelope34","envelope35","envelope36","envelope37","envelope38","envelope39","envelope40","envelope41","envelope42","envelope43","envelope44","envelope45","envelope46","envelope47","envelope48","envelope49","envelope50","envelope51","envelope52","envelope53","envelope54","envelope55","envelope56","envelope57","envelope58","envelope59","envelope60","envelope61","envelope62","envelope63"]}};
@@ -514,9 +446,6 @@ export interface SinuaRingParams {
   pulse?: SinuaPulse;
   gradient?: SinuaGradient;
   color?: SinuaColor;
-  liquid?: SinuaLiquid;
-  particles?: SinuaParticles;
-  holographic?: SinuaHolographic;
 }
 
 const RING_TABLE: Table = {"gap":{"key":"gap"},"hue":{"key":"hue"},"ink":{"key":"ink"},"saturation":{"key":"saturation"},"strokeWidth":{"key":"strokeWidth"},"trackOpacity":{"key":"trackOpacity"},"progress":{"key":"progress","keys":["progress0","progress1","progress2","progress3"],"listPatterns":["tracking"]},"hueStep":{"key":"hueStep"},"ringCount":{"key":"ringCount"},"spacing":{"key":"spacing"},"maxLaps":{"key":"maxLaps"},"segmentCount":{"key":"segmentCount"},"segment":{"key":"segment","keys":["segment0","segment1","segment2","segment3","segment4","segment5","segment6","segment7","segment8","segment9","segment10","segment11","segment12","segment13","segment14","segment15","segment16","segment17","segment18","segment19","segment20","segment21","segment22","segment23"]},"fill":{"key":"fill"},"marker":{"key":"marker"},"sweep":{"key":"sweep"},"avatarGap":{"key":"avatarGap"},"idleOpacity":{"key":"idleOpacity"},"innerRadius":{"key":"innerRadius"},"thickness":{"key":"thickness"},"flow":{"key":"flow"},"rippleCount":{"key":"rippleCount"},"shimmer":{"key":"shimmer"},"reach":{"key":"reach"}};
@@ -565,9 +494,6 @@ export interface SinuaCoreParams {
   pulse?: SinuaPulse;
   gradient?: SinuaGradient;
   color?: SinuaColor;
-  liquid?: SinuaLiquid;
-  particles?: SinuaParticles;
-  holographic?: SinuaHolographic;
 }
 
 const CORE_TABLE: Table = {"highlightFill":{"key":"highlightFill"},"highlightLength":{"key":"highlightLength"},"hue":{"key":"hue"},"ink":{"key":"ink"},"saturation":{"key":"saturation"},"thickness":{"key":"thickness"},"trackOpacity":{"key":"trackOpacity"},"period":{"key":"period"},"length":{"key":"length"},"bounceAmplitude":{"key":"bounceAmplitude"},"delay":{"key":"delay"},"dotCount":{"key":"dotCount"},"dotSize":{"key":"dotSize"},"spacing":{"key":"spacing"}};
@@ -645,9 +571,6 @@ export interface SinuaBeaconParams {
   pulse?: SinuaPulse;
   gradient?: SinuaGradient;
   color?: SinuaColor;
-  liquid?: SinuaLiquid;
-  particles?: SinuaParticles;
-  holographic?: SinuaHolographic;
 }
 
 const BEACON_TABLE: Table = {"dotSize":{"key":"dotSize"},"hue":{"key":"hue"},"ink":{"key":"ink"},"ringCount":{"key":"ringCount"},"saturation":{"key":"saturation"},"period":{"key":"period"},"once":{"key":"once"},"ringReach":{"key":"ringReach"},"ringWidth":{"key":"ringWidth"},"quality":{"key":"quality"},"segmentGap":{"key":"segmentGap"},"segmentRadius":{"key":"segmentRadius"},"segmentWidth":{"key":"segmentWidth"},"accuracy":{"key":"accuracy"},"haloOpacity":{"key":"haloOpacity"},"blipCount":{"key":"blipCount"},"seed":{"key":"seed"},"trailFill":{"key":"trailFill"},"trailLength":{"key":"trailLength"},"cumulative":{"key":"cumulative"},"inactiveOpacity":{"key":"inactiveOpacity"},"sides":{"key":"sides"},"waveCount":{"key":"waveCount"},"reversing":{"key":"reversing"},"level":{"key":"level"},"strokeWidth":{"key":"strokeWidth"},"waveSweep":{"key":"waveSweep"}};
@@ -747,9 +670,6 @@ export interface SinuaCharacterParams {
   pulse?: SinuaPulse;
   gradient?: SinuaGradient;
   color?: SinuaColor;
-  liquid?: SinuaLiquid;
-  particles?: SinuaParticles;
-  holographic?: SinuaHolographic;
 }
 
 const CHARACTER_TABLE: Table = {"accessories":{"key":"accessories"},"eyeStyle":{"key":"eyeStyle","choices":{"auto":0,"shape":1,"glossy":2,"pixel":3,"dot":4}},"grain":{"key":"grain"},"hue":{"key":"hue"},"ink":{"key":"ink"},"mouth":{"key":"mouth"},"shading":{"key":"shading"},"look":{"key":"look"},"seed":{"key":"seed"},"turn":{"key":"turn"},"eyeAsym":{"key":"eyeAsym"},"eyeH":{"key":"eyeH"},"eyeR":{"key":"eyeR"},"eyeSmile":{"key":"eyeSmile"},"eyeTilt":{"key":"eyeTilt"},"eyeW":{"key":"eyeW"},"lid":{"key":"lid"},"mouthDots":{"key":"mouthDots"},"mouthTalk":{"key":"mouthTalk"},"gazeX":{"key":"gazeX"},"gazeY":{"key":"gazeY"},"lean":{"key":"lean"},"tilt":{"key":"tilt"},"turnBlink":{"key":"turnBlink"},"turnNod":{"key":"turnNod"},"turnPitch":{"key":"turnPitch"},"turnWander":{"key":"turnWander"},"turnYaw":{"key":"turnYaw"},"bounceGain":{"key":"bounceGain"},"breath":{"key":"breath"},"earGain":{"key":"earGain"},"mouthGain":{"key":"mouthGain"},"squashGain":{"key":"squashGain"},"swayGain":{"key":"swayGain"},"curlGain":{"key":"curlGain"},"flutterGain":{"key":"flutterGain"},"arms":{"key":"arms"}};

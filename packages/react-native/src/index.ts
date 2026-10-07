@@ -127,7 +127,7 @@ export interface OrbFrame {
 /** Mirrors `primitives::Fill` -- see docs/engine.md, *Paint contract*. */
 export interface Fill {
   points: { x: number; y: number }[];
-  /** Inner rings (liquid): paint outer + holes as one even-odd path. Absent when none. */
+  /** Inner rings (a character's ring shapes): paint outer + holes as one even-odd path. Absent when none. */
   holes?: { x: number; y: number }[][];
   white: number;
   a: number;

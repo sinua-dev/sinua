@@ -51,8 +51,8 @@ final class TypedComponentsTests: XCTestCase {
             SinuaRing(pattern: .loading, glow: .init(blend: .additive, strength: 0.6)).overrides(),
             ["glowStrength": 0.6, "glowBlend": 1])
         XCTAssertEqual(
-            SinuaOrb(pattern: .working, orbitParticles: 4, particles: .init(count: 12, style: .orbit)).overrides(),
-            ["particles": 4, "particleCount": 12, "particleStyle": 2])
+            SinuaOrb(pattern: .working, orbitParticles: 4, noise: .init(strength: 0.5)).overrides(),
+            ["particles": 4, "noiseStrength": 0.5])
         XCTAssertEqual(SinuaSignal(pattern: .waveform).overrides(), [:])
     }
 

@@ -112,9 +112,6 @@ data class SinuaCharacterProps(
     val pulse: SinuaPulse? = null,
     val gradient: SinuaGradient? = null,
     val color: SinuaColor? = null,
-    val liquid: SinuaLiquid? = null,
-    val particles: SinuaParticles? = null,
-    val holographic: SinuaHolographic? = null,
 ) {
     /** Eye style. */
     enum class EyeStyle(val value: Int) { AUTO(0), SHAPE(1), GLOSSY(2), PIXEL(3), DOT(4) }
@@ -163,9 +160,6 @@ data class SinuaCharacterProps(
         pulse?.writeTo(o)
         gradient?.writeTo(o)
         color?.writeTo(o)
-        liquid?.writeTo(o)
-        particles?.writeTo(o)
-        holographic?.writeTo(o)
         return o
     }
 }
@@ -221,9 +215,6 @@ fun SinuaCharacter(
     pulse: SinuaPulse? = null,
     gradient: SinuaGradient? = null,
     color: SinuaColor? = null,
-    liquid: SinuaLiquid? = null,
-    particles: SinuaParticles? = null,
-    holographic: SinuaHolographic? = null,
     speed: Double = 1.0,
     /**
      * The agent's lifecycle state ("listening", "speaking", ...): the built-in voice-state
@@ -256,7 +247,7 @@ fun SinuaCharacter(
     /** The palette, in part (design note 19): slot -> hex, e.g. mapOf("body" to "#E63946"); empty = the character's own. */
     palette: Map<String, String> = emptyMap(),
 ) {
-    val overrides = SinuaCharacterProps(pattern = pattern, size = size, accessories = accessories, eyeStyle = eyeStyle, grain = grain, hue = hue, ink = ink, mouth = mouth, shading = shading, look = look, seed = seed, turn = turn, eyeAsym = eyeAsym, eyeH = eyeH, eyeR = eyeR, eyeSmile = eyeSmile, eyeTilt = eyeTilt, eyeW = eyeW, lid = lid, mouthDots = mouthDots, mouthTalk = mouthTalk, gazeX = gazeX, gazeY = gazeY, lean = lean, tilt = tilt, turnBlink = turnBlink, turnNod = turnNod, turnPitch = turnPitch, turnWander = turnWander, turnYaw = turnYaw, bounceGain = bounceGain, breath = breath, earGain = earGain, mouthGain = mouthGain, squashGain = squashGain, swayGain = swayGain, curlGain = curlGain, flutterGain = flutterGain, arms = arms, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
+    val overrides = SinuaCharacterProps(pattern = pattern, size = size, accessories = accessories, eyeStyle = eyeStyle, grain = grain, hue = hue, ink = ink, mouth = mouth, shading = shading, look = look, seed = seed, turn = turn, eyeAsym = eyeAsym, eyeH = eyeH, eyeR = eyeR, eyeSmile = eyeSmile, eyeTilt = eyeTilt, eyeW = eyeW, lid = lid, mouthDots = mouthDots, mouthTalk = mouthTalk, gazeX = gazeX, gazeY = gazeY, lean = lean, tilt = tilt, turnBlink = turnBlink, turnNod = turnNod, turnPitch = turnPitch, turnWander = turnWander, turnYaw = turnYaw, bounceGain = bounceGain, breath = breath, earGain = earGain, mouthGain = mouthGain, squashGain = squashGain, swayGain = swayGain, curlGain = curlGain, flutterGain = flutterGain, arms = arms, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,

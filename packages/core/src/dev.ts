@@ -1,5 +1,5 @@
 // `@sinua/core/dev` (design note 33): what only the Studio, dev tools, tests and
-// demos use -- render cost, liquid suitability, the parameter catalog, override
+// demos use -- render cost, the parameter catalog, override
 // checks, simulated conversations and the JSON bridges -- kept out of the default
 // entry so apps don't ship them.
 //
@@ -13,7 +13,6 @@ import {
   frame_from_fx_spec_json,
   estimate_cost_json,
   fx_spec_cost_json,
-  liquid_suitability_json,
   parameter_catalog_json,
   check_overrides_json,
 } from "../pkg-dev/sinua_core_inline.js";
@@ -23,7 +22,6 @@ import type {
   FxCost,
   FxDiagnostic,
   FxSpec,
-  LiquidSuitability,
   OrbFrame,
   OrbSize,
   OrbState,
@@ -64,11 +62,6 @@ export function estimateCost(state: OrbState, size: OrbSize, overrides: Partial<
 /** Cost of an FX Spec as resolved for `ctx` (state, inputs, lowPower). `null` if it has errors. */
 export function fxSpecCost(spec: FxSpec | string, ctx: FxContext = {}): FxCost | null {
   return JSON.parse(fx_spec_cost_json(specText(spec), JSON.stringify(ctx))) as FxCost | null;
-}
-
-/** Per-state liquid suitability for a Studio badge; `null` for an unknown state. */
-export function liquidSuitability(state: OrbState): LiquidSuitability | null {
-  return JSON.parse(liquid_suitability_json(state)) as LiquidSuitability | null;
 }
 
 let catalogCache: ParameterCatalog | undefined;

@@ -35,11 +35,10 @@ export function createFramePacer(maxFps: number | null | undefined): (nowMs: num
 
 /**
  * The default when low power is on and the spec has no `performance.lowPower`
- * (FX Spec 1.2): 30 fps, glow and particles off -- the recommended host default
- * in docs/fx-spec.md. Both are their material's documented off switch (a strict
- * no-op at 0). Liquid is left to the spec/app: it replaces dots rather than adding.
+ * (FX Spec 1.2): 30 fps, glow off -- the recommended host default in
+ * docs/fx-spec.md. It is the material's documented off switch (a strict no-op at 0).
  */
-export const DEFAULT_LOW_POWER = { maxFps: 30, overrides: { glowStrength: 0, particleStrength: 0 } as Record<string, number> };
+export const DEFAULT_LOW_POWER = { maxFps: 30, overrides: { glowStrength: 0 } as Record<string, number> };
 
 export interface FxPerformance {
   /** The effective cap, or null for display rate. */

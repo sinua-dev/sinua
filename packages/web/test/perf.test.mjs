@@ -31,12 +31,12 @@ test("no cap (undefined, 0, NaN) draws every frame; a cap above the display rate
 
 test("performanceFor: low power default, spec 1.2 block priority, option caps further", () => {
   assert.deepEqual(performanceFor({ lowPower: false }), { maxFps: null, overrides: {} });
-  assert.deepEqual(performanceFor({ lowPower: true }), { maxFps: 30, overrides: { glowStrength: 0, particleStrength: 0 } });
+  assert.deepEqual(performanceFor({ lowPower: true }), { maxFps: 30, overrides: { glowStrength: 0 } });
   assert.equal(DEFAULT_LOW_POWER.maxFps, 30);
   // 1.2 with a lowPower block: the resolver already capped and shed -- no default on top.
   assert.deepEqual(performanceFor({ lowPower: true, specHandlesLowPower: true, specMaxFps: 20 }), { maxFps: 20, overrides: {} });
   // 1.2 maxFps only (no lowPower block): its cap, plus the host default under low power.
   assert.deepEqual(performanceFor({ lowPower: false, specMaxFps: 60, optionMaxFps: 24 }), { maxFps: 24, overrides: {} });
-  assert.deepEqual(performanceFor({ lowPower: true, specMaxFps: 24 }), { maxFps: 24, overrides: { glowStrength: 0, particleStrength: 0 } });
-  assert.deepEqual(performanceFor({ lowPower: true, optionMaxFps: 15 }), { maxFps: 15, overrides: { glowStrength: 0, particleStrength: 0 } });
+  assert.deepEqual(performanceFor({ lowPower: true, specMaxFps: 24 }), { maxFps: 24, overrides: { glowStrength: 0 } });
+  assert.deepEqual(performanceFor({ lowPower: true, optionMaxFps: 15 }), { maxFps: 15, overrides: { glowStrength: 0 } });
 });

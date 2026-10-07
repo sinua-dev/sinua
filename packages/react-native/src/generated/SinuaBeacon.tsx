@@ -50,4 +50,4 @@ export function SinuaBeacon(props: SinuaBeaconProps) {
   return <SinuaView {...(options as Options)} pattern={pattern} size={size} state={state} inputs={inputs} overrides={overrides} />;
 }
 
-const PARAM_KEYS = ["dotSize","hue","ink","ringCount","saturation","period","once","ringReach","ringWidth","quality","segmentGap","segmentRadius","segmentWidth","accuracy","haloOpacity","blipCount","seed","trailFill","trailLength","cumulative","inactiveOpacity","sides","waveCount","reversing","level","strokeWidth","waveSweep","glow","noise","pulse","gradient","color","liquid","particles","holographic"];
+const PARAM_KEYS = ["dotSize","hue","ink","ringCount","saturation","period","once","ringReach","ringWidth","quality","segmentGap","segmentRadius","segmentWidth","accuracy","haloOpacity","blipCount","seed","trailFill","trailLength","cumulative","inactiveOpacity","sides","waveCount","reversing","level","strokeWidth","waveSweep","glow","noise","pulse","gradient","color"];

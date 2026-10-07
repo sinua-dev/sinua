@@ -89,9 +89,6 @@ data class SinuaBeaconProps(
     val pulse: SinuaPulse? = null,
     val gradient: SinuaGradient? = null,
     val color: SinuaColor? = null,
-    val liquid: SinuaLiquid? = null,
-    val particles: SinuaParticles? = null,
-    val holographic: SinuaHolographic? = null,
 ) {
     fun toOverrides(): Map<String, Double> {
         val o = LinkedHashMap<String, Double>()
@@ -127,9 +124,6 @@ data class SinuaBeaconProps(
         pulse?.writeTo(o)
         gradient?.writeTo(o)
         color?.writeTo(o)
-        liquid?.writeTo(o)
-        particles?.writeTo(o)
-        holographic?.writeTo(o)
         return o
     }
 }
@@ -175,9 +169,6 @@ fun SinuaBeacon(
     pulse: SinuaPulse? = null,
     gradient: SinuaGradient? = null,
     color: SinuaColor? = null,
-    liquid: SinuaLiquid? = null,
-    particles: SinuaParticles? = null,
-    holographic: SinuaHolographic? = null,
     speed: Double = 1.0,
     /**
      * The agent's lifecycle state ("listening", "speaking", ...): the built-in voice-state
@@ -204,7 +195,7 @@ fun SinuaBeacon(
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
     effect: SinuaEffectTrigger? = null,
 ) {
-    val overrides = SinuaBeaconProps(pattern = pattern, size = size, dotSize = dotSize, hue = hue, ink = ink, ringCount = ringCount, saturation = saturation, period = period, once = once, ringReach = ringReach, ringWidth = ringWidth, quality = quality, segmentGap = segmentGap, segmentRadius = segmentRadius, segmentWidth = segmentWidth, accuracy = accuracy, haloOpacity = haloOpacity, blipCount = blipCount, seed = seed, trailFill = trailFill, trailLength = trailLength, cumulative = cumulative, inactiveOpacity = inactiveOpacity, sides = sides, waveCount = waveCount, reversing = reversing, level = level, strokeWidth = strokeWidth, waveSweep = waveSweep, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color, liquid = liquid, particles = particles, holographic = holographic).toOverrides()
+    val overrides = SinuaBeaconProps(pattern = pattern, size = size, dotSize = dotSize, hue = hue, ink = ink, ringCount = ringCount, saturation = saturation, period = period, once = once, ringReach = ringReach, ringWidth = ringWidth, quality = quality, segmentGap = segmentGap, segmentRadius = segmentRadius, segmentWidth = segmentWidth, accuracy = accuracy, haloOpacity = haloOpacity, blipCount = blipCount, seed = seed, trailFill = trailFill, trailLength = trailLength, cumulative = cumulative, inactiveOpacity = inactiveOpacity, sides = sides, waveCount = waveCount, reversing = reversing, level = level, strokeWidth = strokeWidth, waveSweep = waveSweep, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,

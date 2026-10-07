@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { estimateCost, fxSpecCost, resolveFxSpec, liquidSuitability, particleDefaults } from "../dist-dev/dev-entry.js";
+import { estimateCost, fxSpecCost, resolveFxSpec } from "../dist-dev/dev-entry.js";
 
 const power = readFileSync(fileURLToPath(new URL("../../../spec/examples/status-beacon-power.fxspec.json", import.meta.url)), "utf8");
 
@@ -32,23 +32,3 @@ test("FX Spec 1.2: low power caps fps, sheds glow + noise, and the cost shows it
   assert.equal(fxSpecCost("{"), null);
 });
 
-test("liquid suitability: every level, reasons, tuned defaults", () => {
-  assert.equal(liquidSuitability("searching").level, "recommended");
-  assert.equal(liquidSuitability("composing").level, "ok");
-  assert.equal(liquidSuitability("signaling").level, "notRecommended");
-  assert.ok(liquidSuitability("signaling").reason.length > 10);
-  assert.deepEqual(liquidSuitability("working").defaults, { liquidReach: 4, liquidThreshold: 0.4 });
-  assert.deepEqual(liquidSuitability("glowing").defaults, {});
-  assert.equal(liquidSuitability("nope"), null);
-});
-
-test("particle defaults: per state over the base table", () => {
-  const base = { particleCount: 28, particleSize: 0.8, particleSpread: 0.18, particleLife: 4.5, particleStyle: 0, particleSync: 0, particleAudio: 0 };
-  assert.deepEqual(particleDefaults("working"), base);
-  assert.equal(particleDefaults("tracking").particleStyle, 3);
-  assert.equal(particleDefaults("scanning").particleStyle, 1);
-  assert.equal(particleDefaults("notifying").particleSync, 1);
-  assert.equal(particleDefaults("speaking").particleAudio, 1);
-  assert.equal(particleDefaults("breathing").particleStyle, 2);
-  assert.equal(particleDefaults("nope"), null);
-});

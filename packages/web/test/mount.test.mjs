@@ -296,18 +296,6 @@ test("FX Spec 1.2: the spec's performance block caps and sheds under low power",
 });
 
 
-test("lowPower (no spec block) also sheds particles: the drawn frame equals particleStrength 0", () => {
-  const { step } = env();
-  const c = canvas();
-  const fx = mount(c.el, { pattern: "glowing", overrides: { particleStrength: 1 }, lowPower: true });
-  step(30);
-  const t = fx.elapsed * resolvedOpts("glowing", 64).speed;
-  const shed = dotsOf(frameWithOverrides("glowing", 64, t, { particleStrength: 0, glowStrength: 0 }));
-  assert.deepEqual(arcs(c.calls), shed);
-  assert.ok(dotsOf(frameWithOverrides("glowing", 64, t, { particleStrength: 1, glowStrength: 0 })).length > shed.length, "particles were really on");
-  fx.destroy();
-});
-
 test("FX Spec 1.7 labels: pattern, state (lifecycle); the old ones still work", () => {
   const { step } = env();
   const warnings = [];

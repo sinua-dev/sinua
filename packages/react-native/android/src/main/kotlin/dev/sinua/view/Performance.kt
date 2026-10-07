@@ -46,8 +46,8 @@ enum class FxLowPower { AUTO, ON, OFF }
 /** The effective cap and extra engine opts for the current power situation. */
 data class FxPerformance(val maxFps: Double?, val overrides: Map<String, Double>)
 
-/** The default when low power is on and the spec has no `performance.lowPower` (FX Spec 1.2): 30 fps, glow and particles off (docs/fx-spec.md's recommended host default). */
-val FX_DEFAULT_LOW_POWER = FxPerformance(30.0, mapOf("glowStrength" to 0.0, "particleStrength" to 0.0))
+/** The default when low power is on and the spec has no `performance.lowPower` (FX Spec 1.2): 30 fps, glow off (docs/fx-spec.md's recommended host default). */
+val FX_DEFAULT_LOW_POWER = FxPerformance(30.0, mapOf("glowStrength" to 0.0))
 
 /**
  * The single place FX Spec 1.2's `performance` block is honoured -- same rule

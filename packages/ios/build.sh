@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 ROOT="$(cd ../.. && pwd)"
 BINDINGS="$ROOT/bindings/swift"
-# The Studio / dev exports (cargo feature `dev`, design note 34: cost, liquid suitability,
+# The Studio / dev exports (cargo feature `dev`, design note 34: cost,
 # the parameter catalog, override checks) are in development builds -- the tests and the
 # Studios use them -- and left out of what is published: the release workflow sets
 # SINUA_NATIVE_RELEASE=1.

@@ -50,4 +50,4 @@ export function SinuaCore(props: SinuaCoreProps) {
   return <SinuaView {...(options as Options)} pattern={pattern} size={size} state={state} inputs={inputs} overrides={overrides} />;
 }
 
-const PARAM_KEYS = ["highlightFill","highlightLength","hue","ink","saturation","thickness","trackOpacity","period","length","bounceAmplitude","delay","dotCount","dotSize","spacing","glow","noise","pulse","gradient","color","liquid","particles","holographic"];
+const PARAM_KEYS = ["highlightFill","highlightLength","hue","ink","saturation","thickness","trackOpacity","period","length","bounceAmplitude","delay","dotCount","dotSize","spacing","glow","noise","pulse","gradient","color"];

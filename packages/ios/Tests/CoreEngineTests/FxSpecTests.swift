@@ -71,11 +71,6 @@ final class FxSpecTests: XCTestCase {
         XCTAssertEqual(low.disabledMaterials, ["glow", "noise"])
         XCTAssertEqual(
             CoreEngine.estimateCost(state: "working", size: 64, overrides: ["glowStrength": 1])?.class, "heavy")
-        // Per-state particle defaults (the Studio's knob defaults).
-        XCTAssertEqual(CoreEngine.particleDefaults(state: "tracking")?["particleStyle"], 3)
-        XCTAssertEqual(CoreEngine.particleDefaults(state: "notifying")?["particleSync"], 1)
-        XCTAssertEqual(CoreEngine.particleDefaults(state: "working")?["particleLife"], 4.5)
-        XCTAssertNil(CoreEngine.particleDefaults(state: "nope"))
     }
 
     private static let inputs: [String: Double] = [

@@ -17,7 +17,6 @@ import uniffi.core_engine.frameWithOverrides
 import uniffi.core_engine.fxColorToHsl
 import uniffi.core_engine.fxSpecCost
 import uniffi.core_engine.parameterCatalogJson
-import uniffi.core_engine.particleDefaults
 import uniffi.core_engine.resolveFxSpec
 import uniffi.core_engine.resolveFxSpecWith
 import uniffi.core_engine.resolvedOpts
@@ -69,11 +68,6 @@ class FxSpecTests {
         assertEquals(15.0, low.maxFps)
         assertEquals(listOf("glow", "noise"), low.disabledMaterials)
         assertEquals("heavy", estimateCost("working", 64u, mapOf("glowStrength" to 1.0))?.`class`)
-        // Per-state particle defaults (the Studio's knob defaults).
-        assertEquals(3.0, particleDefaults("tracking")?.get("particleStyle"))
-        assertEquals(1.0, particleDefaults("notifying")?.get("particleSync"))
-        assertEquals(4.5, particleDefaults("working")?.get("particleLife"))
-        assertNull(particleDefaults("nope"))
     }
 
     private companion object {

@@ -8,7 +8,7 @@
 // the intended name in `manifest.json` as `suggestedHumanReadableName` --
 // suffixed with an occurrence index and another UUID:
 //
-//   ios-glowing-64-0.6-holo-dark_0_5C3961D0-…-110E6EB1A86A.png
+//   ios-glowing-64-0.6-glow-blur-dark_0_5C3961D0-…-110E6EB1A86A.png
 //
 // Stripping that suffix is the whole job, and it is what the README asked a
 // human to do by hand.

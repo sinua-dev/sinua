@@ -78,7 +78,7 @@ test("readPacked visits polylines, lines, dots with their data", () => {
 });
 
 test("readPacked hands v4 polylines their per-vertex hues", () => {
-  const p = frameWithOverridesPacked("tracking", 64, 0.6, { holoStrength: 1, glowStrength: 0.8, glowMode: 1 });
+  const p = frameWithOverridesPacked("tracking", 64, 0.6, { gradientStrength: 1, gradientHue: 200, gradientHue2: 300, gradientHue3: 40, glowStrength: 0.8, glowMode: 1 });
   assert.equal(p.data[0], 4);
   const f = unpackFrame(p);
   const seen = [];

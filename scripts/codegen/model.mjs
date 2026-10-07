@@ -128,9 +128,7 @@ export function buildModels(catalog, naming) {
       if (!d || d.deprecated) continue;
       for (const p of obj.patterns) {
         if ((byPath.get(d.path) ?? []).some((u) => u.pattern === p.id)) continue;
-        const md = Object.values(p.materialDefaults ?? {}).find((m) => m && d.key in m);
-        const def = md ? Object.fromEntries(p.sizes.map((s) => [String(s), md[d.key]])) : undefined;
-        use(d.path, { ref, pattern: p.id, default: def, object: obj.id });
+        use(d.path, { ref, pattern: p.id, default: undefined, object: obj.id });
       }
     }
     const props = [...byPath.entries()].map(([path, uses]) => buildProp(path, uses, catalog, sizesByPattern));

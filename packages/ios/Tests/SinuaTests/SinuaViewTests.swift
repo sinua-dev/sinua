@@ -282,7 +282,7 @@ final class PerformanceTests: XCTestCase {
         XCTAssertEqual(fxPerformance(lowPower: false, optionMaxFps: nil), FxPerformance(maxFps: nil, overrides: [:]))
         XCTAssertEqual(
             fxPerformance(lowPower: true, optionMaxFps: nil),
-            FxPerformance(maxFps: 30, overrides: ["glowStrength": 0, "particleStrength": 0]))
+            FxPerformance(maxFps: 30, overrides: ["glowStrength": 0]))
         XCTAssertEqual(
             fxPerformance(lowPower: true, optionMaxFps: nil, specMaxFps: 20, specHandlesLowPower: true),
             FxPerformance(maxFps: 20, overrides: [:]))
@@ -290,7 +290,7 @@ final class PerformanceTests: XCTestCase {
             fxPerformance(lowPower: false, optionMaxFps: 24, specMaxFps: 60), FxPerformance(maxFps: 24, overrides: [:]))
         XCTAssertEqual(
             fxPerformance(lowPower: true, optionMaxFps: nil, specMaxFps: 24),
-            FxPerformance(maxFps: 24, overrides: ["glowStrength": 0, "particleStrength": 0]))
+            FxPerformance(maxFps: 24, overrides: ["glowStrength": 0]))
     }
 
     func testSpec12LowPowerCapsAndSheds() {

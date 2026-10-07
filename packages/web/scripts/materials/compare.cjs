@@ -48,9 +48,8 @@ if (expectArg != null && !Number.isInteger(EXPECT)) {
 // Anti-aliasing exceptions (agreed with families 2026-09-19). Deliberate additions only,
 // each with a reason, like a golden re-baseline. Listed cases pass on full-res mean <= 2
 // AND half-res (2x2 box) p99 <= 24; their full-res p99 is reported for information.
-const AA_EXCEPTIONS = {
-  "drifting-64-0.6-particles-liquid": "dense thin-stroke curls (24 polylines at ~2.4 px since families' Q2 re-baseline): Chrome AA vs CoreGraphics/Skia",
-};
+// (Empty since 0.1.0-beta.9: its one case, particles + liquid, went with those materials.)
+const AA_EXCEPTIONS = {};
 // Renderer-environment exceptions (user decision 2026-09-21, docs/fx-view.md). A listed case
 // passes on mean <= its own limit instead of 2; p99 stays <= 24. Only for a render measured to
 // move with the *environment* (browser/OS build, Android GPU backend) rather than our paint.

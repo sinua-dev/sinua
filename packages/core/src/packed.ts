@@ -15,7 +15,7 @@
 // blur blend pointCount gradKind(-1 none/0 linear/1 radial) x0 y0 x1 y1 r
 // stopCount), fill points x2, stops x5 (offset white a saturation hue),
 // effects x5 (target start count blur blend).
-// Layout v3 (only when some fill has holes -- liquid bands): v2 plus
+// Layout v3 (only when some fill has holes -- a character's rings): v2 plus
 // nHoleRings at header[11] (header 12), fills x15 (+ holeRingCount), and
 // after the fill points a hole-ring table (nHoleRings pointCounts) then the
 // hole points x2; stops and effects as in v2.

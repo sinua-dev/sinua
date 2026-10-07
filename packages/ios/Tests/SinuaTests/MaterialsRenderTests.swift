@@ -14,28 +14,11 @@ final class MaterialsRenderTests: XCTestCase {
         ("scanning-64-0.6-trail-fill", "scanning", ["trailFill": 1]),
         ("glowing-64-0.6-glow-blur", "glowing", ["glowMode": 1, "glowStrength": 1]),
         ("tracking-64-0.6-glow-blur-additive", "tracking", ["glowBlend": 1, "glowMode": 1, "glowStrength": 0.8]),
-        // Materials phase 2 (Liquid): only the fill style uses a new paint concept (holes, even-odd).
-        ("speaking-64-0.6-liquid-fill", "speaking", ["liquidStrength": 1, "liquidStyle": 0]),
-        ("metering-64-0.6-liquid-outline", "metering", ["liquidStrength": 1]),
-        ("glowing-64-0.6-liquid-dots", "glowing", ["liquidStrength": 1, "liquidStyle": 2]),
-        // Materials phase 3 (Particles): plain Dots -- no new paint concept.
-        ("glowing-64-0.6-particles-drift", "glowing", ["particleStrength": 1, "particleStyle": 0]),
-        ("speaking-64-0.6-particles-attract", "speaking", ["particleStrength": 1, "particleStyle": 1]),
-        ("completing-64-0.6-particles-orbit", "completing", ["particleStrength": 1, "particleStyle": 2]),
-        ("drifting-64-0.6-particles-liquid", "drifting", ["liquidStrength": 1, "particleStrength": 1]),
-        // Materials phase 4 (holographic-lite): hue/saturation only -- no new paint concept.
-        ("glowing-64-0.6-holo", "glowing", ["holoStrength": 1]),
-        ("speaking-64-0.6-holo-fill", "speaking", ["holoStrength": 1, "liquidStrength": 1, "liquidStyle": 0]),
-        ("completing-64-0.6-holo-glow", "completing", ["holoStrength": 1, "glowStrength": 0.8]),
-        ("drifting-64-0.6-holo-gradient", "drifting", ["holoStrength": 0.5, "gradientStrength": 1]),
         // Per-vertex stroke colour (golden 1.6.0, Polyline.hues): the one-layer paint rule.
-        ("tracking-64-0.6-holo", "tracking", ["holoStrength": 1]),
         (
             "tracking-64-0.6-gradient3", "tracking",
             ["gradientStrength": 1, "gradientHue": 200, "gradientHue2": 300, "gradientHue3": 40]
         ),
-        ("locating-64-0.6-holo", "locating", ["holoStrength": 1]),
-        ("completing-64-0.6-holo-interrupt", "completing", ["holoStrength": 1, "interruptAge": 0.15]),
         // A character is fills only (docs/character.md): celebrate and one everyday frame each.
         ("buzzy-64-0.6-celebrate", "buzzy", ["effectCode": 3, "effectAge": 0.5]),
         ("buzzy-64-0.6-muted", "buzzy", ["look": 0, "muted": 1]),
@@ -52,10 +35,19 @@ final class MaterialsRenderTests: XCTestCase {
         ("beep-64-0.6-celebrate", "beep", ["effectCode": 3, "effectAge": 0.5]),
         // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC):
         // per-vertex strokes under a blur / additive run at the composite.
-        ("x-completing-64-0.6-holo-glowblur", "completing", ["holoStrength": 1, "glowStrength": 0.8, "glowMode": 1]),
         (
-            "x-completing-64-0.6-holo-glowblur-additive", "completing",
-            ["holoStrength": 1, "glowStrength": 0.8, "glowMode": 1, "glowBlend": 1]
+            "x-completing-64-0.6-gradient-glowblur", "completing",
+            [
+                "gradientStrength": 1, "gradientHue": 200, "gradientHue2": 300, "gradientHue3": 40, "glowStrength": 0.8,
+                "glowMode": 1,
+            ]
+        ),
+        (
+            "x-completing-64-0.6-gradient-glowblur-additive", "completing",
+            [
+                "gradientStrength": 1, "gradientHue": 200, "gradientHue2": 300, "gradientHue3": 40, "glowStrength": 0.8,
+                "glowMode": 1, "glowBlend": 1,
+            ]
         ),
     ]
 
@@ -95,13 +87,8 @@ final class MaterialsRenderTests: XCTestCase {
             frames.append((row.key, frame))
         }
         for (key, frame) in frames {
-            if !key.contains("liquid-outline") && !key.contains("liquid-dots") && !key.contains("particles")
-                && !key.contains("holo") && !key.contains("gradient3")
-            {
+            if !key.contains("gradient3") {
                 XCTAssertTrue(!frame.fills.isEmpty || !frame.effects.isEmpty, "\(key) has materials")
-            }
-            if key.contains("liquid-fill") {
-                XCTAssertFalse(frame.fills.allSatisfy { $0.holes.isEmpty }, "the liquid fill has a hole")
             }
             for dark in [false, true] {
                 let view = Canvas { ctx, size in FxPaint.draw(frame, into: &ctx, size: size, engineSize: 64, dark: dark)

@@ -331,56 +331,7 @@ class SinuaViewTest {
                     "glowStrength" to 0.8,
                 ),
             ),
-            Triple("speaking-64-0.6-liquid-fill", "speaking", mapOf("liquidStrength" to 1.0, "liquidStyle" to 0.0)),
-            Triple("metering-64-0.6-liquid-outline", "metering", mapOf("liquidStrength" to 1.0)),
-            Triple("glowing-64-0.6-liquid-dots", "glowing", mapOf("liquidStrength" to 1.0, "liquidStyle" to 2.0)),
-            Triple(
-                "glowing-64-0.6-particles-drift",
-                "glowing",
-                mapOf("particleStrength" to 1.0, "particleStyle" to 0.0),
-            ),
-            Triple(
-                "speaking-64-0.6-particles-attract",
-                "speaking",
-                mapOf(
-                    "particleStrength" to 1.0,
-                    "particleStyle" to 1.0,
-                ),
-            ),
-            Triple(
-                "completing-64-0.6-particles-orbit",
-                "completing",
-                mapOf(
-                    "particleStrength" to 1.0,
-                    "particleStyle" to 2.0,
-                ),
-            ),
-            Triple(
-                "drifting-64-0.6-particles-liquid",
-                "drifting",
-                mapOf(
-                    "liquidStrength" to 1.0,
-                    "particleStrength" to 1.0,
-                ),
-            ),
-            Triple("glowing-64-0.6-holo", "glowing", mapOf("holoStrength" to 1.0)),
-            Triple(
-                "speaking-64-0.6-holo-fill",
-                "speaking",
-                mapOf(
-                    "holoStrength" to 1.0,
-                    "liquidStrength" to 1.0,
-                    "liquidStyle" to 0.0,
-                ),
-            ),
-            Triple("completing-64-0.6-holo-glow", "completing", mapOf("holoStrength" to 1.0, "glowStrength" to 0.8)),
-            Triple(
-                "drifting-64-0.6-holo-gradient",
-                "drifting",
-                mapOf("holoStrength" to 0.5, "gradientStrength" to 1.0),
-            ),
             // Per-vertex stroke colour (golden 1.6.0, Polyline.hues): the one-layer paint rule.
-            Triple("tracking-64-0.6-holo", "tracking", mapOf("holoStrength" to 1.0)),
             Triple(
                 "tracking-64-0.6-gradient3",
                 "tracking",
@@ -390,12 +341,6 @@ class SinuaViewTest {
                     "gradientHue2" to 300.0,
                     "gradientHue3" to 40.0,
                 ),
-            ),
-            Triple("locating-64-0.6-holo", "locating", mapOf("holoStrength" to 1.0)),
-            Triple(
-                "completing-64-0.6-holo-interrupt",
-                "completing",
-                mapOf("holoStrength" to 1.0, "interruptAge" to 0.15),
             ),
             // A character is fills only (docs/character.md): celebrate and one everyday frame each.
             Triple("buzzy-64-0.6-celebrate", "buzzy", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
@@ -413,19 +358,25 @@ class SinuaViewTest {
             Triple("beep-64-0.6-celebrate", "beep", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
             // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC).
             Triple(
-                "x-completing-64-0.6-holo-glowblur",
+                "x-completing-64-0.6-gradient-glowblur",
                 "completing",
                 mapOf(
-                    "holoStrength" to 1.0,
+                    "gradientStrength" to 1.0,
+                    "gradientHue" to 200.0,
+                    "gradientHue2" to 300.0,
+                    "gradientHue3" to 40.0,
                     "glowStrength" to 0.8,
                     "glowMode" to 1.0,
                 ),
             ),
             Triple(
-                "x-completing-64-0.6-holo-glowblur-additive",
+                "x-completing-64-0.6-gradient-glowblur-additive",
                 "completing",
                 mapOf(
-                    "holoStrength" to 1.0,
+                    "gradientStrength" to 1.0,
+                    "gradientHue" to 200.0,
+                    "gradientHue2" to 300.0,
+                    "gradientHue3" to 40.0,
                     "glowStrength" to 0.8,
                     "glowMode" to 1.0,
                     "glowBlend" to 1.0,
@@ -458,21 +409,10 @@ class SinuaViewTest {
             frames.add(key to f)
         }
         for ((key, f) in frames) {
-            if (!key.contains("liquid-outline") && !key.contains("liquid-dots") && !key.contains("particles") &&
-                !key.contains("holo") &&
-                !key.contains("gradient3")
-            ) {
+            if (!key.contains("gradient3")) {
                 assertTrue(
                     "$key has materials",
                     f.fills.isNotEmpty() || f.effects.isNotEmpty(),
-                )
-            }
-            if (key.contains("liquid-fill")) {
-                assertTrue(
-                    "the liquid fill has a hole",
-                    f.fills.any {
-                        it.holes.isNotEmpty()
-                    },
                 )
             }
             for (dark in listOf(false, true)) {

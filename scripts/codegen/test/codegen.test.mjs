@@ -66,13 +66,13 @@ test("choices become enum cases with engine values", () => {
   assert.deepEqual(blend.choices.map((c) => [c.caseName, c.value]), [["normal", 0], ["additive", 1]]);
 });
 
-test("no flat prop shares a name with a material group (orb orbitParticles vs particles.*)", () => {
+test("no flat prop shares a name with a material group (orb orbitParticles stays a flat prop)", () => {
   const p = prop("orb", "orbitParticles");
   assert.equal(p.name, "orbitParticles");
   assert.equal(p.key, "particles");
   assert.equal(p.attr, "orbit-particles");
   const broken = structuredClone(catalog);
-  broken.definitions["particles@orbits"].path = "particles";
+  broken.definitions["particles@orbits"].path = "glow";
   assert.throws(() => buildModels(broken, naming), /both a prop and a group/);
 });
 

@@ -1,13 +1,13 @@
 // Materials cross-platform check, step 1: the Web side's frames for every
-// materials golden case in spec/sinua-golden.json (fills, effects, liquid,
-// particles, holo, per-vertex hues), built with the same state/t/overrides the native render tests use.
+// materials golden case in spec/sinua-golden.json (fills, effects, glow blur,
+// per-vertex hues), built with the same state/t/overrides the native render tests use.
 //   node --experimental-wasm-modules frames.mjs out/frames.json
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { frameWithOverrides, resolveFxSpec } from "@sinua/core";
 
 const golden = JSON.parse(readFileSync(new URL("../../../../spec/sinua-golden.json", import.meta.url), "utf8"));
-const MATERIALS = /(fill|glow-blur|liquid|particles|holo)/;
+const MATERIALS = /(fill|glow-blur)/;
 // A character is fills only (docs/character.md): per character, the celebrate effect
 // (blurred glows, gradients, clipped shading, sparkles) and one more everyday frame.
 const CHARACTER = /^(buzzy-64-0\.6-(celebrate|muted|turned)|(hum|wisp|chirp)-64-0\.6-(celebrate|barge-in)|chirp-64-0\.6-turned|cuppa-64-0\.6-celebrate|bean-64-0\.6-turned|beep-64-0\.6-celebrate)$/;
@@ -15,8 +15,8 @@ const CHARACTER = /^(buzzy-64-0\.6-(celebrate|muted|turned)|(hum|wisp|chirp)-64-
 // under a blur / additive effect run at the composite -- no golden case has one.
 // compare.cjs reports keys starting "x-" without failing on them.
 export const SYNTHETIC = [
-  { key: "x-completing-64-0.6-holo-glowblur", state: "completing", size: 64, t: 0.6, overrides: { holoStrength: 1, glowStrength: 0.8, glowMode: 1 } },
-  { key: "x-completing-64-0.6-holo-glowblur-additive", state: "completing", size: 64, t: 0.6, overrides: { holoStrength: 1, glowStrength: 0.8, glowMode: 1, glowBlend: 1 } },
+  { key: "x-completing-64-0.6-gradient-glowblur", state: "completing", size: 64, t: 0.6, overrides: { gradientStrength: 1, gradientHue: 200, gradientHue2: 300, gradientHue3: 40, glowStrength: 0.8, glowMode: 1 } },
+  { key: "x-completing-64-0.6-gradient-glowblur-additive", state: "completing", size: 64, t: 0.6, overrides: { gradientStrength: 1, gradientHue: 200, gradientHue2: 300, gradientHue3: 40, glowStrength: 0.8, glowMode: 1, glowBlend: 1 } },
 ];
 // FX Spec rows (1.13, design note 22): the showcase examples (elliptical gradients,
 // soft layers, rims, grain), resolved from spec/examples at their base design.

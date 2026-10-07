@@ -81,7 +81,7 @@ test("materials: the tolerance and the AA exception are the ones docs/fx-view.md
   assert.match(compare, /ENV_EXCEPTIONS\[r\.key\]\?\.mean \?\? 2;/, "the default mean limit is no longer 2");
   assert.match(compare, /v\.mean > meanLimit \|\| v\.p99 > 24/, "the tolerance is no longer mean <= limit / p99 <= 24");
   const aa = [...compare.matchAll(/^\s{2}"([^"]+)":\s*"/gm)].map((m) => m[1]);
-  assert.deepEqual(aa, ["drifting-64-0.6-particles-liquid"], "the AA exception list changed");
+  assert.deepEqual(aa, [], "the AA exception list changed");
   // Renderer-environment exceptions (user decision 2026-09-21): exactly this case, at exactly 3.
   const env = [...compare.matchAll(/^\s{2}"([^"]+)":\s*\{\s*mean:\s*([0-9.]+)/gm)].map((m) => `${m[1]}=${m[2]}`);
   assert.deepEqual(env, ["tracking-64-0.6-glow-blur-additive=3"], "the environment exception list changed");

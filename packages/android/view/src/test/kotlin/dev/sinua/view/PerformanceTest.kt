@@ -30,13 +30,13 @@ class PerformanceTest {
     @Test fun performancePolicy() {
         assertEquals(FxPerformance(null, emptyMap()), fxPerformance(false, null))
         assertEquals(
-            FxPerformance(30.0, mapOf("glowStrength" to 0.0, "particleStrength" to 0.0)),
+            FxPerformance(30.0, mapOf("glowStrength" to 0.0)),
             fxPerformance(true, null),
         )
         assertEquals(FxPerformance(20.0, emptyMap()), fxPerformance(true, null, 20.0, true))
         assertEquals(FxPerformance(24.0, emptyMap()), fxPerformance(false, 24.0, 60.0))
         assertEquals(
-            FxPerformance(24.0, mapOf("glowStrength" to 0.0, "particleStrength" to 0.0)),
+            FxPerformance(24.0, mapOf("glowStrength" to 0.0)),
             fxPerformance(true, null, 24.0),
         )
     }

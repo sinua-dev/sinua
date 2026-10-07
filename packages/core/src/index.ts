@@ -10,7 +10,6 @@
 import {
   frame_transition_packed,
   fx_color_to_hsl_json,
-  particle_defaults_json,
   voice_state_profile_json,
   expression_overrides_json,
   character_recipe_json,
@@ -179,7 +178,7 @@ export interface Polyline {
   hue: number;
   /**
    * Per-vertex hue, one per point, or absent = `hue` for the whole stroke.
-   * Set by holo / gradient when the vertex hues differ. Paint: each segment
+   * Set by the gradient when the vertex hues differ. Paint: each segment
    * a round-capped linear-gradient stroke between its vertices' inks at
    * alpha 1, all in one layer composited once at `a` (docs/engine.md).
    */
@@ -219,7 +218,7 @@ export interface OrbFrame {
  */
 export interface Fill {
   points: Point[];
-  /** Inner rings (materials phase 2, liquid): paint outer + holes as one path with the even-odd rule. Absent when none. */
+  /** Inner rings (a character's ring shapes): paint outer + holes as one path with the even-odd rule. Absent when none. */
   holes?: Point[][];
   white: number;
   a: number;
@@ -567,32 +566,6 @@ export interface FxCost {
 }
 
 
-// ---------------------------------------------------------------- liquid --
-
-/** How well the liquid material suits a state (docs/materials.md, *liquid*). */
-export interface LiquidSuitability {
-  level: "recommended" | "ok" | "notRecommended";
-  /** One short sentence, for a badge tooltip. */
-  reason: string;
-  /** The state's tuned liquid defaults (applied by the engine when a key is unset). */
-  defaults: Record<string, number>;
-}
-
-
-// ------------------------------------------------------------- particles --
-
-/**
- * Every particle knob's default on `state` (docs/materials.md, *particles*):
- * the engine-wide defaults with the state's own over them -- ring states
- * rise, scanning attracts, notifying bursts (`particleSync` 1), speaking and
- * signal follow `audioLevel` (`particleAudio` 1), ambient orbs orbit slowly.
- * The engine applies them to unset keys; show them as the knob defaults.
- * `null` for an unknown state.
- */
-export function particleDefaults(state: OrbState): Record<string, number> | null {
-  return JSON.parse(particle_defaults_json(state)) as Record<string, number> | null;
-}
-
 // ------------------------------------------------------------ catalog --
 
 /** One category of the parameter taxonomy (docs/parameters.md). */
@@ -652,7 +625,6 @@ export interface ParameterPattern {
   speed: number;
   sizes: OrbSize[];
   params: { ref: string; default: Record<string, number | number[] | null> }[];
-  materialDefaults: { particles: Record<string, number>; liquid: Record<string, number> };
   /** `"box"`: the pattern fills the view's box (`patternLayout`); absent = a centred square. */
   layout?: "box";
 }
@@ -709,7 +681,7 @@ export type VoiceStateName = (typeof VOICE_STATES)[number];
 export interface VoiceStateProfile {
   /** Multiplies the pattern's tuned speed. */
   speed: number;
-  /** Engine keys to apply -- `ink`, `audioStrength` (negative = the listening inhale), particles, glow. */
+  /** Engine keys to apply -- `ink`, `audioStrength` (negative = the listening inhale), glow. */
   overrides: Record<string, number>;
   /** Which app input drives `audioLevel` here (`micLevel` / `agentVolume`), or null. Not an engine key. */
   audioInput: string | null;

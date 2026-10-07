@@ -10,11 +10,11 @@ const here = (p) => fileURLToPath(new URL(p, import.meta.url));
 const read = (p) => readFileSync(here(p), "utf8");
 const DEV_EXPORTS = [
   "conversation_at_json", "conversation_samples_json", "conversation_sample_json",
-  "check_overrides_json", "estimate_cost_json", "fx_spec_cost_json", "liquid_suitability_json",
+  "check_overrides_json", "estimate_cost_json", "fx_spec_cost_json",
   "parameter_catalog_json", "frame_json", "frame_json_with_overrides", "frame_from_fx_spec_json",
 ];
 const DEV_API = [
-  "parameterCatalog", "checkOverrides", "estimateCost", "fxSpecCost", "liquidSuitability",
+  "parameterCatalog", "checkOverrides", "estimateCost", "fxSpecCost",
   "conversationAt", "conversationSampleNames", "conversationSample", "SimulatedVoiceSource",
   "frameViaJson", "frameWithOverridesViaJson", "frameFromFxSpecViaJson",
 ];

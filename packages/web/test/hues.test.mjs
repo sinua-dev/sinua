@@ -113,9 +113,9 @@ test("hues of the wrong length fall back to the single hue", () => {
   assert.deepEqual(log.map((l) => l.slice(0, 2)), [["target", "stroke"]]);
 });
 
-test("packed v4 (engine holo frame) paints exactly like its object frame", () => {
-  const packed = frameWithOverridesPacked("tracking", 64, 0.6, { holoStrength: 1 });
-  const frame = frameWithOverrides("tracking", 64, 0.6, { holoStrength: 1 });
+test("packed v4 (engine gradient frame) paints exactly like its object frame", () => {
+  const packed = frameWithOverridesPacked("tracking", 64, 0.6, { gradientStrength: 1, gradientHue: 200, gradientHue2: 300, gradientHue3: 40 });
+  const frame = frameWithOverrides("tracking", 64, 0.6, { gradientStrength: 1, gradientHue: 200, gradientHue2: 300, gradientHue3: 40 });
   assert.equal(packed.data[0], 4, "a frame with hues is packed v4");
   assert.ok(frame.polylines.some((p) => p.hues && p.hues.length), "the engine emits hues");
   log.length = 0;

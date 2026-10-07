@@ -48,8 +48,8 @@ one has to be deliberate.
 
 **Anti-aliasing exceptions.** `AA_EXCEPTIONS` in `compare.cjs` lists the cases
 whose full-resolution p99 is dominated by anti-aliasing differences between
-Chrome and CoreGraphics/Skia. Today that is only
-`drifting-64-0.6-particles-liquid`. A listed case passes on full-resolution
+Chrome and CoreGraphics/Skia. Today the list is empty (its one case,
+`drifting-64-0.6-particles-liquid`, went with those materials in 0.1.0-beta.9). A listed case passes on full-resolution
 mean ≤ 2 **and** half-resolution (2×2 box) p99 ≤ 24; its full-resolution p99 is
 still reported, as information. Adding a case is a deliberate decision that
 needs a reason, the same as a golden re-baseline; the list is agreed with

@@ -15,11 +15,10 @@ test("ring: scalar progress, list progress on tracking, segment list, booleans, 
   assert.deepEqual(P.sinuaRingOverrides("loading", {}), {});
 });
 
-test("orb: renamed flat prop and the particles material stay apart", () => {
-  const o = P.sinuaOrbOverrides("working", { orbitParticles: 4, particles: { count: 12, style: "orbit" } });
+test("orb: the renamed flat prop and a material stay apart", () => {
+  const o = P.sinuaOrbOverrides("working", { orbitParticles: 4, noise: { strength: 0.5 } });
   assert.equal(o.particles, 4);
-  assert.equal(o.particleCount, 12);
-  assert.equal(o.particleStyle, 2);
+  assert.equal(o.noiseStrength, 0.5);
 });
 
 test("unknown choice throws", () => {

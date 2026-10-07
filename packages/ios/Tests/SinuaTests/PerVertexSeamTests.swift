@@ -97,9 +97,12 @@ final class PerVertexSeamTests: XCTestCase {
         }
     }
 
-    /// 16x zoom of `tracking-64-0.6-holo`'s tracks (alpha < 1), light and dark, for a visual seam look.
+    /// 16x zoom of `tracking-64-0.6-gradient3`'s tracks (alpha < 1), light and dark, for a visual seam look.
     func testZoomedTrackingHoloAttachment() throws {
-        let f = try XCTUnwrap(frameWithOverrides(state: "tracking", size: 64, t: 0.6, overrides: ["holoStrength": 1]))
+        let f = try XCTUnwrap(
+            frameWithOverrides(
+                state: "tracking", size: 64, t: 0.6,
+                overrides: ["gradientStrength": 1, "gradientHue": 200, "gradientHue2": 300, "gradientHue3": 40]))
         XCTAssertTrue(f.polylines.contains { FxPaint.hasHues($0) }, "the engine emits hues here")
         for dark in [false, true] {
             let px = try render { ctx, size in
@@ -108,7 +111,7 @@ final class PerVertexSeamTests: XCTestCase {
                     f, into: &ctx, size: CGSize(width: size.width * 4, height: size.height * 4), engineSize: 64,
                     dark: dark)
             }
-            attach("ios-seam-zoom-tracking-holo-\(dark ? "dark" : "light")", png(px))
+            attach("ios-seam-zoom-tracking-gradient3-\(dark ? "dark" : "light")", png(px))
         }
     }
 

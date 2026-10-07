@@ -1,0 +1,85 @@
+{
+  "about": "TranscriptAssembler without a vendor (docs/audio-pipeline.md, *Transcripts*): chars, none paced over received audio, explicit user end, keyed segments. Each step is one call; `tick` repeats every 33 ms; after it, `user`/`assistant` are the last update for that role (null: none yet) and `finals` counts final updates. Web, iOS and Android run it.",
+  "constants": {
+    "rateMinAudioMs": 1000
+  },
+  "cases": [
+    { "name": "chars, synced: per-character times on the reply's own audio reveal with the played audio", "timing": "chars", "syncToAudio": true, "explicitUserEnd": false, "steps": [
+      {"t":0,"op":"assistant","text":"Hel","startMs":0,"endMs":300,"user":null,"assistant":null,"finals":0},
+      {"t":10,"op":"assistant","text":"lo, ","startMs":300,"endMs":600,"user":null,"assistant":null,"finals":0},
+      {"t":20,"op":"assistant","text":"dünya.","startMs":600,"endMs":1200,"user":null,"assistant":null,"finals":0},
+      {"t":100,"op":"tick","level":0.01,"speaking":false,"repeat":3,"user":null,"assistant":null,"finals":0},
+      {"t":200,"op":"tick","level":0.5,"speaking":true,"repeat":10,"user":null,"assistant":{"role":"assistant","text":"He","final":false,"turnId":"a1","startMs":0,"endMs":300},"finals":0},
+      {"t":530,"op":"tick","level":0.5,"speaking":true,"repeat":10,"user":null,"assistant":{"role":"assistant","text":"Hello, ","final":false,"turnId":"a1","startMs":0,"endMs":600},"finals":0},
+      {"t":860,"op":"tick","level":0.5,"speaking":true,"repeat":15,"user":null,"assistant":{"role":"assistant","text":"Hello, dünya","final":false,"turnId":"a1","startMs":0,"endMs":1200},"finals":0},
+      {"t":1400,"op":"tick","level":0.01,"speaking":false,"repeat":1,"user":null,"assistant":{"role":"assistant","text":"Hello, dünya.","final":false,"turnId":"a1","startMs":0,"endMs":1200},"finals":0},
+      {"t":1410,"op":"ended","user":null,"assistant":{"role":"assistant","text":"Hello, dünya.","final":true,"turnId":"a1","startMs":0,"endMs":1200},"finals":1}
+    ] },
+    { "name": "chars, synced barge-in: the turn ends at the last audible character", "timing": "chars", "syncToAudio": true, "explicitUserEnd": false, "steps": [
+      {"t":0,"op":"assistant","text":"Bir ","startMs":0,"endMs":250,"user":null,"assistant":null,"finals":0},
+      {"t":10,"op":"assistant","text":"zamanlar ","startMs":250,"endMs":800,"user":null,"assistant":null,"finals":0},
+      {"t":20,"op":"assistant","text":"bir sincap","startMs":800,"endMs":1500,"user":null,"assistant":null,"finals":0},
+      {"t":100,"op":"tick","level":0.5,"speaking":true,"repeat":20,"user":null,"assistant":{"role":"assistant","text":"Bir zamanl","final":false,"turnId":"a1","startMs":0,"endMs":800},"finals":0},
+      {"t":760,"op":"hold","user":null,"assistant":{"role":"assistant","text":"Bir zamanl","final":false,"turnId":"a1","startMs":0,"endMs":800},"finals":0},
+      {"t":770,"op":"tick","level":0.01,"speaking":true,"repeat":3,"user":null,"assistant":{"role":"assistant","text":"Bir zamanl","final":false,"turnId":"a1","startMs":0,"endMs":800},"finals":0},
+      {"t":900,"op":"cut","user":null,"assistant":{"role":"assistant","text":"Bir zamanl","final":true,"turnId":"a1","truncated":true,"startMs":0,"endMs":800},"finals":1}
+    ] },
+    { "name": "chars, raw: text as it arrives; a barge-in keeps the characters that ended by the cut", "timing": "chars", "syncToAudio": false, "explicitUserEnd": false, "steps": [
+      {"t":0,"op":"assistant","text":"Bir ","startMs":0,"endMs":250,"user":null,"assistant":{"role":"assistant","text":"Bir ","final":false,"turnId":"a1","startMs":0,"endMs":250},"finals":0},
+      {"t":10,"op":"assistant","text":"zamanlar ","startMs":250,"endMs":800,"user":null,"assistant":{"role":"assistant","text":"Bir zamanlar ","final":false,"turnId":"a1","startMs":0,"endMs":800},"finals":0},
+      {"t":20,"op":"assistant","text":"bir sincap","startMs":800,"endMs":1500,"user":null,"assistant":{"role":"assistant","text":"Bir zamanlar bir sincap","final":false,"turnId":"a1","startMs":0,"endMs":1500},"finals":0},
+      {"t":100,"op":"tick","level":0.5,"speaking":true,"repeat":30,"user":null,"assistant":{"role":"assistant","text":"Bir zamanlar bir sincap","final":false,"turnId":"a1","startMs":0,"endMs":1500},"finals":0},
+      {"t":1100,"op":"cut","user":null,"assistant":{"role":"assistant","text":"Bir zamanlar","final":true,"turnId":"a1","truncated":true,"startMs":0,"endMs":800},"finals":1}
+    ] },
+    { "name": "none, paced over the received audio once there is a second of it", "timing": "none", "syncToAudio": true, "explicitUserEnd": false, "steps": [
+      {"t":0,"op":"audio","ms":600,"user":null,"assistant":null,"finals":0},
+      {"t":10,"op":"assistant","text":"Bugün hava çok güzel.","user":null,"assistant":null,"finals":0},
+      {"t":20,"op":"audio","ms":1400,"user":null,"assistant":null,"finals":0},
+      {"t":100,"op":"tick","level":0.5,"speaking":true,"repeat":15,"user":null,"assistant":{"role":"assistant","text":"Bugü","final":false,"turnId":"a1"},"finals":0},
+      {"t":600,"op":"tick","level":0.5,"speaking":true,"repeat":15,"user":null,"assistant":{"role":"assistant","text":"Bugün hava","final":false,"turnId":"a1"},"finals":0},
+      {"t":1100,"op":"tick","level":0.5,"speaking":true,"repeat":30,"user":null,"assistant":{"role":"assistant","text":"Bugün hava çok güzel","final":false,"turnId":"a1"},"finals":0},
+      {"t":2100,"op":"tick","level":0.01,"speaking":false,"repeat":1,"user":null,"assistant":{"role":"assistant","text":"Bugün hava çok güzel.","final":false,"turnId":"a1"},"finals":0},
+      {"t":2110,"op":"ended","user":null,"assistant":{"role":"assistant","text":"Bugün hava çok güzel.","final":true,"turnId":"a1"},"finals":1}
+    ] },
+    { "name": "none, before a second of audio: a typical rate while audible", "timing": "none", "syncToAudio": true, "explicitUserEnd": false, "steps": [
+      {"t":0,"op":"assistant","text":"Tamam, bakıyorum şimdi.","user":null,"assistant":null,"finals":0},
+      {"t":10,"op":"audio","ms":500,"user":null,"assistant":null,"finals":0},
+      {"t":100,"op":"tick","level":0.5,"speaking":true,"repeat":15,"user":null,"assistant":{"role":"assistant","text":"Tamam,","final":false,"turnId":"a1"},"finals":0},
+      {"t":600,"op":"audio","ms":1500,"user":null,"assistant":{"role":"assistant","text":"Tamam,","final":false,"turnId":"a1"},"finals":0},
+      {"t":600,"op":"tick","level":0.5,"speaking":true,"repeat":15,"user":null,"assistant":{"role":"assistant","text":"Tamam, bakı","final":false,"turnId":"a1"},"finals":0}
+    ] },
+    { "name": "none, raw: text as it arrives; a barge-in keeps it", "timing": "none", "syncToAudio": false, "explicitUserEnd": false, "steps": [
+      {"t":0,"op":"assistant","text":"Uzun bir cevap geliyor","user":null,"assistant":{"role":"assistant","text":"Uzun bir cevap geliyor","final":false,"turnId":"a1"},"finals":0},
+      {"t":100,"op":"tick","level":0.5,"speaking":true,"repeat":10,"user":null,"assistant":{"role":"assistant","text":"Uzun bir cevap geliyor","final":false,"turnId":"a1"},"finals":0},
+      {"t":500,"op":"cut","user":null,"assistant":{"role":"assistant","text":"Uzun bir cevap geliyor","final":true,"turnId":"a1","truncated":true},"finals":1}
+    ] },
+    { "name": "explicit user end: only the vendor's done ends the user turn, with its full text", "timing": "none", "syncToAudio": true, "explicitUserEnd": true, "steps": [
+      {"t":0,"op":"user","text":"Bugün ne","user":{"role":"user","text":"Bugün ne","final":false,"turnId":"u1"},"assistant":null,"finals":0},
+      {"t":100,"op":"user","text":" yapsam","user":{"role":"user","text":"Bugün ne yapsam","final":false,"turnId":"u1"},"assistant":null,"finals":0},
+      {"t":200,"op":"assistant","text":"Bence yürüyüşe çıkabilirsin.","user":{"role":"user","text":"Bugün ne yapsam","final":false,"turnId":"u1"},"assistant":null,"finals":0},
+      {"t":300,"op":"tick","level":0.01,"speaking":false,"repeat":1,"user":{"role":"user","text":"Bugün ne yapsam","final":false,"turnId":"u1"},"assistant":null,"finals":0},
+      {"t":4600,"op":"tick","level":0.01,"speaking":false,"repeat":1,"user":{"role":"user","text":"Bugün ne yapsam","final":false,"turnId":"u1"},"assistant":{"role":"assistant","text":"Bence yürüyüşe çıkabilirsin.","final":true,"turnId":"a1"},"finals":1},
+      {"t":4700,"op":"userDone","text":"Bugün ne yapsam?","user":{"role":"user","text":"Bugün ne yapsam?","final":true,"turnId":"u1"},"assistant":{"role":"assistant","text":"Bence yürüyüşe çıkabilirsin.","final":true,"turnId":"a1"},"finals":2}
+    ] },
+    { "name": "a user turn that comes only as one final text (ElevenLabs): one update, final", "timing": "chars", "syncToAudio": true, "explicitUserEnd": true, "steps": [
+      {"t":0,"op":"userDone","text":"Merhaba, nasılsın?","user":{"role":"user","text":"Merhaba, nasılsın?","final":true,"turnId":"u1"},"assistant":null,"finals":1},
+      {"t":10,"op":"userDone","text":"","user":{"role":"user","text":"Merhaba, nasılsın?","final":true,"turnId":"u1"},"assistant":null,"finals":1}
+    ] },
+    { "name": "segments by key (LiveKit): each update replaces the turn's text; a new key ends the open turn; late text for an ended key is ignored", "timing": "synced", "syncToAudio": true, "explicitUserEnd": false, "steps": [
+      {"t":0,"op":"segment","role":"user","key":"SG_1","text":"Hava","final":false,"user":{"role":"user","text":"Hava","final":false,"turnId":"u1"},"assistant":null,"finals":0},
+      {"t":100,"op":"segment","role":"user","key":"SG_1","text":"Hava nasıl","final":false,"user":{"role":"user","text":"Hava nasıl","final":false,"turnId":"u1"},"assistant":null,"finals":0},
+      {"t":200,"op":"segment","role":"user","key":"SG_1","text":"Hava nasıl?","final":true,"user":{"role":"user","text":"Hava nasıl?","final":true,"turnId":"u1"},"assistant":null,"finals":1},
+      {"t":250,"op":"segment","role":"user","key":"SG_1","text":"Hava nasıl? Söyle","final":true,"user":{"role":"user","text":"Hava nasıl?","final":true,"turnId":"u1"},"assistant":null,"finals":1},
+      {"t":300,"op":"segment","role":"assistant","key":"SG_2","text":"Güneşli","final":false,"user":{"role":"user","text":"Hava nasıl?","final":true,"turnId":"u1"},"assistant":{"role":"assistant","text":"Güneşli","final":false,"turnId":"a1"},"finals":1},
+      {"t":400,"op":"segment","role":"assistant","key":"SG_2","text":"Güneşli ve ılık.","final":false,"user":{"role":"user","text":"Hava nasıl?","final":true,"turnId":"u1"},"assistant":{"role":"assistant","text":"Güneşli ve ılık.","final":false,"turnId":"a1"},"finals":1},
+      {"t":500,"op":"tick","level":0.01,"speaking":true,"repeat":10,"user":{"role":"user","text":"Hava nasıl?","final":true,"turnId":"u1"},"assistant":{"role":"assistant","text":"Güneşli ve ılık.","final":false,"turnId":"a1"},"finals":1},
+      {"t":900,"op":"ended","user":{"role":"user","text":"Hava nasıl?","final":true,"turnId":"u1"},"assistant":{"role":"assistant","text":"Güneşli ve ılık.","final":true,"turnId":"a1"},"finals":2},
+      {"t":950,"op":"segment","role":"assistant","key":"SG_2","text":"Güneşli ve ılık. Yarın","final":true,"user":{"role":"user","text":"Hava nasıl?","final":true,"turnId":"u1"},"assistant":{"role":"assistant","text":"Güneşli ve ılık.","final":true,"turnId":"a1"},"finals":2},
+      {"t":1000,"op":"segment","role":"user","key":"SG_4","text":"Peki","final":false,"user":{"role":"user","text":"Peki","final":false,"turnId":"u2"},"assistant":{"role":"assistant","text":"Güneşli ve ılık.","final":true,"turnId":"a1"},"finals":2},
+      {"t":1100,"op":"tick","level":0.01,"speaking":false,"repeat":1,"user":{"role":"user","text":"Peki","final":false,"turnId":"u2"},"assistant":{"role":"assistant","text":"Güneşli ve ılık.","final":true,"turnId":"a1"},"finals":2},
+      {"t":5100,"op":"tick","level":0.01,"speaking":false,"repeat":1,"user":{"role":"user","text":"Peki","final":true,"turnId":"u2"},"assistant":{"role":"assistant","text":"Güneşli ve ılık.","final":true,"turnId":"a1"},"finals":3},
+      {"t":5200,"op":"segment","role":"assistant","key":"SG_5","text":"Başka?","final":false,"user":{"role":"user","text":"Peki","final":true,"turnId":"u2"},"assistant":{"role":"assistant","text":"Başka?","final":false,"turnId":"a2"},"finals":3},
+      {"t":5300,"op":"stop","user":{"role":"user","text":"Peki","final":true,"turnId":"u2"},"assistant":{"role":"assistant","text":"Başka?","final":true,"turnId":"a2"},"finals":4}
+    ] }
+  ]
+}

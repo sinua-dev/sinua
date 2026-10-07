@@ -7,6 +7,7 @@ import {
   type RemoteParticipant,
   type RemoteTrack,
   type RemoteTrackPublication,
+  type TextStreamReader,
 } from "livekit-client";
 import { AudioAnalysis } from "./analysis.js";
 import { resolveCredential, type CredentialProvider } from "./credential.js";
@@ -17,7 +18,8 @@ import {
   isPrimaryAgent,
   publishesForAgent,
 } from "./livekitAgent.js";
-import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
+import { TranscriptAssembler } from "./transcript.js";
+import type { AgentState, TranscriptUpdate, VoiceMetrics, VoiceSource } from "@sinua/core";
 
 /**
  * `VoiceSource` for a LiveKit Room with a LiveKit Agents voice agent in it.
@@ -70,6 +72,8 @@ const WATCHDOG_ZERO_FRAMES = 30; // ~1s of exact-zero RMS while the agent should
 const AGENT_JOIN_TIMEOUT_MS = 20_000; // components-js `useAgent`'s default "failed" timeout
 const CONNECT_TIMEOUT_MS = 20_000;
 const SPEAKING_LEVEL = 0.05; // energy fallback only, when no `lk.agent.state` was ever published
+/** LiveKit Agents' transcription text streams (docs.livekit.io/agents/multimodality/text). */
+const TRANSCRIPTION_TOPIC = "lk.transcription";
 
 export class LiveKitVoiceSource implements VoiceSource {
   private readonly opts: LiveKitVoiceSourceOptions;
@@ -95,6 +99,12 @@ export class LiveKitVoiceSource implements VoiceSource {
   private sessionUp = false;
   private muted = false;
   private state: AgentState = "idle";
+  /** Transcripts: the agent already syncs its text to its speech and truncates it on a barge-in. */
+  private readonly transcript = new TranscriptAssembler("synced", true);
+  private transcriptWanted = false;
+  private streamRoom: Room | null = null;
+  readonly supportsTranscript = true;
+  readonly transcriptTiming = "synced" as const;
 
   constructor(opts: LiveKitVoiceSourceOptions) {
     this.opts = opts;
@@ -116,6 +126,55 @@ export class LiveKitVoiceSource implements VoiceSource {
   onConnectionChange(cb: (connected: boolean) => void): void {
     this.connectionCb = cb;
   }
+
+  /**
+   * Both speakers' live transcript from the agent's `lk.transcription` text streams (design
+   * note 39), synced and truncated by the agent itself (its `sync_transcription`). Display
+   * only, nothing is kept or sent. A Room takes one handler per topic: on an attached Room
+   * whose app already reads `lk.transcription`, this one stays empty (a console warning).
+   */
+  onTranscript(cb: (u: TranscriptUpdate) => void): void {
+    this.transcript.onUpdate = cb;
+    this.transcriptWanted = true;
+    if (this.room) this.readTranscripts(this.room);
+  }
+
+  private readTranscripts(room: Room): void {
+    if (!this.transcriptWanted || this.streamRoom === room || typeof room.registerTextStreamHandler !== "function") return;
+    try {
+      room.registerTextStreamHandler(TRANSCRIPTION_TOPIC, this.onTranscriptStream);
+      this.streamRoom = room;
+    } catch (err) {
+      console.warn("LiveKitVoiceSource: the Room already has an lk.transcription handler; transcripts stay off.", err);
+    }
+  }
+
+  private onTranscriptStream = (reader: TextStreamReader, from: { identity: string }): void => {
+    const room = this.room;
+    if (!room) return;
+    const role = from.identity === room.localParticipant.identity ? "user" : "assistant";
+    // The agent's side only: the agent, or a worker publishing for it.
+    if (role === "assistant") {
+      const p = room.remoteParticipants.get(from.identity);
+      const agent = this.agent?.identity;
+      if (!p || !agent || (p.identity !== agent && !publishesForAgent(p.kind, p.attributes, agent))) return;
+    }
+    const attrs = reader.info.attributes ?? {};
+    const key = attrs["lk.segment_id"] ?? reader.info.id;
+    const final = attrs["lk.transcription_final"] === "true";
+    void (async () => {
+      let text = "";
+      try {
+        for await (const chunk of reader) {
+          text += chunk;
+          this.transcript.segment(role, key, text, false, performance.now());
+        }
+      } catch {
+        return;
+      }
+      if (final) this.transcript.segment(role, key, text, true, performance.now());
+    })();
+  };
 
   /**
    * Muted, the local microphone is unpublished-muted
@@ -152,6 +211,7 @@ export class LiveKitVoiceSource implements VoiceSource {
       }
       const room = "room" in this.opts ? this.opts.room : new Room();
       this.room = room;
+      this.readTranscripts(room);
       this.ctx = new (globalThis.AudioContext ||
         (globalThis as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
       await this.ctx.resume().catch(() => undefined);
@@ -219,7 +279,10 @@ export class LiveKitVoiceSource implements VoiceSource {
       const s = agentStateFromAttributes(participant.attributes);
       if (s) {
         this.agentStateSeen = true;
-        if (isInferredBargeIn(this.state, s, this.room?.localParticipant.isSpeaking ?? false)) this.interruptCb?.();
+        if (isInferredBargeIn(this.state, s, this.room?.localParticipant.isSpeaking ?? false)) {
+          this.interruptCb?.();
+          this.transcript.cut();
+        }
         this.setState(s);
       }
     }
@@ -389,6 +452,7 @@ export class LiveKitVoiceSource implements VoiceSource {
 
     const metrics = this.analysis.read();
     this.metricsCb?.(metrics);
+    this.transcript.tick(performance.now(), metrics.level, this.state === "speaking");
 
     if (this.connected && !this.agentStateSeen) {
       this.setState(metrics.level > SPEAKING_LEVEL ? "speaking" : "listening");
@@ -397,11 +461,22 @@ export class LiveKitVoiceSource implements VoiceSource {
 
   private setState(s: AgentState): void {
     if (this.state === s) return;
+    // The agent stopped talking: its turn ends with what it sent (cut just before on a barge-in).
+    if (this.state === "speaking") this.transcript.speakingEnded();
     this.state = s;
     this.stateCb?.(s);
   }
 
   private teardown(): void {
+    if (this.streamRoom) {
+      try {
+        this.streamRoom.unregisterTextStreamHandler(TRANSCRIPTION_TOPIC);
+      } catch {
+        /* already gone */
+      }
+      this.streamRoom = null;
+    }
+    this.transcript.stop();
     this.connected = false;
     if (this.intervalId != null) clearInterval(this.intervalId);
     this.intervalId = null;

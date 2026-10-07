@@ -13,6 +13,8 @@ import dev.sinua.voice.LooperMainDispatcher
 import dev.sinua.voice.MainDispatcher
 import dev.sinua.voice.PcmAudioDevice
 import dev.sinua.voice.PcmAudioGraph
+import dev.sinua.voice.TranscriptTiming
+import dev.sinua.voice.TranscriptUpdate
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import dev.sinua.websocket.OkHttpLiveSocketFactory
@@ -58,6 +60,8 @@ class GeminiLiveVoiceSource(
     device: PcmAudioDevice = AndroidPcmAudioDevice(),
     private val socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
     private val main: MainDispatcher = LooperMainDispatcher(),
+    /** Transcripts pace the model's text over its played audio; `false`: as it arrives. */
+    syncToAudio: Boolean = true,
 ) : VoiceSource {
     /** One fixed token (a pasted `auth_tokens/…`, single session). */
     @JvmOverloads
@@ -69,7 +73,17 @@ class GeminiLiveVoiceSource(
         device: PcmAudioDevice = AndroidPcmAudioDevice(),
         socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
         main: MainDispatcher = LooperMainDispatcher(),
-    ) : this(CredentialSource.fixed(credential), model, instructions, endpoint, device, socketFactory, main)
+        syncToAudio: Boolean = true,
+    ) : this(
+        CredentialSource.fixed(credential),
+        model,
+        instructions,
+        endpoint,
+        device,
+        socketFactory,
+        main,
+        syncToAudio,
+    )
 
     init {
         if (instructions != null) {
@@ -81,7 +95,7 @@ class GeminiLiveVoiceSource(
     }
 
     private var endpoint: GeminiLiveSession.Endpoint? = null
-    private val session = GeminiLiveSession(model, instructions)
+    private val session = GeminiLiveSession(model, instructions, syncToAudio)
     private val graph = PcmAudioGraph(device)
 
     // Main-thread state.
@@ -102,8 +116,9 @@ class GeminiLiveVoiceSource(
     private val ticker = object : Runnable {
         override fun run() {
             if (!ticking) return
-            graph.read()?.let { metricsCb?.invoke(it) }
-            if (!reconnecting) session.tick(graph.playbackState())
+            val m = graph.read()
+            m?.let { metricsCb?.invoke(it) }
+            if (!reconnecting) session.tick(graph.playbackState(), m?.level ?: 0.0)
             main.postDelayed(this, (1000 / UPDATE_HZ).toLong())
         }
     }
@@ -141,6 +156,17 @@ class GeminiLiveVoiceSource(
     override fun onInterrupt(cb: () -> Unit) {
         session.onInterrupt = cb
     }
+
+    /**
+     * Both speakers' live transcript, on the Main dispatcher (design note 39). Turn ids keep
+     * counting across reconnects; display only, nothing is kept or sent.
+     */
+    override fun onTranscript(cb: (TranscriptUpdate) -> Unit) {
+        session.onTranscript = cb
+    }
+
+    override val supportsTranscript: Boolean get() = true
+    override val transcriptTiming: TranscriptTiming get() = TranscriptTiming.NONE
 
     /** Setup / reconnect failures after `connect()` returned (the state is already back to idle). */
     override fun onError(cb: (Throwable) -> Unit) {

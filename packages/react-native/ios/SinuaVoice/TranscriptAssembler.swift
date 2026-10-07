@@ -18,8 +18,34 @@ public final class TranscriptAssembler {
     public static let newUtteranceGapMs = 600.0
     /// The level above which the assistant's audio counts as audible (the sessions' speaking level).
     public static let audibleLevel = 0.05
+    /// `none`: pace the text over the reply's received audio once there is this much of it.
+    public static let rateMinAudioMs = 1000.0
     /// A tick gap longer than this doesn't count as speaking time.
     static let maxTickMs = 100.0
+
+    /// ElevenLabs' per-character alignment of one audio chunk as word fragments (each word with
+    /// the spaces after it) on the reply's audio timeline: `offsetMs` is where the chunk starts in
+    /// the reply. Characters without times are skipped.
+    public static func alignmentFragments(
+        chars: [String], startsMs: [Double], durationsMs: [Double], offsetMs: Double
+    ) -> [(text: String, startMs: Double, endMs: Double)] {
+        var out: [(text: String, startMs: Double, endMs: Double)] = []
+        var cur: (text: String, startMs: Double, endMs: Double)?
+        for (i, ch) in chars.enumerated() where i < startsMs.count {
+            let end = offsetMs + startsMs[i] + (i < durationsMs.count ? durationsMs[i] : 0)
+            let space = ch.allSatisfy(\.isWhitespace) && !ch.isEmpty
+            // A new word starts at a non-space after a space.
+            if let c = cur, !space, c.text.last?.isWhitespace == true {
+                out.append(c)
+                cur = nil
+            }
+            if cur == nil { cur = ("", offsetMs + startsMs[i], end) }
+            cur!.text += ch
+            cur!.endMs = end
+        }
+        if let c = cur { out.append(c) }
+        return out
+    }
 
     private struct Fragment {
         var text: String
@@ -37,6 +63,8 @@ public final class TranscriptAssembler {
         var onset: Double?
         var anchor: Double?
         var spoken = 0.0
+        var audioMs = 0.0
+        var key: String?
         let assistantAtOpen: Int
 
         init(id: String, lastAt: Double, assistantAtOpen: Int) {
@@ -50,6 +78,8 @@ public final class TranscriptAssembler {
     public let timing: TranscriptTiming
     /// Reveal assistant text with the audio (`syncToAudio`); else raw.
     public let sync: Bool
+    /// A user turn ends only at `userDone` (the vendor says when).
+    public let explicitUserEnd: Bool
 
     private var user: Turn?
     private var assistant: Turn?
@@ -59,10 +89,14 @@ public final class TranscriptAssembler {
     private var lastAudible: Double?
     private var lastTick: Double?
     private var held = false
+    private var pendingAudioMs = 0.0
+    /// `segment`: the keys of the last turns that ended (late text for them is ignored).
+    private var doneKeys: [String] = []
 
-    public init(timing: TranscriptTiming, sync: Bool) {
+    public init(timing: TranscriptTiming, sync: Bool, explicitUserEnd: Bool = false) {
         self.timing = timing
         self.sync = sync
+        self.explicitUserEnd = explicitUserEnd
     }
 
     /// A user fragment (ASR delta), at `now` ms.
@@ -75,6 +109,43 @@ public final class TranscriptAssembler {
         emit(.user, u, final: false)
     }
 
+    /// The vendor's end of the user's turn, with its full text when it sends one (replaces the deltas).
+    public func userDone(_ text: String?, now: Double) {
+        if let text, !Self.trim(text).isEmpty {
+            let u = user ?? open(.user, now)
+            user = u
+            u.fragments = []
+            u.length = 0
+            append(u, text, now, nil, nil)
+        }
+        finish(.user)
+    }
+
+    /// `none`: `ms` more of the assistant reply's audio arrived.
+    public func assistantAudio(_ ms: Double) {
+        if let a = assistant { a.audioMs += ms } else { pendingAudioMs += ms }
+    }
+
+    /// A vendor segment's whole text so far (LiveKit): a new `key` ends the role's open turn.
+    public func segment(_ role: TranscriptUpdate.Role, key: String, text: String, final: Bool, now: Double) {
+        if doneKeys.contains(key) { return }
+        var t = role == .user ? user : assistant
+        if let open = t, open.key != key {
+            finish(role)
+            t = nil
+        }
+        let turn = t ?? open(role, now)
+        if t == nil {
+            turn.key = key
+            if role == .user { user = turn } else { assistant = turn }
+        }
+        turn.fragments = []
+        turn.length = 0
+        append(turn, text, now, nil, nil)
+        turn.shown = turn.length
+        if final { finish(role) } else { emit(role, turn, final: false) }
+    }
+
     /// An assistant fragment, at `now` ms.
     public func assistantDelta(_ text: String, now: Double, startMs: Double? = nil, endMs: Double? = nil) {
         guard !text.isEmpty else { return }
@@ -84,11 +155,15 @@ public final class TranscriptAssembler {
         } else {
             a = open(.assistant, now)
             a.onset = pendingOnset
+            a.audioMs = pendingAudioMs
+            pendingAudioMs = 0
             assistant = a
         }
         append(a, text, now, startMs, endMs)
         if a.anchor == nil, let s = startMs { a.anchor = s }
-        if let u = user, assistantCount > u.assistantAtOpen, a.length >= Self.userCloseChars { finish(.user) }
+        if let u = user, !explicitUserEnd, assistantCount > u.assistantAtOpen, a.length >= Self.userCloseChars {
+            finish(.user)
+        }
         reveal(a, now)
     }
 
@@ -115,7 +190,7 @@ public final class TranscriptAssembler {
         } else if !speaking {
             pendingOnset = nil
         }
-        if let u = user, now - u.lastAt >= Self.userSilenceMs { finish(.user) }
+        if let u = user, !explicitUserEnd, now - u.lastAt >= Self.userSilenceMs { finish(.user) }
         if let a = assistant {
             if a.onset == nil, !speaking, now - a.lastAt >= Self.userSilenceMs {
                 finish(.assistant)
@@ -127,7 +202,8 @@ public final class TranscriptAssembler {
 
     /// The source left `speaking` on its own: the assistant turn ends.
     public func speakingEnded() {
-        guard let a = assistant, a.onset != nil else { return }
+        // A keyed (LiveKit) turn ends with the agent's speaking, heard here or not.
+        guard let a = assistant, a.onset != nil || a.key != nil else { return }
         finish(.assistant)
     }
 
@@ -137,7 +213,7 @@ public final class TranscriptAssembler {
         var n = 0
         if let at = lastAudible, let onset = a.onset, at >= onset {
             if !sync, let anchor = a.anchor {
-                let vendorAt = anchor + (at - onset - Self.segmentDelayMs)
+                let vendorAt = anchor + (at - onset - delay)
                 for f in a.fragments {
                     guard let end = f.endMs, end <= vendorAt else { break }
                     n += f.length
@@ -149,8 +225,11 @@ public final class TranscriptAssembler {
         a.shown = n
         assistant = nil
         pendingOnset = nil
+        pendingAudioMs = 0
         held = false
+        endKey(a)
         emitText(.assistant, a, Self.trim(Self.prefix(a.fragments, n)), final: true, truncated: true)
+        guard timing == .segments else { return }
         // What follows the kept text: the unspoken tail (dropped), or, from the first fragment that
         // starts a gap after the one before it, the next utterance.
         var kept = 0
@@ -178,9 +257,11 @@ public final class TranscriptAssembler {
         if user != nil { finish(.user) }
         if let a = assistant {
             assistant = nil
+            endKey(a)
             emitText(.assistant, a, Self.trim(Self.prefix(a.fragments, a.shown)), final: true, truncated: false)
         }
         pendingOnset = nil
+        pendingAudioMs = 0
         lastAudible = nil
         lastTick = nil
         held = false
@@ -195,8 +276,13 @@ public final class TranscriptAssembler {
             assistantCount += 1
             id = "a\(assistantCount)"
         }
-        return Turn(id: id, lastAt: now, assistantAtOpen: assistantCount)
+        let t = Turn(id: id, lastAt: now, assistantAtOpen: assistantCount)
+        // `chars` times are on the reply's own audio timeline: its start is the audio onset.
+        if timing == .chars { t.anchor = 0 }
+        return t
     }
+
+    private var delay: Double { timing == .segments ? Self.segmentDelayMs : 0 }
 
     private func append(_ t: Turn, _ text: String, _ now: Double, _ startMs: Double?, _ endMs: Double?) {
         let norm = text.precomposedStringWithCanonicalMapping
@@ -207,12 +293,18 @@ public final class TranscriptAssembler {
     }
 
     private func visible(_ a: Turn, now: Double, audibleAt: Double?) -> Int {
-        if !sync || timing == .synced || timing == .chars { return a.length }
+        if !sync || timing == .synced || a.key != nil { return a.length }
         guard let onset = a.onset else { return 0 }
-        if timing == .none { return min(a.length, Int((a.spoken * Self.revealCharsPerSecond).rounded(.down))) }
-        guard let anchor = a.anchor else { return a.length }
         let heldAt = audibleAt.map { min(now, $0 + (held ? 0 : Self.cutGraceMs)) } ?? now
-        let head = anchor + (heldAt - onset - Self.segmentDelayMs)
+        if timing == .none {
+            // Paced over the reply's audio so far; until there is enough of it, a typical rate.
+            if a.audioMs >= Self.rateMinAudioMs {
+                return Int((Double(a.length) * max(0, heldAt - onset) / a.audioMs).rounded(.down))
+            }
+            return min(a.length, Int((a.spoken * Self.revealCharsPerSecond).rounded(.down)))
+        }
+        guard let anchor = a.anchor else { return a.length }
+        let head = anchor + (heldAt - onset - delay)
         var n = 0
         for f in a.fragments {
             guard let start = f.startMs, let end = f.endMs else {
@@ -243,10 +335,18 @@ public final class TranscriptAssembler {
         } else {
             assistant = nil
             pendingOnset = nil
+            pendingAudioMs = 0
             held = false
         }
         t.shown = t.length
+        endKey(t)
         emitText(role, t, Self.trim(Self.prefix(t.fragments, t.length)), final: true, truncated: false)
+    }
+
+    private func endKey(_ t: Turn) {
+        guard let key = t.key else { return }
+        doneKeys.append(key)
+        if doneKeys.count > 16 { doneKeys.removeFirst() }
     }
 
     private func emit(_ role: TranscriptUpdate.Role, _ t: Turn, final: Bool) {

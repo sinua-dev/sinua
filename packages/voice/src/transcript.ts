@@ -15,8 +15,12 @@
 //   `start_ms`/`end_ms` on the session timeline) anchors each assistant turn at the
 //   local audio onset (the first audible tick) mapped to the turn's first `start_ms`, and
 //   reveals SEGMENT_DELAY_MS behind that timeline (it runs ahead of the played audio);
-//   `none` reveals at REVEAL_CHARS_PER_SECOND while the audio is audible; `synced`
-//   and `chars`-less fallbacks show text as it arrives. Text can't show before it
+//   `chars` (ElevenLabs: per-character times) is the same with fragment times on the
+//   reply's own audio timeline (ms from its first sample) and no delay; `none` paces the
+//   text over the reply's audio received so far (`assistantAudio`, once there is
+//   RATE_MIN_AUDIO_MS of it), else at REVEAL_CHARS_PER_SECOND while the audio is
+//   audible; `synced` shows text as it arrives. Fragments without times show as they
+//   arrive. Text can't show before it
 //   arrives: late text catches up at once. Never more than CUT_GRACE_MS past the
 //   last audible moment, and not past it at all once the user talks over the audio
 //   (`hold`, until the audio is heard again): a barge-in shows no unspoken word.
@@ -24,10 +28,15 @@
 // - An assistant turn ends when the source leaves `speaking` (after its quiet tail),
 //   or `truncated` on a barge-in: the text at the last audible moment (raw mode: the
 //   fragments that ended by then, on the vendor's timeline through the same anchor).
-//   Text after the cut that starts NEW_UTTERANCE_GAP_MS later is the next utterance
-//   (the model talked on): it opens the next turn; the rest, the unspoken tail, goes.
+//   `segments` only: text after the cut that starts NEW_UTTERANCE_GAP_MS later is the
+//   next utterance (the model talked on): it opens the next turn; the rest, the unspoken
+//   tail, goes. Raw `none` keeps the text that arrived.
 // - A user turn ends after USER_SILENCE_MS without a fragment, or once an assistant
-//   turn opened after it reaches USER_CLOSE_CHARS of raw text (a "mhm" doesn't).
+//   turn opened after it reaches USER_CLOSE_CHARS of raw text (a "mhm" doesn't); with
+//   `explicitUserEnd` (the vendor says when: Realtime, ElevenLabs) only at `userDone`.
+// - `segment` (LiveKit) replaces a turn's whole text per vendor segment key: the agent
+//   already synced and truncated it, so it shows as it comes, in both modes. A keyed turn
+//   also ends by the rules above; later text for a key that ended is ignored.
 import type { TranscriptTiming, TranscriptUpdate } from "@sinua/core";
 
 export const TRANSCRIPT_USER_SILENCE_MS = 4000;
@@ -47,6 +56,8 @@ export const TRANSCRIPT_SEGMENT_DELAY_MS = 300;
 export const TRANSCRIPT_NEW_UTTERANCE_GAP_MS = 600;
 /** The level above which the assistant's audio counts as audible (the sessions' speaking level). */
 export const TRANSCRIPT_AUDIBLE_LEVEL = 0.05;
+/** `none`: pace the text over the reply's received audio once there is this much of it. */
+export const TRANSCRIPT_RATE_MIN_AUDIO_MS = 1000;
 /** A tick gap longer than this doesn't count as speaking time (a stalled tab). */
 const MAX_TICK_MS = 100;
 
@@ -70,8 +81,11 @@ interface Turn {
   /** Assistant: the local time of the audio onset and the vendor time it maps to. */
   onset: number | null;
   anchor: number | null;
-  /** Assistant, `none`: audible seconds so far. */
+  /** Assistant, `none`: audible seconds so far, and the reply's audio received (ms). */
   spoken: number;
+  audioMs: number;
+  /** `segment`: the vendor's key for this turn. */
+  key: string | null;
   /** User: the assistant counter when it opened (a later assistant turn may close it). */
   assistantAtOpen: number;
 }
@@ -98,6 +112,32 @@ const prefix = (fragments: Fragment[], n: number): string => {
   return out;
 };
 
+/**
+ * ElevenLabs' per-character alignment of one audio chunk as word fragments (each word with
+ * the spaces after it) on the reply's audio timeline: `offsetMs` is where the chunk starts in
+ * the reply. Characters without times are skipped.
+ */
+export function alignmentFragments(chars: readonly string[], startsMs: readonly number[], durationsMs: readonly number[], offsetMs: number): { text: string; startMs: number; endMs: number }[] {
+  const out: { text: string; startMs: number; endMs: number }[] = [];
+  let cur: { text: string; startMs: number; endMs: number } | null = null;
+  for (let i = 0; i < chars.length; i++) {
+    const s = startsMs[i];
+    if (s == null) continue;
+    const ch = chars[i];
+    const end = offsetMs + s + (durationsMs[i] ?? 0);
+    // A new word starts at a non-space after a space.
+    if (cur && !/\s/.test(ch) && /\s$/.test(cur.text)) {
+      out.push(cur);
+      cur = null;
+    }
+    if (!cur) cur = { text: "", startMs: offsetMs + s, endMs: end };
+    cur.text += ch;
+    cur.endMs = end;
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+
 export class TranscriptAssembler {
   onUpdate: ((u: TranscriptUpdate) => void) | null = null;
   private user: Turn | null = null;
@@ -110,11 +150,19 @@ export class TranscriptAssembler {
   private lastTick: number | null = null;
   /** The user is talking over the audio: no reveal past the last audible moment. */
   private held = false;
+  /** `none`: audio of the next reply received before its first fragment (ms). */
+  private pendingAudioMs = 0;
+  /** `segment`: the keys of the last turns that ended (late text for them is ignored). */
+  private doneKeys: string[] = [];
 
-  /** `sync`: reveal assistant text with the audio (`syncToAudio`); else raw. */
+  /**
+   * `sync`: reveal assistant text with the audio (`syncToAudio`); else raw.
+   * `explicitUserEnd`: a user turn ends only at `userDone` (the vendor says when).
+   */
   constructor(
     readonly timing: TranscriptTiming,
     readonly sync: boolean,
+    readonly explicitUserEnd = false,
   ) {}
 
   /** A user fragment (ASR delta), at `now` ms. */
@@ -126,19 +174,60 @@ export class TranscriptAssembler {
     this.emit("user", this.user, false);
   }
 
+  /** The vendor's end of the user's turn, with its full text when it sends one (replaces the deltas). */
+  userDone(text: string | null, now: number): void {
+    if (text?.trim()) {
+      if (!this.user) this.user = this.open("user", now);
+      this.user.fragments = [];
+      this.user.length = 0;
+      this.append(this.user, text, now);
+    }
+    this.finish("user");
+  }
+
+  /** `none`: `ms` more of the assistant reply's audio arrived. */
+  assistantAudio(ms: number): void {
+    if (this.assistant) this.assistant.audioMs += ms;
+    else this.pendingAudioMs += ms;
+  }
+
+  /** A vendor segment's whole text so far (LiveKit): a new `key` ends the role's open turn. */
+  segment(role: "user" | "assistant", key: string, text: string, final: boolean, now: number): void {
+    if (this.doneKeys.includes(key)) return;
+    let t = role === "user" ? this.user : this.assistant;
+    if (t && t.key !== key) {
+      this.finish(role);
+      t = null;
+    }
+    if (!t) {
+      t = this.open(role, now);
+      t.key = key;
+      if (role === "user") this.user = t;
+      else this.assistant = t;
+    }
+    t.fragments = [];
+    t.length = 0;
+    this.append(t, text, now);
+    t.shown = t.length;
+    if (final) this.finish(role);
+    else this.emit(role, t, false);
+  }
+
   /** An assistant fragment, at `now` ms. */
   assistantDelta(text: string, now: number, startMs?: number, endMs?: number): void {
     if (!text) return;
     if (!this.assistant) {
       this.assistant = this.open("assistant", now);
       this.assistant.onset = this.pendingOnset;
+      this.assistant.audioMs = this.pendingAudioMs;
+      this.pendingAudioMs = 0;
     }
     const a = this.assistant;
     this.append(a, text, now, startMs, endMs);
     if (a.anchor == null && startMs != null) a.anchor = startMs;
     // A new assistant reply long enough ends the user's turn (raw text, not what's shown).
     const u = this.user;
-    if (u && this.assistantCount > u.assistantAtOpen && a.length >= TRANSCRIPT_USER_CLOSE_CHARS) this.finish("user");
+    if (u && !this.explicitUserEnd && this.assistantCount > u.assistantAtOpen && a.length >= TRANSCRIPT_USER_CLOSE_CHARS) this.finish("user");
     this.reveal(a, now);
   }
 
@@ -168,7 +257,7 @@ export class TranscriptAssembler {
     } else if (!speaking) {
       this.pendingOnset = null;
     }
-    if (this.user && now - this.user.lastAt >= TRANSCRIPT_USER_SILENCE_MS) this.finish("user");
+    if (this.user && !this.explicitUserEnd && now - this.user.lastAt >= TRANSCRIPT_USER_SILENCE_MS) this.finish("user");
     const a = this.assistant;
     if (a) {
       // Text with no audio at all (no onset) ends like a user turn: after the silence.
@@ -180,7 +269,8 @@ export class TranscriptAssembler {
   /** The source left `speaking` on its own (its quiet tail ran out): the assistant turn ends. */
   speakingEnded(): void {
     const a = this.assistant;
-    if (!a || a.onset == null) return;
+    // A keyed (LiveKit) turn ends with the agent's speaking, heard here or not.
+    if (!a || (a.onset == null && a.key == null)) return;
     this.finish("assistant");
   }
 
@@ -193,7 +283,7 @@ export class TranscriptAssembler {
     if (at != null && a.onset != null && at >= a.onset) {
       if (!this.sync && a.anchor != null) {
         // Raw: the fragments that ended by the cut, on the vendor's timeline.
-        const vendorAt = a.anchor + (at - a.onset - TRANSCRIPT_SEGMENT_DELAY_MS);
+        const vendorAt = a.anchor + (at - a.onset - this.delay());
         for (const f of a.fragments) {
           if (f.endMs == null || f.endMs > vendorAt) break;
           n += f.length;
@@ -205,8 +295,11 @@ export class TranscriptAssembler {
     a.shown = n;
     this.assistant = null;
     this.pendingOnset = null;
+    this.pendingAudioMs = 0;
     this.held = false;
+    this.endKey(a);
     this.emitText("assistant", a, prefix(a.fragments, n).trim(), true, true);
+    if (this.timing !== "segments") return;
     // What follows the kept text: the unspoken tail (dropped), or, from the first fragment that
     // starts a gap after the one before it, the next utterance.
     let kept = 0;
@@ -230,9 +323,11 @@ export class TranscriptAssembler {
     if (this.assistant) {
       const a = this.assistant;
       this.assistant = null;
+      this.endKey(a);
       this.emitText("assistant", a, prefix(a.fragments, a.shown).trim(), true, false);
     }
     this.pendingOnset = null;
+    this.pendingAudioMs = 0;
     this.lastAudible = null;
     this.lastTick = null;
     this.held = false;
@@ -240,7 +335,13 @@ export class TranscriptAssembler {
 
   private open(role: "user" | "assistant", now: number): Turn {
     const id = role === "user" ? `u${++this.userCount}` : `a${++this.assistantCount}`;
-    return { id, fragments: [], length: 0, shown: 0, lastAt: now, onset: null, anchor: null, spoken: 0, assistantAtOpen: this.assistantCount };
+    // `chars` times are on the reply's own audio timeline: its start is the audio onset.
+    const anchor = this.timing === "chars" ? 0 : null;
+    return { id, fragments: [], length: 0, shown: 0, lastAt: now, onset: null, anchor, spoken: 0, audioMs: 0, key: null, assistantAtOpen: this.assistantCount };
+  }
+
+  private delay(): number {
+    return this.timing === "segments" ? TRANSCRIPT_SEGMENT_DELAY_MS : 0;
   }
 
   private append(t: Turn, text: string, now: number, startMs?: number, endMs?: number): void {
@@ -253,13 +354,17 @@ export class TranscriptAssembler {
 
   /** Code points of `a` visible at `now` (the playhead held within CUT_GRACE_MS of `audibleAt`). */
   private visible(a: Turn, now: number, audibleAt: number | null): number {
-    if (!this.sync || this.timing === "synced" || this.timing === "chars") return a.length;
+    if (!this.sync || this.timing === "synced" || a.key != null) return a.length;
     if (a.onset == null) return 0;
-    if (this.timing === "none") return Math.min(a.length, Math.floor(a.spoken * TRANSCRIPT_REVEAL_CHARS_PER_SECOND));
-    // segments
-    if (a.anchor == null) return a.length;
     const held = audibleAt == null ? now : Math.min(now, audibleAt + (this.held ? 0 : TRANSCRIPT_CUT_GRACE_MS));
-    const head = a.anchor + (held - a.onset - TRANSCRIPT_SEGMENT_DELAY_MS);
+    if (this.timing === "none") {
+      // Paced over the reply's audio so far; until there is enough of it, a typical rate.
+      if (a.audioMs >= TRANSCRIPT_RATE_MIN_AUDIO_MS) return Math.floor((a.length * Math.max(0, held - a.onset)) / a.audioMs);
+      return Math.min(a.length, Math.floor(a.spoken * TRANSCRIPT_REVEAL_CHARS_PER_SECOND));
+    }
+    // segments, chars
+    if (a.anchor == null) return a.length;
+    const head = a.anchor + (held - a.onset - this.delay());
     let n = 0;
     for (const f of a.fragments) {
       if (f.startMs == null || f.endMs == null) {
@@ -289,10 +394,18 @@ export class TranscriptAssembler {
     else {
       this.assistant = null;
       this.pendingOnset = null;
+      this.pendingAudioMs = 0;
       this.held = false;
     }
     t.shown = t.length;
+    this.endKey(t);
     this.emitText(role, t, prefix(t.fragments, t.length).trim(), true, false);
+  }
+
+  private endKey(t: Turn): void {
+    if (t.key == null) return;
+    this.doneKeys.push(t.key);
+    if (this.doneKeys.length > 16) this.doneKeys.shift();
   }
 
   private emit(role: "user" | "assistant", t: Turn, final: boolean): void {

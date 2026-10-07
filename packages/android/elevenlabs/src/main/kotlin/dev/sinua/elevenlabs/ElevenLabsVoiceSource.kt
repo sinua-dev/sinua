@@ -12,6 +12,8 @@ import dev.sinua.voice.MainDispatcher
 import dev.sinua.voice.Pcm
 import dev.sinua.voice.PcmAudioDevice
 import dev.sinua.voice.PcmAudioGraph
+import dev.sinua.voice.TranscriptTiming
+import dev.sinua.voice.TranscriptUpdate
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import dev.sinua.websocket.OkHttpLiveSocketFactory
@@ -51,6 +53,8 @@ class ElevenLabsVoiceSource(
     private val socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
     private val main: MainDispatcher = LooperMainDispatcher(),
     private val clock: () -> Double = { System.nanoTime() / 1e9 },
+    /** Transcripts reveal the agent's text with the played audio, character by character; `false`: as it arrives. */
+    syncToAudio: Boolean = true,
 ) : VoiceSource {
     /** A public agent id, or one signed `wss://` URL. */
     @JvmOverloads
@@ -62,9 +66,10 @@ class ElevenLabsVoiceSource(
         socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
         main: MainDispatcher = LooperMainDispatcher(),
         clock: () -> Double = { System.nanoTime() / 1e9 },
-    ) : this(CredentialSource.fixed(credential), overrides, endpoint, device, socketFactory, main, clock)
+        syncToAudio: Boolean = true,
+    ) : this(CredentialSource.fixed(credential), overrides, endpoint, device, socketFactory, main, clock, syncToAudio)
 
-    private val session = ElevenLabsSession()
+    private val session = ElevenLabsSession(syncToAudio)
     private val graph = PcmAudioGraph(device)
 
     // Main-thread state.
@@ -89,8 +94,9 @@ class ElevenLabsVoiceSource(
     private val ticker = object : Runnable {
         override fun run() {
             if (!ticking) return
-            graph.read()?.let { metricsCb?.invoke(it) }
-            session.tick(graph.playbackState(), clock())
+            val m = graph.read()
+            m?.let { metricsCb?.invoke(it) }
+            session.tick(graph.playbackState(), clock(), m?.level ?: 0.0)
             main.postDelayed(this, (1000 / UPDATE_HZ).toLong())
         }
     }
@@ -128,6 +134,14 @@ class ElevenLabsVoiceSource(
     override fun onInterrupt(cb: () -> Unit) {
         session.onInterrupt = cb
     }
+
+    /** Both speakers' live transcript, on the Main dispatcher (design note 39); display only, nothing is kept or sent. */
+    override fun onTranscript(cb: (TranscriptUpdate) -> Unit) {
+        session.onTranscript = cb
+    }
+
+    override val supportsTranscript: Boolean get() = true
+    override val transcriptTiming: TranscriptTiming get() = TranscriptTiming.CHARS
 
     /** Failures after `connect()` returned (the state is already back to idle). */
     override fun onError(cb: (Throwable) -> Unit) {

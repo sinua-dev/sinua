@@ -44,7 +44,7 @@ final class OpenAIRealtimeVoiceSource: NSObject, VoiceSource, @unchecked Sendabl
     private let audioSession: VoiceAudioSession
     /// This source claimed the app's audio session (released on teardown). Main thread.
     private var holdsSession = false
-    private let session = OpenAIRealtimeSession()
+    private let session: OpenAIRealtimeSession
     private let tap = PcmTap()
     private lazy var renderer = Renderer(sink: tap.sink)
 
@@ -73,20 +73,29 @@ final class OpenAIRealtimeVoiceSource: NSObject, VoiceSource, @unchecked Sendabl
     /// first, only the negotiated channel applies). A `callsURL` backend must forward `dcid`.
     /// `audioSession`: how the app's audio session is set up before the call (default: the
     /// loudspeaker; `.unmanaged` if your app does it).
+    /// `syncToAudio`: transcripts pace the model's text over its audible audio (default);
+    /// `false` shows it as it arrives. `transcribeUser`: the input transcription model turned
+    /// on (billed per minute by OpenAI) when something listens to transcripts and the session
+    /// has none; `nil` leaves the session as your backend made it.
     public init(
         credential: CredentialSource,
         callsURL: URL = OpenAIRealtimeSignaling.callsURL,
         warp: Bool = false,
         urlSession: URLSession = .shared,
         requestPermission: @escaping () async -> Bool = AVPcmAudioDevice.requestPermission,
-        audioSession: VoiceAudioSession = .speaker
+        audioSession: VoiceAudioSession = .speaker,
+        syncToAudio: Bool = true,
+        transcribeUser: String? = OpenAIRealtimeSession.userTranscriptionModel
     ) {
+        session = OpenAIRealtimeSession(syncToAudio: syncToAudio, transcribeUser: transcribeUser)
         self.audioSession = audioSession
         credentials = credential
         self.callsURL = callsURL
         self.warp = warp
         self.urlSession = urlSession
         self.requestPermission = requestPermission
+        super.init()
+        session.onSend = { [weak self] in self?.send($0) }
     }
 
     /// Your backend's endpoint, answering `{ credential: "ek_…", expiresAt? }`.
@@ -101,12 +110,14 @@ final class OpenAIRealtimeVoiceSource: NSObject, VoiceSource, @unchecked Sendabl
         warp: Bool = false,
         urlSession: URLSession = .shared,
         requestPermission: @escaping () async -> Bool = AVPcmAudioDevice.requestPermission,
-        audioSession: VoiceAudioSession = .speaker
+        audioSession: VoiceAudioSession = .speaker,
+        syncToAudio: Bool = true,
+        transcribeUser: String? = OpenAIRealtimeSession.userTranscriptionModel
     ) {
         self.init(
             credential: .provider { SinuaCredential(credential: try await credentialProvider()) },
             callsURL: callsURL, warp: warp, urlSession: urlSession, requestPermission: requestPermission,
-            audioSession: audioSession)
+            audioSession: audioSession, syncToAudio: syncToAudio, transcribeUser: transcribeUser)
     }
 
     /// One pasted `ek_…` (single session: a drop without a provider ends in `idle`).
@@ -146,6 +157,11 @@ final class OpenAIRealtimeVoiceSource: NSObject, VoiceSource, @unchecked Sendabl
     public func onMetrics(_ cb: @escaping (VoiceMetrics) -> Void) { metricsCb = cb }
     public func onStateChange(_ cb: @escaping (AgentState) -> Void) { session.onState = cb }
     public func onInterrupt(_ cb: @escaping () -> Void) { session.onInterrupt = cb }
+    /// Both speakers' live transcript (design note 39); display only, nothing is kept or sent.
+    /// The user's side needs input transcription (`transcribeUser`).
+    public func onTranscript(_ cb: @escaping (TranscriptUpdate) -> Void) { session.onTranscript = cb }
+    public var supportsTranscript: Bool { true }
+    public var transcriptTiming: TranscriptTiming { .none }
     public func onConnectionChange(_ cb: @escaping (Bool) -> Void) { connectionCb = cb }
     public var reportsConnection: Bool { true }
     public var supportsMute: Bool { true }

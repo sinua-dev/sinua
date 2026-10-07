@@ -14,6 +14,8 @@ import dev.sinua.voice.OpenAIRealtimeSignaling
 import dev.sinua.voice.PcmTap
 import dev.sinua.voice.RealtimeReconnect
 import dev.sinua.voice.SinuaCredential
+import dev.sinua.voice.TranscriptTiming
+import dev.sinua.voice.TranscriptUpdate
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import dev.sinua.voice.isMicPermissionGranted
@@ -93,6 +95,13 @@ class OpenAIRealtimeVoiceSource(
     private val callsUrl: String = OpenAIRealtimeSignaling.CALLS_URL,
     private val http: OpenAIHttp = OpenAIHttp(),
     private val warp: Boolean = false,
+    /** Transcripts pace the model's text over its audible audio; `false`: as it arrives. */
+    syncToAudio: Boolean = true,
+    /**
+     * The input transcription model turned on (billed per minute by OpenAI) when something listens
+     * to transcripts and the session has none; `null` leaves the session as your backend made it.
+     */
+    transcribeUser: String? = OpenAIRealtimeSession.USER_TRANSCRIPTION_MODEL,
 ) : VoiceSource {
     /** A fresh `ek_` from your code (e.g. your backend), called again on every reconnect. */
     constructor(
@@ -101,12 +110,16 @@ class OpenAIRealtimeVoiceSource(
         callsUrl: String = OpenAIRealtimeSignaling.CALLS_URL,
         http: OpenAIHttp = OpenAIHttp(),
         warp: Boolean = false,
+        syncToAudio: Boolean = true,
+        transcribeUser: String? = OpenAIRealtimeSession.USER_TRANSCRIPTION_MODEL,
     ) : this(
         context,
         CredentialSource.provider { SinuaCredential(runBlocking { credentialProvider() }) },
         callsUrl,
         http,
         warp,
+        syncToAudio,
+        transcribeUser,
     )
 
     /** A pasted `ek_` is single-session: set once it has been used. */
@@ -143,7 +156,7 @@ class OpenAIRealtimeVoiceSource(
         override fun remove(r: Runnable) = handler.removeCallbacks(r)
     }
     private val appContext = context.applicationContext
-    private val session = OpenAIRealtimeSession()
+    private val session = OpenAIRealtimeSession(syncToAudio, transcribeUser).also { it.onSend = { text -> send(text) } }
     private val tap = PcmTap()
     private val handler = Handler(Looper.getMainLooper())
 
@@ -213,6 +226,17 @@ class OpenAIRealtimeVoiceSource(
     override fun onInterrupt(cb: () -> Unit) {
         session.onInterrupt = cb
     }
+
+    /**
+     * Both speakers' live transcript, on the Main dispatcher (design note 39); display only,
+     * nothing is kept or sent. The user's side needs input transcription (`transcribeUser`).
+     */
+    override fun onTranscript(cb: (TranscriptUpdate) -> Unit) {
+        session.onTranscript = cb
+    }
+
+    override val supportsTranscript: Boolean get() = true
+    override val transcriptTiming: TranscriptTiming get() = TranscriptTiming.NONE
 
     /** Failures after `connect()` returned (the state is already back to idle). */
     override fun onError(cb: (Throwable) -> Unit) {

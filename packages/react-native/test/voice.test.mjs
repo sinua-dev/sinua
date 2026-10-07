@@ -201,6 +201,17 @@ test("transcripts: the flat native event arrives as the shared update shape, bef
   assert.equal(sim.transcriptTiming, "synced");
   assert.equal(mic.supportsTranscript, false);
   assert.equal(mic.transcriptTiming, "none");
+  // T1b: the four vendors, timed as on the native sources.
+  for (const [config, timing] of [
+    [{ vendor: "openai", credential: "ek_x" }, "none"],
+    [{ vendor: "gemini", credential: "auth_tokens/x" }, "none"],
+    [{ vendor: "elevenlabs", credential: "agent" }, "chars"],
+    [{ vendor: "livekit", url: "wss://x", token: "t" }, "synced"],
+  ]) {
+    const h = createVoiceSource(config);
+    assert.equal(h.supportsTranscript, true, config.vendor);
+    assert.equal(h.transcriptTiming, timing, config.vendor);
+  }
   const got = [];
   const off = sim.onTranscript((u) => got.push(u));
   emit({ id: sim.id, event: "transcript", role: "user", text: "Merhaba", final: false, turnId: "u1", truncated: false });

@@ -117,4 +117,73 @@ class TranscriptCoreTest {
         assertEquals(listOf("Merhaba"), a)
         assertEquals(listOf("Merhaba", "Merhaba!"), b)
     }
+
+    /**
+     * T1b: the vendor-free half on its own (chars, none paced over received audio, explicit user
+     * end, keyed segments): spec/transcript-assembler-cases.json.
+     */
+    @Test fun theAssemblerFollowsTheVendorFreeTable() {
+        val root = JSONObject(File("../../spec/transcript-assembler-cases.json").readText())
+        assertEquals(TranscriptAssembler.RATE_MIN_AUDIO_MS, root.getJSONObject("constants").getDouble("rateMinAudioMs"), 0.0)
+        val cases = root.getJSONArray("cases")
+        assertTrue(cases.length() >= 9)
+        for (ci in 0 until cases.length()) {
+            val c = cases.getJSONObject(ci)
+            val name = c.getString("name")
+            val a = TranscriptAssembler(
+                TranscriptTiming.entries.first { it.wire == c.getString("timing") },
+                c.getBoolean("syncToAudio"),
+                c.getBoolean("explicitUserEnd"),
+            )
+            var lastUser: TranscriptUpdate? = null
+            var lastAssistant: TranscriptUpdate? = null
+            var finals = 0
+            a.onUpdate = { u ->
+                if (u.final) finals++
+                if (u.role == TranscriptRole.USER) lastUser = u else lastAssistant = u
+            }
+            val steps = c.getJSONArray("steps")
+            for (i in 0 until steps.length()) {
+                val s = steps.getJSONObject(i)
+                val t = s.getDouble("t")
+                val text = if (s.has("text")) s.getString("text") else null
+                fun num(key: String): Double? = if (s.has(key)) s.getDouble(key) else null
+                when (val op = s.getString("op")) {
+                    "tick" -> for (n in 0 until s.getInt("repeat")) {
+                        a.tick(t + n * 33, s.getDouble("level"), s.getBoolean("speaking"))
+                    }
+
+                    "user" -> a.userDelta(text!!, t)
+
+                    "assistant" -> a.assistantDelta(text!!, t, num("startMs"), num("endMs"))
+
+                    "userDone" -> a.userDone(text, t)
+
+                    "audio" -> a.assistantAudio(s.getDouble("ms"))
+
+                    "segment" -> a.segment(
+                        TranscriptRole.entries.first { it.wire == s.getString("role") },
+                        s.getString("key"),
+                        text!!,
+                        s.getBoolean("final"),
+                        t,
+                    )
+
+                    "hold" -> a.hold()
+
+                    "cut" -> a.cut()
+
+                    "ended" -> a.speakingEnded()
+
+                    "stop" -> a.stop()
+
+                    else -> throw AssertionError("unknown op $op")
+                }
+                val at = "$name, step ${i + 1}"
+                assertEquals("$at: user", describe(s.optJSONObject("user")), describe(lastUser))
+                assertEquals("$at: assistant", describe(s.optJSONObject("assistant")), describe(lastAssistant))
+                assertEquals("$at: finals", s.getInt("finals"), finals)
+            }
+        }
+    }
 }

@@ -9,6 +9,8 @@ import dev.sinua.voice.LiveKitAgentTracker
 import dev.sinua.voice.LiveKitParticipantRole
 import dev.sinua.voice.MainDispatcher
 import dev.sinua.voice.SinuaCredential
+import dev.sinua.voice.TranscriptTiming
+import dev.sinua.voice.TranscriptUpdate
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import io.livekit.android.LiveKit
@@ -138,6 +140,69 @@ class LiveKitVoiceSource private constructor(
         tracker.onInterrupt = cb
     }
 
+    private var transcriptWanted = false
+    private var readingTranscripts = false
+
+    /**
+     * Both speakers' live transcript from the agent's `lk.transcription` streams, on the Main
+     * dispatcher (design note 39), synced and truncated by the agent itself. Display only, nothing
+     * is kept or sent. A Room takes one handler per topic: on an attached Room whose app already
+     * reads them, this stays empty.
+     */
+    override fun onTranscript(cb: (TranscriptUpdate) -> Unit) {
+        tracker.onTranscript = cb
+        transcriptWanted = true
+        if (scope != null) readTranscripts()
+    }
+
+    override val supportsTranscript: Boolean get() = true
+    override val transcriptTiming: TranscriptTiming get() = TranscriptTiming.SYNCED
+
+    /** Main thread: registers the `lk.transcription` handler once, if transcripts are wanted. */
+    private fun readTranscripts() {
+        val s = scope ?: return
+        if (!transcriptWanted || readingTranscripts) return
+        try {
+            room.registerTextStreamHandler(TRANSCRIPTION_TOPIC) { receiver, from ->
+                val attrs = receiver.info.attributes
+                val key = attrs["lk.segment_id"] ?: receiver.info.id
+                val final = attrs["lk.transcription_final"] == "true"
+                s.launch {
+                    val text = StringBuilder()
+                    runCatching {
+                        receiver.flow.collect { chunk ->
+                            text.append(chunk)
+                            transcription(from.value, key, text.toString(), false)
+                        }
+                    }.onFailure { return@launch }
+                    if (final) transcription(from.value, key, text.toString(), true)
+                }
+            }
+            readingTranscripts = true
+        } catch (e: Exception) {
+            android.util.Log.w(
+                "Sinua",
+                "LiveKitVoiceSource: the Room already has an lk.transcription handler; transcripts stay off",
+                e,
+            )
+        }
+    }
+
+    private fun transcription(identity: String, key: String, text: String, final: Boolean) {
+        val local = identity == room.localParticipant.identity?.value
+        val p = room.remoteParticipants.values.firstOrNull { it.identity?.value == identity }
+        tracker.transcription(
+            identity,
+            p?.kind == Participant.Kind.AGENT,
+            p?.attributes ?: emptyMap(),
+            local,
+            key,
+            text,
+            final,
+            System.nanoTime() / 1e6,
+        )
+    }
+
     /** Owned Room only: connection / agent-join failures (the state is already back to idle). */
     override fun onError(cb: (Throwable) -> Unit) {
         errorCb = cb
@@ -151,6 +216,7 @@ class LiveKitVoiceSource private constructor(
         tracker.start()
         // Subscribe before connecting so no event is missed.
         s.launch(start = CoroutineStart.UNDISPATCHED) { room.events.collect { onEvent(it) } }
+        readTranscripts()
         if (!ownsRoom) {
             room.remoteParticipants.values.forEach { seen(it) }
             handler.post(ticker)
@@ -283,6 +349,10 @@ class LiveKitVoiceSource private constructor(
         scope = null
         handler.removeCallbacks(ticker)
         untap()
+        if (readingTranscripts) {
+            readingTranscripts = false
+            runCatching { room.unregisterTextStreamHandler(TRANSCRIPTION_TOPIC) }
+        }
         tracker.stop()
         agentJoined.cancel()
         agentJoined = CompletableDeferred()
@@ -295,6 +365,9 @@ class LiveKitVoiceSource private constructor(
 
     companion object {
         const val UPDATE_HZ = 30.0
+
+        /** LiveKit Agents' transcription text streams (docs.livekit.io/agents/multimodality/text). */
+        const val TRANSCRIPTION_TOPIC = "lk.transcription"
 
         /** components-js `useAgent`'s default, as on Web and iOS. */
         const val AGENT_JOIN_TIMEOUT_MS = 20_000L

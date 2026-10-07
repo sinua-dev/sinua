@@ -8,7 +8,11 @@ package dev.sinua.voice
 import org.json.JSONArray
 import org.json.JSONObject
 
-class GeminiLiveSession(val model: String = DEFAULT_MODEL, val instructions: String? = null) {
+class GeminiLiveSession(
+    val model: String = DEFAULT_MODEL,
+    val instructions: String? = null,
+    syncToAudio: Boolean = true,
+) {
     /** Side effects the glue performs on the audio graph / socket. */
     sealed class Action {
         object SetupComplete : Action()
@@ -30,12 +34,25 @@ class GeminiLiveSession(val model: String = DEFAULT_MODEL, val instructions: Str
     var onState: ((AgentState) -> Unit)? = null
     var onInterrupt: (() -> Unit)? = null
 
+    /**
+     * The transcript (design note 39): no times from Gemini, so `none` timing, paced over the
+     * reply's received audio unless `syncToAudio` is false.
+     */
+    val transcript = TranscriptAssembler(TranscriptTiming.NONE, syncToAudio)
+    var onTranscript: ((TranscriptUpdate) -> Unit)?
+        get() = transcript.onUpdate
+        set(value) {
+            transcript.onUpdate = value
+        }
+
     fun setupMessage(): String {
         val setup = JSONObject()
             .put("model", if (model.startsWith("models/")) model else "models/$model")
             .put("generationConfig", JSONObject().put("responseModalities", JSONArray().put("AUDIO")))
             // Gemini's own ASR of the user: the vendor-side "the user is being heard" signal.
             .put("inputAudioTranscription", JSONObject())
+            // The model's own words, for transcripts (the same Live session; no extra request).
+            .put("outputAudioTranscription", JSONObject())
             .put("sessionResumption", resumptionHandle?.let { JSONObject().put("handle", it) } ?: JSONObject())
             .put("contextWindowCompression", JSONObject().put("slidingWindow", JSONObject()))
         instructions?.let {
@@ -53,14 +70,18 @@ class GeminiLiveSession(val model: String = DEFAULT_MODEL, val instructions: Str
 
     /** A fresh `connect()` starts a fresh session (Web's teardown clears the handle). */
     fun reset() {
+        transcript.stop()
         resumptionHandle = null
         setupDone = false
         generationDone = true
         setState(AgentState.IDLE)
     }
 
-    /** One server frame (text or decoded binary). `playback` is the graph's current state. */
-    fun handle(text: String, playback: PlaybackState): List<Action> {
+    /**
+     * One server frame (text or decoded binary). `playback` is the graph's current state; [now]
+     * (seconds) times the transcript.
+     */
+    fun handle(text: String, playback: PlaybackState, now: Double = System.nanoTime() / 1e9): List<Action> {
         val msg = try {
             JSONObject(text)
         } catch (_: Exception) {
@@ -76,12 +97,20 @@ class GeminiLiveSession(val model: String = DEFAULT_MODEL, val instructions: Str
             if (sc.optBoolean("interrupted")) {
                 // The Live guide: stop playing and clear the queue. A barge-in only if there was output to cut.
                 if (state == AgentState.SPEAKING || playback != PlaybackState.DRAINED) onInterrupt?.invoke()
+                transcript.cut()
                 actions += Action.ClearPlayback(fade = true)
                 generationDone = true
                 setState(AgentState.LISTENING)
             }
             if ((sc.has("interimInputTranscription") || sc.has("inputTranscription")) && state != AgentState.SPEAKING) {
                 setState(AgentState.LISTENING)
+            }
+            sc.optJSONObject("inputTranscription")?.optString("text")?.takeIf { it.isNotEmpty() }?.let {
+                if (state == AgentState.SPEAKING) transcript.hold()
+                transcript.userDelta(it, now * 1000)
+            }
+            sc.optJSONObject("outputTranscription")?.optString("text")?.takeIf { it.isNotEmpty() }?.let {
+                transcript.assistantDelta(it, now * 1000)
             }
             val parts = sc.optJSONObject("modelTurn")?.optJSONArray("parts")
             for (i in 0 until (parts?.length() ?: 0)) {
@@ -90,7 +119,10 @@ class GeminiLiveSession(val model: String = DEFAULT_MODEL, val instructions: Str
                 val b64 = inline.optString("data")
                 if (!mime.startsWith("audio/pcm") || b64.isEmpty()) continue
                 val bytes = Pcm.base64Decode(b64) ?: continue
-                actions += Action.Enqueue(Pcm.pcm16ToFloat(bytes), Pcm.parseRate(mime, OUTPUT_RATE))
+                val samples = Pcm.pcm16ToFloat(bytes)
+                val rate = Pcm.parseRate(mime, OUTPUT_RATE)
+                actions += Action.Enqueue(samples, rate)
+                transcript.assistantAudio(samples.size * 1000.0 / rate)
                 generationDone = false
                 // Received, not audible yet: tick() promotes to speaking when playback reaches it.
                 if (state != AgentState.SPEAKING) setState(AgentState.THINKING)
@@ -113,9 +145,10 @@ class GeminiLiveSession(val model: String = DEFAULT_MODEL, val instructions: Str
         return actions
     }
 
-    /** 30 Hz, only while connected: the playback-timeline gate. */
-    fun tick(playback: PlaybackState) {
+    /** 30 Hz, only while connected: the playback-timeline gate; [level] is the played audio's (for the transcript). */
+    fun tick(playback: PlaybackState, level: Double = 0.0, now: Double = System.nanoTime() / 1e9) {
         if (!setupDone) return
+        transcript.tick(now * 1000, level, state == AgentState.SPEAKING)
         when (playback) {
             PlaybackState.AUDIBLE -> setState(AgentState.SPEAKING)
 
@@ -129,6 +162,12 @@ class GeminiLiveSession(val model: String = DEFAULT_MODEL, val instructions: Str
 
     private fun setState(s: AgentState) {
         if (s == state) return
+        // The reply is over (drained, cut just before, or a reconnect): its turn ends if it was heard.
+        if (s == AgentState.LISTENING || s == AgentState.INITIALIZING ||
+            s == AgentState.IDLE
+        ) {
+            transcript.speakingEnded()
+        }
         state = s
         onState?.invoke(s)
     }

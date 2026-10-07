@@ -3,7 +3,8 @@ import { insecureCredentialRefusal } from "./insecureCredential.js";
 import { PcmAudioGraph } from "./PcmAudioGraph.js";
 import { FatalConnectError, isFatalConnectError } from "./realtimeReconnect.js";
 import { base64ToBytes, bytesToBase64, float32ToPcm16, parsePcmRate, pcm16ToFloat32 } from "./pcm.js";
-import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
+import { TranscriptAssembler } from "./transcript.js";
+import type { AgentState, TranscriptUpdate, VoiceMetrics, VoiceSource } from "@sinua/core";
 
 /**
  * `VoiceSource` for Gemini Live over its raw WebSocket -- the PCM-over-
@@ -80,6 +81,12 @@ export interface GeminiLiveVoiceSourceOptions extends CredentialOptions {
    * sent here, but a locked token wins.
    */
   instructions?: string;
+  /**
+   * Transcripts (`onTranscript`): `true` (default) paces the model's text over its played
+   * audio (Gemini sends no word times); `false` shows it as it arrives
+   * (docs/audio-pipeline.md, *Transcripts*).
+   */
+  syncToAudio?: boolean;
 }
 
 const WS_URL =
@@ -101,6 +108,7 @@ interface ServerMessage {
     waitingForInput?: boolean;
     inputTranscription?: { text?: string };
     interimInputTranscription?: { text?: string };
+    outputTranscription?: { text?: string };
   };
   sessionResumptionUpdate?: { newHandle?: string; resumable?: boolean };
   goAway?: { timeLeft?: string };
@@ -128,6 +136,10 @@ export class GeminiLiveVoiceSource implements VoiceSource {
   private metricsCb: ((m: VoiceMetrics) => void) | null = null;
   private stateCb: ((s: AgentState) => void) | null = null;
   private interruptCb: (() => void) | null = null;
+  /** Transcripts: no times from Gemini; paced over the reply's received audio. */
+  private readonly transcript: TranscriptAssembler;
+  readonly supportsTranscript = true;
+  readonly transcriptTiming = "none" as const;
   private connectionCb: ((connected: boolean) => void) | null = null;
   private sessionUp = false;
   private muted = false;
@@ -136,6 +148,7 @@ export class GeminiLiveVoiceSource implements VoiceSource {
 
   constructor(opts: GeminiLiveVoiceSourceOptions) {
     this.credentials = { credential: opts.credential, credentialUrl: opts.credentialUrl };
+    this.transcript = new TranscriptAssembler("none", opts.syncToAudio ?? true);
     if (opts.instructions !== undefined) {
       console.warn(
         "GeminiLiveVoiceSource: `instructions` is deprecated -- set them when your backend mints the token " +
@@ -156,6 +169,14 @@ export class GeminiLiveVoiceSource implements VoiceSource {
 
   onInterrupt(cb: () => void): void {
     this.interruptCb = cb;
+  }
+
+  /**
+   * Both speakers' live transcript (design note 39). Turn ids keep counting across
+   * reconnects; display only, nothing is kept or sent.
+   */
+  onTranscript(cb: (u: TranscriptUpdate) => void): void {
+    this.transcript.onUpdate = cb;
   }
 
   onConnectionChange(cb: (connected: boolean) => void): void {
@@ -241,6 +262,8 @@ export class GeminiLiveVoiceSource implements VoiceSource {
       // Gemini's own ASR of the user -- the vendor-side "the user is being
       // heard" signal this adapter uses instead of an energy heuristic.
       inputAudioTranscription: {},
+      // The model's own words, for transcripts (the same Live session; no extra request).
+      outputAudioTranscription: {},
       sessionResumption: this.resumptionHandle ? { handle: this.resumptionHandle } : {},
       contextWindowCompression: { slidingWindow: {} },
     };
@@ -315,6 +338,7 @@ export class GeminiLiveVoiceSource implements VoiceSource {
         // An interrupt only if there was output to cut -- audible, or
         // already queued on the playback timeline.
         if (this.state === "speaking" || this.graph.playbackState() !== "drained") this.interruptCb?.();
+        this.transcript.cut();
         this.graph.clearPlayback(true);
         this.generationDone = true;
         this.setState("listening");
@@ -322,10 +346,19 @@ export class GeminiLiveVoiceSource implements VoiceSource {
       if ((sc.interimInputTranscription || sc.inputTranscription) && this.state !== "speaking") {
         this.setState("listening");
       }
+      const now = performance.now();
+      if (sc.inputTranscription?.text) {
+        if (this.state === "speaking") this.transcript.hold();
+        this.transcript.userDelta(sc.inputTranscription.text, now);
+      }
+      if (sc.outputTranscription?.text) this.transcript.assistantDelta(sc.outputTranscription.text, now);
       for (const part of sc.modelTurn?.parts ?? []) {
         const inline = part.inlineData;
         if (inline?.data && (inline.mimeType ?? "").startsWith("audio/pcm")) {
-          this.graph.enqueue(pcm16ToFloat32(base64ToBytes(inline.data)), parsePcmRate(inline.mimeType, OUTPUT_RATE_FALLBACK));
+          const samples = pcm16ToFloat32(base64ToBytes(inline.data));
+          const rate = parsePcmRate(inline.mimeType, OUTPUT_RATE_FALLBACK);
+          this.graph.enqueue(samples, rate);
+          this.transcript.assistantAudio((samples.length / rate) * 1000);
           this.generationDone = false;
           // Received, not audible yet -- tick() promotes to `speaking` once
           // the playback clock actually reaches the burst.
@@ -348,6 +381,7 @@ export class GeminiLiveVoiceSource implements VoiceSource {
     if (metrics) this.metricsCb?.(metrics);
 
     if (!this.connected) return; // reconnecting: stay `initializing`
+    this.transcript.tick(performance.now(), metrics?.level ?? 0, this.state === "speaking");
     const playback = this.graph.playbackState();
     if (playback === "audible") {
       this.setState("speaking");
@@ -414,6 +448,8 @@ export class GeminiLiveVoiceSource implements VoiceSource {
 
   private setState(s: AgentState): void {
     if (this.state === s) return;
+    // The reply is over (drained, cut just before, or a reconnect): its turn ends if it was heard.
+    if (s === "listening" || s === "initializing" || s === "idle") this.transcript.speakingEnded();
     this.state = s;
     this.stateCb?.(s);
   }
@@ -438,6 +474,7 @@ export class GeminiLiveVoiceSource implements VoiceSource {
       }
     }
     this.graph.stop();
+    this.transcript.stop();
     this.generationDone = true;
     this.resumptionHandle = null; // a fresh connect() starts a fresh session
   }

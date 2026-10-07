@@ -408,3 +408,140 @@ test("openAICredentialRefusal: the rule table", async () => {
   assert.ok(openAICredentialRefusal("  sk-svcacct-x", own), "leading space doesn't hide it");
   assert.equal(isOpenAIHost("not a url"), true, "unparseable counts as OpenAI: the strict rule");
 });
+
+// --- Transcripts (design note 39, T1b) ---
+
+test("elevenlabs transcripts: the alignment reveals with the audio; a barge-in keeps only what was heard; the user's text comes final", async () => {
+  const { src, ws } = await elevenLabsConnected();
+  const got = [];
+  src.onTranscript((u) => got.push(u));
+  assert.equal(src.supportsTranscript, true);
+  assert.equal(src.transcriptTiming, "chars");
+  try {
+    ws.receive({ type: "user_transcript", user_transcription_event: { user_transcript: "Bir hikaye anlat" } });
+    assert.deepEqual(got.at(-1), { role: "user", text: "Bir hikaye anlat", final: true, turnId: "u1" });
+    const text = "Bir zamanlar bir sincap yaşarmış.";
+    const chars = Array.from(text);
+    // 60 ms a character: the line takes ~2 s of audio.
+    const al = { chars, char_start_times_ms: chars.map((_, i) => i * 60), char_durations_ms: chars.map(() => 60) };
+    ws.receive({ type: "agent_response", agent_response_event: { agent_response: text } });
+    audio.byte = 200;
+    audio.time = 1;
+    ws.receive({ type: "audio", audio_event: { audio_base_64: pcmB64(32000), event_id: 2, alignment: al } });
+    audio.time = 1.15; // audible
+    await until(() => got.some((u) => u.role === "assistant"));
+    await new Promise((r) => setTimeout(r, 400));
+    const mid = got.filter((u) => u.role === "assistant").at(-1).text;
+    assert.ok(mid.length > 0 && mid.length < text.length, `revealed with the audio, not all at once: ${JSON.stringify(mid)}`);
+    ws.receive({ type: "interruption", interruption_event: { event_id: 3 } });
+    const cut = got.at(-1);
+    assert.equal(cut.role, "assistant");
+    assert.equal(cut.final, true);
+    assert.equal(cut.truncated, true);
+    assert.ok(text.startsWith(cut.text) && cut.text.length < text.length, `only the heard part: ${JSON.stringify(cut.text)}`);
+  } finally {
+    src.disconnect();
+    audio.byte = 0;
+  }
+});
+
+test("gemini transcripts: setup asks for both transcriptions; the reply is paced over its audio; interrupted cuts it", async () => {
+  const { GeminiLiveVoiceSource } = await import("../dist/gemini.js");
+  const src = new GeminiLiveVoiceSource({ credential: "auth_tokens/abc" });
+  const got = [];
+  src.onTranscript((u) => got.push(u));
+  assert.equal(src.transcriptTiming, "none");
+  const connecting = src.connect();
+  await until(() => FakeWebSocket.instances.length === 1);
+  const ws = FakeWebSocket.instances[0];
+  ws.open();
+  assert.deepEqual(ws.sent[0].setup.inputAudioTranscription, {});
+  assert.deepEqual(ws.sent[0].setup.outputAudioTranscription, {});
+  ws.receive({ setupComplete: {} });
+  await connecting;
+  try {
+    ws.receive({ serverContent: { inputTranscription: { text: "Bir hikaye" } } });
+    ws.receive({ serverContent: { inputTranscription: { text: " anlat" } } });
+    assert.deepEqual(got.at(-1), { role: "user", text: "Bir hikaye anlat", final: false, turnId: "u1" });
+    const text = "Bir zamanlar bir sincap yaşarmış.";
+    audio.byte = 200;
+    audio.time = 2;
+    // 3 s of audio for the line; the text comes beside it.
+    ws.receive({ serverContent: { modelTurn: { parts: [{ inlineData: { data: pcmB64(72000), mimeType: "audio/pcm;rate=24000" } }] } } });
+    ws.receive({ serverContent: { outputTranscription: { text } } });
+    assert.equal(got.filter((u) => u.role === "user" && u.final).length, 1, "a 12+ character reply ends the user's turn");
+    audio.time = 2.15;
+    await until(() => got.some((u) => u.role === "assistant"));
+    await new Promise((r) => setTimeout(r, 300));
+    const mid = got.filter((u) => u.role === "assistant").at(-1).text;
+    assert.ok(mid.length > 0 && mid.length < text.length, `paced, not all at once: ${JSON.stringify(mid)}`);
+    ws.receive({ serverContent: { interrupted: true } });
+    const cut = got.at(-1);
+    assert.equal(cut.final, true);
+    assert.equal(cut.truncated, true);
+    assert.ok(text.startsWith(cut.text) && cut.text.length < text.length, `only the heard part: ${JSON.stringify(cut.text)}`);
+  } finally {
+    src.disconnect();
+    audio.byte = 0;
+  }
+});
+
+test("openai realtime transcripts: input transcription turned on once per session; both speakers; a barge-in cuts the reply", async () => {
+  const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
+  const src = new OpenAIRealtimeVoiceSource({ credential: "ek_test", reconnect: false });
+  const got = [];
+  src.onTranscript((u) => got.push(u));
+  assert.equal(src.transcriptTiming, "none");
+  await src.connect();
+  const pc = FakeRTCPeerConnection.last;
+  pc.dc.readyState = "open";
+  const send = (ev) => pc.dc.onmessage({ data: JSON.stringify(ev) });
+  try {
+    send({ type: "session.created", session: { audio: { input: { transcription: null } } } });
+    const updates = pc.dc.sent.filter((e) => e.type === "session.update");
+    assert.deepEqual(updates, [{ type: "session.update", session: { type: "realtime", audio: { input: { transcription: { model: "gpt-4o-mini-transcribe" } } } } }]);
+    send({ type: "conversation.item.input_audio_transcription.delta", item_id: "i1", delta: "Bir hikaye" });
+    send({ type: "conversation.item.input_audio_transcription.completed", item_id: "i1", transcript: "Bir hikaye anlat." });
+    assert.deepEqual(got.at(-1), { role: "user", text: "Bir hikaye anlat.", final: true, turnId: "u1" });
+    const text = "Bir zamanlar bir sincap yaşarmış ve ormanda yalnız yaşarmış.";
+    send({ type: "response.created" });
+    send({ type: "response.output_audio_transcript.delta", item_id: "i2", delta: text });
+    audio.byte = 200;
+    pc.ontrack({ streams: [{ getAudioTracks: () => [{ readyState: "live" }] }] });
+    send({ type: "output_audio_buffer.started" });
+    await until(() => got.some((u) => u.role === "assistant"));
+    await new Promise((r) => setTimeout(r, 300));
+    const mid = got.filter((u) => u.role === "assistant").at(-1).text;
+    assert.ok(mid.length > 0 && mid.length < text.length, `paced, not all at once: ${JSON.stringify(mid)}`);
+    send({ type: "input_audio_buffer.speech_started" });
+    const cut = got.at(-1);
+    assert.equal(cut.final, true);
+    assert.equal(cut.truncated, true);
+    assert.ok(text.startsWith(cut.text) && cut.text.length < text.length, `only the heard part: ${JSON.stringify(cut.text)}`);
+    send({ type: "output_audio_buffer.cleared" });
+    assert.equal(got.filter((u) => u.final && u.role === "assistant").length, 1, "the clear after the cut ends nothing twice");
+  } finally {
+    src.disconnect();
+    audio.byte = 0;
+  }
+});
+
+test("openai realtime transcripts: a session with its own input transcription is left alone; transcribeUser false never turns it on", async () => {
+  const { OpenAIRealtimeVoiceSource } = await import("../dist/openai.js");
+  for (const [opts, session, want] of [
+    [{}, { audio: { input: { transcription: { model: "whisper-1" } } } }, 0],
+    [{ transcribeUser: false }, { audio: { input: { transcription: null } } }, 0],
+    [{ transcribeUser: "gpt-4o-transcribe" }, {}, 1],
+  ]) {
+    const src = new OpenAIRealtimeVoiceSource({ credential: "ek_test", reconnect: false, ...opts });
+    src.onTranscript(() => {});
+    await src.connect();
+    const pc = FakeRTCPeerConnection.last;
+    pc.dc.readyState = "open";
+    pc.dc.onmessage({ data: JSON.stringify({ type: "session.created", session }) });
+    const updates = pc.dc.sent.filter((e) => e.type === "session.update");
+    assert.equal(updates.length, want, JSON.stringify(opts));
+    if (want) assert.equal(updates[0].session.audio.input.transcription.model, "gpt-4o-transcribe");
+    src.disconnect();
+  }
+});

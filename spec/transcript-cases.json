@@ -1,5 +1,5 @@
 {
- "about": "Transcript rules (design note 39): GPT-Live events and 30 Hz level ticks (repeat = 33 ms apart) through OpenAILiveSession with the transcript on. After each step, `user` / `assistant` is the latest update for that role so far (its listed keys must match) and `finals` the number of final updates so far. Every case also holds: final exactly once per turnId, nothing after a final, text never shrinks except in the truncated update. Web, iOS and Android run this table.",
+ "about": "Transcript rules (docs/audio-pipeline.md, *Transcripts*): GPT-Live events and 30 Hz level ticks (repeat = 33 ms apart) through OpenAILiveSession with the transcript on. After each step, `user` / `assistant` is the latest update for that role so far (its listed keys must match) and `finals` the number of final updates so far. Every case also holds: final exactly once per turnId, nothing after a final, text never shrinks except in the truncated update. Web, iOS and Android run this table.",
  "constants": {
   "userSilenceMs": 4000,
   "userCloseChars": 12,

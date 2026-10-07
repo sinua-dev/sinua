@@ -9,7 +9,7 @@ package dev.sinua.voice
 import org.json.JSONObject
 import java.net.URLEncoder
 
-class ElevenLabsSession {
+class ElevenLabsSession(syncToAudio: Boolean = true) {
     sealed class Action {
         /** `conversation_initiation_metadata`: the negotiated formats (start the graph with these). */
         data class Metadata(val input: Pcm.AudioFormat, val output: Pcm.AudioFormat) : Action()
@@ -22,7 +22,25 @@ class ElevenLabsSession {
         private set
     private var output = Pcm.AudioFormat(Pcm.AudioFormat.Codec.PCM, 16000)
     private var graphReady = false
-    private val pendingAudio = mutableListOf<Pair<String, Boolean>>() // (base64, is_final)
+    private val pendingAudio = mutableListOf<Triple<String, Boolean, JSONObject?>>() // (base64, is_final, alignment)
+
+    /**
+     * The transcript (design note 39): `chars` timing from each chunk's alignment, synced to the
+     * played audio unless `syncToAudio` is false; the user's text comes final.
+     */
+    val transcript = TranscriptAssembler(TranscriptTiming.CHARS, syncToAudio, explicitUserEnd = true)
+    var onTranscript: ((TranscriptUpdate) -> Unit)?
+        get() = transcript.onUpdate
+        set(value) {
+            transcript.onUpdate = value
+        }
+
+    /** Audio of the current reply queued so far (ms): where the next chunk's alignment starts. */
+    private var replyAudioMs = 0.0
+
+    /** The current reply's text, shown untimed at its end if no chunk carried an alignment. */
+    private var replyText = ""
+    private var replyAligned = false
     private var lastInterruptEventId = 0
     private var userSpeaking = false
     private var thinkingSince = 0.0
@@ -46,7 +64,7 @@ class ElevenLabsSession {
     fun graphStarted(format: Pcm.AudioFormat, now: Double): List<Action> {
         output = format
         graphReady = true
-        val flushed = pendingAudio.map { (b64, isFinal) -> enqueueAction(b64, isFinal, now) }
+        val flushed = pendingAudio.map { (b64, isFinal, alignment) -> enqueueAction(b64, isFinal, alignment, now) }
         pendingAudio.clear()
         if (state == AgentState.INITIALIZING) setState(AgentState.LISTENING, now)
         return flushed
@@ -63,6 +81,7 @@ class ElevenLabsSession {
 
     fun stopped(now: Double) {
         reset()
+        transcript.stop()
         setState(AgentState.IDLE, now)
     }
 
@@ -100,16 +119,18 @@ class ElevenLabsSession {
                 val b64 = a.optString("audio_base_64")
                 if (b64.isEmpty()) return emptyList()
                 val isFinal = a.optBoolean("is_final", false)
+                val alignment = a.optJSONObject("alignment")
                 if (!graphReady) {
-                    pendingAudio += b64 to isFinal
+                    pendingAudio += Triple(b64, isFinal, alignment)
                     return emptyList()
                 }
-                return listOf(enqueueAction(b64, isFinal, now))
+                return listOf(enqueueAction(b64, isFinal, alignment, now))
             }
 
             "agent_response" -> {
                 // The reply's text: a reply is under way (its audio may still be coming).
                 if (!closedThisTurn) responseDone = false
+                replyText = ev.optJSONObject("agent_response_event")?.optString("agent_response", "") ?: ""
                 lastAudioAt = now
                 return emptyList()
             }
@@ -131,6 +152,7 @@ class ElevenLabsSession {
                 ) {
                     onInterrupt?.invoke()
                 }
+                transcript.cut()
                 pendingAudio.clear()
                 responseDone = true
                 closedThisTurn = false
@@ -144,6 +166,7 @@ class ElevenLabsSession {
                 if (speaking && !userSpeaking) {
                     userSpeaking = true
                     closedThisTurn = false
+                    if (state == AgentState.SPEAKING) transcript.hold()
                     if (state != AgentState.SPEAKING) setState(AgentState.LISTENING, now)
                 } else if (!speaking && userSpeaking) {
                     userSpeaking = false
@@ -157,6 +180,17 @@ class ElevenLabsSession {
             }
 
             "user_transcript" -> {
+                val e = ev.optJSONObject("user_transcription_event")
+                transcript.userDone(
+                    if (e != null &&
+                        e.has("user_transcript")
+                    ) {
+                        e.getString("user_transcript")
+                    } else {
+                        null
+                    },
+                    now * 1000,
+                )
                 closedThisTurn = false
                 if (state != AgentState.SPEAKING) setState(AgentState.THINKING, now)
                 return emptyList()
@@ -167,9 +201,13 @@ class ElevenLabsSession {
         }
     }
 
-    /** 30 Hz once the graph is up: the playback-timeline gate + the thinking guard. */
-    fun tick(playback: PlaybackState, now: Double) {
+    /**
+     * 30 Hz once the graph is up: the playback-timeline gate + the thinking guard; [level] is the
+     * played audio's (for the transcript).
+     */
+    fun tick(playback: PlaybackState, now: Double, level: Double = 0.0) {
         if (!graphReady) return
+        transcript.tick(now * 1000, level, state == AgentState.SPEAKING)
         when (playback) {
             PlaybackState.AUDIBLE -> setState(AgentState.SPEAKING, now)
 
@@ -195,7 +233,7 @@ class ElevenLabsSession {
         }
     }
 
-    private fun enqueueAction(b64: String, isFinal: Boolean, now: Double): Action {
+    private fun enqueueAction(b64: String, isFinal: Boolean, alignment: JSONObject?, now: Double): Action {
         val bytes = Pcm.base64Decode(b64) ?: ByteArray(0)
         val samples = if (output.codec ==
             Pcm.AudioFormat.Codec.ULAW
@@ -204,6 +242,20 @@ class ElevenLabsSession {
         } else {
             Pcm.pcm16ToFloat(bytes)
         }
+        val chars = alignment?.optJSONArray("chars")
+        val starts = alignment?.optJSONArray("char_start_times_ms")
+        if (chars != null && chars.length() > 0 && starts != null) {
+            replyAligned = true
+            val durations = alignment.optJSONArray("char_durations_ms")
+            val fragments = TranscriptAssembler.alignmentFragments(
+                List(chars.length()) { chars.optString(it) },
+                List(starts.length()) { starts.optDouble(it) },
+                List(durations?.length() ?: 0) { durations!!.optDouble(it) },
+                replyAudioMs,
+            )
+            for (f in fragments) transcript.assistantDelta(f.text, now * 1000, f.startMs, f.endMs)
+        }
+        replyAudioMs += samples.size * 1000.0 / output.rate
         lastAudioAt = now
         if (isFinal) {
             responseDone = true
@@ -223,6 +275,9 @@ class ElevenLabsSession {
     private fun endResponse(playback: PlaybackState, now: Double) {
         responseDone = true
         closedThisTurn = true
+        // No chunk carried an alignment: the reply's text, untimed.
+        if (!replyAligned && replyText.isNotEmpty()) transcript.assistantDelta(replyText, now * 1000)
+        replyText = ""
         if (state == AgentState.THINKING && playback == PlaybackState.DRAINED &&
             pendingAudio.isEmpty()
         ) {
@@ -232,6 +287,13 @@ class ElevenLabsSession {
 
     private fun setState(s: AgentState, now: Double) {
         if (s == state) return
+        // The reply is over (drained, stalled out, or cut just before): its turn ends if it was
+        // heard, and the next reply's audio starts at 0 ms.
+        if (s == AgentState.LISTENING || s == AgentState.IDLE) {
+            transcript.speakingEnded()
+            replyAudioMs = 0.0
+            replyAligned = false
+        }
         state = s
         if (s == AgentState.THINKING) thinkingSince = now
         onState?.invoke(s)

@@ -65,3 +65,38 @@ test("raw and synced share turn ids and finals; only the timing differs", async 
     assert.deepEqual(finals.map((u) => [u.turnId, u.text]), [["a1", "Merhaba."]], `sync ${sync}`);
   }
 });
+
+// T1b: the vendor-free half on its own (chars, none paced over received audio, explicit user
+// end, keyed segments): spec/transcript-assembler-cases.json, which iOS and Android run too.
+test("TranscriptAssembler: spec/transcript-assembler-cases.json", async () => {
+  const t = await import("../dist/transcript.js");
+  const ops = JSON.parse(readFileSync(new URL("../../../spec/transcript-assembler-cases.json", import.meta.url), "utf8"));
+  assert.deepEqual(ops.constants, { rateMinAudioMs: t.TRANSCRIPT_RATE_MIN_AUDIO_MS });
+  assert.ok(ops.cases.length >= 9);
+  for (const c of ops.cases) {
+    const a = new t.TranscriptAssembler(c.timing, c.syncToAudio, c.explicitUserEnd);
+    const last = { user: null, assistant: null };
+    let finals = 0;
+    a.onUpdate = (u) => {
+      last[u.role] = u;
+      if (u.final) finals++;
+    };
+    c.steps.forEach((s, i) => {
+      if (s.op === "tick") for (let k = 0; k < s.repeat; k++) a.tick(s.t + k * 33, s.level, s.speaking);
+      else if (s.op === "user") a.userDelta(s.text, s.t);
+      else if (s.op === "assistant") a.assistantDelta(s.text, s.t, s.startMs, s.endMs);
+      else if (s.op === "userDone") a.userDone(s.text, s.t);
+      else if (s.op === "audio") a.assistantAudio(s.ms);
+      else if (s.op === "segment") a.segment(s.role, s.key, s.text, s.final, s.t);
+      else if (s.op === "hold") a.hold();
+      else if (s.op === "cut") a.cut();
+      else if (s.op === "ended") a.speakingEnded();
+      else if (s.op === "stop") a.stop();
+      else assert.fail(`unknown op ${s.op}`);
+      const at = `${c.name}, step ${i + 1}`;
+      assert.deepEqual(last.user, s.user, `${at}: user`);
+      assert.deepEqual(last.assistant, s.assistant, `${at}: assistant`);
+      assert.equal(finals, s.finals, `${at}: finals`);
+    });
+  }
+});

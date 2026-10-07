@@ -1,7 +1,8 @@
 import { resolveCredential, type CredentialOptions } from "./credential.js";
 import { PcmAudioGraph } from "./PcmAudioGraph.js";
 import { base64ToBytes, bytesToBase64, float32ToPcm16, parseAudioFormat, pcm16ToFloat32, ulawToFloat32 } from "./pcm.js";
-import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
+import { alignmentFragments, TranscriptAssembler } from "./transcript.js";
+import type { AgentState, TranscriptUpdate, VoiceMetrics, VoiceSource } from "@sinua/core";
 
 /**
  * `VoiceSource` for ElevenLabs Conversational AI (the "Agents platform")
@@ -74,6 +75,12 @@ import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
 export interface ElevenLabsVoiceSourceOptions extends CredentialOptions {
   /** Optional `conversation_config_override` payload (agent prompt/voice overrides, if the agent allows them). */
   overrides?: Record<string, unknown>;
+  /**
+   * Transcripts (`onTranscript`): `true` (default) reveals the agent's text with the played
+   * audio, character by character from ElevenLabs' alignment; `false` shows it as it arrives
+   * (docs/audio-pipeline.md, *Transcripts*).
+   */
+  syncToAudio?: boolean;
 }
 
 const WS_URL = "wss://api.elevenlabs.io/v1/convai/conversation";
@@ -91,7 +98,13 @@ interface ServerEvent {
     agent_output_audio_format?: string;
     user_input_audio_format?: string;
   };
-  audio_event?: { audio_base_64?: string; event_id?: number; is_final?: boolean };
+  audio_event?: {
+    audio_base_64?: string;
+    event_id?: number;
+    is_final?: boolean;
+    alignment?: { chars?: string[]; char_start_times_ms?: number[]; char_durations_ms?: number[] };
+  };
+  agent_response_event?: { agent_response?: string };
   interruption_event?: { event_id?: number };
   ping_event?: { event_id?: number; ping_ms?: number };
   vad_score_event?: { vad_score?: number };
@@ -132,10 +145,25 @@ export class ElevenLabsVoiceSource implements VoiceSource {
   private muted = false;
   private micStream: MediaStream | null = null;
   private state: AgentState = "idle";
+  /** Transcripts: per-character times on each reply's own audio; the user's text comes final. */
+  private readonly transcript: TranscriptAssembler;
+  /** Audio of the current reply queued so far (ms): where the next chunk's alignment starts. */
+  private replyAudioMs = 0;
+  /** The current reply's text, shown untimed at its end if no chunk carried an alignment. */
+  private replyText = "";
+  private replyAligned = false;
+  readonly supportsTranscript = true;
+  readonly transcriptTiming = "chars" as const;
 
   constructor(opts: ElevenLabsVoiceSourceOptions) {
     this.credentials = { credential: opts.credential, credentialUrl: opts.credentialUrl };
     this.overrides = opts.overrides;
+    this.transcript = new TranscriptAssembler("chars", opts.syncToAudio ?? true, true);
+  }
+
+  /** Both speakers' live transcript (design note 39); display only, nothing is kept or sent. */
+  onTranscript(cb: (u: TranscriptUpdate) => void): void {
+    this.transcript.onUpdate = cb;
   }
 
   onMetrics(cb: (m: VoiceMetrics) => void): void {
@@ -308,6 +336,7 @@ export class ElevenLabsVoiceSource implements VoiceSource {
       case "agent_response":
         // The reply's text: a reply is under way (its audio may still be coming).
         if (!this.closedThisTurn) this.responseDone = false;
+        this.replyText = ev.agent_response_event?.agent_response ?? "";
         this.lastAudioAt = Date.now();
         break;
       case "agent_response_complete":
@@ -316,6 +345,9 @@ export class ElevenLabsVoiceSource implements VoiceSource {
         // otherwise tick() ends it when playback drains.
         this.responseDone = true;
         this.closedThisTurn = true;
+        // No chunk carried an alignment: the reply's text, untimed.
+        if (!this.replyAligned && this.replyText) this.transcript.assistantDelta(this.replyText, performance.now());
+        this.replyText = "";
         if (this.state === "thinking" && this.graph.playbackState() === "drained" && this.pendingAudio.length === 0) {
           this.setState("listening");
         }
@@ -328,6 +360,7 @@ export class ElevenLabsVoiceSource implements VoiceSource {
         if (this.state === "speaking" || this.graph.playbackState() !== "drained" || this.pendingAudio.length > 0) {
           this.interruptCb?.();
         }
+        this.transcript.cut();
         this.graph.clearPlayback(true);
         this.pendingAudio = [];
         this.responseDone = true;
@@ -341,6 +374,7 @@ export class ElevenLabsVoiceSource implements VoiceSource {
         if (speaking && !this.userSpeaking) {
           this.userSpeaking = true;
           this.closedThisTurn = false;
+          if (this.state === "speaking") this.transcript.hold();
           if (this.state !== "speaking") this.setState("listening");
         } else if (!speaking && this.userSpeaking) {
           this.userSpeaking = false;
@@ -350,6 +384,7 @@ export class ElevenLabsVoiceSource implements VoiceSource {
       }
       case "user_transcript":
         // Finalized utterance: the user has stopped, the agent is working.
+        this.transcript.userDone(ev.user_transcription_event?.user_transcript ?? null, performance.now());
         this.closedThisTurn = false;
         if (this.state !== "speaking") this.setState("thinking");
         break;
@@ -366,6 +401,15 @@ export class ElevenLabsVoiceSource implements VoiceSource {
     const bytes = base64ToBytes(b64);
     const samples = this.outputCodec === "ulaw" ? ulawToFloat32(bytes) : pcm16ToFloat32(bytes);
     this.graph.enqueue(samples, this.outputRate);
+    const al = ev.audio_event?.alignment;
+    if (al?.chars?.length && al.char_start_times_ms) {
+      this.replyAligned = true;
+      const now = performance.now();
+      for (const f of alignmentFragments(al.chars, al.char_start_times_ms, al.char_durations_ms ?? [], this.replyAudioMs)) {
+        this.transcript.assistantDelta(f.text, now, f.startMs, f.endMs);
+      }
+    }
+    this.replyAudioMs += (samples.length / this.outputRate) * 1000;
     this.lastAudioAt = Date.now();
     if (ev.audio_event?.is_final) {
       this.responseDone = true;
@@ -382,6 +426,7 @@ export class ElevenLabsVoiceSource implements VoiceSource {
     const metrics = this.graph.read();
     if (metrics) this.metricsCb?.(metrics);
     if (!this.connected) return;
+    this.transcript.tick(performance.now(), metrics?.level ?? 0, this.state === "speaking");
     const playback = this.graph.playbackState();
     if (playback === "audible") {
       this.setState("speaking");
@@ -407,6 +452,13 @@ export class ElevenLabsVoiceSource implements VoiceSource {
 
   private setState(s: AgentState): void {
     if (this.state === s) return;
+    // The reply is over (drained, stalled out, or cut just before): its turn ends if it was
+    // heard, and the next reply's audio starts at 0 ms.
+    if (s === "listening" || s === "idle") {
+      this.transcript.speakingEnded();
+      this.replyAudioMs = 0;
+      this.replyAligned = false;
+    }
     this.state = s;
     if (s === "thinking") this.thinkingSince = Date.now();
     this.stateCb?.(s);
@@ -431,6 +483,7 @@ export class ElevenLabsVoiceSource implements VoiceSource {
       }
     }
     this.graph.stop();
+    this.transcript.stop();
     this.graphReady = false;
     this.pendingAudio = [];
     this.lastInterruptEventId = 0;

@@ -8,6 +8,8 @@ export type { AgentState, TranscriptTiming, TranscriptUpdate, VoiceMetrics, Voic
 export {
   TranscriptAssembler,
   TRANSCRIPT_AUDIBLE_LEVEL,
+  TRANSCRIPT_RATE_MIN_AUDIO_MS,
+  alignmentFragments,
   TRANSCRIPT_CUT_GRACE_MS,
   TRANSCRIPT_REVEAL_CHARS_PER_SECOND,
   TRANSCRIPT_SEGMENT_DELAY_MS,

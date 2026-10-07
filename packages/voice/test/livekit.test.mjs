@@ -211,3 +211,54 @@ test("livekit: setMuted mutes the local microphone and the room stays joined; co
   src.disconnect();
   assert.deepEqual(conn, [true, false]);
 });
+
+// --- Transcripts (design note 39, T1b): the agent's lk.transcription streams, passed through ---
+
+/** A text stream as livekit-client hands it over: info + an async iterator of deltas. */
+const textStream = (chunks, attributes, id = "TS_1") => ({
+  info: { id, attributes },
+  async *[Symbol.asyncIterator]() {
+    for (const c of chunks) yield c;
+  },
+});
+
+test("livekit transcripts: one handler on lk.transcription; segments replace; the agent's turn ends when it stops; other people's streams are ignored", async () => {
+  const room = fakeRoom({ participants: [agent({ [AGENT_STATE]: "listening" }), participant({ identity: "guest" })] });
+  room.localParticipant.identity = "me";
+  const registered = [];
+  room.registerTextStreamHandler = (topic, cb) => registered.push([topic, cb]);
+  room.unregisterTextStreamHandler = (topic) => registered.push(["off", topic]);
+  const src = await source(room);
+  const got = [];
+  src.onTranscript((u) => got.push(u));
+  assert.equal(src.transcriptTiming, "synced");
+  const w = watch(src);
+  await src.connect();
+  assert.equal(registered.length, 1);
+  assert.equal(registered[0][0], "lk.transcription");
+  const handler = registered[0][1];
+  const settle = () => new Promise((r) => setTimeout(r, 10));
+
+  handler(textStream(["Hava nasıl?"], { "lk.segment_id": "SG_1", "lk.transcription_final": "true" }), { identity: "me" });
+  await settle();
+  assert.deepEqual(got.at(-1), { role: "user", text: "Hava nasıl?", final: true, turnId: "u1" });
+
+  const before = got.length;
+  handler(textStream(["Selam"], { "lk.segment_id": "SG_9", "lk.transcription_final": "true" }), { identity: "guest" });
+  await settle();
+  assert.equal(got.length, before, "a non-agent participant's stream is not the assistant");
+
+  const a = agent({ [AGENT_STATE]: "speaking" });
+  room.emit(RoomEvent.ParticipantAttributesChanged, { [AGENT_STATE]: "speaking" }, a);
+  handler(textStream(["Güneşli", " ve", " ılık."], { "lk.segment_id": "SG_2", "lk.transcription_final": "false" }), { identity: "agent" });
+  await settle();
+  assert.deepEqual(got.at(-1), { role: "assistant", text: "Güneşli ve ılık.", final: false, turnId: "a1" });
+  room.emit(RoomEvent.ParticipantAttributesChanged, { [AGENT_STATE]: "listening" }, agent({ [AGENT_STATE]: "listening" }));
+  assert.deepEqual(got.at(-1), { role: "assistant", text: "Güneşli ve ılık.", final: true, turnId: "a1" });
+  handler(textStream(["Güneşli ve ılık. Yarın"], { "lk.segment_id": "SG_2", "lk.transcription_final": "true" }), { identity: "agent" });
+  await settle();
+  assert.equal(got.filter((u) => u.turnId === "a1" && u.final).length, 1, "late text for an ended segment is ignored");
+  assert.ok(w.states.length > 0);
+  src.disconnect();
+  assert.deepEqual(registered.at(-1), ["off", "lk.transcription"]);
+});

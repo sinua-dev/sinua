@@ -42,7 +42,13 @@ export interface TranscriptUpdate {
 export type TranscriptTiming = "chars" | "segments" | "synced" | "none";
 
 /** The vendors that send transcripts here, and how they time them (the others: `supportsTranscript` false). */
-const TRANSCRIPT_TIMING: Partial<Record<string, TranscriptTiming>> = { simulated: "synced" };
+const TRANSCRIPT_TIMING: Partial<Record<string, TranscriptTiming>> = {
+  simulated: "synced",
+  openai: "none",
+  gemini: "none",
+  elevenlabs: "chars",
+  livekit: "synced",
+};
 
 /** What your credential endpoint answers, the same JSON on every platform and vendor. */
 export interface SinuaCredential {

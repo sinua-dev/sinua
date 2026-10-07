@@ -14,7 +14,8 @@ import {
   type ReconnectPolicy,
   type RequestHeaders,
 } from "./realtimeReconnect.js";
-import type { AgentState, VoiceMetrics, VoiceSource } from "@sinua/core";
+import { TranscriptAssembler } from "./transcript.js";
+import type { AgentState, TranscriptUpdate, VoiceMetrics, VoiceSource } from "@sinua/core";
 
 /**
  * `VoiceSource` for OpenAI's Realtime API over its WebRTC transport -- the
@@ -127,7 +128,23 @@ export interface OpenAIRealtimeVoiceSourceOptions extends CredentialOptions {
    * `ek_` (`mintOpenAIRealtimeCredential({ instructions })`).
    */
   instructions?: string;
+  /**
+   * Transcripts (`onTranscript`): `true` (default) paces the model's text over its audible
+   * audio (Realtime sends no word times); `false` shows it as it arrives
+   * (docs/audio-pipeline.md, *Transcripts*).
+   */
+  syncToAudio?: boolean;
+  /**
+   * The user's side of transcripts needs the session's input transcription, which OpenAI bills
+   * per minute. When something listens to `onTranscript` and the session has none, it is turned
+   * on with this model (`true`: `gpt-4o-mini-transcribe`); `false` leaves the session as your
+   * backend made it. Default true.
+   */
+  transcribeUser?: boolean | string;
 }
+
+/** The input transcription model turned on for the user's transcript (`transcribeUser: true`). */
+const REALTIME_USER_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
 
 const CALLS_URL = "https://api.openai.com/v1/realtime/calls";
 const DATA_CHANNEL_LABEL = "oai-events";
@@ -186,6 +203,14 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
   private responseActive = false;
   /** Once any `output_audio_buffer.*` event arrives, the energy fallback stands down. */
   private sawOutputBufferEvents = false;
+  /** Live transcripts (not the replay log above): no times from Realtime, the user's turn ends at `.completed`. */
+  private readonly captions: TranscriptAssembler;
+  private readonly transcribeModel: string | null;
+  private captionsWanted = false;
+  /** This session's input transcription is on (its own, or ours). */
+  private userTranscribed = false;
+  readonly supportsTranscript = true;
+  readonly transcriptTiming = "none" as const;
 
   constructor(opts: OpenAIRealtimeVoiceSourceOptions) {
     this.credentials = {
@@ -205,6 +230,28 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     this.model = opts.model ?? "gpt-realtime";
     this.callsUrl = opts.callsUrl ?? CALLS_URL;
     this.warp = opts.warp ?? false;
+    this.captions = new TranscriptAssembler("none", opts.syncToAudio ?? true, true);
+    const tu = opts.transcribeUser ?? true;
+    this.transcribeModel = tu === false ? null : tu === true ? REALTIME_USER_TRANSCRIPTION_MODEL : tu;
+  }
+
+  /**
+   * Both speakers' live transcript (design note 39). Turn ids keep counting across
+   * reconnects; display only, nothing is kept or sent. The user's side needs input
+   * transcription (`transcribeUser`).
+   */
+  onTranscript(cb: (u: TranscriptUpdate) => void): void {
+    this.captions.onUpdate = cb;
+    this.captionsWanted = true;
+    this.transcribeUserIfNeeded();
+  }
+
+  /** Turns the session's input transcription on, once per session, when transcripts are wanted. */
+  private transcribeUserIfNeeded(): void {
+    if (!this.captionsWanted || this.userTranscribed || !this.transcribeModel) return;
+    if (this.dc?.readyState !== "open") return;
+    this.userTranscribed = true;
+    this.dc.send(JSON.stringify({ type: "session.update", session: { type: "realtime", audio: { input: { transcription: { model: this.transcribeModel } } } } }));
   }
 
   onMetrics(cb: (m: VoiceMetrics) => void): void {
@@ -452,20 +499,41 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
   }
 
   private onServerEvent(raw: string): void {
-    let ev: { type?: string; error?: { code?: unknown }; transcript?: unknown };
+    let ev: {
+      type?: string;
+      error?: { code?: unknown };
+      transcript?: unknown;
+      delta?: unknown;
+      session?: { audio?: { input?: { transcription?: unknown } } };
+    };
     try {
       ev = JSON.parse(raw) as typeof ev;
     } catch {
       return;
     }
+    const now = performance.now();
     switch (ev.type) {
+      case "session.created":
+        // A new session (a connect or a reconnect): its own input transcription, if any, stands.
+        this.userTranscribed = ev.session?.audio?.input?.transcription != null;
+        this.transcribeUserIfNeeded();
+        break;
       case "input_audio_buffer.speech_started":
         // The user is talking. If we were `speaking`, this is the barge-in
         // moment -- WebRTC sessions auto-truncate and follow up with
         // `output_audio_buffer.cleared`, handled below. Only a barge-in over
         // audible output is an interrupt; speech over `thinking` isn't.
-        if (this.state === "speaking") this.interruptCb?.();
+        if (this.state === "speaking") {
+          this.interruptCb?.();
+          this.captions.cut();
+        }
         this.setState("listening");
+        break;
+      case "response.output_audio_transcript.delta":
+        if (typeof ev.delta === "string") this.captions.assistantDelta(ev.delta, now);
+        break;
+      case "conversation.item.input_audio_transcription.delta":
+        if (typeof ev.delta === "string") this.captions.userDelta(ev.delta, now);
         break;
       case "input_audio_buffer.speech_stopped":
         this.setState("thinking");
@@ -501,6 +569,7 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
       case "conversation.item.input_audio_transcription.completed":
         // Only arrives when the session has input transcription enabled.
         this.transcript.add("user", ev.transcript);
+        this.captions.userDone(typeof ev.transcript === "string" ? ev.transcript : null, now);
         break;
       case "error":
         console.error("OpenAI Realtime error event:", ev.error);
@@ -535,6 +604,7 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     const metrics = this.analysis.read();
     this.lastBandCount = metrics.bands.length;
     this.metricsCb?.(metrics);
+    this.captions.tick(performance.now(), metrics.level, this.state === "speaking");
 
     // Energy floor / tail -- only load-bearing when the WebRTC-only
     // output_audio_buffer.* events haven't shown up (see the class doc).
@@ -553,12 +623,16 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
   private setState(s: AgentState): void {
     if (this.state === s) return;
     if (s === "speaking") this.speakingSince = performance.now();
+    // The reply is over (played out, cut just before, or a reconnect): its turn ends if it was heard.
+    if (s === "listening" || s === "initializing" || s === "idle") this.captions.speakingEnded();
     this.state = s;
     this.stateCb?.(s);
   }
 
   /** Closes the current call only (peer connection, data channel, analyser); keeps mic/context/element. */
   private closeSession(): void {
+    // Open transcript turns end with the call; ids keep counting into the next one.
+    this.captions.stop();
     const dc = this.dc;
     this.dc = null;
     if (dc) {

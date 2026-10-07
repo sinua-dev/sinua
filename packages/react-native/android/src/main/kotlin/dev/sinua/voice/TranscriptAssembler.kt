@@ -15,8 +15,47 @@ class TranscriptAssembler(
     val timing: TranscriptTiming,
     /** Reveal assistant text with the audio (`syncToAudio`); else raw. */
     val sync: Boolean,
+    /** A user turn ends only at [userDone] (the vendor says when). */
+    val explicitUserEnd: Boolean = false,
 ) {
     companion object {
+        /**
+         * ElevenLabs' per-character alignment of one audio chunk as word fragments (each word with
+         * the spaces after it) on the reply's audio timeline: [offsetMs] is where the chunk starts in
+         * the reply. Characters without times are skipped.
+         */
+        fun alignmentFragments(
+            chars: List<String>,
+            startsMs: List<Double>,
+            durationsMs: List<Double>,
+            offsetMs: Double,
+        ): List<AlignedFragment> {
+            val out = ArrayList<AlignedFragment>()
+            var text = StringBuilder()
+            var start = 0.0
+            var end = 0.0
+            var open = false
+            for (i in chars.indices) {
+                if (i >= startsMs.size) break
+                val ch = chars[i]
+                val e = offsetMs + startsMs[i] + (durationsMs.getOrNull(i) ?: 0.0)
+                // A new word starts at a non-space after a space.
+                if (open && ch.isNotBlank() && text.isNotEmpty() && text.last().isWhitespace()) {
+                    out += AlignedFragment(text.toString(), start, end)
+                    open = false
+                }
+                if (!open) {
+                    text = StringBuilder()
+                    start = offsetMs + startsMs[i]
+                    open = true
+                }
+                text.append(ch)
+                end = e
+            }
+            if (open) out += AlignedFragment(text.toString(), start, end)
+            return out
+        }
+
         const val USER_SILENCE_MS = 4000.0
         const val USER_CLOSE_CHARS = 12
         const val REVEAL_CHARS_PER_SECOND = 14.0
@@ -36,6 +75,9 @@ class TranscriptAssembler(
 
         /** The level above which the assistant's audio counts as audible (the sessions' speaking level). */
         const val AUDIBLE_LEVEL = 0.05
+
+        /** `none`: pace the text over the reply's received audio once there is this much of it. */
+        const val RATE_MIN_AUDIO_MS = 1000.0
 
         /** A tick gap longer than this doesn't count as speaking time. */
         private const val MAX_TICK_MS = 100.0
@@ -57,11 +99,16 @@ class TranscriptAssembler(
         }
     }
 
+    /** One word of an alignment (see [alignmentFragments]). */
+    data class AlignedFragment(val text: String, val startMs: Double, val endMs: Double)
+
     private class Fragment(val text: String, val length: Int, val startMs: Double?, val endMs: Double?)
 
     private class Turn(val id: String, var lastAt: Double, val assistantAtOpen: Int) {
         val fragments = ArrayList<Fragment>()
         var length = 0
+        var audioMs = 0.0
+        var key: String? = null
         var shown = 0
         var onset: Double? = null
         var anchor: Double? = null
@@ -78,6 +125,10 @@ class TranscriptAssembler(
     private var lastAudible: Double? = null
     private var lastTick: Double? = null
     private var held = false
+    private var pendingAudioMs = 0.0
+
+    /** `segment`: the keys of the last turns that ended (late text for them is ignored). */
+    private val doneKeys = ArrayDeque<String>()
 
     /** A user fragment (ASR delta), at [now] ms. */
     fun userDelta(text: String, now: Double, startMs: Double? = null, endMs: Double? = null) {
@@ -88,17 +139,57 @@ class TranscriptAssembler(
         emit(TranscriptRole.USER, u, false)
     }
 
+    /** The vendor's end of the user's turn, with its full text when it sends one (replaces the deltas). */
+    fun userDone(text: String?, now: Double) {
+        if (!text.isNullOrBlank()) {
+            val u = user ?: open(TranscriptRole.USER, now).also { user = it }
+            u.fragments.clear()
+            u.length = 0
+            append(u, text, now, null, null)
+        }
+        finish(TranscriptRole.USER)
+    }
+
+    /** `none`: [ms] more of the assistant reply's audio arrived. */
+    fun assistantAudio(ms: Double) {
+        val a = assistant
+        if (a != null) a.audioMs += ms else pendingAudioMs += ms
+    }
+
+    /** A vendor segment's whole text so far (LiveKit): a new [key] ends the role's open turn. */
+    fun segment(role: TranscriptRole, key: String, text: String, final: Boolean, now: Double) {
+        if (key in doneKeys) return
+        var t = if (role == TranscriptRole.USER) user else assistant
+        if (t != null && t.key != key) {
+            finish(role)
+            t = null
+        }
+        val turn = t ?: open(role, now).also {
+            it.key = key
+            if (role == TranscriptRole.USER) user = it else assistant = it
+        }
+        turn.fragments.clear()
+        turn.length = 0
+        append(turn, text, now, null, null)
+        turn.shown = turn.length
+        if (final) finish(role) else emit(role, turn, false)
+    }
+
     /** An assistant fragment, at [now] ms. */
     fun assistantDelta(text: String, now: Double, startMs: Double? = null, endMs: Double? = null) {
         if (text.isEmpty()) return
         val a = assistant ?: open(TranscriptRole.ASSISTANT, now).also {
             it.onset = pendingOnset
+            it.audioMs = pendingAudioMs
+            pendingAudioMs = 0.0
             assistant = it
         }
         append(a, text, now, startMs, endMs)
         if (a.anchor == null && startMs != null) a.anchor = startMs
         val u = user
-        if (u != null && assistantCount > u.assistantAtOpen && a.length >= USER_CLOSE_CHARS) finish(TranscriptRole.USER)
+        if (u != null && !explicitUserEnd && assistantCount > u.assistantAtOpen && a.length >= USER_CLOSE_CHARS) {
+            finish(TranscriptRole.USER)
+        }
         reveal(a, now)
     }
 
@@ -129,7 +220,7 @@ class TranscriptAssembler(
             pendingOnset = null
         }
         val u = user
-        if (u != null && now - u.lastAt >= USER_SILENCE_MS) finish(TranscriptRole.USER)
+        if (u != null && !explicitUserEnd && now - u.lastAt >= USER_SILENCE_MS) finish(TranscriptRole.USER)
         val a = assistant
         if (a != null) {
             if (a.onset == null && !speaking && now - a.lastAt >= USER_SILENCE_MS) {
@@ -143,7 +234,8 @@ class TranscriptAssembler(
     /** The source left `speaking` on its own: the assistant turn ends. */
     fun speakingEnded() {
         val a = assistant ?: return
-        if (a.onset == null) return
+        // A keyed (LiveKit) turn ends with the agent's speaking, heard here or not.
+        if (a.onset == null && a.key == null) return
         finish(TranscriptRole.ASSISTANT)
     }
 
@@ -156,7 +248,7 @@ class TranscriptAssembler(
         if (at != null && onset != null && at >= onset) {
             val anchor = a.anchor
             if (!sync && anchor != null) {
-                val vendorAt = anchor + (at - onset - SEGMENT_DELAY_MS)
+                val vendorAt = anchor + (at - onset - delay())
                 for (f in a.fragments) {
                     val end = f.endMs ?: break
                     if (end > vendorAt) break
@@ -169,8 +261,11 @@ class TranscriptAssembler(
         a.shown = n
         assistant = null
         pendingOnset = null
+        pendingAudioMs = 0.0
         held = false
+        endKey(a)
         emitText(TranscriptRole.ASSISTANT, a, prefix(a.fragments, n).trim(), final = true, truncated = true)
+        if (timing != TranscriptTiming.SEGMENTS) return
         // What follows the kept text: the unspoken tail (dropped), or, from the first fragment that
         // starts a gap after the one before it, the next utterance.
         var kept = 0
@@ -196,9 +291,11 @@ class TranscriptAssembler(
         val a = assistant
         if (a != null) {
             assistant = null
+            endKey(a)
             emitText(TranscriptRole.ASSISTANT, a, prefix(a.fragments, a.shown).trim(), final = true, truncated = false)
         }
         pendingOnset = null
+        pendingAudioMs = 0.0
         lastAudible = null
         lastTick = null
         held = false
@@ -206,8 +303,11 @@ class TranscriptAssembler(
 
     private fun open(role: TranscriptRole, now: Double): Turn {
         val id = if (role == TranscriptRole.USER) "u${++userCount}" else "a${++assistantCount}"
-        return Turn(id, now, assistantCount)
+        // `chars` times are on the reply's own audio timeline: its start is the audio onset.
+        return Turn(id, now, assistantCount).also { if (timing == TranscriptTiming.CHARS) it.anchor = 0.0 }
     }
+
+    private fun delay(): Double = if (timing == TranscriptTiming.SEGMENTS) SEGMENT_DELAY_MS else 0.0
 
     private fun append(t: Turn, text: String, now: Double, startMs: Double?, endMs: Double?) {
         val norm = Normalizer.normalize(text, Normalizer.Form.NFC)
@@ -218,12 +318,16 @@ class TranscriptAssembler(
     }
 
     private fun visible(a: Turn, now: Double, audibleAt: Double?): Int {
-        if (!sync || timing == TranscriptTiming.SYNCED || timing == TranscriptTiming.CHARS) return a.length
+        if (!sync || timing == TranscriptTiming.SYNCED || a.key != null) return a.length
         val onset = a.onset ?: return 0
-        if (timing == TranscriptTiming.NONE) return min(a.length, floor(a.spoken * REVEAL_CHARS_PER_SECOND).toInt())
-        val anchor = a.anchor ?: return a.length
         val heldAt = audibleAt?.let { min(now, it + (if (held) 0.0 else CUT_GRACE_MS)) } ?: now
-        val head = anchor + (heldAt - onset - SEGMENT_DELAY_MS)
+        if (timing == TranscriptTiming.NONE) {
+            // Paced over the reply's audio so far; until there is enough of it, a typical rate.
+            if (a.audioMs >= RATE_MIN_AUDIO_MS) return floor(a.length * max(0.0, heldAt - onset) / a.audioMs).toInt()
+            return min(a.length, floor(a.spoken * REVEAL_CHARS_PER_SECOND).toInt())
+        }
+        val anchor = a.anchor ?: return a.length
+        val head = anchor + (heldAt - onset - delay())
         var n = 0
         for (f in a.fragments) {
             val start = f.startMs
@@ -256,10 +360,18 @@ class TranscriptAssembler(
         } else {
             assistant = null
             pendingOnset = null
+            pendingAudioMs = 0.0
             held = false
         }
         t.shown = t.length
+        endKey(t)
         emitText(role, t, prefix(t.fragments, t.length).trim(), final = true, truncated = false)
+    }
+
+    private fun endKey(t: Turn) {
+        val key = t.key ?: return
+        doneKeys.addLast(key)
+        if (doneKeys.size > 16) doneKeys.removeFirst()
     }
 
     private fun emit(role: TranscriptRole, t: Turn, final: Boolean) {

@@ -138,6 +138,10 @@ jobs:
       - name: size -- web inline within budget
         run: node scripts/size-budget.mjs --web
       # The docs site's generated tables and code samples (apps/site, scripts/docs).
+      - name: spec copies follow their sources (scripts/sync-copies.mjs)
+        run: node scripts/sync-copies.mjs
+      - name: public files cite no design notes
+        run: node scripts/public-citations.mjs
       - name: docs -- generated partials up to date
         run: node scripts/docs/gen.mjs --check
       # packages/web next: it links @sinua/core (file:../core, needs its

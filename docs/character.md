@@ -155,7 +155,7 @@ and an optional clip (BUZZY's screen), and gets fills back.
 The pose is plain numbers (`eyeW`, `eyeH`, `lid`, `gazeX`, `gazeY`, `lean`, `tilt`,
 `mouthTalk`, `mouthGain`, `squashGain`, …). The voice-state profile sets them per state
 (`spec/voice-state-profile.json`, `patterns.buzzy`), so a state change *interpolates*
-them (design-01's same-pattern transitions): the eyes slide up when thinking starts,
+them (same-pattern transitions): the eyes slide up when thinking starts,
 they don't jump. On top of that, the rig adds the living motion. It is a pure function
 of `t`, `seed` and the runtime inputs:
 

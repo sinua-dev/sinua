@@ -12,7 +12,7 @@
     "speaking": 4
   },
   "transitions": {
-    "$comment": "Seconds a voice-state change takes when the FX Spec has no rule for the pair (design note 31): the exact pair, then `from->*`, then `*->to`, else 0.6. Fast into speaking (the visual answers the voice at once), soft into thinking, slow back to idle. A view's transition clock reaches ~95 % of the way in this time.",
+    "$comment": "Seconds a voice-state change takes when the FX Spec has no rule for the pair the exact pair, then `from->*`, then `*->to`, else 0.6. Fast into speaking (the visual answers the voice at once), soft into thinking, slow back to idle. A view's transition clock reaches ~95 % of the way in this time.",
     "*->speaking": 0.25,
     "thinking->speaking": 0.3,
     "idle->listening": 0.3,
@@ -79,7 +79,7 @@
   },
   "patterns": {
     "silhouette": {
-      "$comment": "Design note 32: one head of dots; each state moves it by its own key (breath, glints, waves in, eye-line flicker, waves from the mouth). No dot glow (the outline has its own; glow on ~1,500 dots is heavy) and no pulse (the silhouette breathes itself).",
+      "$comment": "The silhouette: one head of dots; each state moves it by its own key (breath, glints, waves in, eye-line flicker, waves from the mouth). No dot glow (the outline has its own; glow on ~1,500 dots is heavy) and no pulse (the silhouette breathes itself).",
       "states": {
         "initializing": {
           "speed": 0.8,
@@ -372,7 +372,7 @@
       }
     },
     "buzzy": {
-      "$comment": "Character BUZZY (design-07): the generic swell, glow, pulse and particles are off (the character moves itself); the rig values below are the state language -- listening leans in and looks at you with sound arcs at the ears, thinking looks up and away (Andrist & Mutlu's gaze aversion) with a blink at the turn and thinking dots, speaking smiles with the voice line and a little squash. Speed 1 everywhere so blinks and glances stay in real seconds. The head turn (design note 8): idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
+      "$comment": "Character BUZZY: the generic swell, glow, pulse and particles are off (the character moves itself); the rig values below are the state language -- listening leans in and looks at you with sound arcs at the ears, thinking looks up and away (Andrist & Mutlu's gaze aversion) with a blink at the turn and thinking dots, speaking smiles with the voice line and a little squash. Speed 1 everywhere so blinks and glances stay in real seconds. The head turn: idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
       "states": {
         "initializing": {
           "speed": 1,
@@ -459,7 +459,7 @@
       }
     },
     "hum": {
-      "$comment": "Character HUM (design-07): the studio microphone. Same state language as buzzy -- listening tips the capsule toward you with the tally red (earGain), thinking tips it back, looks away and scans the grille with the tally blinking amber (mouthDots) and blinks at the turn, speaking lights the grille with the voice and sways it on the yoke. The generic swell, glow, pulse and particles are off; speed 1. The head turn (design note 8): idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
+      "$comment": "Character HUM: the studio microphone. Same state language as buzzy -- listening tips the capsule toward you with the tally red (earGain), thinking tips it back, looks away and scans the grille with the tally blinking amber (mouthDots) and blinks at the turn, speaking lights the grille with the voice and sways it on the yoke. The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
       "states": {
         "initializing": {
           "speed": 1,
@@ -547,7 +547,7 @@
       }
     },
     "wisp": {
-      "$comment": "Character WISP (design-07): the helpful spirit. Same state language -- listening leans in, eyes wide, sparkles gather (earGain); thinking looks away with a blink at the turn, sparkles orbit its head (mouthDots) and the tail curls tight (curlGain); speaking opens the oval mouth with the voice, swells a little and streams sparkles (mouthTalk). The generic swell, glow, pulse and particles are off; speed 1. The head turn (design note 8): idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
+      "$comment": "Character WISP: the helpful spirit. Same state language -- listening leans in, eyes wide, sparkles gather (earGain); thinking looks away with a blink at the turn, sparkles orbit its head (mouthDots) and the tail curls tight (curlGain); speaking opens the oval mouth with the voice, swells a little and streams sparkles (mouthTalk). The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
       "states": {
         "initializing": {
           "speed": 1,
@@ -637,7 +637,7 @@
       }
     },
     "chirp": {
-      "$comment": "Character CHIRP (design-07): the songbird. Same state language -- listening is the cartoon bird's head tilt with the crest up (earGain), thinking looks away, blinks at the turn, drops the crest and lights thought dots (mouthDots), speaking opens the beak with the voice, flutters the wings and floats notes (mouthTalk, flutterGain). The generic swell, glow, pulse and particles are off; speed 1. The head turn (design note 8): idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
+      "$comment": "Character CHIRP: the songbird. Same state language -- listening is the cartoon bird's head tilt with the crest up (earGain), thinking looks away, blinks at the turn, drops the crest and lights thought dots (mouthDots), speaking opens the beak with the voice, flutters the wings and floats notes (mouthTalk, flutterGain). The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
       "states": {
         "initializing": {
           "speed": 1,
@@ -723,7 +723,7 @@
       }
     },
     "cuppa": {
-      "$comment": "Character CUPPA (design note 14): the coffee mug. Same state language -- listening tips it toward you a little (a mug is heavy: less than chirp's tilt) and its steam rises higher (earGain), thinking looks away, blinks at the turn and curls the steam (mouthDots), speaking opens the oval mouth with the voice, squashes a little and thickens the steam (mouthTalk). The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you, thinking looks up and aside, speaking nods.",
+      "$comment": "Character CUPPA: the coffee mug. Same state language -- listening tips it toward you a little (a mug is heavy: less than chirp's tilt) and its steam rises higher (earGain), thinking looks away, blinks at the turn and curls the steam (mouthDots), speaking opens the oval mouth with the voice, squashes a little and thickens the steam (mouthTalk). The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you, thinking looks up and aside, speaking nods.",
       "states": {
         "initializing": {
           "speed": 1,
@@ -809,7 +809,7 @@
       }
     },
     "bean": {
-      "$comment": "Character BEAN (design note 14): the coffee bean. Same state language -- listening tilts its head and its aroma sparkles gather in (earGain), thinking looks away, blinks at the turn and the sparkles orbit (mouthDots), speaking opens the oval mouth with the voice, bounces and squashes a little and the sparkles stream out (mouthTalk). The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you, thinking looks up and aside, speaking nods.",
+      "$comment": "Character BEAN: the coffee bean. Same state language -- listening tilts its head and its aroma sparkles gather in (earGain), thinking looks away, blinks at the turn and the sparkles orbit (mouthDots), speaking opens the oval mouth with the voice, bounces and squashes a little and the sparkles stream out (mouthTalk). The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you, thinking looks up and aside, speaking nods.",
       "states": {
         "initializing": {
           "speed": 1,
@@ -895,7 +895,7 @@
       }
     },
     "beep": {
-      "$comment": "Character BEEP (design note 17): the tin robot. Buzzy's state language -- listening leans in and looks at you (a hand to the ear, the antenna light red), thinking looks up and away with a blink at the turn (a hand to the chin, the light amber), speaking smiles and its chest core and arm beats follow the voice. The generic swell, glow, pulse and particles are off; speed 1.",
+      "$comment": "Character BEEP: the tin robot. Buzzy's state language -- listening leans in and looks at you (a hand to the ear, the antenna light red), thinking looks up and away with a blink at the turn (a hand to the chin, the light amber), speaking smiles and its chest core and arm beats follow the voice. The generic swell, glow, pulse and particles are off; speed 1.",
       "states": {
         "initializing": {
           "speed": 1,
@@ -982,7 +982,7 @@
       }
     },
     "character": {
-      "$comment": "A character from a recipe in the file (FX Spec 1.12, design note 12): the language the four built-in characters share, with BUZZY's numbers -- listening leans in and looks at you, thinking looks up and away with a blink at the turn and the thinking dots, speaking smiles with the voice, a little squash and a nod. A recipe takes a built-in character's profile instead with `\"profile\": \"chirp\"` (its own gains, like flutterGain, come with it); the file's `states` override either.",
+      "$comment": "A character from a recipe in the file (FX Spec 1.12): the language the four built-in characters share, with BUZZY's numbers -- listening leans in and looks at you, thinking looks up and away with a blink at the turn and the thinking dots, speaking smiles with the voice, a little squash and a nod. A recipe takes a built-in character's profile instead with `\"profile\": \"chirp\"` (its own gains, like flutterGain, come with it); the file's `states` override either.",
       "states": {
         "initializing": {
           "speed": 1,
@@ -1078,7 +1078,7 @@
     },
     "silhouette": {
       "status": "fixed",
-      "was": "new in 1.13 (design note 32): the generic glow and pulse would make ~1,500 dots heavy and breathe twice",
+      "was": "new in 1.13: the generic glow and pulse would make ~1,500 dots heavy and breathe twice",
       "now": "a tuned entry: one key per state, no dot glow, no pulse"
     },
     "muted": {

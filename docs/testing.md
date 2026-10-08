@@ -196,6 +196,19 @@ Every binding checks the frozen file itself. The rules mirror the Rust checker: 
 - RN: the example app shows PASS on both the Android emulator and the iOS simulator.
 - Negative checks: a perturbed polyline vertex in `tracking-64-0.6-laps` failed wasm and Android with that exact key and field. iOS also failed. The file was restored and its checksum re-checked.
 
+## Copies and public files
+
+- **Spec copies follow their sources.** `node scripts/sync-copies.mjs` (CI) checks every
+  checked-in copy of a `spec/` file against its source, byte for byte. Today the only one is
+  `apps/examples/web-component/spec.json`. It also fails on an unlisted copy: any tracked JSON
+  with a spec file's exact bytes. After editing a source, `--write` rewrites the copies.
+  - The Studio does the same for its copies of the runtime's files
+    (`scripts/studio/sync-copies.mjs` in sinua-studio, in its CI): today
+    `slot-labels.json`. 0.1.0-beta.8 shipped with stale copies; this is the fix.
+- **Public files cite no design notes.** `node scripts/public-citations.mjs` (CI) fails on
+  "design note N" / "design-NN" in the docs, the CHANGELOG, the READMEs and `spec/`. The notes
+  live in the private repo, so a reader can't follow them. Code comments are exempt.
+
 ## Transitions: the contract's bounds
 
 `node scripts/transitions/check.mjs` (CI, after the packages build; `--quick` while

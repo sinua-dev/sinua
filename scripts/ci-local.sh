@@ -115,6 +115,8 @@ step "size: web inline within budget"; node scripts/size-budget.mjs --web
 
 # The docs site's generated tables and code samples (apps/site): partials match spec/parameters.json + the engine's messages,
 # and every snippet resolves / type-checks. Needs packages/core's dist.
+step "spec copies follow their sources (scripts/sync-copies.mjs)"; node scripts/sync-copies.mjs
+step "public files cite no design notes"; node scripts/public-citations.mjs
 step "docs: generated partials up to date"; node scripts/docs/gen.mjs --check
 
 step "packages/web: npm ci";        (cd packages/web && npm ci)

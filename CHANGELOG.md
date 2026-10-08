@@ -64,7 +64,9 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   than listening. Apps that pinned `surfaceScale` to hide the jump can drop the pin. Files of every
   FX Spec version see the new values (the identity locks were rewritten for these two values only).
   A new CI check (`scripts/transitions/large.mjs`) drives glowing, calibrating and progressing
-  through their state changes in colour at 512 px.
+  through their state changes in colour at 512 px. Golden `sinua` 4.1.0 adds glowing under its
+  thinking and speaking profiles (`glowing-64-0.6-voice-thinking` / `-voice-speaking`), which no
+  case covered; every earlier case is unchanged.
 
 ### Removed
 

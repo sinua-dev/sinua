@@ -31,9 +31,9 @@ Until the artifacts are published, include the build and depend on the modules
 by project. Once published:
 
 ```kotlin
-implementation("dev.sinua:sinua-core:0.1.0-beta.8")
-implementation("dev.sinua:sinua-view:0.1.0-beta.8")
-implementation("dev.sinua:sinua-gemini:0.1.0-beta.8")   // only the vendors you use
+implementation("dev.sinua:sinua-core:0.1.0-beta.9")
+implementation("dev.sinua:sinua-view:0.1.0-beta.9")
+implementation("dev.sinua:sinua-gemini:0.1.0-beta.9")   // only the vendors you use
 ```
 
 The engine is built for `arm64-v8a`, `armeabi-v7a`, `x86_64` and `x86`. JNA (the

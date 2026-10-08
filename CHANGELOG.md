@@ -9,7 +9,9 @@ tag `beta`, and it may still change incompatibly.
 
 How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
-## Unreleased
+## 0.1.0-beta.9
+
+Size: web 437,572 B (gzip 326,269), Android arm64 .so 1,902,904 B, iOS .a 4,103,360 B; @sinua/voice min+gzip: voice 3,858, openai 8,961, gemini 6,829, elevenlabs 6,965, livekit 5,392, mic 1,202, tone 1,296 B (release builds). Down from beta.8: web −14.5%, .so −10.4%, .a −6.6%.
 
 ### Added
 

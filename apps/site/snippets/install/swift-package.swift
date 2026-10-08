@@ -1,6 +1,6 @@
 // Package.swift -- the SwiftPM package is github.com/sinua-dev/sinua-swift.
 dependencies: [
-    .package(url: "https://github.com/sinua-dev/sinua-swift", from: "0.1.0-beta.8"),
+    .package(url: "https://github.com/sinua-dev/sinua-swift", from: "0.1.0-beta.9"),
 ],
 targets: [
     .target(name: "MyApp", dependencies: [

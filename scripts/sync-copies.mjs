@@ -14,6 +14,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const COPIES = [
   // The five framework examples import one spec (apps/examples/web-component/*/).
   ["spec/examples/voice-assistant.fxspec.json", ["apps/examples/web-component/spec.json"]],
+  // The FX Spec reference page's live demo of a custom character (apps/site).
+  ["spec/examples/custom-character.fxspec.json", ["apps/site/snippets/spec/custom-character.fxspec.json"]],
 ];
 
 const write = process.argv.includes("--write");

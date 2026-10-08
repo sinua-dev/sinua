@@ -1477,6 +1477,860 @@
         "stateKeys": []
       }
     },
+    "rich-bean.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "muted": 0.0,
+          "seed": 3.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "idle": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "breath": 1.4,
+          "glowStrength": 0.0,
+          "ink": 1.0,
+          "look": 1.0,
+          "muted": 0.0,
+          "pulseOpacity": 0.25,
+          "pulsePeriod": 4.5,
+          "pulseScale": 0.04,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "turnWander": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "idle",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "idle|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "breath": 1.4,
+          "glowStrength": 0.0,
+          "grain": 0.0,
+          "ink": 1.0,
+          "look": 1.0,
+          "muted": 0.0,
+          "pulseOpacity": 0.25,
+          "pulsePeriod": 4.5,
+          "pulseScale": 0.04,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "shading": 0.0,
+          "turnWander": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "idle",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "initializing": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "breath": 0.5,
+          "glowStrength": 0.0,
+          "ink": 0.85,
+          "lid": 0.5,
+          "look": 0.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "initializing",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "initializing|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "breath": 0.5,
+          "glowStrength": 0.0,
+          "grain": 0.0,
+          "ink": 0.85,
+          "lid": 0.5,
+          "look": 0.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "shading": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "initializing",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "listening": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.6,
+          "audioStrength": 0.0,
+          "earGain": 1.0,
+          "eyeH": 30.0,
+          "eyeR": 9.0,
+          "eyeW": 22.0,
+          "gazeY": 2.0,
+          "glowStrength": 0.0,
+          "ink": 1.0,
+          "look": 0.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "tilt": -0.2,
+          "turnPitch": 0.35
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "listening",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "listening|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.6,
+          "audioStrength": 0.0,
+          "earGain": 1.0,
+          "eyeH": 30.0,
+          "eyeR": 9.0,
+          "eyeW": 22.0,
+          "gazeY": 2.0,
+          "glowStrength": 0.0,
+          "grain": 0.0,
+          "ink": 1.0,
+          "look": 0.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "shading": 0.0,
+          "tilt": -0.2,
+          "turnPitch": 0.35
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "listening",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "speaking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.625,
+          "audioStrength": 0.0,
+          "bounceGain": 4.0,
+          "eyeSmile": 0.45,
+          "eyeW": 21.0,
+          "glowStrength": 0.0,
+          "ink": 1.0,
+          "look": 0.3,
+          "mouthGain": 1.0,
+          "mouthTalk": 1.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "squashGain": 0.05,
+          "turnNod": 1.0,
+          "turnWander": 0.25
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "speaking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.625,
+          "audioStrength": 0.0,
+          "bounceGain": 4.0,
+          "eyeSmile": 0.45,
+          "eyeW": 21.0,
+          "glowStrength": 0.0,
+          "grain": 0.0,
+          "ink": 1.0,
+          "look": 0.3,
+          "mouthGain": 1.0,
+          "mouthTalk": 1.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "shading": 0.0,
+          "squashGain": 0.05,
+          "turnNod": 1.0,
+          "turnWander": 0.25
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "thinking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "colorHue": 271.9,
+          "eyeAsym": 0.17,
+          "eyeH": 24.0,
+          "eyeR": 7.0,
+          "eyeTilt": 0.22,
+          "gazeX": -8.0,
+          "gazeY": -4.0,
+          "glowStrength": 0.0,
+          "ink": 1.0,
+          "lid": 0.28,
+          "look": 0.0,
+          "mouthDots": 1.0,
+          "muted": 0.0,
+          "pulseOpacity": 0.45,
+          "pulsePeriod": 1.8,
+          "pulseScale": 0.015,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "tilt": 0.08,
+          "turnBlink": 1.0,
+          "turnPitch": 0.8,
+          "turnYaw": -0.7
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "thinking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "thinking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "colorHue": 271.9,
+          "eyeAsym": 0.17,
+          "eyeH": 24.0,
+          "eyeR": 7.0,
+          "eyeTilt": 0.22,
+          "gazeX": -8.0,
+          "gazeY": -4.0,
+          "glowStrength": 0.0,
+          "grain": 0.0,
+          "ink": 1.0,
+          "lid": 0.28,
+          "look": 0.0,
+          "mouthDots": 1.0,
+          "muted": 0.0,
+          "pulseOpacity": 0.45,
+          "pulsePeriod": 1.8,
+          "pulseScale": 0.015,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "shading": 0.0,
+          "tilt": 0.08,
+          "turnBlink": 1.0,
+          "turnPitch": 0.8,
+          "turnYaw": -0.7
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "thinking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "grain": 0.0,
+          "muted": 0.0,
+          "seed": 3.0,
+          "shading": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:bean-rich:d437b56815c77b13",
+        "stateKey": "",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      }
+    },
+    "rich-buzzy.fxspec.json": {
+      "": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "muted": 0.0,
+          "seed": 3.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "idle": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "breath": 1.0,
+          "glowStrength": 0.0,
+          "ink": 1.0,
+          "look": 1.0,
+          "muted": 0.0,
+          "pulseOpacity": 0.25,
+          "pulsePeriod": 4.5,
+          "pulseScale": 0.04,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "turnWander": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "idle",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "idle|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "breath": 1.0,
+          "glowStrength": 0.0,
+          "grain": 0.0,
+          "ink": 1.0,
+          "look": 1.0,
+          "muted": 0.0,
+          "pulseOpacity": 0.25,
+          "pulsePeriod": 4.5,
+          "pulseScale": 0.04,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "shading": 0.0,
+          "turnWander": 1.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "idle",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "initializing": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "breath": 0.5,
+          "glowStrength": 0.0,
+          "ink": 0.85,
+          "lid": 0.5,
+          "look": 0.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "initializing",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "initializing|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "breath": 0.5,
+          "glowStrength": 0.0,
+          "grain": 0.0,
+          "ink": 0.85,
+          "lid": 0.5,
+          "look": 0.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "shading": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "initializing",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "listening": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.6,
+          "audioStrength": 0.0,
+          "earGain": 1.0,
+          "eyeH": 30.0,
+          "eyeR": 9.0,
+          "eyeW": 22.0,
+          "gazeY": 2.0,
+          "glowStrength": 0.0,
+          "ink": 1.0,
+          "lean": 4.0,
+          "look": 0.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "tilt": -0.05,
+          "turnPitch": 0.35
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "listening",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "listening|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.6,
+          "audioStrength": 0.0,
+          "earGain": 1.0,
+          "eyeH": 30.0,
+          "eyeR": 9.0,
+          "eyeW": 22.0,
+          "gazeY": 2.0,
+          "glowStrength": 0.0,
+          "grain": 0.0,
+          "ink": 1.0,
+          "lean": 4.0,
+          "look": 0.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "shading": 0.0,
+          "tilt": -0.05,
+          "turnPitch": 0.35
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "listening",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "speaking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.625,
+          "audioStrength": 0.0,
+          "bounceGain": 3.0,
+          "eyeSmile": 0.45,
+          "eyeW": 21.0,
+          "glowStrength": 0.0,
+          "ink": 1.0,
+          "look": 0.3,
+          "mouthGain": 1.0,
+          "mouthTalk": 1.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "squashGain": 0.045,
+          "turnNod": 1.0,
+          "turnWander": 0.25
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "speaking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioLevel": 0.625,
+          "audioStrength": 0.0,
+          "bounceGain": 3.0,
+          "eyeSmile": 0.45,
+          "eyeW": 21.0,
+          "glowStrength": 0.0,
+          "grain": 0.0,
+          "ink": 1.0,
+          "look": 0.3,
+          "mouthGain": 1.0,
+          "mouthTalk": 1.0,
+          "muted": 0.0,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "shading": 0.0,
+          "squashGain": 0.045,
+          "turnNod": 1.0,
+          "turnWander": 0.25
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "speaking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "thinking": {
+        "diagnostics": [],
+        "disabledMaterials": [],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "colorHue": 271.9,
+          "eyeAsym": 0.17,
+          "eyeH": 24.0,
+          "eyeR": 7.0,
+          "eyeTilt": 0.22,
+          "gazeX": -8.0,
+          "gazeY": -4.0,
+          "glowStrength": 0.0,
+          "ink": 1.0,
+          "lid": 0.28,
+          "look": 0.0,
+          "mouthDots": 1.0,
+          "muted": 0.0,
+          "pulseOpacity": 0.45,
+          "pulsePeriod": 1.8,
+          "pulseScale": 0.015,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "tilt": 0.07,
+          "turnBlink": 1.0,
+          "turnPitch": 0.8,
+          "turnYaw": -0.7
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "thinking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "thinking|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "audioStrength": 0.0,
+          "colorHue": 271.9,
+          "eyeAsym": 0.17,
+          "eyeH": 24.0,
+          "eyeR": 7.0,
+          "eyeTilt": 0.22,
+          "gazeX": -8.0,
+          "gazeY": -4.0,
+          "glowStrength": 0.0,
+          "grain": 0.0,
+          "ink": 1.0,
+          "lid": 0.28,
+          "look": 0.0,
+          "mouthDots": 1.0,
+          "muted": 0.0,
+          "pulseOpacity": 0.45,
+          "pulsePeriod": 1.8,
+          "pulseScale": 0.015,
+          "pulseStrength": 0.0,
+          "seed": 3.0,
+          "shading": 0.0,
+          "tilt": 0.07,
+          "turnBlink": 1.0,
+          "turnPitch": 0.8,
+          "turnYaw": -0.7
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "thinking",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      },
+      "|lowPower": {
+        "diagnostics": [],
+        "disabledMaterials": [
+          "grain",
+          "shading"
+        ],
+        "inactiveBindings": [],
+        "maxFps": null,
+        "ok": true,
+        "overrides": {
+          "grain": 0.0,
+          "muted": 0.0,
+          "seed": 3.0,
+          "shading": 0.0
+        },
+        "size": 64,
+        "speed": 1.0,
+        "state": "recipe:buzzy-rich:a25e4e73d1c12876",
+        "stateKey": "",
+        "stateKeys": [
+          "idle",
+          "initializing",
+          "listening",
+          "speaking",
+          "thinking"
+        ]
+      }
+    },
     "ring-tracking-gradient.fxspec.json": {
       "": {
         "diagnostics": [],
@@ -2428,5 +3282,5 @@
     "steps": 6200.0,
     "waterMl": 1800.0
   },
-  "note": "Identity lock: how the FX Spec 1.12 runtime resolved all spec/examples (every state key, base = \"\"; \"|lowPower\" = ctx.lowPower) with the parity tests' fixed inputs, captured from the 1.12 build. crates/core_engine/src/fx_spec.rs (v1_12_examples_resolve_identically) requires every later runtime to reproduce it exactly. Regenerate only when deliberately capturing a new minor: crates/core_engine/tests/fx_spec_lock.rs."
+  "note": "Identity lock: how the FX Spec 1.14 runtime resolved all spec/examples (every state key, base = \"\"; \"|lowPower\" = ctx.lowPower) with the parity tests' fixed inputs, captured from the 1.14 build. crates/core_engine/src/fx_spec.rs (v1_14_examples_resolve_identically) requires every later runtime to reproduce it exactly. Regenerate only when deliberately capturing a new minor: crates/core_engine/tests/fx_spec_lock.rs."
 }

@@ -17,7 +17,7 @@
     "fxSpec": {
       "type": "string",
       "pattern": "^1\\.([8-9]|[1-9][0-9]+)$",
-      "description": "\"major.minor\", 1.8 or later (the runtime's floor; 1.0-1.7 are rejected). A newer 1.x file resolves, with its unknown keys reported as warnings."
+      "description": "\"major.minor\", 1.8 or later (the runtime's floor; 1.0-1.7 are rejected). The runtime reads up to 1.14 strictly; a newer 1.x file resolves, with its unknown keys reported as warnings."
     },
     "name": {
       "type": "string"

@@ -13,6 +13,14 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 ### Added
 
+- **FX Spec 1.14** (docs/fx-spec.md, *v1.14*), the minor 0.1.0-beta.9's cleanup ships under. It
+  adds no key: its removals are errors at every version, and its one value change (`glowing`'s
+  calmer zoom) reaches every version too. A `"fxSpec": "1.14"` file is now read strictly (unknown
+  keys are errors), with its own identity lock `spec/fx-spec-1.14-resolved.json`; `1.15` and later
+  read leniently. Every older lock is now held by a test, including 1.12 and 1.13, which had none.
+  The 1.12 lock's recipe names for `custom-character` and `remix-latte` were updated: the 1.14
+  cleanup edited those two examples.
+
 - **Transcripts** (docs/audio-pipeline.md, *Transcripts*): live text for both speakers, for captions.
   - **API:**
     - `onTranscript` on a source;

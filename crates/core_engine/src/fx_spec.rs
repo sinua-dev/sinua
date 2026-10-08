@@ -27,7 +27,7 @@ use std::collections::{BTreeMap, HashMap};
 use serde_json::{Map, Value};
 
 pub const RUNTIME_MAJOR: u64 = 1;
-pub const RUNTIME_MINOR: u64 = 13;
+pub const RUNTIME_MINOR: u64 = 14;
 /// The first minor that knows the `character` object (1.11).
 const CHARACTER_SINCE: u64 = 11;
 /// The oldest minor this runtime reads. 1.0–1.7 were never published, so their
@@ -2804,7 +2804,7 @@ mod tests {
         assert!(errors(&missing).iter().any(|d| d.path == "/pattern"));
         // A newer 1.x file: unknown keys are warnings, the rest renders.
         let newer = resolve(
-            r##"{ "fxSpec": "1.14", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
+            r##"{ "fxSpec": "1.15", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
         );
         assert!(newer.ok, "{:?}", newer.diagnostics);
         assert_eq!(warnings(&newer).len(), 2);
@@ -3067,7 +3067,19 @@ mod tests {
         }
     }
 
-    const EXAMPLES: [(&str, &str); 13] = [
+    const EXAMPLES: [(&str, &str); 16] = [
+        (
+            "remix-latte",
+            include_str!("../../../spec/examples/remix-latte.fxspec.json"),
+        ),
+        (
+            "rich-bean",
+            include_str!("../../../spec/examples/rich-bean.fxspec.json"),
+        ),
+        (
+            "rich-buzzy",
+            include_str!("../../../spec/examples/rich-buzzy.fxspec.json"),
+        ),
         (
             "coffee-shop",
             include_str!("../../../spec/examples/coffee-shop.fxspec.json"),
@@ -3360,6 +3372,38 @@ mod tests {
         // 1.11 is the runtime 0.1.0-beta.8's characters were made with; 1.12 adds
         // `recipe` and must not change how any 1.11 file resolves.
         resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.11-resolved.json"), 11);
+    }
+
+    #[test]
+    fn v1_12_examples_resolve_identically() {
+        // 1.12 adds `recipe`, `expression` and `palette`; 1.13 must not change how a 1.12 file
+        // resolves. (Until 0.1.0-beta.9 no test read this lock, and it went stale: the
+        // custom-character example's recipe text changed, so its `recipe:pip:<hash>` name did.)
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.12-resolved.json"), 14);
+    }
+
+    #[test]
+    fn v1_13_examples_resolve_identically() {
+        // 1.13 adds `silhouette`, palette roles and dark variants; 1.14 (the 0.1.0-beta.9
+        // cleanup) adds no key and must not change how a 1.13 file resolves.
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.13-resolved.json"), 16);
+    }
+
+    /// Every lock but the current runtime's (which `tests/fx_spec_lock.rs` holds) is read by a
+    /// `v1_<N>_examples_resolve_identically` above, so no lock goes stale unread again.
+    #[test]
+    fn every_older_lock_has_an_identity_test() {
+        let src = include_str!("fx_spec.rs");
+        for minor in FLOOR_MINOR..RUNTIME_MINOR {
+            let lock = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join(format!("../../spec/fx-spec-1.{minor}-resolved.json"));
+            assert!(lock.exists(), "no lock for 1.{minor}: {}", lock.display());
+            assert!(
+                src.contains(&format!("fn v1_{minor}_examples_resolve_identically()"))
+                    && src.contains(&format!("spec/fx-spec-1.{minor}-resolved.json\"), ")),
+                "spec/fx-spec-1.{minor}-resolved.json has no identity test reading it"
+            );
+        }
     }
 
     /// A file carrying `recipe` (Chirp's own, renamed `id`, plus `extra` keys).

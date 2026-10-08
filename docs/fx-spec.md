@@ -83,9 +83,9 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 
 - Major ≠ 1 → error; this runtime doesn't load it.
 - **The floor is 1.8** (`fx_spec.rs`'s `FLOOR_MINOR`). A `1.0`–`1.7` file is one error at `/fxSpec` (``FX Spec 1.7 isn't supported; this runtime reads 1.8 and later``) and nothing resolves. Those minors were never published; their acceptance was dropped before the first release instead of becoming a promise (docs/release-roadmap.md, decision 0.1). A missing or malformed `fxSpec` is an error too, and the rest of the file is still read as the current minor so its other problems show.
-- The runtime is **1.13** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`; 1.12's `recipe`, `expression`, `palette`; 1.13's `silhouette`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
+- The runtime is **1.14** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`; 1.12's `recipe`, `expression`, `palette`; 1.13's `silhouette`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
 - A **newer 1.x** file (`1.9`) → unknown keys are **warnings** and the rest renders (graceful degradation).
-- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is six locks, `spec/fx-spec-1.8-resolved.json` to `-1.13-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`, 1.12 over those 14 (byte-identical rows) plus `coffee-shop`, `custom-character` and `remix-latte`, 1.13 over those (byte-identical rows) plus `rich-bean` and `rich-buzzy`; the 1.0–1.7 locks went with the floor. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
+- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is seven locks, `spec/fx-spec-1.8-resolved.json` to `-1.14-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`, 1.12 over those 14 (byte-identical rows) plus `coffee-shop`, `custom-character` and `remix-latte`, 1.13 over those (byte-identical rows) plus `rich-bean` and `rich-buzzy`, 1.14 over the same 16 (byte-identical rows: 1.14 adds no key); the 1.0–1.7 locks went with the floor. Each older lock is read by its own `v1_<minor>_examples_resolve_identically`, and `every_older_lock_has_an_identity_test` fails if a lock has none. Until 0.1.0-beta.9 the 1.12 and 1.13 locks had none, and the 1.12 lock had gone stale: the `custom-character` and `remix-latte` examples were edited by the 1.14 cleanup, which changed their `recipe:<id>:<hash>` names. Those names were updated, and nothing else in that lock changed. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
 - **A key added in a later minor is gated automatically.** `spec/fx-spec-1.8-keys.json`
   freezes every key path a 1.8 file may use (103 today, built from the resolver's own
   tables). A new key (a material, a section key, a binding target, something low power
@@ -331,6 +331,17 @@ How state changes animate, per pair. Optional. Without a rule for a pair, a voic
 - **Fields:** `duration` (seconds, 0–10; `0` = a cut) and `curve` (one of the binding curves: `linear`, `ease`, `easeIn`, `easeOut`, `easeInOut`).
 - **Diagnostics:** a key that isn't `default` or `a->b` is an error; a state name that isn't in `states` is a warning (the entry never applies); an unknown curve or an out-of-range duration is an error.
 - `fxSpecTransition(spec, from, to)` returns `{ duration, curve, authored }` for a pair; the players call it on every state change. `authored` says the file wrote `curve` for this change: a view keeps that curve (carrying the motion's velocity into it); otherwise it uses its own transition clock, which reaches ~95 % of the way in `duration`. The technique (interpolate / morph / cross-fade) isn't in the file: the engine picks it from the pair (see *Caller loop*).
+
+## v1.14: the 0.1.0-beta.9 cleanup
+
+1.14 adds no key. It is the minor the 0.1.0-beta.9 cleanup ships under, so a file can say
+`"fxSpec": "1.14"` and be read strictly (its unknown keys are errors) with its own lock:
+
+- **Removed, an error at every version** (see *Versioning*): the `liquid`, `particles` and
+  `holographic` materials; the character wardrobe, named palettes and eye styles; the
+  `concluding` pattern.
+- **One value change that reaches every version:** `glowing`'s voice-state profile zooms less
+  (`surfaceScale` thinking 1.6, speaking 1.4; `profileVersion` 4).
 
 ## v1.13: silhouettes
 

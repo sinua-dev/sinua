@@ -23,6 +23,13 @@ test("the budget file holds the three limits as positive byte counts", () => {
   for (const k of ["webInline", "androidSo", "iosA"]) assert.ok(Number.isInteger(b[k]) && b[k] > 0, k);
 });
 
+test("every @sinua/voice web entry has a limit, and every limit names a real entry", () => {
+  const b = JSON.parse(readFileSync(join(root, "spec/size-budget.json"), "utf8"));
+  const entries = Object.keys(JSON.parse(readFileSync(join(root, "packages/voice/package.json"), "utf8")).exports).filter((e) => e !== "./server");
+  assert.deepEqual(Object.keys(b.voice).sort(), entries.sort());
+  for (const [k, v] of Object.entries(b.voice)) assert.ok(Number.isInteger(v) && v > 0, k);
+});
+
 test("passes at or under the limit and prints the CHANGELOG line", () => {
   const r = run(1000, "--line");
   assert.equal(r.status, 0, r.stderr);

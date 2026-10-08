@@ -5,6 +5,7 @@
 //   node scripts/size-budget.mjs --web                    @sinua/core's inline.js (after its build)
 //   node scripts/size-budget.mjs --android <libcore_engine.so>   arm64, release variant
 //   node scripts/size-budget.mjs --ios <libcore_engine.a>        device slice, release variant
+//   node scripts/size-budget.mjs --voice                  each @sinua/voice web entry, min+gzip (after its build)
 //   add --line to print the CHANGELOG line; --budget <file> reads other limits (tests)
 //
 // The native limits hold for the release variant only (SINUA_NATIVE_RELEASE=1): a default
@@ -45,6 +46,22 @@ if (args.includes("--web")) {
   if (existsSync(dev)) console.log(`     (info) @sinua/core/dev inline.js: ${fmt(size(dev))} B, no limit`);
   parts.push(`web ${fmt(bytes)} B (gzip ${fmt(gz)})`);
 }
+if (args.includes("--voice")) {
+  // Each @sinua/voice web entry the way an app bundles it: minified, @sinua/core and the vendor
+  // SDK left to the app (they're shared or the app's own choice), gzip -9.
+  const { build } = await import(join(root, "packages/core/node_modules/esbuild/lib/main.js"));
+  const exportsMap = JSON.parse(readFileSync(join(root, "packages/voice/package.json"), "utf8")).exports;
+  const voiceParts = [];
+  for (const [entry, limit] of Object.entries(budget.voice ?? {})) {
+    const file = join(root, "packages/voice", exportsMap[entry].default);
+    size(file);
+    const out = await build({ entryPoints: [file], bundle: true, minify: true, format: "esm", platform: "browser", write: false, logLevel: "silent", external: ["@sinua/core", "livekit-client"] });
+    const gz = gzipSync(out.outputFiles[0].contents, { level: 9 }).length;
+    check(`@sinua/voice${entry === "." ? "" : entry.slice(1)} (min+gzip)`, file, gz, limit);
+    voiceParts.push(`${entry === "." ? "voice" : entry.slice(2)} ${fmt(gz)}`);
+  }
+  parts.push(`@sinua/voice gzip ${voiceParts.join(", ")} B`);
+}
 if (opt("--android")) {
   const file = opt("--android");
   const bytes = size(file);
@@ -58,7 +75,7 @@ if (opt("--ios")) {
   parts.push(`iOS .a ${fmt(bytes)} B`);
 }
 if (!parts.length) {
-  console.error("usage: size-budget.mjs [--web] [--android <so>] [--ios <a>] [--line] [--budget <file>]");
+  console.error("usage: size-budget.mjs [--web] [--voice] [--android <so>] [--ios <a>] [--line] [--budget <file>]");
   process.exit(2);
 }
 if (args.includes("--line")) console.log(`Size: ${parts.join(", ")} (release builds).`);

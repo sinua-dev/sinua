@@ -142,6 +142,7 @@ step "packages/design: npm run build"; (cd packages/design && npm run build)
 step "packages/voice: npm ci";      (cd packages/voice && npm ci)
 step "packages/voice: npm run build"; (cd packages/voice && npm run build)
 step "packages/voice: npm test";      (cd packages/voice && npm test)
+step "size: @sinua/voice entries within budget"; node scripts/size-budget.mjs --voice
 step "transitions: the contract's bounds (every pattern, realistic conversations)"; node scripts/transitions/check.mjs
 step "transitions: the lattice trio at 512 px, in colour (no jump at video size)"; node scripts/transitions/large.mjs
 step "examples/voice-server: npm ci + check (templates type-check, mocked tests)"; (cd examples/voice-server && npm ci && npm run check)

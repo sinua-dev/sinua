@@ -195,6 +195,8 @@ jobs:
         run: npm test
       # Design note 31: every pattern through every voice-state pair (10 s / 300 s and an
       # interruption) and realistic conversations through the GPT-Live session core.
+      - name: size -- @sinua/voice entries within budget (min+gzip; spec/size-budget.json)
+        run: node scripts/size-budget.mjs --voice
       - name: transitions -- the contract's bounds (after packages/core + packages/voice)
         run: node scripts/transitions/check.mjs
       - name: transitions -- the lattice trio at 512 px, in colour (no jump at video size)

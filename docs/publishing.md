@@ -121,6 +121,7 @@ first, then move optional parts out of the core, then bring the numbers to the u
 | `@sinua/core` `pkg/sinua_core_inline.js` | 532,480 B (520 KiB) | every push (CI web job, `scripts/ci-local.sh`) |
 | Android arm64 `libcore_engine.so` | 2,306,867 B | `release.yml`, after the release build, before staging |
 | iOS device `libcore_engine.a` (after `strip -S`) | 4,718,592 B | `release.yml`, after the release build, before zipping |
+| each `@sinua/voice` web entry (`.`, `./openai`, `./gemini`, `./elevenlabs`, `./livekit`, `./mic`, `./tone`), minified + gzip -9, `@sinua/core` and `livekit-client` external | per entry in `voice` (measured + ~5%, set 2026-10-08) | every push (`--voice`) |
 
 `scripts/size-budget.mjs` measures and fails over a limit. The native limits only hold for
 the release variant: a default `build.sh` build carries the Studio / dev exports and is about
@@ -129,7 +130,7 @@ the release variant: a default `build.sh` build carries the Studio / dev exports
 ```sh
 SINUA_NATIVE_RELEASE=1 packages/android/build.sh
 SINUA_NATIVE_RELEASE=1 packages/ios/build.sh
-node scripts/size-budget.mjs --web \
+node scripts/size-budget.mjs --web --voice \
   --android packages/android/src/main/jniLibs/arm64-v8a/libcore_engine.so \
   --ios packages/ios/core_engineFFI.xcframework/ios-arm64/libcore_engine.a --line
 ```

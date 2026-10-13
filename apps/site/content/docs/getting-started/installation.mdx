@@ -49,6 +49,8 @@ android {
 }
 ```
 
+**Minified builds (R8):** no ProGuard rules needed. The modules that need keep rules ship them (`sinua-core` for JNA, `sinua-openai` for WebRTC since 0.1.0-beta.10), and CI checks a minified app with no rules of its own, so a release build with `isMinifyEnabled = true` works as is. If you added a keep rule for `livekit.org.webrtc` or `livekit.org.jni_zero` to work around 0.1.0-beta.9, you can drop it.
+
 ## Web: dev tools in `@sinua/core/dev`
 
 What only a studio, a dev tool, a test or a demo needs lives in its own entry, so your app doesn't ship it: `estimateCost`, `fxSpecCost`, `parameterCatalog`, `checkOverrides`, the conversation samples and `SimulatedVoiceSource`.

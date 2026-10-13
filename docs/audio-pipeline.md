@@ -1495,6 +1495,14 @@ clients". A WebSocket from the device would have reused the PCM stack
   - iOS says `from: "150.7871.02"` (up to the next major). A future LiveKit
     major that moves its exact pin needs a bump here.
   - Gradle picks the highest version, so Android is fine.
+- **R8 (Android release builds):** the WebRTC binary looks its Java side up by name through JNI
+  (`JNI_OnLoad` finds `livekit.org.jni_zero.JniInit`; native code calls `@CalledByNative`
+  methods across `livekit.org.webrtc`). The prefixed AAR ships no ProGuard rules, so
+  `:sinua-openai` ships them as consumer rules, the same ones livekit-android ships for this
+  binary. An app needs no rules of its own. Without them, a minified build aborts natively
+  (no Java exception) on the first `PeerConnectionFactory` call, which is what 0.1.0-beta.9 did.
+  `scripts/android-r8-jni-check.mjs` and the minified smoke app (`apps/android-minify-smoke`)
+  hold this in CI.
 - Rejected: community Google builds (unprefixed, clash-prone).
 
 **How it's built:**

@@ -9,6 +9,25 @@ tag `beta`, and it may still change incompatibly.
 
 How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
+## Unreleased
+
+### Fixed
+
+- **Android: minified release builds no longer abort on `connect()` with OpenAI Realtime or
+  GPT-Live** (`dev.sinua:sinua-openai`). The prefixed WebRTC binary looks its Java classes up by
+  name through JNI, and 0.1.0-beta.9 shipped no ProGuard rules for them. An app with R8 on
+  (`isMinifyEnabled = true`) stripped them, and the first peer connection aborted natively, with
+  no Java exception. `sinua-openai` now ships consumer rules, the ones livekit-android ships for
+  the same binary, and so does the React Native library for its `openai` / `livekit` vendors.
+  - Apps can drop any keep rule they added for `livekit.org.webrtc` / `livekit.org.jni_zero`.
+  - A `-keep class livekit.org.webrtc.** { *; }` alone was not enough: it misses
+    `livekit.org.jni_zero.JniInit`, which `JNI_OnLoad` needs.
+  - `sinua-livekit` was not affected (livekit-android brings these rules). Web and iOS are
+    unchanged.
+- **CI:** a minified sample app with no app rules now builds WebRTC (`scripts/android-r8-jni-check.mjs`
+  checks that every class the `.so` names survives R8) and opens a peer connection on the
+  emulator, so this can't come back unnoticed.
+
 ## 0.1.0-beta.9
 
 Size: web 437,572 B (gzip 326,269), Android arm64 .so 1,902,904 B, iOS .a 4,103,360 B; @sinua/voice min+gzip: voice 3,858, openai 8,961, gemini 6,829, elevenlabs 6,965, livekit 5,392, mic 1,202, tone 1,296 B (release builds). Down from beta.8: web −14.5%, .so −10.4%, .a −6.6%.

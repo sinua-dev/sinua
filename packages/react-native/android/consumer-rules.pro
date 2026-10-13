@@ -13,3 +13,17 @@
 
 # The generated bindings: Structure fields and callback interfaces are read by name.
 -keep class uniffi.core_engine.** { *; }
+
+# WebRTC (sinua.voiceVendors with openai or livekit): the same rules as sinua-openai's
+# (packages/android/openai/consumer-rules.pro). The prefixed WebRTC binary looks its Java side up
+# by name through JNI; if R8 strips or renames it, connect() aborts natively in a minified build.
+# Harmless when no WebRTC vendor is built in.
+-keepclasseswithmembernames,includedescriptorclasses class livekit.org.webrtc.** {
+    native <methods>;
+}
+-keepclasseswithmembers,includedescriptorclasses class * {
+    @livekit.**.CalledByNative <methods>;
+}
+-keepclasseswithmembers,includedescriptorclasses class * {
+    @livekit.**.CalledByNativeUnchecked <methods>;
+}

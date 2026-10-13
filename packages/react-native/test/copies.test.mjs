@@ -182,3 +182,24 @@ test("no two compiled pod sources share a file name", () => {
   const dupes = [...seen].filter(([, paths]) => paths.length > 1);
   assert.deepEqual(dupes, [], `duplicate file names in one pod target: ${JSON.stringify(dupes)}`);
 });
+
+// The RN Android library ships one consumer-rules.pro for everything it may build in, so it must
+// carry every rule of the modules it copies: sinua-core's (JNA, the bindings) and sinua-openai's
+// (WebRTC's JNI classes; 0.1.0-beta.9's minified apps aborted on connect() without them).
+test("the RN consumer R8 rules include sinua-core's and sinua-openai's, rule for rule", () => {
+  const rules = (path) => {
+    const text = readFileSync(fileURLToPath(new URL(path, import.meta.url)), "utf8");
+    // One rule per entry: `-keep… {` blocks joined, comments and blank lines dropped.
+    return text
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith("#"))
+      .join("\n")
+      .split(/\n(?=-)/)
+      .map((r) => r.replace(/\s+/g, " "));
+  };
+  const rn = new Set(rules("../android/consumer-rules.pro"));
+  for (const source of ["../../android/consumer-rules.pro", "../../android/openai/consumer-rules.pro"]) {
+    for (const r of rules(source)) assert.ok(rn.has(r), `packages/react-native/android/consumer-rules.pro lacks, from ${source.slice(6)}: ${r}`);
+  }
+});

@@ -22,6 +22,9 @@ android {
 
     defaultConfig {
         minSdk = 24
+        // WebRTC's native library looks its Java classes up by name (JNI): an app's R8 must not
+        // strip or rename them. The prefixed WebRTC AAR ships no rules, so they live here.
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {

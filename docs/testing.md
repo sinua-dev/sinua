@@ -196,6 +196,24 @@ Every binding checks the frozen file itself. The rules mirror the Rust checker: 
 - RN: the example app shows PASS on both the Android emulator and the iOS simulator.
 - Negative checks: a perturbed polyline vertex in `tracking-64-0.6-laps` failed wasm and Android with that exact key and field. iOS also failed. The file was restored and its checksum re-checked.
 
+## Minified Android release builds (R8)
+
+An app's release build runs R8 with only the rules the libraries ship. Two checks hold them:
+- **`apps/android-minify-smoke`** (`scripts/android-minify-smoke.sh`, on the emulator in
+  `ci-native-android.sh connected`): R8 on, **no app rules**. It depends on sinua-view,
+  sinua-openai, sinua-gemini and sinua-elevenlabs, calls the engine, opens a WebRTC peer
+  connection (no track, no audio) and draws a frame. A crash (UnsatisfiedLinkError, a native
+  abort) or a missing log line fails it. sinua-livekit stays out on purpose: livekit-android's own
+  rules would hide a gap in sinua-openai's.
+- **`scripts/android-r8-jni-check.mjs`** (no device, in `ci-native-android.sh build`): from that
+  app's release build, every class the WebRTC `.so` names (JNI) must survive R8 under its own name.
+  The list comes from the `.so`, so a WebRTC upgrade updates it.
+
+Added in 0.1.0-beta.10, when sinua-openai 0.1.0-beta.9's missing WebRTC rules made minified apps
+abort on `connect()`. The smoke app had only covered the engine (the 0.1.0-beta.4 JNA failure).
+The React Native library's `consumer-rules.pro` must carry sinua-core's and sinua-openai's rules,
+rule for rule (`packages/react-native/test/copies.test.mjs`).
+
 ## Copies and public files
 
 - **Spec copies follow their sources.** `node scripts/sync-copies.mjs` (CI) checks every

@@ -1,6 +1,8 @@
-// A release build with R8 on, exactly as an app ships to Play, that draws one SinuaView.
-// It carries no ProGuard rules of its own: everything the engine needs must come from
-// sinua-core's consumer rules (packages/android/consumer-rules.pro). The CI runs it on
+// A release build with R8 on, exactly as an app ships to Play, that draws one SinuaView and
+// starts WebRTC the way sinua-openai's connect() does. It carries no ProGuard rules of its own:
+// everything must come from the modules' consumer rules (sinua-core's for the engine,
+// sinua-openai's for WebRTC). gemini and elevenlabs ride along so their rules are proven too;
+// sinua-livekit stays out on purpose (livekit-android's own rules would mask a gap here). The CI runs it on
 // the emulator through scripts/android-minify-smoke.sh. Added after 0.1.0-beta.4, whose
 // minified apps threw UnsatisfiedLinkError in JNA on the first engine call.
 plugins {
@@ -50,6 +52,9 @@ android {
 
 dependencies {
     implementation(project(":sinua-view"))
+    implementation(project(":sinua-openai"))
+    implementation(project(":sinua-gemini"))
+    implementation(project(":sinua-elevenlabs"))
 
     val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)

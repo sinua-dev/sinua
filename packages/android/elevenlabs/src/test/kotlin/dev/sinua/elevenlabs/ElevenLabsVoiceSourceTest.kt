@@ -1,3 +1,6 @@
+// The Context-less constructors (deprecated) take a fake device; JVM tests have no Context.
+@file:Suppress("DEPRECATION")
+
 package dev.sinua.elevenlabs
 
 import dev.sinua.voice.AgentState

@@ -1,5 +1,6 @@
 package dev.sinua.gemini
 
+import android.content.Context
 import android.util.Log
 import dev.sinua.voice.AgentState
 import dev.sinua.voice.AndroidPcmAudioDevice
@@ -15,9 +16,14 @@ import dev.sinua.voice.PcmAudioDevice
 import dev.sinua.voice.PcmAudioGraph
 import dev.sinua.voice.TranscriptTiming
 import dev.sinua.voice.TranscriptUpdate
+import dev.sinua.voice.VoiceAudioSession
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import dev.sinua.websocket.OkHttpLiveSocketFactory
+
+private const val DEPRECATED_NO_CONTEXT =
+    "Pass a Context first to get the call's audio set up (communication mode, loudspeaker by default). " +
+        "Without one the source leaves the app's audio alone (VoiceAudioSession.UNMANAGED). Removed in 1.0."
 
 /**
  * `VoiceSource` for Gemini Live over its raw WebSocket -- the native mirror of
@@ -49,7 +55,12 @@ import dev.sinua.websocket.OkHttpLiveSocketFactory
  *
  * Not verified against the live API yet (docs/audio-pipeline.md).
  */
-class GeminiLiveVoiceSource(
+class GeminiLiveVoiceSource
+@Deprecated(
+    DEPRECATED_NO_CONTEXT,
+    ReplaceWith("GeminiLiveVoiceSource(context, credentials, model, instructions, endpointOverride)"),
+)
+constructor(
     /** Where tokens come from: [CredentialSource.url], `.provider { … }`, or `.fixed(…)` for one session. */
     private val credentials: CredentialSource,
     model: String = GeminiLiveSession.DEFAULT_MODEL,
@@ -63,7 +74,55 @@ class GeminiLiveVoiceSource(
     /** Transcripts pace the model's text over its played audio; `false`: as it arrives. */
     syncToAudio: Boolean = true,
 ) : VoiceSource {
+    /**
+     * The app's audio is set up for the call ([audioSession]: the loudspeaker by default;
+     * [VoiceAudioSession.UNMANAGED] if your app does it). [device] replaces the platform audio
+     * (then [audioSession] is the device's business).
+     */
+    @Suppress("DEPRECATION")
+    constructor(
+        context: Context,
+        credentials: CredentialSource,
+        model: String = GeminiLiveSession.DEFAULT_MODEL,
+        instructions: String? = null,
+        endpointOverride: GeminiLiveSession.Endpoint? = null,
+        audioSession: VoiceAudioSession = VoiceAudioSession.SPEAKER,
+        device: PcmAudioDevice = AndroidPcmAudioDevice(context, audioSession),
+        socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
+        main: MainDispatcher = LooperMainDispatcher(),
+        syncToAudio: Boolean = true,
+    ) : this(credentials, model, instructions, endpointOverride, device, socketFactory, main, syncToAudio)
+
     /** One fixed token (a pasted `auth_tokens/…`, single session). */
+    @JvmOverloads
+    @Suppress("DEPRECATION")
+    constructor(
+        context: Context,
+        credential: String,
+        model: String = GeminiLiveSession.DEFAULT_MODEL,
+        instructions: String? = null,
+        endpoint: GeminiLiveSession.Endpoint? = null,
+        audioSession: VoiceAudioSession = VoiceAudioSession.SPEAKER,
+        device: PcmAudioDevice = AndroidPcmAudioDevice(context, audioSession),
+        socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
+        main: MainDispatcher = LooperMainDispatcher(),
+        syncToAudio: Boolean = true,
+    ) : this(
+        CredentialSource.fixed(credential),
+        model,
+        instructions,
+        endpoint,
+        device,
+        socketFactory,
+        main,
+        syncToAudio,
+    )
+
+    /** One fixed token (a pasted `auth_tokens/…`, single session). */
+    @Deprecated(
+        DEPRECATED_NO_CONTEXT,
+        ReplaceWith("GeminiLiveVoiceSource(context, credential, model, instructions, endpoint)"),
+    )
     @JvmOverloads
     constructor(
         credential: String,

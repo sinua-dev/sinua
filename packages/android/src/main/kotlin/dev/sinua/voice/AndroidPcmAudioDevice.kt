@@ -1,6 +1,7 @@
 package dev.sinua.voice
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioRecord
@@ -25,11 +26,44 @@ import java.util.concurrent.TimeUnit
  *   While the track has nothing to play, its head stalls, and a new burst
  *   (lead of silence first) starts from where it stopped.
  *
+ * - The app's audio ([VoiceAudioSession], default [VoiceAudioSession.SPEAKER]): claimed
+ *   before capture starts, released on `stop()`. Without communication mode the call
+ *   plays through the earpiece or at call volume.
+ *
  * The app must hold RECORD_AUDIO (`isMicPermissionGranted`). Not exercised on a
  * device or emulator yet: tests don't open real audio on the shared machine
  * (docs/audio-pipeline.md).
  */
-class AndroidPcmAudioDevice(private val voiceCommunication: Boolean = true) : PcmAudioDevice {
+class AndroidPcmAudioDevice private constructor(
+    private val voiceCommunication: Boolean,
+    private val appContext: Context?,
+    private val audioSession: VoiceAudioSession,
+) : PcmAudioDevice {
+    /**
+     * [audioSession]: how the app's audio is set up for the call (the loudspeaker by
+     * default; [VoiceAudioSession.UNMANAGED] if your app does it). `voiceCommunication =
+     * false` records from `MIC` and plays as media, and leaves the app's audio alone.
+     */
+    constructor(
+        context: Context,
+        audioSession: VoiceAudioSession = VoiceAudioSession.SPEAKER,
+        voiceCommunication: Boolean = true,
+    ) : this(
+        voiceCommunication,
+        context.applicationContext,
+        if (voiceCommunication) audioSession else VoiceAudioSession.UNMANAGED,
+    )
+
+    @Deprecated(
+        "Pass a Context to get the call's audio set up (communication mode, loudspeaker). " +
+            "Without one the device leaves the app's audio alone, as VoiceAudioSession.UNMANAGED. Removed in 1.0.",
+        ReplaceWith("AndroidPcmAudioDevice(context, voiceCommunication = voiceCommunication)"),
+    )
+    constructor(voiceCommunication: Boolean = true) : this(voiceCommunication, null, VoiceAudioSession.UNMANAGED)
+
+    /** This device claimed the app's audio (released on `stop()`). */
+    private var holdsSession = false
+
     override var onClockReset: (() -> Unit)? = null
 
     private var record: AudioRecord? = null
@@ -48,6 +82,11 @@ class AndroidPcmAudioDevice(private val voiceCommunication: Boolean = true) : Pc
 
     @SuppressLint("MissingPermission") // the caller checks RECORD_AUDIO, as with LocalMicVoiceSource
     override fun start(inputRate: Int, outputRate: Int, onCapture: (FloatArray) -> Unit) {
+        if (appContext == null) {
+            warnUnmanaged()
+        } else if (!holdsSession) {
+            holdsSession = AudioSessionClaims.claim(appContext, audioSession)
+        }
         val inMin = AudioRecord.getMinBufferSize(inputRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_FLOAT)
         val rec = AudioRecord(
             if (voiceCommunication) MediaRecorder.AudioSource.VOICE_COMMUNICATION else MediaRecorder.AudioSource.MIC,
@@ -171,10 +210,25 @@ class AndroidPcmAudioDevice(private val voiceCommunication: Boolean = true) : Pc
         aec = null
         track?.release()
         track = null
+        if (holdsSession) {
+            holdsSession = false
+            AudioSessionClaims.release()
+        }
     }
 
     companion object {
         /** Samples per mic chunk at the input rate (~64 ms at 16 kHz), as on Web. */
         const val CAPTURE_CHUNK = 1024
+
+        @Volatile private var warned = false
+
+        private fun warnUnmanaged() {
+            if (warned) return
+            warned = true
+            AudioSessionClaims.log(
+                "AndroidPcmAudioDevice has no Context, so the call's audio isn't set up (very quiet on the " +
+                    "speaker on many devices). Pass a Context to the voice source.",
+            )
+        }
     }
 }

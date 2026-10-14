@@ -6,6 +6,7 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import dev.sinua.voice.AgentState
+import dev.sinua.voice.AudioSessionClaims
 import dev.sinua.voice.CredentialException
 import dev.sinua.voice.CredentialSource
 import dev.sinua.voice.InsecureCredential
@@ -17,6 +18,7 @@ import dev.sinua.voice.PcmTap
 import dev.sinua.voice.RealtimeReconnect
 import dev.sinua.voice.TranscriptTiming
 import dev.sinua.voice.TranscriptUpdate
+import dev.sinua.voice.VoiceAudioSession
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import dev.sinua.voice.isMicPermissionGranted
@@ -90,6 +92,12 @@ class OpenAILiveVoiceSource(
      * `start_ms`/`end_ms` (docs/audio-pipeline.md, *Transcripts*).
      */
     syncToAudio: Boolean = true,
+    /**
+     * How the app's audio is set up for the call: the loudspeaker by default (communication
+     * mode; headsets still win), [VoiceAudioSession.RECEIVER] for the earpiece, or
+     * [VoiceAudioSession.UNMANAGED] if your app does it. Restored when the call ends.
+     */
+    private val audioSession: VoiceAudioSession = VoiceAudioSession.SPEAKER,
 ) : VoiceSource {
     private val appContext = context.applicationContext
     private val session = OpenAILiveSession(syncToAudio)
@@ -224,6 +232,7 @@ class OpenAILiveVoiceSource(
                 InsecureCredential.checkOpenAILive(sessionUrl, null)
                 val token = resolveToken() // auth first: a bad credential never opens the mic
                 if (!isMicPermissionGranted(appContext)) throw SecurityException("RECORD_AUDIO not granted")
+                claimSession()
                 call(token)
                 live = true
                 handler.post(ticker)
@@ -273,6 +282,20 @@ class OpenAILiveVoiceSource(
         handler.removeCallbacks(timeout)
         closing = null
         teardown()
+    }
+
+    /** This source claimed the app's audio (released on teardown). Main thread. */
+    private var holdsSession = false
+
+    /** The app's audio, set up before the call's audio device starts. */
+    private fun claimSession() {
+        if (!holdsSession) holdsSession = AudioSessionClaims.claim(appContext, audioSession)
+    }
+
+    private fun releaseSession() {
+        if (!holdsSession) return
+        holdsSession = false
+        AudioSessionClaims.release()
     }
 
     // --- the call (one GPT-Live session), main thread ---
@@ -395,6 +418,7 @@ class OpenAILiveVoiceSource(
         closeCall()
         factory?.dispose()
         factory = null
+        releaseSession()
         val s = scope
         scope = null
         session.stopped()

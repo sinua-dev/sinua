@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import dev.sinua.voice.AgentState
+import dev.sinua.voice.AudioSessionClaims
 import dev.sinua.voice.CredentialException
 import dev.sinua.voice.CredentialSource
 import dev.sinua.voice.InsecureCredential
@@ -16,6 +17,7 @@ import dev.sinua.voice.RealtimeReconnect
 import dev.sinua.voice.SinuaCredential
 import dev.sinua.voice.TranscriptTiming
 import dev.sinua.voice.TranscriptUpdate
+import dev.sinua.voice.VoiceAudioSession
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import dev.sinua.voice.isMicPermissionGranted
@@ -103,6 +105,12 @@ class OpenAIRealtimeVoiceSource(
      * the session has none. Off by default.
      */
     transcribeUser: String? = null,
+    /**
+     * How the app's audio is set up for the call: the loudspeaker by default (communication
+     * mode; headsets still win), [VoiceAudioSession.RECEIVER] for the earpiece, or
+     * [VoiceAudioSession.UNMANAGED] if your app does it. Restored when the call ends.
+     */
+    private val audioSession: VoiceAudioSession = VoiceAudioSession.SPEAKER,
 ) : VoiceSource {
     /** A fresh `ek_` from your code (e.g. your backend), called again on every reconnect. */
     constructor(
@@ -113,6 +121,7 @@ class OpenAIRealtimeVoiceSource(
         warp: Boolean = false,
         syncToAudio: Boolean = true,
         transcribeUser: String? = null,
+        audioSession: VoiceAudioSession = VoiceAudioSession.SPEAKER,
     ) : this(
         context,
         CredentialSource.provider { SinuaCredential(runBlocking { credentialProvider() }) },
@@ -121,6 +130,7 @@ class OpenAIRealtimeVoiceSource(
         warp,
         syncToAudio,
         transcribeUser,
+        audioSession,
     )
 
     /** A pasted `ek_` is single-session: set once it has been used. */
@@ -254,6 +264,7 @@ class OpenAIRealtimeVoiceSource(
             try {
                 val ek = resolveKey() // auth first: a bad credential never opens the mic
                 if (!isMicPermissionGranted(appContext)) throw SecurityException("RECORD_AUDIO not granted")
+                claimSession()
                 call(ek)
                 session.connected()
                 live = true
@@ -270,6 +281,20 @@ class OpenAIRealtimeVoiceSource(
 
     override fun disconnect() {
         if (Looper.myLooper() == Looper.getMainLooper()) teardown() else handler.post { teardown() }
+    }
+
+    /** This source claimed the app's audio (released on teardown). Main thread. */
+    private var holdsSession = false
+
+    /** The app's audio, set up before the call's audio device starts. */
+    private fun claimSession() {
+        if (!holdsSession) holdsSession = AudioSessionClaims.claim(appContext, audioSession)
+    }
+
+    private fun releaseSession() {
+        if (!holdsSession) return
+        holdsSession = false
+        AudioSessionClaims.release()
     }
 
     // --- the call (one Realtime session), main thread ---
@@ -374,6 +399,7 @@ class OpenAIRealtimeVoiceSource(
         closeCall()
         factory?.dispose()
         factory = null
+        releaseSession()
         val s = scope
         scope = null
         session.stopped()

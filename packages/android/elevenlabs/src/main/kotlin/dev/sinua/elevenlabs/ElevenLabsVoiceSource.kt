@@ -1,5 +1,6 @@
 package dev.sinua.elevenlabs
 
+import android.content.Context
 import android.util.Log
 import dev.sinua.voice.AgentState
 import dev.sinua.voice.AndroidPcmAudioDevice
@@ -14,10 +15,15 @@ import dev.sinua.voice.PcmAudioDevice
 import dev.sinua.voice.PcmAudioGraph
 import dev.sinua.voice.TranscriptTiming
 import dev.sinua.voice.TranscriptUpdate
+import dev.sinua.voice.VoiceAudioSession
 import dev.sinua.voice.VoiceMetrics
 import dev.sinua.voice.VoiceSource
 import dev.sinua.websocket.OkHttpLiveSocketFactory
 import org.json.JSONObject
+
+private const val DEPRECATED_NO_CONTEXT =
+    "Pass a Context first to get the call's audio set up (communication mode, loudspeaker by default). " +
+        "Without one the source leaves the app's audio alone (VoiceAudioSession.UNMANAGED). Removed in 1.0."
 
 /**
  * `VoiceSource` for ElevenLabs Conversational AI (the Agents platform) over its
@@ -43,7 +49,12 @@ import org.json.JSONObject
  *
  * Not verified against the live service yet (docs/audio-pipeline.md).
  */
-class ElevenLabsVoiceSource(
+class ElevenLabsVoiceSource
+@Deprecated(
+    DEPRECATED_NO_CONTEXT,
+    ReplaceWith("ElevenLabsVoiceSource(context, credentials, overrides, endpoint)"),
+)
+constructor(
     /** [CredentialSource.url] / a provider for a signed URL per connect, or `.fixed` for a public agent id. */
     private val credentials: CredentialSource,
     private val overrides: JSONObject? = null,
@@ -56,7 +67,46 @@ class ElevenLabsVoiceSource(
     /** Transcripts reveal the agent's text with the played audio, character by character; `false`: as it arrives. */
     syncToAudio: Boolean = true,
 ) : VoiceSource {
+    /**
+     * The app's audio is set up for the call ([audioSession]: the loudspeaker by default;
+     * [VoiceAudioSession.UNMANAGED] if your app does it). [device] replaces the platform audio
+     * (then [audioSession] is the device's business).
+     */
+    @Suppress("DEPRECATION")
+    constructor(
+        context: Context,
+        credentials: CredentialSource,
+        overrides: JSONObject? = null,
+        endpoint: String? = null,
+        audioSession: VoiceAudioSession = VoiceAudioSession.SPEAKER,
+        device: PcmAudioDevice = AndroidPcmAudioDevice(context, audioSession),
+        socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
+        main: MainDispatcher = LooperMainDispatcher(),
+        clock: () -> Double = { System.nanoTime() / 1e9 },
+        syncToAudio: Boolean = true,
+    ) : this(credentials, overrides, endpoint, device, socketFactory, main, clock, syncToAudio)
+
     /** A public agent id, or one signed `wss://` URL. */
+    @JvmOverloads
+    @Suppress("DEPRECATION")
+    constructor(
+        context: Context,
+        credential: String,
+        overrides: JSONObject? = null,
+        endpoint: String? = null,
+        audioSession: VoiceAudioSession = VoiceAudioSession.SPEAKER,
+        device: PcmAudioDevice = AndroidPcmAudioDevice(context, audioSession),
+        socketFactory: LiveSocketFactory = OkHttpLiveSocketFactory(),
+        main: MainDispatcher = LooperMainDispatcher(),
+        clock: () -> Double = { System.nanoTime() / 1e9 },
+        syncToAudio: Boolean = true,
+    ) : this(CredentialSource.fixed(credential), overrides, endpoint, device, socketFactory, main, clock, syncToAudio)
+
+    /** A public agent id, or one signed `wss://` URL. */
+    @Deprecated(
+        DEPRECATED_NO_CONTEXT,
+        ReplaceWith("ElevenLabsVoiceSource(context, credential, overrides, endpoint)"),
+    )
     @JvmOverloads
     constructor(
         credential: String,

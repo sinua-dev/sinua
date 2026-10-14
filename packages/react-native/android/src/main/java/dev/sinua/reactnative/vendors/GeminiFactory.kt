@@ -16,6 +16,7 @@ class GeminiFactory : VoiceRegistry.VendorFactory {
         errors: (String) -> Unit,
     ): VoiceSource {
         val source = GeminiLiveVoiceSource(
+            context,
             VoiceRegistry.credentialSource(
                 config,
                 credentials,

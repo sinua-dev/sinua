@@ -9,6 +9,37 @@ tag `beta`, and it may still change incompatibly.
 
 How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
+## Unreleased
+
+### Fixed
+
+- **Android: voice calls were very quiet, and on some phones the model didn't hear the user**
+  (`OpenAIRealtimeVoiceSource`, `OpenAILiveVoiceSource`, `GeminiLiveVoiceSource`,
+  `ElevenLabsVoiceSource`). The sources never set up the app's audio: the call ran in the normal
+  audio mode with no audio focus, so it played as a voice call through the earpiece or at call
+  volume, and some devices record silence outside communication mode. Each source now enters
+  communication mode, takes audio focus and routes to the loudspeaker for the call (a Bluetooth or
+  wired headset still wins, and is followed when plugged in or out), then restores the app's audio
+  when the call ends. Sinua's sources share one claim, so one source's disconnect never cuts
+  another's audio. This is the Android twin of the iOS `audioSession` option.
+- **Android: `connect()` with OpenAI Realtime or GPT-Live killed the app's process when the app
+  didn't declare `ACCESS_NETWORK_STATE`** (WebRTC's network monitor reads it). `sinua-openai` and
+  the React Native library now declare it, as livekit-android does.
+
+### Added
+
+- **Android: `VoiceAudioSession`** (`SPEAKER` by default, `RECEIVER` for the earpiece, `UNMANAGED`
+  when your app sets the audio up itself), the `audioSession` parameter on every Android source,
+  and new `GeminiLiveVoiceSource`, `ElevenLabsVoiceSource` and `AndroidPcmAudioDevice`
+  constructors that take a `Context` first, like the OpenAI sources. The voice modules declare
+  `MODIFY_AUDIO_SETTINGS` (a normal permission, no prompt).
+
+### Deprecated
+
+- **Android: the `GeminiLiveVoiceSource`, `ElevenLabsVoiceSource` and `AndroidPcmAudioDevice`
+  constructors without a `Context`.** They keep working but leave the app's audio alone (as
+  `UNMANAGED`) and log a warning once. Pass a `Context` first. They're removed in 1.0.
+
 ## 0.1.0-beta.10
 
 A hotfix: Android only. Web and iOS are the same as 0.1.0-beta.9; their packages are republished at this version so every platform keeps one version.

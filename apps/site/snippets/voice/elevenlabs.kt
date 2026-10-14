@@ -1,5 +1,6 @@
 package snippets.voice
 
+import android.content.Context
 import dev.sinua.elevenlabs.ElevenLabsVoiceSource
 import dev.sinua.voice.CredentialSource
 
@@ -7,7 +8,8 @@ import dev.sinua.voice.CredentialSource
 
 // A private agent: your endpoint signs a `wss://` URL with your API key (see Credentials),
 // a new one on every connect.
-fun privateAgent() = ElevenLabsVoiceSource(CredentialSource.url("https://api.example.com/voice/elevenlabs"))
+fun privateAgent(context: Context) =
+    ElevenLabsVoiceSource(context, CredentialSource.url("https://api.example.com/voice/elevenlabs"))
 
 // A public agent needs no backend: its agent id is the credential.
-fun publicAgent() = ElevenLabsVoiceSource(credential = "agent_…")
+fun publicAgent(context: Context) = ElevenLabsVoiceSource(context, credential = "agent_…")

@@ -1338,6 +1338,8 @@ The transport glue lives in its own product/module:
   - A streaming float `AudioTrack` with one writer thread that pads
     silence up to each scheduled frame, so `playbackHeadPosition` *is* the
     timeline clock.
+  - With a `Context`, it claims the app's audio (`VoiceAudioSession`) before capture
+    starts and releases it on `stop()` (*The audio session (Android)*).
 - Interrupt `fade` isn't ported on either platform (hard cut). Whether that
   clicks audibly is a device check.
 - Echo cancellation matters: without it, on speaker the model hears itself
@@ -1367,7 +1369,9 @@ The transport glue lives in its own product/module:
   (`TEST_RUNNER_SINUA_AUDIO_SMOKE=1`). A simulator uses the Mac's real
   mic and speakers, so it's skipped by default and schedules only silence.
   It passed 3/3 when run.
-- `AndroidPcmAudioDevice` has **not run on any device or emulator**.
+- `AndroidPcmAudioDevice` ran on the emulator (started with `-no-audio`, so no host mic or
+  speaker) for the audio-session check. It captured frames, and the call's mode, focus and
+  routing were set and then restored. Real audio quality is still a device check.
 - **Not verified live:** the real API, and real echo cancellation / audio
   quality on a phone.
 
@@ -1464,6 +1468,34 @@ session (DevinFit's device test). `audioSession: .receiver` uses the earpiece (`
 much quieter on the loudspeaker), `.unmanaged` leaves the session to your app. Sinua's
 sources share it: the first to connect activates it, the last to disconnect deactivates it
 (other apps are notified); one that never activated it never touches it.
+
+**The audio session (Android).** Every Android source (`OpenAIRealtimeVoiceSource`,
+`OpenAILiveVoiceSource`, and through `AndroidPcmAudioDevice` `GeminiLiveVoiceSource` and
+`ElevenLabsVoiceSource`) sets the app's audio up before the call, with the same option:
+`audioSession = VoiceAudioSession.SPEAKER` by default. That means:
+- `MODE_IN_COMMUNICATION`, which WebRTC leaves to the app;
+- audio focus (`AUDIOFOCUS_GAIN`, voice communication);
+- the loudspeaker as the communication device (`setCommunicationDevice` on API 31+,
+  speakerphone below).
+
+It's what livekit-android's `AudioSwitchHandler` does. A Bluetooth or wired headset beats
+the loudspeaker, and a headset plugged in or out mid-call is followed. `RECEIVER` uses the
+earpiece. `UNMANAGED` leaves `AudioManager` alone.
+
+Without this (0.1.0-beta.10 and older), the call stayed in the normal mode with no focus.
+It played as a voice call through the earpiece or at call volume (very quiet), and some
+phones recorded silence (DevinFit's device report).
+
+The sources share one claim, as on iOS. The first to connect saves the app's mode and
+sets it up; the last to disconnect restores the mode, the routing and the focus.
+
+Gemini and ElevenLabs need a `Context` for this: pass it first, as with the OpenAI
+sources. Their old constructors without one still work, but leave the audio alone and log
+a warning once.
+
+The voice modules declare `MODIFY_AUDIO_SETTINGS`, a normal permission.
+
+`sinua-livekit` is unchanged: livekit-android manages the audio itself.
 
 The state rules and the energy fallback are ported from Web (see the next
 section), as is reconnect: a new session with a fresh credential from the

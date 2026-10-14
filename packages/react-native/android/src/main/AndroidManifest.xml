@@ -1,1 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" />
+<!-- MODIFY_AUDIO_SETTINGS (a normal permission, no prompt) lets the voice sources set up the
+     call's audio (VoiceAudioSession). ACCESS_NETWORK_STATE: WebRTC's network monitor (the
+     OpenAI vendor) reads it when a call starts. RECORD_AUDIO stays the app's to declare and request. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+</manifest>

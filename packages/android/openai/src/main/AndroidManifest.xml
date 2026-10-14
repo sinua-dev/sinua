@@ -1,5 +1,10 @@
 <!-- Signaling + the WebRTC call need the network; merged into the app's manifest.
-     RECORD_AUDIO stays the app's to declare and request. -->
+     ACCESS_NETWORK_STATE: WebRTC's network monitor reads it when the call starts (without
+     it the app's process dies on connect(); livekit-android declares it too).
+     MODIFY_AUDIO_SETTINGS (a normal permission, no prompt) lets the source set up the
+     call's audio (VoiceAudioSession). RECORD_AUDIO stays the app's to declare and request. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 </manifest>

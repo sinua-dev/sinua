@@ -15,6 +15,7 @@ class ElevenlabsFactory : VoiceRegistry.VendorFactory {
         errors: (String) -> Unit,
     ): VoiceSource {
         val source = ElevenLabsVoiceSource(
+            context,
             VoiceRegistry.credentialSource(
                 config,
                 credentials,

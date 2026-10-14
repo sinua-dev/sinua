@@ -202,7 +202,8 @@ An app's release build runs R8 with only the rules the libraries ship. Two check
 - **`apps/android-minify-smoke`** (`scripts/android-minify-smoke.sh`, on the emulator in
   `ci-native-android.sh connected`): R8 on, **no app rules**. It depends on sinua-view,
   sinua-openai, sinua-gemini and sinua-elevenlabs, calls the engine, opens a WebRTC peer
-  connection (no track, no audio) and draws a frame. A crash (UnsatisfiedLinkError, a native
+  connection (no track, no audio), claims and releases a call's audio (`AudioSessionClaims`:
+  communication mode during the claim, the app's mode back after it) and draws a frame. A crash (UnsatisfiedLinkError, a native
   abort) or a missing log line fails it. sinua-livekit stays out on purpose: livekit-android's own
   rules would hide a gap in sinua-openai's.
 - **`scripts/android-r8-jni-check.mjs`** (no device, in `ci-native-android.sh build`): from that
@@ -213,6 +214,22 @@ Added in 0.1.0-beta.10, when sinua-openai 0.1.0-beta.9's missing WebRTC rules ma
 abort on `connect()`. The smoke app had only covered the engine (the 0.1.0-beta.4 JNA failure).
 The React Native library's `consumer-rules.pro` must carry sinua-core's and sinua-openai's rules,
 rule for rule (`packages/react-native/test/copies.test.mjs`).
+
+## Android call audio (VoiceAudioSession)
+
+- **JVM:** `VoiceAudioSessionTest` (`:testDebugUnitTest`) drives the policy over a fake
+  `AudioManager`. It covers which output each option takes (headsets beat the loudspeaker), the
+  mode, focus and routing a claim sets, the restore on release, two sources sharing one claim, a
+  headset plugged in or out mid-call, and `UNMANAGED` touching nothing.
+- **Emulator:** the minify smoke app (above) claims through the real `AudioManager`.
+- **Once by hand, for 0.1.0-beta.11:** a consumer app on 0.1.0-beta.10 from Maven Central and on
+  the tree. The emulator was started with `-no-audio`, so no host mic or speaker was involved.
+  RECORD_AUDIO was granted inside it for the run and revoked afterwards. The app ran
+  `OpenAIRealtimeVoiceSource.connect()` against an in-app calls endpoint answered by a second
+  peer connection, plus the PCM device. On 0.1.0-beta.10 the call stayed in mode NORMAL with no
+  audio focus; on the tree it took MODE_IN_COMMUNICATION, focus GAIN and the loudspeaker, then
+  restored them. Mic RTP arrived in both (~290 packets in 6 s). The emulator has no earpiece, so
+  the earpiece routing and the device-specific silent mic are DevinFit's device check.
 
 ## Copies and public files
 

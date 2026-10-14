@@ -30,12 +30,12 @@ for _ in $(seq 1 "$TIMEOUT"); do
     echo "android-minify-smoke: FAILED (crash in the minified release build)" >&2
     exit 1
   fi
-  if grep -q "engine ok=true" <<<"$log" && grep -q "webrtc ok pc=true" <<<"$log" && grep -q -E "SinuaSmoke.*: frame *$" <<<"$log"; then
-    echo "android-minify-smoke: ok (engine call + WebRTC peer connection + first frame in a minified release build)"
+  if grep -q "engine ok=true" <<<"$log" && grep -q "webrtc ok pc=true" <<<"$log" && grep -q "audio ok=true" <<<"$log" && grep -q -E "SinuaSmoke.*: frame *$" <<<"$log"; then
+    echo "android-minify-smoke: ok (engine call + WebRTC peer connection + the call's audio claim + first frame in a minified release build)"
     exit 0
   fi
   sleep 1
 done
 "$ADB" logcat -d -v brief SinuaSmoke:I AndroidRuntime:E libc:F jni_zero:W '*:S' >&2
-echo "android-minify-smoke: FAILED (no engine / webrtc / frame log within ${TIMEOUT}s)" >&2
+echo "android-minify-smoke: FAILED (no engine / webrtc / audio / frame log within ${TIMEOUT}s)" >&2
 exit 1

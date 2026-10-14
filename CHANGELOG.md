@@ -9,7 +9,11 @@ tag `beta`, and it may still change incompatibly.
 
 How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
-## Unreleased
+## 0.1.0-beta.11
+
+A hotfix: Android only. Web and iOS are the same as 0.1.0-beta.10; their packages are republished at this version so every platform keeps one version.
+
+Size: native libraries unchanged from 0.1.0-beta.10 (Kotlin changes only).
 
 ### Fixed
 

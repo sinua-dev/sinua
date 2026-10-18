@@ -392,7 +392,11 @@ mod tests {
 
     #[test]
     fn every_character_turn_0_is_the_flat_one_and_20_px_never_turns() {
-        for pattern in crate::character::presets::STATES {
+        // The 1.15 characters have their own rigs and no head turn.
+        for pattern in crate::character::presets::STATES
+            .iter()
+            .filter(|p| !crate::character::bots::BOTS.contains(p))
+        {
             let flat = frame(pattern, 64, 1.7, &opts(&[]));
             let off = frame(
                 pattern,

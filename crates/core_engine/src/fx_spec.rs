@@ -446,6 +446,26 @@ const CHARACTER_PARAMS: &[&str] = &[
     "turnYaw",
 ];
 
+/// WHIRR and CLANK (1.15): each its own drawing and rig (`character/bots`), reading only
+/// these of the character keys (no turn, no eye shapes, no grain or shading).
+const BOT_PARAMS: &[&str] = &[
+    "bounceGain",
+    "breath",
+    "earGain",
+    "eyeSmile",
+    "gazeX",
+    "gazeY",
+    "lid",
+    "look",
+    "mouth",
+    "mouthDots",
+    "mouthGain",
+    "mouthTalk",
+    "seed",
+    "tilt",
+    "turnBlink",
+];
+
 /// BEEP: the shared character keys plus `arms` (design note 17).
 const BEEP_PARAMS: [&str; 32] = [
     "accessories",
@@ -816,6 +836,7 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
         "chirp" => &CHIRP_PARAMS,
         "cuppa" | "bean" => CHARACTER_PARAMS,
         "beep" => &BEEP_PARAMS,
+        "whirr" | "clank" => BOT_PARAMS,
         "dots" => &[
             "bounceAmplitude",
             "delay",
@@ -1171,6 +1192,10 @@ fn palette_block(
         (l, d)
     });
     let Some((l, d)) = r else {
+        // The 1.15 characters keep their drawn colours.
+        if crate::character::bots::BOTS.contains(&mode) {
+            diag.error(pp, "this character keeps its drawn colours: no palette");
+        }
         return;
     };
     for (variant, res) in [("", Some(l)), ("dark.", d)] {
@@ -3020,6 +3045,10 @@ mod tests {
             ("beep", include_str!("character/parts/mic.rs")),
             ("beep", include_str!("character/parts/ranger.rs")),
             ("beep", include_str!("character/parts/bird.rs")),
+            // The 1.15 characters: their own files (and the rig keys their pose uses,
+            // listed in BOT_PARAMS by hand: the rig reads more than they draw).
+            ("whirr", include_str!("character/bots/hover.rs")),
+            ("clank", include_str!("character/bots/walker.rs")),
         ];
         for (mode, src) in sources {
             let code = src.split("#[cfg(test)]").next().unwrap();

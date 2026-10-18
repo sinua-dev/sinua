@@ -116,8 +116,8 @@ impl Lex<'_> {
 }
 
 /// Pieces for a curve whose control polygon is `len` long.
-fn pieces(len: f64) -> usize {
-    ((len / STEP).ceil() as usize).clamp(2, 32)
+fn pieces(len: f64, step: f64) -> usize {
+    ((len / step).ceil() as usize).clamp(2, 32)
 }
 
 fn dist(a: (f64, f64), b: (f64, f64)) -> f64 {
@@ -126,6 +126,11 @@ fn dist(a: (f64, f64), b: (f64, f64)) -> f64 {
 
 /// Reads `d` into a shape; errors are `<at>: at <byte>: <what>`.
 pub fn parse(d: &str, at: &str) -> Result<Shape, String> {
+    parse_step(d, at, STEP)
+}
+
+/// [`parse`] with curves cut about every `step` units (a drawing shown large wants finer).
+pub fn parse_step(d: &str, at: &str, step: f64) -> Result<Shape, String> {
     if d.len() > MAX_BYTES {
         return Err(format!("{at}: {} bytes, at most {MAX_BYTES}", d.len()));
     }
@@ -201,7 +206,7 @@ pub fn parse(d: &str, at: &str) -> Result<Shape, String> {
                 };
                 let c2 = point(&mut l, cur)?;
                 let p = point(&mut l, cur)?;
-                let n = pieces(dist(cur, c1) + dist(c1, c2) + dist(c2, p));
+                let n = pieces(dist(cur, c1) + dist(c1, c2) + dist(c2, p), step);
                 subs.last_mut()
                     .unwrap()
                     .extend(geom::cubic(cur, c1, c2, p, n).into_iter().skip(1));
@@ -218,7 +223,7 @@ pub fn parse(d: &str, at: &str) -> Result<Shape, String> {
                     }
                 };
                 let p = point(&mut l, cur)?;
-                let n = pieces(dist(cur, c1) + dist(c1, p));
+                let n = pieces(dist(cur, c1) + dist(c1, p), step);
                 subs.last_mut()
                     .unwrap()
                     .extend(geom::quad(cur, c1, p, n).into_iter().skip(1));

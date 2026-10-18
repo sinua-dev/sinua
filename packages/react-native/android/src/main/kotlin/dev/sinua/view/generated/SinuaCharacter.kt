@@ -26,75 +26,77 @@ enum class SinuaCharacterPattern(val id: String) {
     CUPPA("cuppa"),
     BEAN("bean"),
     BEEP("beep"),
+    WHIRR("whirr"),
+    CLANK("clank"),
 }
 
 /** Character parameters; null keeps the pattern's value. [toOverrides] is what [SinuaCharacter] hands to SinuaView. */
 data class SinuaCharacterProps(
     val pattern: SinuaCharacterPattern,
     val size: SinuaSize = SinuaSize.S64,
-    /** The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. */
+    /** The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val accessories: Boolean? = null,
-    /** Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1. */
+    /** Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val grain: Double? = null,
-    /** Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. Range 0...360 (deg). */
+    /** Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. Range 0...360 (deg). Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val hue: Double? = null,
     /** How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction). */
     val ink: Double? = null,
-    /** Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. */
+    /** Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). */
     val mouth: Boolean? = null,
-    /** Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. */
+    /** Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val shading: Boolean? = null,
     /** How much the eyes glance around on their own while idle (0 = always at the viewer). Range 0...2. */
     val look: Double? = null,
     /** Changes when it blinks and glances, so two characters side by side don't move in sync. Range 0...1000000. */
     val seed: Int? = null,
-    /** How far the head turns like a solid (0 = flat, 1 = ±35°; the default is ±25°). Range 0...1. */
+    /** How far the head turns like a solid (0 = flat, 1 = ±35°; the default is ±25°). Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val turn: Double? = null,
-    /** Makes the left eye shorter (a quizzical look). Range 0...0.6. */
+    /** Makes the left eye shorter (a quizzical look). Range 0...0.6. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val eyeAsym: Double? = null,
-    /** Eye height, in design units. Range 8...40. */
+    /** Eye height, in design units. Range 8...40. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val eyeH: Double? = null,
-    /** Eye corner radius, in design units. Range 0...20. */
+    /** Eye corner radius, in design units. Range 0...20. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val eyeR: Double? = null,
     /** The happy arc cut from below the eyes. Range 0...1. */
     val eyeSmile: Double? = null,
-    /** Slope of the lid: positive lowers the outer corners (pensive). Range -1...1. */
+    /** Slope of the lid: positive lowers the outer corners (pensive). Range -1...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val eyeTilt: Double? = null,
-    /** Eye width, in the character's 200-unit design box. Range 8...36. */
+    /** Eye width, in the character's 200-unit design box. Range 8...36. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val eyeW: Double? = null,
     /** How far the top lid comes down (a squint), 0 to 0.9 of the eye. Range 0...0.9. */
     val lid: Double? = null,
-    /** Above 0.5 the mouth is three thinking dots. Range 0...1. */
+    /** Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). Range 0...1. */
     val mouthDots: Double? = null,
-    /** Above 0.5 the mouth is the voice line (speaking). Range 0...1. */
+    /** Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). Range 0...1. */
     val mouthTalk: Double? = null,
     /** Where the eyes look, sideways, in design units (negative = left). Range -14...14. */
     val gazeX: Double? = null,
     /** Where the eyes look, up and down, in design units (negative = up). Range -12...12. */
     val gazeY: Double? = null,
-    /** Leans the whole character toward the viewer (design units). Range -8...8. */
+    /** Leans the whole character toward the viewer (design units). Range -8...8. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val lean: Double? = null,
     /** Tilts the whole character (radians; positive = clockwise). Range -0.3...0.3. */
     val tilt: Double? = null,
     /** Blink once as this state starts (the end of the user's turn). Range 0...1. */
     val turnBlink: Double? = null,
-    /** How much the head nods with the voice level. Range 0...1. */
+    /** How much the head nods with the voice level. Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val turnNod: Double? = null,
-    /** Where this state faces, up or down (-1..1 of the turn; positive = up). Range -1...1. */
+    /** Where this state faces, up or down (-1..1 of the turn; positive = up). Range -1...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val turnPitch: Double? = null,
-    /** How much the head looks from corner to corner on its own, holding each look. Range 0...1. */
+    /** How much the head looks from corner to corner on its own, holding each look. Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val turnWander: Double? = null,
-    /** Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). Range -1...1. */
+    /** Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). Range -1...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val turnYaw: Double? = null,
     /** How far the voice lifts the body while speaking (design units). Range 0...8. */
     val bounceGain: Double? = null,
     /** Idle breathing bob. Range 0...2. */
     val breath: Double? = null,
-    /** How strongly the listening sound arcs show with the user's level. Range 0...1. */
+    /** How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). Range 0...1. */
     val earGain: Double? = null,
-    /** How far the voice line swings with the level. Range 0...2. */
+    /** How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). Range 0...2. */
     val mouthGain: Double? = null,
-    /** How much the voice squashes the body while speaking. Range 0...0.12. */
+    /** How much the voice squashes the body while speaking. Range 0...0.12. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
     val squashGain: Double? = null,
     /** How far the capsule sways on its yoke with the voice while speaking (radians). Range 0...0.15. Patterns: hum. */
     val swayGain: Double? = null,

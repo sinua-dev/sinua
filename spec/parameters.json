@@ -982,7 +982,7 @@
       "category": "energy",
       "choices": null,
       "deprecated": null,
-      "description": "How strongly the listening sound arcs show with the user's level.",
+      "description": "How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing).",
       "fallback": 0,
       "group": "style",
       "if": null,
@@ -3638,7 +3638,7 @@
       "category": "appearance",
       "choices": null,
       "deprecated": null,
-      "description": "Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest.",
+      "description": "Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it).",
       "fallback": 1,
       "group": "style",
       "if": null,
@@ -3661,7 +3661,7 @@
       "category": "appearance",
       "choices": null,
       "deprecated": null,
-      "description": "Above 0.5 the mouth is three thinking dots.",
+      "description": "Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing).",
       "fallback": 0,
       "group": "style",
       "if": null,
@@ -3684,7 +3684,7 @@
       "category": "energy",
       "choices": null,
       "deprecated": null,
-      "description": "How far the voice line swings with the level.",
+      "description": "How far the voice line swings with the level (Whirr and Clank: how far the mouth opens).",
       "fallback": 0,
       "group": "style",
       "if": null,
@@ -3707,7 +3707,7 @@
       "category": "appearance",
       "choices": null,
       "deprecated": null,
-      "description": "Above 0.5 the mouth is the voice line (speaking).",
+      "description": "Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice).",
       "fallback": 0,
       "group": "style",
       "if": null,
@@ -12757,6 +12757,290 @@
                 "64": 0
               },
               "ref": "squashGain@character"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1
+        },
+        {
+          "description": "A floating egg-shaped robot with a screen face: it hovers over its shadow, leans in with its antenna lit to listen, looks up with the tip pulsing to think, and its mouth and belt light follow its voice.",
+          "id": "whirr",
+          "label": "Whirr",
+          "mode": "whirr",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "look@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "seed@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeSmile@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "lid@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthDots@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthTalk@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "gazeX@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "gazeY@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "tilt@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnBlink@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "bounceGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "breath@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "earGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthGain@character"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1
+        },
+        {
+          "description": "A standing robot with a screen face and jointed arms: it shifts its weight and waves, tilts its head with its ear lights pulsing to listen, looks up to think, and its mouth and chest light follow its voice.",
+          "id": "clank",
+          "label": "Clank",
+          "mode": "clank",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "mouth@character"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "look@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "seed@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "eyeSmile@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "lid@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthDots@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthTalk@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "gazeX@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "gazeY@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "tilt@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "turnBlink@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "bounceGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "breath@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "earGain@character"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "mouthGain@character"
             }
           ],
           "sizes": [

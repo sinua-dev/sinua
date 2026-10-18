@@ -582,73 +582,75 @@ export type SinuaCharacterPattern =
   | "chirp"
   | "cuppa"
   | "bean"
-  | "beep";
+  | "beep"
+  | "whirr"
+  | "clank";
 
 /** Character parameters; unset ones keep the pattern's values. */
 export interface SinuaCharacterParams {
-  /** The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. */
+  /** The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   accessories?: boolean;
-  /** Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1. */
+  /** Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   grain?: number;
-  /** Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. Range 0...360 (deg). */
+  /** Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. Range 0...360 (deg). Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   hue?: number;
   /** How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction). */
   ink?: number;
-  /** Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. */
+  /** Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). */
   mouth?: boolean;
-  /** Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. */
+  /** Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   shading?: boolean;
   /** How much the eyes glance around on their own while idle (0 = always at the viewer). Range 0...2. */
   look?: number;
   /** Changes when it blinks and glances, so two characters side by side don't move in sync. Range 0...1000000. */
   seed?: number;
-  /** How far the head turns like a solid (0 = flat, 1 = ±35°; the default is ±25°). Range 0...1. */
+  /** How far the head turns like a solid (0 = flat, 1 = ±35°; the default is ±25°). Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   turn?: number;
-  /** Makes the left eye shorter (a quizzical look). Range 0...0.6. */
+  /** Makes the left eye shorter (a quizzical look). Range 0...0.6. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   eyeAsym?: number;
-  /** Eye height, in design units. Range 8...40. */
+  /** Eye height, in design units. Range 8...40. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   eyeH?: number;
-  /** Eye corner radius, in design units. Range 0...20. */
+  /** Eye corner radius, in design units. Range 0...20. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   eyeR?: number;
   /** The happy arc cut from below the eyes. Range 0...1. */
   eyeSmile?: number;
-  /** Slope of the lid: positive lowers the outer corners (pensive). Range -1...1. */
+  /** Slope of the lid: positive lowers the outer corners (pensive). Range -1...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   eyeTilt?: number;
-  /** Eye width, in the character's 200-unit design box. Range 8...36. */
+  /** Eye width, in the character's 200-unit design box. Range 8...36. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   eyeW?: number;
   /** How far the top lid comes down (a squint), 0 to 0.9 of the eye. Range 0...0.9. */
   lid?: number;
-  /** Above 0.5 the mouth is three thinking dots. Range 0...1. */
+  /** Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). Range 0...1. */
   mouthDots?: number;
-  /** Above 0.5 the mouth is the voice line (speaking). Range 0...1. */
+  /** Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). Range 0...1. */
   mouthTalk?: number;
   /** Where the eyes look, sideways, in design units (negative = left). Range -14...14. */
   gazeX?: number;
   /** Where the eyes look, up and down, in design units (negative = up). Range -12...12. */
   gazeY?: number;
-  /** Leans the whole character toward the viewer (design units). Range -8...8. */
+  /** Leans the whole character toward the viewer (design units). Range -8...8. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   lean?: number;
   /** Tilts the whole character (radians; positive = clockwise). Range -0.3...0.3. */
   tilt?: number;
   /** Blink once as this state starts (the end of the user's turn). Range 0...1. */
   turnBlink?: number;
-  /** How much the head nods with the voice level. Range 0...1. */
+  /** How much the head nods with the voice level. Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   turnNod?: number;
-  /** Where this state faces, up or down (-1..1 of the turn; positive = up). Range -1...1. */
+  /** Where this state faces, up or down (-1..1 of the turn; positive = up). Range -1...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   turnPitch?: number;
-  /** How much the head looks from corner to corner on its own, holding each look. Range 0...1. */
+  /** How much the head looks from corner to corner on its own, holding each look. Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   turnWander?: number;
-  /** Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). Range -1...1. */
+  /** Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). Range -1...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   turnYaw?: number;
   /** How far the voice lifts the body while speaking (design units). Range 0...8. */
   bounceGain?: number;
   /** Idle breathing bob. Range 0...2. */
   breath?: number;
-  /** How strongly the listening sound arcs show with the user's level. Range 0...1. */
+  /** How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). Range 0...1. */
   earGain?: number;
-  /** How far the voice line swings with the level. Range 0...2. */
+  /** How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). Range 0...2. */
   mouthGain?: number;
-  /** How much the voice squashes the body while speaking. Range 0...0.12. */
+  /** How much the voice squashes the body while speaking. Range 0...0.12. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
   squashGain?: number;
   /** How far the capsule sways on its yoke with the voice while speaking (radians). Range 0...0.15. Patterns: hum. */
   swayGain?: number;

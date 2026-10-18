@@ -278,6 +278,16 @@
      "id": "beep",
      "label": "Beep",
      "description": "A small tin robot with arms: a hand to the ear to listen, to the chin to think, small beats as it speaks; its antenna light shows when it listens and thinks."
+    },
+    {
+     "id": "whirr",
+     "label": "Whirr",
+     "description": "A floating egg-shaped robot with a screen face: it hovers over its shadow, leans in with its antenna lit to listen, looks up with the tip pulsing to think, and its mouth and belt light follow its voice."
+    },
+    {
+     "id": "clank",
+     "label": "Clank",
+     "description": "A standing robot with a screen face and jointed arms: it shifts its weight and waves, tilts its head with its ear lights pulsing to listen, looks up to think, and its mouth and chest light follow its voice."
     }
    ]
   }
@@ -5454,7 +5464,7 @@
    "scope": "character",
    "path": "mouth",
    "label": "Mouth",
-   "description": "Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest.",
+   "description": "Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it).",
    "category": "appearance",
    "group": "style",
    "type": "boolean",
@@ -5832,7 +5842,7 @@
    "scope": "character",
    "path": "mouthGain",
    "label": "Mouth gain",
-   "description": "How far the voice line swings with the level.",
+   "description": "How far the voice line swings with the level (Whirr and Clank: how far the mouth opens).",
    "category": "energy",
    "group": "style",
    "type": "number",
@@ -5850,7 +5860,7 @@
    "scope": "character",
    "path": "mouthTalk",
    "label": "Talking mouth",
-   "description": "Above 0.5 the mouth is the voice line (speaking).",
+   "description": "Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice).",
    "category": "appearance",
    "group": "style",
    "type": "number",
@@ -5868,7 +5878,7 @@
    "scope": "character",
    "path": "mouthDots",
    "label": "Thinking dots",
-   "description": "Above 0.5 the mouth is three thinking dots.",
+   "description": "Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing).",
    "category": "appearance",
    "group": "style",
    "type": "number",
@@ -5886,7 +5896,7 @@
    "scope": "character",
    "path": "earGain",
    "label": "Ear arcs",
-   "description": "How strongly the listening sound arcs show with the user's level.",
+   "description": "How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing).",
    "category": "energy",
    "group": "style",
    "type": "number",

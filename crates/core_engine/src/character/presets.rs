@@ -7,7 +7,9 @@ use crate::primitives::ModeOpts;
 // Reserved for a future uniffi-bindgen/enum-export pass, same as the
 // other families' `STATES`.
 #[allow(dead_code)]
-pub const STATES: &[&str] = &["buzzy", "hum", "wisp", "chirp", "cuppa", "bean", "beep"];
+pub const STATES: &[&str] = &[
+    "buzzy", "hum", "wisp", "chirp", "cuppa", "bean", "beep", "whirr", "clank",
+];
 
 fn state_to_mode(state: &str) -> Option<&'static str> {
     match state {
@@ -18,6 +20,8 @@ fn state_to_mode(state: &str) -> Option<&'static str> {
         "cuppa" => Some("cuppa"),
         "bean" => Some("bean"),
         "beep" => Some("beep"),
+        "whirr" => Some("whirr"),
+        "clank" => Some("clank"),
         // A recipe that came with an FX Spec (`character/registry.rs`).
         k => crate::character::registry::key(k),
     }

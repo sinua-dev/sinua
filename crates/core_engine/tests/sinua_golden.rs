@@ -65,7 +65,7 @@ const MATERIAL_KEYS: [&str; 3] = ["colorMix", "colorMode", "gradientStrength"];
 /// Every state this set freezes -- the complement of `PORTED` across all
 /// five families. `every_non_ported_state_is_frozen` checks each one
 /// resolves; adding a state means adding it here (docs/testing.md).
-const STATES: [&str; 34] = [
+const STATES: [&str; 36] = [
     // orbs, additive
     "glowing",
     "drifting",
@@ -106,6 +106,8 @@ const STATES: [&str; 34] = [
     "cuppa",
     "bean",
     "beep",
+    "whirr",
+    "clank",
 ];
 
 /// (state, key tag, overrides) for an input-driven extra case.

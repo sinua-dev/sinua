@@ -110,7 +110,10 @@ export type OrbState =
   | "chirp"
   | "cuppa"
   | "bean"
-  | "beep";
+  | "beep"
+  // 1.15: characters each built on their own (`character/bots/`).
+  | "whirr"
+  | "clank";
 
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;

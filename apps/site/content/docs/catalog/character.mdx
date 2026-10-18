@@ -13,6 +13,8 @@ A character is a face for your voice assistant. The gaze knows whose turn it is:
 <Demo object="character" pattern="cuppa" />
 <Demo object="character" pattern="bean" />
 <Demo object="character" pattern="beep" />
+<Demo object="character" pattern="whirr" />
+<Demo object="character" pattern="clank" />
 </div>
 
 <GalleryLink family="character" />
@@ -30,6 +32,8 @@ Want your own? A character is a recipe, and you can [make your own](/docs/catalo
 | [Cuppa](#cuppa) | `cuppa` | A coffee mug on its saucer. | Steam rises while it listens and thickens with its voice. |
 | [Bean](#bean) | `bean` | A coffee bean on little feet, with aroma sparkles. | Its sparkles gather while it listens, circle while it thinks and stream out with its voice. |
 | [Beep](#beep) | `beep` | A small tin robot with arms. | A hand goes to its ear to listen and to its chin to think, and its arms beat with the voice. `arms: false` takes them off. |
+| [Whirr](#whirr) | `whirr` | A floating egg-shaped robot with a screen face and a glowing antenna. | It hovers over its shadow. It leans in with its antenna lit to listen, looks up with the tip pulsing to think, and its mouth and belt light follow the voice. |
+| [Clank](#clank) | `clank` | A standing robot with a screen face, ear lights and jointed arms. | It shifts its weight and waves. It tilts its head with its ear lights pulsing to listen, looks up to think, and its mouth and chest light follow the voice. |
 
 ## How it behaves
 
@@ -111,6 +115,8 @@ A palette can also be written over **roles**, so one palette fits every characte
 | `cuppa` | mug | sleeve | heart |
 | `bean` | body | — | aroma |
 | `beep` | body | arms | accent |
+
+Whirr and Clank keep their drawn colours: they have no slots, and a `palette` for them is an error.
 
 A character keeps its own colours otherwise: `color` and `gradient` don't apply, and in an [FX Spec](/docs/reference/fx-spec#111-characters) they are an error.
 

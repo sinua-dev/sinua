@@ -11,6 +11,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | Cuppa (`cuppa`) | `cuppa` | 1× | — |
 | Bean (`bean`) | `bean` | 1× | — |
 | Beep (`beep`) | `beep` | 1× | — |
+| Whirr (`whirr`) | `whirr` | 1× | — |
+| Clank (`clank`) | `clank` | 1× | — |
 
 ### Buzzy [#buzzy]
 
@@ -22,7 +24,7 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 232 | Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
-| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). |
 | `shading` | Appearance | boolean |  | 1 | Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. |
 | `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
 | `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
@@ -40,8 +42,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `eyeTilt` | Appearance | number | -1–1 | 0 | Slope of the lid: positive lowers the outer corners (pensive). |
 | `eyeW` | Appearance | number | 8–36 | 20 | Eye width, in the character's 200-unit design box. |
 | `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
-| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. |
-| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). |
 | `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
 | `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
 | `lean` | Motion | number | -8–8 | 0 | Leans the whole character toward the viewer (design units). |
@@ -53,8 +55,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `turnYaw` | Motion | number | -1–1 | 0 | Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). |
 | `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
 | `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
-| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
-| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). |
 | `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
 
 </details>
@@ -69,7 +71,7 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 9 | Turns the capsule's colour in degrees; the brass, the grille, the eyes and the tally stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
-| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). |
 | `shading` | Appearance | boolean |  | 1 | Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. |
 | `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
 | `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
@@ -87,8 +89,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `eyeTilt` | Appearance | number | -1–1 | 0 | Slope of the lid: positive lowers the outer corners (pensive). |
 | `eyeW` | Appearance | number | 8–36 | 20 | Eye width, in the character's 200-unit design box. |
 | `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
-| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. |
-| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). |
 | `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
 | `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
 | `lean` | Motion | number | -8–8 | 0 | Leans the whole character toward the viewer (design units). |
@@ -100,8 +102,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `turnYaw` | Motion | number | -1–1 | 0 | Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). |
 | `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
 | `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
-| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
-| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). |
 | `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
 | `swayGain` | Energy | number | 0–0.15 | 0 | How far the capsule sways on its yoke with the voice while speaking (radians). |
 
@@ -117,7 +119,7 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 253 | Turns the spirit's colour (violet and teal together) in degrees; the sparkles and the eyes stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
-| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). |
 | `shading` | Appearance | boolean |  | 1 | Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. |
 | `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
 | `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
@@ -136,8 +138,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `eyeTilt` | Appearance | number | -1–1 | 0 | Slope of the lid: positive lowers the outer corners (pensive). |
 | `eyeW` | Appearance | number | 8–36 | 20 | Eye width, in the character's 200-unit design box. |
 | `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
-| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. |
-| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). |
 | `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
 | `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
 | `lean` | Motion | number | -8–8 | 0 | Leans the whole character toward the viewer (design units). |
@@ -149,8 +151,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `turnYaw` | Motion | number | -1–1 | 0 | Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). |
 | `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
 | `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
-| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
-| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). |
 | `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
 
 </details>
@@ -165,7 +167,7 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 12 | Turns the bird's coral body in degrees; the crest, wings, beak and eyes stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
-| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). |
 | `shading` | Appearance | boolean |  | 1 | Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. |
 | `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
 | `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
@@ -183,8 +185,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `eyeTilt` | Appearance | number | -1–1 | 0 | Slope of the lid: positive lowers the outer corners (pensive). |
 | `eyeW` | Appearance | number | 8–36 | 20 | Eye width, in the character's 200-unit design box. |
 | `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
-| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. |
-| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). |
 | `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
 | `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
 | `lean` | Motion | number | -8–8 | 0 | Leans the whole character toward the viewer (design units). |
@@ -196,9 +198,9 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `turnYaw` | Motion | number | -1–1 | 0 | Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). |
 | `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
 | `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
-| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). |
 | `flutterGain` | Energy | number | 0–0.6 | 0 | How much the wings flutter with the voice while speaking (radians). |
-| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). |
 | `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
 
 </details>
@@ -213,7 +215,7 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 12 | Turns the mug's colour in degrees; the coffee, the sleeve and the heart stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
-| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). |
 | `shading` | Appearance | boolean |  | 1 | Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. |
 | `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
 | `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
@@ -231,8 +233,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `eyeTilt` | Appearance | number | -1–1 | 0 | Slope of the lid: positive lowers the outer corners (pensive). |
 | `eyeW` | Appearance | number | 8–36 | 20 | Eye width, in the character's 200-unit design box. |
 | `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
-| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. |
-| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). |
 | `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
 | `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
 | `lean` | Motion | number | -8–8 | 0 | Leans the whole character toward the viewer (design units). |
@@ -244,8 +246,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `turnYaw` | Motion | number | -1–1 | 0 | Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). |
 | `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
 | `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
-| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
-| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). |
 | `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
 
 </details>
@@ -260,7 +262,7 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 24 | Turns the bean's roast in degrees; the cheeks and the aroma stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
-| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). |
 | `shading` | Appearance | boolean |  | 1 | Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. |
 | `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
 | `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
@@ -278,8 +280,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `eyeTilt` | Appearance | number | -1–1 | 0 | Slope of the lid: positive lowers the outer corners (pensive). |
 | `eyeW` | Appearance | number | 8–36 | 20 | Eye width, in the character's 200-unit design box. |
 | `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
-| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. |
-| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). |
 | `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
 | `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
 | `lean` | Motion | number | -8–8 | 0 | Leans the whole character toward the viewer (design units). |
@@ -291,8 +293,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `turnYaw` | Motion | number | -1–1 | 0 | Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). |
 | `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
 | `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
-| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
-| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). |
 | `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
 
 </details>
@@ -308,7 +310,7 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `grain` | Appearance | number | 0–1 (UI 0–0.2) | 0 | Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. |
 | `hue` | Appearance | number | 0–360 deg | 200 | Turns the robot's steel in degrees; the screen, the orange accents and the antenna light stay. |
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
-| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). |
 | `shading` | Appearance | boolean |  | 1 | Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. |
 | `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
 | `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
@@ -326,8 +328,8 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `eyeTilt` | Appearance | number | -1–1 | 0 | Slope of the lid: positive lowers the outer corners (pensive). |
 | `eyeW` | Appearance | number | 8–36 | 20 | Eye width, in the character's 200-unit design box. |
 | `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
-| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. |
-| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). |
 | `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
 | `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
 | `lean` | Motion | number | -8–8 | 0 | Leans the whole character toward the viewer (design units). |
@@ -339,8 +341,70 @@ The character component is `SinuaCharacter`. Pick a look with `pattern`; each pa
 | `turnYaw` | Motion | number | -1–1 | 0 | Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). |
 | `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
 | `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
-| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. |
-| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). |
 | `squashGain` | Energy | number | 0–0.12 | 0 | How much the voice squashes the body while speaking. |
+
+</details>
+
+### Whirr [#whirr]
+
+`pattern: "whirr"` · mode `whirr` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). |
+| `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
+| `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
+
+<details>
+<summary>Advanced props (12)</summary>
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `eyeSmile` | Appearance | number | 0–1 | 0 | The happy arc cut from below the eyes. |
+| `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). |
+| `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
+| `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
+| `tilt` | Motion | number | -0.3–0.3 | 0 | Tilts the whole character (radians; positive = clockwise). |
+| `turnBlink` | Motion | number | 0–1 | 0 | Blink once as this state starts (the end of the user's turn). |
+| `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
+| `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). |
+
+</details>
+
+### Clank [#clank]
+
+`pattern: "clank"` · mode `clank` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `mouth` | Appearance | boolean |  | 1 | Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). |
+| `look` | Motion | number | 0–2 | 1 | How much the eyes glance around on their own while idle (0 = always at the viewer). |
+| `seed` | Motion | integer | 0–∞ (UI 0–20) | 0 | Changes when it blinks and glances, so two characters side by side don't move in sync. |
+
+<details>
+<summary>Advanced props (12)</summary>
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `eyeSmile` | Appearance | number | 0–1 | 0 | The happy arc cut from below the eyes. |
+| `lid` | Appearance | number | 0–0.9 | 0 | How far the top lid comes down (a squint), 0 to 0.9 of the eye. |
+| `mouthDots` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). |
+| `mouthTalk` | Appearance | number | 0–1 | 0 | Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). |
+| `gazeX` | Motion | number | -14–14 | 0 | Where the eyes look, sideways, in design units (negative = left). |
+| `gazeY` | Motion | number | -12–12 | 0 | Where the eyes look, up and down, in design units (negative = up). |
+| `tilt` | Motion | number | -0.3–0.3 | 0 | Tilts the whole character (radians; positive = clockwise). |
+| `turnBlink` | Motion | number | 0–1 | 0 | Blink once as this state starts (the end of the user's turn). |
+| `bounceGain` | Energy | number | 0–8 | 0 | How far the voice lifts the body while speaking (design units). |
+| `breath` | Energy | number | 0–2 | 0 | Idle breathing bob. |
+| `earGain` | Energy | number | 0–1 | 0 | How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). |
+| `mouthGain` | Energy | number | 0–2 | 0 | How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). |
 
 </details>

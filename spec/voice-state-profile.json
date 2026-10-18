@@ -981,6 +981,138 @@
         }
       }
     },
+    "whirr": {
+      "$comment": "Character WHIRR (1.15): the floating robot. Its own rig reads the character keys: earGain leans in with a head tilt, the eyes wide and the antenna tip lit (listening); mouthDots looks up and away, eyes narrowed, the tip pulsing fast (thinking); mouthTalk opens the mouth and swells the belt and under-glow on the voice (speaking). The generic swell, glow, pulse and particles are off; speed 1.",
+      "states": {
+        "initializing": {
+          "speed": 1,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "ink": 0.85,
+            "lid": 0.5,
+            "look": 0,
+            "breath": 0.5
+          }
+        },
+        "idle": {
+          "speed": 1,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "ink": 1,
+            "breath": 1,
+            "look": 1
+          }
+        },
+        "listening": {
+          "speed": 1,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "ink": 1,
+            "earGain": 1,
+            "gazeY": 2,
+            "look": 0
+          }
+        },
+        "thinking": {
+          "speed": 1,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "ink": 1,
+            "mouthDots": 1,
+            "lid": 0.28,
+            "turnBlink": 1,
+            "look": 0
+          }
+        },
+        "speaking": {
+          "speed": 1,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "ink": 1,
+            "mouthTalk": 1,
+            "mouthGain": 1,
+            "eyeSmile": 0.45,
+            "look": 0.3
+          }
+        }
+      }
+    },
+    "clank": {
+      "$comment": "Character CLANK (1.15): the standing robot. Its own rig reads the character keys: earGain tilts the head in and pulses the ear lights (listening); mouthDots looks up and away with the head lifted and the antenna tip pulsing fast (thinking); mouthTalk opens the mouth, swells the chest light and nods on the voice (speaking). The generic swell, glow, pulse and particles are off; speed 1.",
+      "states": {
+        "initializing": {
+          "speed": 1,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "ink": 0.85,
+            "lid": 0.5,
+            "look": 0,
+            "breath": 0.5
+          }
+        },
+        "idle": {
+          "speed": 1,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "ink": 1,
+            "breath": 1,
+            "look": 1
+          }
+        },
+        "listening": {
+          "speed": 1,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "ink": 1,
+            "earGain": 1,
+            "gazeY": 2,
+            "look": 0
+          }
+        },
+        "thinking": {
+          "speed": 1,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "ink": 1,
+            "mouthDots": 1,
+            "lid": 0.28,
+            "turnBlink": 1,
+            "look": 0
+          }
+        },
+        "speaking": {
+          "speed": 1,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "ink": 1,
+            "mouthTalk": 1,
+            "mouthGain": 1,
+            "eyeSmile": 0.45,
+            "look": 0.3
+          }
+        }
+      }
+    },
     "character": {
       "$comment": "A character from a recipe in the file (FX Spec 1.12): the language the four built-in characters share, with BUZZY's numbers -- listening leans in and looks at you, thinking looks up and away with a blink at the turn and the thinking dots, speaking smiles with the voice, a little squash and a nod. A recipe takes a built-in character's profile instead with `\"profile\": \"chirp\"` (its own gains, like flutterGain, come with it); the file's `states` override either.",
       "states": {

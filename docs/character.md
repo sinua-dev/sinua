@@ -25,6 +25,8 @@ character became a recipe (data, not code), and a file can carry its own.
 | `cuppa` | A coffee mug on its saucer (FX Spec 1.12): drawn from an SVG path, the handle is a hole; coffee at the rim, a sleeve with a heart | the mouth is an oval that opens with the level; its steam (the `steam` part) rises higher while it listens, curls while it thinks and thickens with the voice; it squashes a little as it talks |
 | `bean` | A coffee bean on little feet (FX Spec 1.12): an SVG-path body with its S-shaped groove and lit edge as path patches, rosy cheeks | the mouth is an oval that opens with the level; aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice |
 | `beep` | A small tin robot (FX Spec 1.12): a path head and body, a face screen, an antenna light, a chest core, legs, and **arms** | a hand goes to the ear to listen and to the chin to think, and the arms beat with the voice while speaking; the antenna light is red while listening and amber while thinking; `arms: false` takes the arms off |
+| `whirr` | A floating egg-shaped robot (1.15): a lavender-white shell, a dark visor with two big eyes and a smile, an antenna with a glowing tip, floating hands, a glow under it and a shadow on the floor | it always hovers, the shadow answering; the antenna and the hands follow a beat late. Listening, it leans in with its eyes wide and the antenna tip lit; thinking, it looks up and away while the tip pulses; speaking, the mouth opens with the level and the belt and the glow under it swell |
+| `clank` | A standing robot (1.15): a white shell, a dark visor with big teal eyes, teal ear lights and a chest light, jointed arms (one waving, with fingers), legs and boots | it shifts its weight from foot to foot, the head a beat late, the raised hand waving. Listening, it tilts its head in and its ear lights pulse; thinking, it looks up and away with the head lifted while the antenna tip pulses; speaking, the mouth opens with the level, the chest light swells and the head nods |
 
 **Expressions**: the app picks one with `expression` (a view prop, or the
 FX Spec key in the base and in `states`). It stays until changed, and a change eases over 0.6 s.
@@ -54,16 +56,40 @@ FX Spec key in the base and in `states`). It stays until changed, and a change e
 - `tap: false` turns it off; reduced motion keeps only the smile. See
   [`fx-view.md`](fx-view.md), *One-shot effects*.
 
-All seven are recipes (`spec/characters/*.json`): the first four were moved over in 1.12 with
+The first seven are recipes (`spec/characters/*.json`): the first four were moved over in 1.12 with
 their drawing unchanged bit for bit. Cuppa and Bean were the first new ones made **only from
 recipes** (1.12 item 5): they needed no new drawing code, only one new library part, the steam.
-Beep added the `arms` part.
+Beep added the `arms` part. Whirr and Clank (1.15) are not recipes: see
+[*Characters built on their own*](#characters-built-on-their-own-characterbots) below.
 
 **Shared, not repeated.** What every character does alike lives once: the face (`face.rs`),
 the rig (`rig.rs`), the drawing helpers (`geom.rs`) and the kit (`kit.rs`: the size tiers, the
 ground shadow, the effect colours, the celebrate burst, the mute fade and the frame). The
 catalog defines the rig and the options once, as `key@character`; a character's own recipe and
 catalog entries hold only what makes it itself. Each character is named after a sound.
+
+## Characters built on their own (`character/bots/`)
+
+From 1.15, a character can be its own drawing and its own rig instead of a recipe: the artist's
+vector drawing, split into named parts, moved by code written for that character alone.
+
+- **The drawing** is `spec/characters/bots/<id>.json`: the parts (each with a parent and a pivot)
+  and the drawing's fills in paint order (SVG path outlines, solid colours or linear and
+  elliptical radial gradients with their stops), made from the artist's SVG by an internal
+  authoring step. It is not a public format, and there is no SVG import in the product.
+- **The rig** is the character's own file (`hover.rs` for Whirr, `walker.rs` for Clank). They
+  share only the helpers: reading the data, placing the parts through their transforms, a
+  closed-form spring for follow-through. At `t = 0` with no options the parts sit exactly where
+  the drawing has them.
+- **Voice states** come from the same character keys as the recipes (`earGain` listening,
+  `mouthDots` thinking, `mouthTalk` speaking, `mouthGain`, `audioLevel`), so a state change blends
+  like any other. Each new state starts with a small settle: a lift or a nod that overshoots and
+  comes to rest, the antenna and hands a beat behind it.
+- **What they don't read:** the head turn (`turn…`), the eye shapes (`eyeW`, `eyeH`, `eyeR`,
+  `eyeTilt`, `eyeAsym`), `hue`, `palette` (an error in an FX Spec), `grain`, `shading`,
+  `accessories`, `lean`. An expression shows through their eyes' lid and smile. Reduced motion
+  holds the hover, the weight shift and the springs still and keeps each state's pose.
+- **Curves** are cut finer from 128 px up, so a large view stays smooth and a small one cheap.
 
 ## Recipes and parts (`character/recipe.rs`, `character/parts/`)
 

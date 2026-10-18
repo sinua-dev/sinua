@@ -30,8 +30,10 @@
         "entry BEEP(\"beep\")",
         "entry BUZZY(\"buzzy\")",
         "entry CHIRP(\"chirp\")",
+        "entry CLANK(\"clank\")",
         "entry CUPPA(\"cuppa\")",
         "entry HUM(\"hum\")",
+        "entry WHIRR(\"whirr\")",
         "entry WISP(\"wisp\")"
       ],
       "SinuaCharacterProps": [
@@ -326,8 +328,10 @@
         "case beep=\"beep\"",
         "case buzzy=\"buzzy\"",
         "case chirp=\"chirp\"",
+        "case clank=\"clank\"",
         "case cuppa=\"cuppa\"",
         "case hum=\"hum\"",
+        "case whirr=\"whirr\"",
         "case wisp=\"wisp\"",
         "decl public enum Pattern:String,CaseIterable,Sendable"
       ]
@@ -776,7 +780,7 @@
         "export function sinuaSignalOverrides(pattern:SinuaSignalPattern,params:SinuaSignalParams):Record<string,number>",
         "export function sinuaSpecError(spec:string|object,expected:string):string|null",
         "export type SinuaBeaconPattern=|\"notifying\"|\"reconnecting\"|\"locating\"|\"scanning\"|\"broadcasting\"",
-        "export type SinuaCharacterPattern=|\"buzzy\"|\"hum\"|\"wisp\"|\"chirp\"|\"cuppa\"|\"bean\"|\"beep\"",
+        "export type SinuaCharacterPattern=|\"buzzy\"|\"hum\"|\"wisp\"|\"chirp\"|\"cuppa\"|\"bean\"|\"beep\"|\"whirr\"|\"clank\"",
         "export type SinuaCorePattern=|\"generating\"|\"typing\"",
         "export type SinuaOrbPattern=|\"working\"|\"searching\"|\"solving\"|\"listening\"|\"connecting\"|\"weaving\"|\"composing\"|\"breathing\"|\"shaping\"|\"glowing\"|\"drifting\"|\"speaking\"|\"confirming\"|\"initializing\"|\"calibrating\"|\"progressing\"|\"muted\"|\"silhouette\"",
         "export type SinuaRingPattern=|\"completing\"|\"loading\"|\"tracking\"|\"stepping\"|\"measuring\"|\"talking\"",
@@ -1408,7 +1412,7 @@
         "export function sinuaSignalOverrides(pattern:SinuaSignalPattern,params:SinuaSignalParams):Record<string,number>",
         "export function sinuaSpecError(spec:string|object,expected:string):string|null",
         "export type SinuaBeaconPattern=|\"notifying\"|\"reconnecting\"|\"locating\"|\"scanning\"|\"broadcasting\"",
-        "export type SinuaCharacterPattern=|\"buzzy\"|\"hum\"|\"wisp\"|\"chirp\"|\"cuppa\"|\"bean\"|\"beep\"",
+        "export type SinuaCharacterPattern=|\"buzzy\"|\"hum\"|\"wisp\"|\"chirp\"|\"cuppa\"|\"bean\"|\"beep\"|\"whirr\"|\"clank\"",
         "export type SinuaCorePattern=|\"generating\"|\"typing\"",
         "export type SinuaOrbPattern=|\"working\"|\"searching\"|\"solving\"|\"listening\"|\"connecting\"|\"weaving\"|\"composing\"|\"breathing\"|\"shaping\"|\"glowing\"|\"drifting\"|\"speaking\"|\"confirming\"|\"initializing\"|\"calibrating\"|\"progressing\"|\"muted\"|\"silhouette\"",
         "export type SinuaRingPattern=|\"completing\"|\"loading\"|\"tracking\"|\"stepping\"|\"measuring\"|\"talking\"",

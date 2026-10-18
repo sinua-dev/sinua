@@ -151,6 +151,9 @@ fn render(
         "beep" => {
             character::recipe::frame("beep", size as f64, t, opts).expect("a built-in recipe")
         }
+        // 1.15 characters, each its own drawing and rig (`character/bots`).
+        "whirr" => character::bots::hover::frame(size as f64, t, opts),
+        "clank" => character::bots::walker::frame(size as f64, t, opts),
         // A recipe from an FX Spec (FX Spec 1.12): its registry key.
         k => character::registry::frame(k, size as f64, t, opts)?,
     };

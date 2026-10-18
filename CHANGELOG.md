@@ -9,6 +9,21 @@ tag `beta`, and it may still change incompatibly.
 
 How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
+## Unreleased
+
+### Added
+
+- **Two new characters, each its own drawing and rig: `whirr` and `clank`** (`SinuaCharacter`,
+  every platform). Whirr is a floating egg-shaped robot with a screen face and a glowing antenna;
+  Clank is a standing robot with ear lights, a chest light and jointed arms. They are drawn from
+  the artist's vector art (gradients and all) and move with their own rigs: Whirr hovers over its
+  shadow, Clank shifts its weight and waves, and antennas and hands follow a beat late. Their
+  voice states read at a glance (listening leans in with lights pulsing, thinking looks up and
+  away, speaking opens the mouth and swells a light with the voice), and every state change
+  settles with a small overshoot. They keep their drawn colours (`palette` for them is an error in
+  an FX Spec) and have no head turn. See [`docs/character.md`](docs/character.md), *Characters
+  built on their own*.
+
 ## 0.1.0-beta.11
 
 A hotfix: Android only. Web and iOS are the same as 0.1.0-beta.10; their packages are republished at this version so every platform keeps one version.

@@ -35,8 +35,6 @@ pub const STATES: &[&str] = &[
     // Not a port either -- the "mic muted / connection lost" resting state,
     // see `orbs/modes/hush.rs`.
     "muted",
-    // A head and shoulders of dots, FX Spec 1.13 (`orbs/modes/silhouette.rs`).
-    "silhouette",
 ];
 
 pub fn state_to_mode(state: &str) -> Option<&'static str> {
@@ -58,7 +56,6 @@ pub fn state_to_mode(state: &str) -> Option<&'static str> {
         "calibrating" => "chladni",
         "progressing" => "eclipse",
         "muted" => "hush",
-        "silhouette" => "silhouette",
         _ => return None,
     })
 }
@@ -240,16 +237,6 @@ pub fn presets() -> HashMap<&'static str, HashMap<u32, Preset>> {
                 (64, preset(1.6, 1.0, 1.0)),
                 (32, preset(1.9, 0.5, 1.3)),
                 (20, preset(2.2, 0.28, 1.6)),
-            ]),
-        ),
-        (
-            // Design note 32: the dot count follows the size inside the mode (a prefix
-            // of one order), and its motion is in seconds, so nothing scales here.
-            "silhouette",
-            HashMap::from([
-                (64, preset(1.0, 1.0, 1.0)),
-                (32, preset(1.0, 1.0, 1.0)),
-                (20, preset(1.0, 1.0, 1.0)),
             ]),
         ),
         (

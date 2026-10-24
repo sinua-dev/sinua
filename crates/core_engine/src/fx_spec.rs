@@ -27,9 +27,7 @@ use std::collections::{BTreeMap, HashMap};
 use serde_json::{Map, Value};
 
 pub const RUNTIME_MAJOR: u64 = 1;
-pub const RUNTIME_MINOR: u64 = 14;
-/// The first minor that knows the `character` object (1.11).
-const CHARACTER_SINCE: u64 = 11;
+pub const RUNTIME_MINOR: u64 = 15;
 /// The oldest minor this runtime reads. 1.0–1.7 were never published, so their
 /// acceptance was dropped before the first release instead of becoming a
 /// compatibility promise (release decision 0.1).
@@ -410,206 +408,6 @@ fn parse_dtcg(o: &Map<String, Value>, path: &str, diag: &mut Diag) -> Option<FxH
 /// `arc::layout`'s `strokeWidth`/`gap` for the modes that share it). The
 /// resolved preset's own opts are allowed on top (ported orb keys). Kept
 /// in sync with the sources by `params_table_matches_mode_sources`.
-/// The keys every character mode reads (the rig and the character options);
-/// a character with extra motion lists its own on top (`HUM_PARAMS`).
-const CHARACTER_PARAMS: &[&str] = &[
-    "accessories",
-    "bounceGain",
-    "breath",
-    "earGain",
-    "eyeAsym",
-    "eyeH",
-    "eyeR",
-    "eyeSmile",
-    "eyeTilt",
-    "eyeW",
-    "gazeX",
-    "gazeY",
-    "grain",
-    "hue",
-    "lean",
-    "lid",
-    "look",
-    "mouth",
-    "mouthDots",
-    "mouthGain",
-    "mouthTalk",
-    "seed",
-    "shading",
-    "squashGain",
-    "tilt",
-    "turn",
-    "turnBlink",
-    "turnNod",
-    "turnPitch",
-    "turnWander",
-    "turnYaw",
-];
-
-/// WHIRR and CLANK (1.15): each its own drawing and rig (`character/bots`), reading only
-/// these of the character keys (no turn, no eye shapes, no grain or shading).
-const BOT_PARAMS: &[&str] = &[
-    "bounceGain",
-    "breath",
-    "earGain",
-    "eyeSmile",
-    "gazeX",
-    "gazeY",
-    "lid",
-    "look",
-    "mouth",
-    "mouthDots",
-    "mouthGain",
-    "mouthTalk",
-    "seed",
-    "tilt",
-    "turnBlink",
-];
-
-/// BEEP: the shared character keys plus `arms` (design note 17).
-const BEEP_PARAMS: [&str; 32] = [
-    "accessories",
-    "arms",
-    "bounceGain",
-    "breath",
-    "earGain",
-    "eyeAsym",
-    "eyeH",
-    "eyeR",
-    "eyeSmile",
-    "eyeTilt",
-    "eyeW",
-    "gazeX",
-    "gazeY",
-    "grain",
-    "hue",
-    "lean",
-    "lid",
-    "look",
-    "mouth",
-    "mouthDots",
-    "mouthGain",
-    "mouthTalk",
-    "seed",
-    "shading",
-    "squashGain",
-    "tilt",
-    "turn",
-    "turnBlink",
-    "turnNod",
-    "turnPitch",
-    "turnWander",
-    "turnYaw",
-];
-
-/// HUM: the shared character keys plus its speaking sway.
-const HUM_PARAMS: [&str; 32] = [
-    "accessories",
-    "bounceGain",
-    "breath",
-    "earGain",
-    "eyeAsym",
-    "eyeH",
-    "eyeR",
-    "eyeSmile",
-    "eyeTilt",
-    "eyeW",
-    "gazeX",
-    "gazeY",
-    "grain",
-    "hue",
-    "lean",
-    "lid",
-    "look",
-    "mouth",
-    "mouthDots",
-    "mouthGain",
-    "mouthTalk",
-    "seed",
-    "shading",
-    "squashGain",
-    "swayGain",
-    "tilt",
-    "turn",
-    "turnBlink",
-    "turnNod",
-    "turnPitch",
-    "turnWander",
-    "turnYaw",
-];
-
-/// WISP: the shared character keys plus its tail curl.
-const WISP_PARAMS: [&str; 32] = [
-    "accessories",
-    "bounceGain",
-    "breath",
-    "curlGain",
-    "earGain",
-    "eyeAsym",
-    "eyeH",
-    "eyeR",
-    "eyeSmile",
-    "eyeTilt",
-    "eyeW",
-    "gazeX",
-    "gazeY",
-    "grain",
-    "hue",
-    "lean",
-    "lid",
-    "look",
-    "mouth",
-    "mouthDots",
-    "mouthGain",
-    "mouthTalk",
-    "seed",
-    "shading",
-    "squashGain",
-    "tilt",
-    "turn",
-    "turnBlink",
-    "turnNod",
-    "turnPitch",
-    "turnWander",
-    "turnYaw",
-];
-
-/// CHIRP: the shared character keys plus its wing flutter.
-const CHIRP_PARAMS: [&str; 32] = [
-    "accessories",
-    "bounceGain",
-    "breath",
-    "earGain",
-    "eyeAsym",
-    "eyeH",
-    "eyeR",
-    "eyeSmile",
-    "eyeTilt",
-    "eyeW",
-    "flutterGain",
-    "gazeX",
-    "gazeY",
-    "grain",
-    "hue",
-    "lean",
-    "lid",
-    "look",
-    "mouth",
-    "mouthDots",
-    "mouthGain",
-    "mouthTalk",
-    "seed",
-    "shading",
-    "squashGain",
-    "tilt",
-    "turn",
-    "turnBlink",
-    "turnNod",
-    "turnPitch",
-    "turnWander",
-    "turnYaw",
-];
-
 pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
     match mode {
         "aurora" => &[
@@ -696,35 +494,10 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
             "spread",
             "thr",
         ],
-        "bar" => &["barCount", "barWidth", "hue", "minHeight", "saturation"],
-        "matrix" => &[
-            "columnCount",
-            "hue",
-            "ledCount",
-            "ledSize",
-            "minLevel",
-            "mirror",
-            "saturation",
-        ],
-        "scroll" => &["barWidth", "fadeWidth", "hue", "minHeight", "saturation"],
-        "playback" => &[
-            "barCount",
-            "barWidth",
-            "hue",
-            "minHeight",
-            "playhead",
-            "progress",
-            "saturation",
-            "unplayedOpacity",
-        ],
-        "waveform" => &[
-            "amplitude",
-            "hue",
-            "layerCount",
-            "lineWidth",
-            "pointCount",
-            "saturation",
-        ],
+        // 1.15 light volumes (`crate::volume`).
+        "veil" => &["churn", "layerCount", "level"],
+        "crystal" => &["churn", "columnCount", "level"],
+        "dune" => &["churn", "progress"],
         "arc" => &[
             "gap",
             "hue",
@@ -830,13 +603,6 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
             "trailFill",
             "trailLength",
         ],
-        "buzzy" => CHARACTER_PARAMS,
-        "hum" => &HUM_PARAMS,
-        "wisp" => &WISP_PARAMS,
-        "chirp" => &CHIRP_PARAMS,
-        "cuppa" | "bean" => CHARACTER_PARAMS,
-        "beep" => &BEEP_PARAMS,
-        "whirr" | "clank" => BOT_PARAMS,
         "dots" => &[
             "bounceAmplitude",
             "delay",
@@ -857,9 +623,6 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
             "thickness",
             "trackOpacity",
         ],
-        // A recipe from the file (1.12) reads the shared keys; its own gains
-        // are allowed on top where `params` is checked.
-        m if m.starts_with(crate::character::registry::PREFIX) => CHARACTER_PARAMS,
         _ => &[],
     }
 }
@@ -874,7 +637,7 @@ pub(crate) fn indexed_param(mode: &str, key: &str) -> bool {
     match mode {
         "nested" => idx("progress", 4),
         "segmented" => idx("segment", 24),
-        "playback" => idx("envelope", 64),
+        "dune" => idx("envelope", 64),
         _ => false,
     }
 }
@@ -885,32 +648,22 @@ pub(crate) const SHARED_PARAMS: [&str; 2] = ["rMin", "rsPow"];
 /// Runtime inputs and cues -- live data, not design. Rejected in `params`
 /// with a reason; bindings (data -> visual) arrive in FX Spec v1.1.
 pub(crate) fn runtime_key(key: &str) -> Option<&'static str> {
-    let indexed = |p: &str| {
-        key.strip_prefix(p)
-            .is_some_and(|n| !n.is_empty() && n.chars().all(|c| c.is_ascii_digit()))
-    };
     if key.starts_with("pointer") {
         Some("pointer position is a live input (apply_pointer)")
     } else if key.starts_with("audio") {
         Some("audio levels/bands are live inputs (the voice pipeline)")
     } else if key == "voiceStateCode" {
         Some("the voice lifecycle is a live input")
-    } else if key.starts_with("history") {
-        Some("the scrolling history buffer is caller-owned live data")
     } else if key.starts_with("interrupt") {
         Some("the barge-in flash is a live event (apply_interrupt)")
     } else if key == "muted" || key.starts_with("mutedT") || key == "mutedHue" {
         Some("the mute cue is live app state (apply_muted)")
     } else if key.starts_with("decay") && key != "decay" {
         Some("the one-shot fade is a live event (apply_decay)")
+    } else if key == "viewPx" {
+        Some("the side the view draws is set by the view (light volumes size their points to it)")
     } else if key == "aspect" {
         Some("the box ratio of a wide pattern is set by the view")
-    } else if key == "stateAge" {
-        Some("the time since the state changed is set by the view")
-    } else if key == "tapX" || key == "tapY" {
-        Some("where the view was tapped is set by the view, during the hop")
-    } else if indexed("peak") {
-        Some("matrix peaks are caller-owned live data")
     } else {
         None
     }
@@ -947,275 +700,8 @@ fn family_of(state: &str) -> Option<&'static str> {
         Some("beacon")
     } else if crate::core_fx::presets::resolve_preset(state, 64).is_some() {
         Some("core")
-    } else if crate::character::presets::resolve_preset(state, 64).is_some() {
-        Some("character")
     } else {
         None
-    }
-}
-
-/// Registers the file's `recipe` (`character/registry.rs`) and points every
-/// `pattern` that names its `id` (the base and each `states` entry) at the
-/// registered key, which the views draw like any other mode. Recipe errors
-/// keep their place: `/recipe/parts/2/lift/ears: expected 2 values`.
-fn use_recipe(root: &mut Map<String, Value>, r: &Value, object: Option<&str>, diag: &mut Diag) {
-    if object != Some("character") {
-        diag.error("/recipe", "`recipe` is for `object: character`");
-        return;
-    }
-    if !r.is_object() {
-        diag.error("/recipe", "expected an object");
-        return;
-    }
-    let id = r.get("id").and_then(Value::as_str).unwrap_or_default();
-    if crate::character::presets::STATES.contains(&id) {
-        diag.error(
-            "/recipe/id",
-            format!("`{id}` is a built-in character; give the recipe its own id"),
-        );
-        return;
-    }
-    let Some(key) = register(r, diag) else {
-        return;
-    };
-    let mut used = false;
-    let mut point = |b: &mut Map<String, Value>| {
-        if b.get("pattern").and_then(Value::as_str) == Some(id) {
-            b.insert("pattern".into(), Value::String(key.into()));
-            used = true;
-        }
-    };
-    point(root);
-    if let Some(Value::Object(states)) = root.get_mut("states") {
-        for e in states.values_mut() {
-            if let Value::Object(e) = e {
-                point(e);
-            }
-        }
-    }
-    if !used {
-        diag.warn(
-            "/recipe/id",
-            format!("no `pattern` names `{id}`, so the recipe isn't drawn"),
-        );
-    }
-    if let Some(c) = heavy(key) {
-        {
-            diag.warn(
-                "/recipe",
-                format!(
-                    "this character is heavy to draw ({} elements); expect a cost on low-end devices",
-                    c.elements
-                ),
-            );
-        }
-    }
-}
-
-/// 1.13 (design note 32): checks that a `silhouette` pattern is allowed by the file's
-/// version and returns the `silhouette` key's id: a built-in by name, or a file's own
-/// `{ path, eyes, mouth }`, registered.
-#[inline(never)]
-fn silhouette(root: &Map<String, Value>, minor: u64, diag: &mut Diag) -> Option<f64> {
-    let named =
-        |b: &Map<String, Value>| b.get("pattern").and_then(Value::as_str) == Some("silhouette");
-    let used = named(root)
-        || matches!(root.get("states"), Some(Value::Object(st))
-            if st.values().any(|e| e.as_object().is_some_and(named)));
-    if used && minor < 13 {
-        diag.error(
-            "/pattern",
-            format!("`pattern: silhouette` needs \"fxSpec\": \"1.13\" (this file says 1.{minor})"),
-        );
-    }
-    let v = root.get("silhouette")?;
-    if !used {
-        diag.warn(
-            "/silhouette",
-            "no `pattern` is `silhouette`, so this isn't drawn",
-        );
-    }
-    let names = crate::orbs::modes::silhouette::NAMES;
-    if let Some(name) = v.as_str() {
-        return match names.iter().position(|n| *n == name) {
-            Some(i) => Some(i as f64),
-            None => {
-                diag.error(
-                    "/silhouette",
-                    format!("unknown silhouette `{name}` ({})", names.join(", ")),
-                );
-                None
-            }
-        };
-    }
-    let nums = |k: &str, n: usize| -> Option<Vec<f64>> {
-        let a = v.get(k)?.as_array()?;
-        let x: Vec<f64> = a.iter().filter_map(Value::as_f64).collect();
-        (a.len() == n && x.len() == n).then_some(x)
-    };
-    let (Some(path), Some(eyes), Some(mouth)) = (
-        v.get("path").and_then(Value::as_str),
-        nums("eyes", 3),
-        nums("mouth", 2),
-    ) else {
-        diag.error(
-            "/silhouette",
-            "expected a name or { \"path\", \"eyes\": [left x, right x, y], \"mouth\": [x, y] }",
-        );
-        return None;
-    };
-    let def = crate::orbs::modes::silhouette::Def {
-        path: path.to_string(),
-        eyes: [eyes[0], eyes[1], eyes[2]],
-        mouth: [mouth[0], mouth[1]],
-    };
-    match crate::orbs::modes::silhouette::register(def) {
-        Ok(id) => Some(f64::from(id)),
-        Err((at, e)) => {
-            diag.error(at, e);
-            None
-        }
-    }
-}
-
-/// `key`'s cost when it is "heavy" to draw, measured once per key: sampling frames on
-/// every resolve made a picker's thumbnails slow (design note 29).
-#[inline(never)]
-fn heavy(key: &'static str) -> Option<crate::FxCost> {
-    type Seen = Vec<(&'static str, Option<crate::FxCost>)>;
-    static SEEN: std::sync::Mutex<Seen> = std::sync::Mutex::new(Vec::new());
-    let mut seen = SEEN.lock().unwrap_or_else(|e| e.into_inner());
-    if let Some((_, c)) = seen.iter().find(|(k, _)| *k == key) {
-        return c.clone();
-    }
-    let c = crate::cost::estimate(key, 64, &HashMap::new()).filter(|c| c.class == "heavy");
-    seen.push((key, c.clone()));
-    if seen.len() > 64 {
-        seen.remove(0);
-    }
-    c
-}
-
-/// Registers a recipe's JSON: its key, or the error reported under `/recipe`.
-#[inline(never)]
-fn register(r: &Value, diag: &mut Diag) -> Option<&'static str> {
-    match crate::character::registry::register(&r.to_string()) {
-        Ok(k) => Some(k),
-        Err(e) => {
-            let (at, what) = e.split_once(": ").unwrap_or(("", &e));
-            diag.error(&format!("/recipe{at}"), what.to_string());
-            None
-        }
-    }
-}
-
-/// A named palette (`"palette": "sunset"` or `palette.theme`) is an error in any
-/// version: removed in 0.1.0-beta.9 (design note 38). Before 1.13 `dark` is an error
-/// naming the minor it needs.
-fn palette_gate(root: &Map<String, Value>, minor: u64, diag: &mut Diag) {
-    let check = |p: Option<&Value>, at: String, diag: &mut Diag| match p {
-        Some(Value::String(_)) => removed_material(&at, "a named palette", diag),
-        Some(Value::Object(o)) => {
-            if o.contains_key("theme") {
-                removed_material(&ptr(&at, "theme"), "palette.theme", diag);
-            }
-            if minor < 13 && o.contains_key("dark") {
-                diag.error(
-                    &ptr(&at, "dark"),
-                    "`palette.dark` needs \"fxSpec\": \"1.13\"",
-                );
-            }
-        }
-        _ => {}
-    };
-    check(root.get("palette"), "/palette".into(), diag);
-    if let Some(Value::Object(states)) = root.get("states") {
-        for (k, e) in states {
-            check(
-                e.get("palette"),
-                format!("{}/palette", ptr("/states", k)),
-                diag,
-            );
-        }
-    }
-}
-
-/// A palette object's colours (slot or role -> colour), `theme` and `dark` aside.
-#[inline(never)]
-fn palette_colours(
-    o: &Map<String, Value>,
-    at: &str,
-    diag: &mut Diag,
-) -> Vec<(String, crate::character::geom::Hsl)> {
-    let mut g = Vec::new();
-    for (k, c) in o.iter().filter(|(k, _)| *k != "theme" && *k != "dark") {
-        if let Some(c) = parse_color(c, &ptr(at, k), diag) {
-            g.push((k.clone(), crate::character::geom::hsl(c.h, c.s, c.l)));
-        }
-    }
-    g
-}
-
-/// A character's `palette` block (design notes 19, 23): slots, roles and a `dark`
-/// variant, resolved through the recipe into `palette.<slot>.*` and
-/// `palette.dark.<slot>.*` opts. A named palette was reported by `palette_gate`.
-#[inline(never)]
-fn palette_block(
-    v: &Value,
-    pp: &str,
-    mode: &str,
-    out: &mut BTreeMap<String, f64>,
-    diag: &mut Diag,
-) {
-    use crate::character::palette;
-    if v.is_string() {
-        return;
-    }
-    let Some(o) = as_object(v, pp, diag) else {
-        return;
-    };
-    let explicit = palette_colours(o, pp, diag);
-    let dark_given = match o.get("dark") {
-        Some(d) => as_object(d, &ptr(pp, "dark"), diag)
-            .map(|d| palette_colours(d, &ptr(pp, "dark"), diag))
-            .unwrap_or_default(),
-        None => Vec::new(),
-    };
-    let r = palette::with_recipe(mode, |r| {
-        let l = palette::resolve(r, &palette::expand(r, &explicit));
-        // Dark, when the file has a dark variant: its own colours, then its `dark`.
-        let d = (!dark_given.is_empty()).then(|| {
-            let mut dark = explicit.clone();
-            dark.extend(dark_given.iter().cloned());
-            palette::resolve(r, &palette::expand(r, &dark))
-        });
-        (l, d)
-    });
-    let Some((l, d)) = r else {
-        // The 1.15 characters keep their drawn colours.
-        if crate::character::bots::BOTS.contains(&mode) {
-            diag.error(pp, "this character keeps its drawn colours: no palette");
-        }
-        return;
-    };
-    for (variant, res) in [("", Some(l)), ("dark.", d)] {
-        match res {
-            Some(Ok((opts, warnings))) => {
-                for (k, x) in opts {
-                    let k = if variant.is_empty() {
-                        k
-                    } else {
-                        format!("palette.dark.{}", &k["palette.".len()..])
-                    };
-                    out.insert(k, x);
-                }
-                for (slot, why) in warnings {
-                    diag.warn(&ptr(pp, &format!("{variant}{slot}")), why);
-                }
-            }
-            Some(Err((slot, why))) => diag.error(&ptr(pp, &slot), why),
-            None => {}
-        }
     }
 }
 
@@ -1251,7 +737,7 @@ fn binding_new_name(target: &str) -> Option<String> {
 }
 
 /// Array params (1.7): `"progress": [..]` on tracking, `"segment": [..]` on
-/// stepping, `"envelope": [..]` on playing (1.9) -> the indexed engine keys
+/// stepping, `"envelope": [..]` on dune -> the indexed engine keys
 /// (`progress0..3`, `segment0..23`, `envelope0..63`).
 const ARRAY_PARAMS: [(&str, usize); 3] = [("progress", 4), ("segment", 24), ("envelope", 64)];
 
@@ -1322,7 +808,7 @@ fn migrate(mut doc: Value, diag: &mut Diag) -> Value {
 
 // ------------------------------------------------------------ resolving --
 
-const TOP_KEYS: [&str; 23] = [
+const TOP_KEYS: [&str; 19] = [
     "$schema",
     "fxSpec",
     "name",
@@ -1342,18 +828,12 @@ const TOP_KEYS: [&str; 23] = [
     "transitions",
     "rules",
     "accessibility",
-    "recipe",
-    "expression",
-    "palette",
-    "silhouette",
 ];
 /// The design keys of a block: the base (top level) and each `states` entry.
-const ENTRY_KEYS: [&str; 10] = [
+const ENTRY_KEYS: [&str; 8] = [
     "pattern",
     "speed",
     "ink",
-    "expression",
-    "palette",
     "color",
     "gradient",
     "materials",
@@ -1376,12 +856,65 @@ const REMOVED_TOP_KEYS: [&str; 2] = ["cosmetics", "wardrobe"];
 /// names one, in its base or a `states` entry, is rejected whatever its version.
 const REMOVED_PATTERNS: [&str; 1] = ["concluding"];
 
+/// Removed in FX Spec 1.15 (the 1.15 cleanup): the character family with its
+/// keys, the silhouette, and the flat signal patterns. Rejected whatever the
+/// file's version; a signal pattern names the light volume that replaces it.
+const REMOVED_1_15_KEYS: [&str; 4] = ["recipe", "expression", "palette", "silhouette"];
+const REMOVED_1_15_PATTERNS: [(&str, Option<&str>); 6] = [
+    ("signaling", Some("veil")),
+    ("waveform", Some("veil")),
+    ("scrolling", Some("veil")),
+    ("metering", Some("crystal")),
+    ("playing", Some("dune")),
+    ("silhouette", None),
+];
+
+/// Patterns added after the 1.8 floor, with the minor that added them.
+const PATTERN_SINCE: [(&str, u64); 3] = [("veil", 15), ("crystal", 15), ("dune", 15)];
+
 /// The error for a removed material (or other removed feature) at `path`.
 fn removed_material(path: &str, name: &str, diag: &mut Diag) {
     diag.error(
         path,
         format!("`{name}` was removed in 0.1.0-beta.9 (FX Spec 1.14); there is no replacement: delete it from the file"),
     );
+}
+
+/// The error for something removed in FX Spec 1.15, with its replacement if it has one.
+fn removed_1_15(path: &str, name: &str, instead: Option<&str>, diag: &mut Diag) {
+    let then = match instead {
+        Some(p) => format!("use `{p}` instead"),
+        None => "there is no replacement: delete it from the file".to_string(),
+    };
+    diag.error(
+        path,
+        format!("`{name}` was removed in 0.1.0-beta.12 (FX Spec 1.15); {then}"),
+    );
+}
+
+/// A pattern newer than the file's minor (the base and each `states` entry) is an error.
+fn pattern_gate(root: &Map<String, Value>, minor: u64, diag: &mut Diag) {
+    let check = |b: &Map<String, Value>, at: String, diag: &mut Diag| {
+        let p = b.get("pattern").and_then(Value::as_str).unwrap_or("");
+        if let Some((_, since)) = PATTERN_SINCE.iter().find(|(n, _)| *n == p) {
+            if minor < *since {
+                diag.error(
+                    &at,
+                    format!(
+                        "`pattern: {p}` needs \"fxSpec\": \"1.{since}\" (this file says 1.{minor})"
+                    ),
+                );
+            }
+        }
+    };
+    check(root, "/pattern".into(), diag);
+    if let Some(Value::Object(states)) = root.get("states") {
+        for (k, e) in states {
+            if let Value::Object(e) = e {
+                check(e, format!("{}/pattern", ptr("/states", k)), diag);
+            }
+        }
+    }
 }
 
 /// Every key a material section accepts: its numeric keys plus its word keys.
@@ -1430,10 +963,6 @@ const SINCE: &[(&str, u64)] = &[
     ("accessibility.name", 9),
     ("accessibility.states", 9),
     ("accessibility.announce", 9),
-    ("recipe", 12),
-    ("expression", 12),
-    ("palette", 12),
-    ("silhouette", 13),
 ];
 
 /// A `transitions` entry's keys (1.9).
@@ -1664,20 +1193,6 @@ fn resolve_block(
 ) -> Block {
     let at = |k: &str| ptr(prefix, k);
     let mut out: BTreeMap<String, f64> = BTreeMap::new();
-    // A character's palette is drawn, not tinted: the frame-wide colour and
-    // gradient would repaint its eyes and screen too. `params.hue` turns the shell.
-    if object == Some("character") {
-        for sec in ["color", "gradient"] {
-            if b.contains_key(sec) {
-                diag.error(
-                    &at(sec),
-                    format!(
-                        "`{sec}` doesn't apply to a character; set `params.hue` to turn its colour"
-                    ),
-                );
-            }
-        }
-    }
     // Whether `colorMix` was *explicitly* set to a non-zero amount. A bare
     // `value` (implicit mix 1) or `mix: 0` only supplies the colour a
     // `colorMix` binding mixes toward -- not a conflicting static amount.
@@ -1690,6 +1205,8 @@ fn resolve_block(
         diag.error(&at("pattern"), "missing `pattern`");
     } else if REMOVED_PATTERNS.contains(&state) {
         removed_material(&at("pattern"), state, diag);
+    } else if let Some((_, instead)) = REMOVED_1_15_PATTERNS.iter().find(|(p, _)| *p == state) {
+        removed_1_15(&at("pattern"), state, *instead, diag);
     } else if family.is_none() {
         diag.error(&at("pattern"), format!("unknown pattern `{state}`"));
     }
@@ -1724,38 +1241,6 @@ fn resolve_block(
             out.insert("ink".to_string(), x);
         }
     }
-    // 1.12: a character's expression (design note 16), as its five weights.
-    if let Some(v) = b.get("expression") {
-        let names: Vec<&str> = crate::character::rig::EXPRESSIONS
-            .iter()
-            .map(|(n, _)| *n)
-            .collect();
-        match (object, v.as_str()) {
-            (Some(o), _) if o != "character" => {
-                diag.error(&at("expression"), "`expression` is for `object: character`")
-            }
-            (_, Some(name)) if name == "none" || names.contains(&name) => {
-                for (n, key) in crate::character::rig::EXPRESSIONS {
-                    out.insert(key.to_string(), if n == name { 1.0 } else { 0.0 });
-                }
-            }
-            (_, Some(name)) => {
-                let mut known = names.clone();
-                known.push("none");
-                let hint = suggest(name, &known)
-                    .map(|s| format!(" -- did you mean `{s}`?"))
-                    .unwrap_or_default();
-                diag.error(
-                    &at("expression"),
-                    format!(
-                        "unknown expression `{name}` ({}, none){hint}",
-                        names.join(", ")
-                    ),
-                )
-            }
-            (_, None) => diag.error(&at("expression"), "expected an expression name"),
-        }
-    }
     let resolved = if family.is_some() {
         crate::resolved_opts(state.to_string(), size)
     } else {
@@ -1766,16 +1251,6 @@ fn resolve_block(
         .map(|r| r.mode.clone())
         .unwrap_or_default();
 
-    // 1.12: a character's palette, in part (design note 19); 1.13: roles and a `dark`
-    // variant (design note 23).
-    if let Some(v) = b.get("palette") {
-        let pp = at("palette");
-        if object != Some("character") {
-            diag.error(&pp, "`palette` is for `object: character`");
-        } else {
-            palette_block(v, &pp, &mode, &mut out, diag);
-        }
-    }
     // Color.
     if let Some(c) = b.get("color") {
         let cp = at("color");
@@ -1974,11 +1449,7 @@ fn resolve_block(
                 .as_ref()
                 .map(|r| r.opts.keys().cloned().collect())
                 .unwrap_or_default();
-            let gains = crate::character::registry::get(&mode)
-                .map(|r| r.gains())
-                .unwrap_or_default();
             let mut allowed: Vec<&str> = mode_params(&mode).to_vec();
-            allowed.extend(gains.iter().map(String::as_str));
             allowed.extend(SHARED_PARAMS);
             allowed.extend(preset_keys.iter().map(String::as_str));
             for (k, v) in o {
@@ -1988,17 +1459,6 @@ fn resolve_block(
                     diag.error(
                         &path,
                         format!("`{key}` belongs in `{owner}`, not in params"),
-                    );
-                    continue;
-                }
-                if key.starts_with("palette.") {
-                    diag.error(&path, format!("`{key}` is set by `palette`; write \"palette\": {{ \"<slot>\": \"#RRGGBB\" }} instead"));
-                    continue;
-                }
-                if key.starts_with("expression") {
-                    diag.error(
-                        &path,
-                        format!("`{key}` is set by `expression`; write \"expression\": \"happy\" instead"),
                     );
                     continue;
                 }
@@ -2012,11 +1472,6 @@ fn resolve_block(
                         &path,
                         format!("`{key}` is a runtime input, not design: {why}{hint}"),
                     );
-                    continue;
-                }
-                // The eye styles were removed in 0.1.0-beta.9 (design note 38).
-                if object == Some("character") && key == "eyeStyle" {
-                    removed_material(&path, "params.eyeStyle", diag);
                     continue;
                 }
                 if family.is_some() && !allowed.contains(&key) && !indexed_param(&mode, key) {
@@ -2365,6 +1820,8 @@ pub fn resolve_full(
     for k in root.keys() {
         if REMOVED_TOP_KEYS.contains(&k.as_str()) {
             removed_material(&ptr("", k), k, &mut diag);
+        } else if REMOVED_1_15_KEYS.contains(&k.as_str()) {
+            removed_1_15(&ptr("", k), k, None, &mut diag);
         } else if !TOP_KEYS.contains(&k.as_str()) {
             diag.unknown(strict, &ptr("", k), k, &TOP_KEYS);
         }
@@ -2376,26 +1833,15 @@ pub fn resolve_full(
             }
         }
     }
-    // Named palettes were removed in 0.1.0-beta.9 (design note 38); a dark variant
-    // (design note 23) needs 1.13.
-    palette_gate(root, minor, &mut diag);
-    // 1.12: a character recipe carried in the file (design note 12).
-    if let Some(r) = root.get("recipe").cloned() {
-        let object = root
-            .get("object")
-            .and_then(Value::as_str)
-            .map(str::to_string);
-        use_recipe(root, &r, object.as_deref(), &mut diag);
-    }
-    // 1.13: the silhouette pattern and its shape (design note 32).
-    let silhouette_id = silhouette(root, minor, &mut diag);
+    // 1.15: the light volumes.
+    pattern_gate(root, minor, &mut diag);
 
     // File-wide: object and size.
     let object = root.get("object").and_then(Value::as_str);
     match object {
         None => diag.error(
             "/object",
-            "missing `object` (orb, signal, ring, beacon, core or character)",
+            "missing `object` (orb, signal, ring, beacon or core)",
         ),
         // SinuaEdge was removed in 0.1.0-beta.8 (design note 9): a file that still names it
         // fails loudly, whatever its version, rather than drawing nothing.
@@ -2404,14 +1850,10 @@ pub fn resolve_full(
             "`object: edge` was removed in 0.1.0-beta.8 (FX Spec 1.12); there is no replacement: \
              draw the screen-edge glow in the app",
         ),
-        Some(o) if !["orb", "signal", "ring", "beacon", "core", "character"].contains(&o) => {
+        Some("character") => removed_1_15("/object", "object: character", None, &mut diag),
+        Some(o) if !["orb", "signal", "ring", "beacon", "core"].contains(&o) => {
             diag.error("/object", format!("unknown object `{o}`"))
         }
-        // The character family arrived in 1.11 (design-07); an older file can't name it.
-        Some("character") if minor < CHARACTER_SINCE => diag.error(
-            "/object",
-            format!("`object: character` needs \"fxSpec\": \"1.{CHARACTER_SINCE}\" (this file says 1.{minor})"),
-        ),
         _ => {}
     }
     let size = match root.get("size") {
@@ -2450,6 +1892,8 @@ pub fn resolve_full(
                             &ptr(&prefix, k),
                             format!("`{k}` is file-wide; set it at the top level"),
                         );
+                    } else if REMOVED_1_15_KEYS.contains(&k.as_str()) {
+                        removed_1_15(&ptr(&prefix, k), k, None, &mut diag);
                     } else if !ENTRY_KEYS.contains(&k.as_str()) {
                         diag.unknown(strict, &ptr(&prefix, k), k, &ENTRY_KEYS);
                     }
@@ -2585,27 +2029,6 @@ pub fn resolve_full(
             res.inactive_bindings.retain(|t| *t != key);
         }
         res.disabled_materials = perf.disable;
-        // A character drawn with grain or soft layers (design note 22) sheds them
-        // under low power, whatever the file says; plain characters are untouched.
-        let rich =
-            crate::character::palette::with_recipe(&block.state, |r| r.rich()).unwrap_or(false);
-        if rich {
-            out.insert("grain".into(), 0.0);
-            out.insert("shading".into(), 0.0);
-            for m in ["grain", "shading"] {
-                res.disabled_materials.push(m.to_string());
-            }
-        }
-    }
-    if block.state == "silhouette" {
-        if let Some(id) = silhouette_id {
-            out.insert("silhouetteId".into(), id);
-        }
-        // Low power draws a prefix of the dots: the order is blue noise, so the spread
-        // holds and the cost halves (design note 32).
-        if low_power {
-            out.insert("silhouetteDots".into(), 800.0);
-        }
     }
 
     // Transitions (1.9): validated here; views read them per state change
@@ -2829,7 +2252,7 @@ mod tests {
         assert!(errors(&missing).iter().any(|d| d.path == "/pattern"));
         // A newer 1.x file: unknown keys are warnings, the rest renders.
         let newer = resolve(
-            r##"{ "fxSpec": "1.15", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
+            r##"{ "fxSpec": "1.16", "object": "orb", "pattern": "working", "timeline": {}, "layers": [] }"##,
         );
         assert!(newer.ok, "{:?}", newer.diagnostics);
         assert_eq!(warnings(&newer).len(), 2);
@@ -2913,8 +2336,8 @@ mod tests {
     #[test]
     fn runtime_and_section_keys_are_rejected_in_params() {
         let r = resolve(
-            r##"{ "fxSpec": "1.8", "object": "signal", "pattern": "signaling",
-              "params": { "audioLevel": 0.5, "pointerX": 3, "colorHue": 10, "glowStrength": 1, "barCount": 12 } }"##,
+            r##"{ "fxSpec": "1.8", "object": "orb", "pattern": "working",
+              "params": { "audioLevel": 0.5, "pointerX": 3, "colorHue": 10, "glowStrength": 1, "orbitN": 3 } }"##,
         );
         let e = errors(&r);
         assert!(e
@@ -2927,7 +2350,7 @@ mod tests {
         assert!(e
             .iter()
             .any(|d| d.path == "/params/glowStrength" && d.message.contains("/materials/glow")));
-        assert_eq!(r.overrides["barCount"], 12.0);
+        assert_eq!(r.overrides["orbitN"], 3.0);
     }
 
     #[test]
@@ -2983,11 +2406,9 @@ mod tests {
             ("chladni", include_str!("orbs/modes/chladni.rs")),
             ("eclipse", include_str!("orbs/modes/eclipse.rs")),
             ("hush", include_str!("orbs/modes/hush.rs")),
-            ("bar", include_str!("signal/modes/bar.rs")),
-            ("waveform", include_str!("signal/modes/waveform.rs")),
-            ("scroll", include_str!("signal/modes/scroll.rs")),
-            ("matrix", include_str!("signal/modes/matrix.rs")),
-            ("playback", include_str!("signal/modes/playback.rs")),
+            ("veil", include_str!("signal/modes/veil.rs")),
+            ("crystal", include_str!("signal/modes/crystal.rs")),
+            ("dune", include_str!("signal/modes/dune.rs")),
             ("arc", include_str!("ring/modes/arc.rs")),
             ("gauge", include_str!("ring/modes/gauge.rs")),
             ("nested", include_str!("ring/modes/nested.rs")),
@@ -3004,51 +2425,8 @@ mod tests {
             // Characters are recipes (design note 11): the reader, the rig, the
             // turn and the part files each one uses; the keys a recipe names
             // itself (`"gain": "flutterGain"`) are checked below.
-            ("buzzy", include_str!("character/recipe.rs")),
-            ("buzzy", include_str!("character/rig.rs")),
-            ("buzzy", include_str!("character/turn.rs")),
-            ("buzzy", include_str!("character/parts/common.rs")),
-            ("buzzy", include_str!("character/parts/ranger.rs")),
-            ("hum", include_str!("character/recipe.rs")),
-            ("hum", include_str!("character/rig.rs")),
-            ("hum", include_str!("character/turn.rs")),
-            ("hum", include_str!("character/parts/common.rs")),
-            ("hum", include_str!("character/parts/mic.rs")),
-            ("wisp", include_str!("character/recipe.rs")),
-            ("wisp", include_str!("character/rig.rs")),
-            ("wisp", include_str!("character/turn.rs")),
-            ("wisp", include_str!("character/parts/common.rs")),
-            ("wisp", include_str!("character/parts/spirit.rs")),
-            ("chirp", include_str!("character/recipe.rs")),
-            ("chirp", include_str!("character/rig.rs")),
-            ("chirp", include_str!("character/turn.rs")),
-            ("chirp", include_str!("character/parts/common.rs")),
-            ("chirp", include_str!("character/parts/bird.rs")),
             // Cuppa and Bean also use spirit.rs's mouth and sparkles, which read no
             // opts (its one read, `curlGain`, is the spirit part's).
-            ("cuppa", include_str!("character/recipe.rs")),
-            ("cuppa", include_str!("character/rig.rs")),
-            ("cuppa", include_str!("character/turn.rs")),
-            ("cuppa", include_str!("character/parts/common.rs")),
-            ("cuppa", include_str!("character/parts/mic.rs")),
-            ("cuppa", include_str!("character/parts/steam.rs")),
-            ("bean", include_str!("character/recipe.rs")),
-            ("bean", include_str!("character/rig.rs")),
-            ("bean", include_str!("character/turn.rs")),
-            ("bean", include_str!("character/parts/common.rs")),
-            ("bean", include_str!("character/parts/bird.rs")),
-            ("beep", include_str!("character/recipe.rs")),
-            ("beep", include_str!("character/rig.rs")),
-            ("beep", include_str!("character/turn.rs")),
-            ("beep", include_str!("character/parts/common.rs")),
-            ("beep", include_str!("character/parts/arms.rs")),
-            ("beep", include_str!("character/parts/mic.rs")),
-            ("beep", include_str!("character/parts/ranger.rs")),
-            ("beep", include_str!("character/parts/bird.rs")),
-            // The 1.15 characters: their own files (and the rig keys their pose uses,
-            // listed in BOT_PARAMS by hand: the rig reads more than they draw).
-            ("whirr", include_str!("character/bots/hover.rs")),
-            ("clank", include_str!("character/bots/walker.rs")),
         ];
         for (mode, src) in sources {
             let code = src.split("#[cfg(test)]").next().unwrap();
@@ -3069,58 +2447,9 @@ mod tests {
                 );
             }
         }
-        // The opts a recipe names (a gain a part reads by name).
-        for (id, text) in crate::character::recipe::RECIPES {
-            fn gains(v: &serde_json::Value, out: &mut Vec<String>) {
-                match v {
-                    serde_json::Value::Object(o) => {
-                        for (k, x) in o {
-                            match x.as_str() {
-                                Some(s) if k == "gain" => out.push(s.to_string()),
-                                _ => gains(x, out),
-                            }
-                        }
-                    }
-                    serde_json::Value::Array(a) => a.iter().for_each(|x| gains(x, out)),
-                    _ => {}
-                }
-            }
-            let mut keys = Vec::new();
-            gains(&serde_json::from_str(text).unwrap(), &mut keys);
-            for key in keys {
-                assert!(
-                    mode_params(id).contains(&key.as_str()),
-                    "{id}'s recipe reads `{key}` but the FX Spec params table doesn't list it"
-                );
-            }
-        }
     }
 
-    const EXAMPLES: [(&str, &str); 16] = [
-        (
-            "remix-latte",
-            include_str!("../../../spec/examples/remix-latte.fxspec.json"),
-        ),
-        (
-            "rich-bean",
-            include_str!("../../../spec/examples/rich-bean.fxspec.json"),
-        ),
-        (
-            "rich-buzzy",
-            include_str!("../../../spec/examples/rich-buzzy.fxspec.json"),
-        ),
-        (
-            "coffee-shop",
-            include_str!("../../../spec/examples/coffee-shop.fxspec.json"),
-        ),
-        (
-            "custom-character",
-            include_str!("../../../spec/examples/custom-character.fxspec.json"),
-        ),
-        (
-            "buzzy-assistant",
-            include_str!("../../../spec/examples/buzzy-assistant.fxspec.json"),
-        ),
+    const EXAMPLES: [(&str, &str); 9] = [
         (
             "voice-assistant-glowing",
             include_str!("../../../spec/examples/voice-assistant-glowing.fxspec.json"),
@@ -3128,10 +2457,6 @@ mod tests {
         (
             "orb-brand-fixed",
             include_str!("../../../spec/examples/orb-brand-fixed.fxspec.json"),
-        ),
-        (
-            "signal-matrix",
-            include_str!("../../../spec/examples/signal-matrix.fxspec.json"),
         ),
         (
             "ring-tracking-gradient",
@@ -3252,10 +2577,9 @@ mod tests {
     #[test]
     fn a_1_13_file_without_states_takes_the_voice_profile_and_a_1_12_one_keeps_its_base() {
         // B2 (design note 28): with no `states`, every voice state resolved to the base
-        // design, so a recipe file never reacted to the voice.
-        let file = |v: &str| {
-            format!(r##"{{ "fxSpec": "{v}", "object": "character", "pattern": "buzzy" }}"##)
-        };
+        // design, so a file never reacted to the voice.
+        let file =
+            |v: &str| format!(r##"{{ "fxSpec": "{v}", "object": "orb", "pattern": "glowing" }}"##);
         let states = ["idle", "listening", "thinking", "speaking"];
         let new: Vec<_> = states
             .iter()
@@ -3275,12 +2599,12 @@ mod tests {
             }
         }
         // The base (no state) never takes a profile; a key that isn't a voice state warns.
-        assert!(!resolve(&file("1.13")).overrides.contains_key("look"));
+        assert!(!resolve(&file("1.13")).overrides.contains_key("ink"));
         let odd = resolve_with(&file("1.13"), Some("dancing"), &HashMap::new());
         assert!(odd.state_key.is_empty());
         // A partial `states`: the missing voice states take the profile, without a warning.
-        let partial = r##"{ "fxSpec": "1.13", "object": "character", "pattern": "buzzy",
-            "states": { "idle": { "params": { "turn": 0 } } } }"##;
+        let partial = r##"{ "fxSpec": "1.13", "object": "orb", "pattern": "glowing",
+            "states": { "idle": { "speed": 1 } } }"##;
         let l = resolve_with(partial, Some("listening"), &HashMap::new());
         assert!(
             l.diagnostics.is_empty() && l.state_key == "listening",
@@ -3319,10 +2643,10 @@ mod tests {
     fn v1_8_examples_resolve_identically() {
         // The lock for the runtime that ships, and since FLOOR_MINOR the only
         // one: 1.8 is the oldest minor this runtime reads, so there are no older
-        // wordings left to hold (release decision 0.1). All 13
-        // examples declare 1.8. Captured once 1.8 was stable;
+        // wordings left to hold (release decision 0.1). All
+        // examples declare 1.8 (9 since the 1.15 cleanup). Captured once 1.8 was stable;
         // a later minor adds its own.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.8-resolved.json"), 10);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.8-resolved.json"), 9);
     }
 
     /// 0.1.0-beta.9 (design note 38): a file using a removed material is rejected,
@@ -3386,21 +2710,21 @@ mod tests {
     fn v1_9_examples_resolve_identically() {
         // 1.9 shipped in 0.1.0-beta.6. This holds the 1.9 runtime's lock (minus what
         // 0.1.0-beta.9 removed: particles, liquid, holographic; design note 38).
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.9-resolved.json"), 10);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.9-resolved.json"), 9);
     }
 
     #[test]
     fn v1_10_examples_resolve_identically() {
         // 1.10 shipped in 0.1.0-beta.7; 1.11 adds the `character` object and
         // must not change how any 1.10 file resolves.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.10-resolved.json"), 10);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.10-resolved.json"), 9);
     }
 
     #[test]
     fn v1_11_examples_resolve_identically() {
         // 1.11 is the runtime 0.1.0-beta.8's characters were made with; 1.12 adds
         // `recipe` and must not change how any 1.11 file resolves.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.11-resolved.json"), 11);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.11-resolved.json"), 9);
     }
 
     #[test]
@@ -3408,14 +2732,22 @@ mod tests {
         // 1.12 adds `recipe`, `expression` and `palette`; 1.13 must not change how a 1.12 file
         // resolves. (Until 0.1.0-beta.9 no test read this lock, and it went stale: the
         // custom-character example's recipe text changed, so its `recipe:pip:<hash>` name did.)
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.12-resolved.json"), 14);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.12-resolved.json"), 9);
     }
 
     #[test]
     fn v1_13_examples_resolve_identically() {
         // 1.13 adds `silhouette`, palette roles and dark variants; 1.14 (the 0.1.0-beta.9
         // cleanup) adds no key and must not change how a 1.13 file resolves.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.13-resolved.json"), 16);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.13-resolved.json"), 9);
+    }
+
+    #[test]
+    fn v1_14_examples_resolve_identically() {
+        // 1.14 (the 0.1.0-beta.9 cleanup) shipped in 0.1.0-beta.9; 1.15 adds the light volumes
+        // and must not change how a 1.14 file resolves. (The 1.15 cleanup rewrote every lock
+        // without the examples it removed: the character ones and signal-matrix.)
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.14-resolved.json"), 9);
     }
 
     /// Every lock but the current runtime's (which `tests/fx_spec_lock.rs` holds) is read by a
@@ -3435,308 +2767,91 @@ mod tests {
         }
     }
 
-    /// A file carrying `recipe` (Chirp's own, renamed `id`, plus `extra` keys).
-    fn recipe_file(minor: &str, id: &str, extra: &str) -> String {
-        let chirp = crate::character::recipe::RECIPES
-            .iter()
-            .find(|(n, _)| *n == "chirp")
-            .unwrap()
-            .1
-            .replacen("\"id\":\"chirp\"", &format!("\"id\":\"{id}\"{extra}"), 1);
-        format!(
-            r##"{{ "fxSpec": "{minor}", "object": "character", "pattern": "{id}", "recipe": {chirp},
-                  "states": {{ "speaking": {{}}, "listening": {{}} }} }}"##
-        )
-    }
-
+    /// FX Spec 1.15: the character family, the silhouette and the flat signal patterns are
+    /// errors in any version; a signal pattern names its replacement.
     #[test]
-    fn a_recipe_in_the_file_draws_like_the_built_in_it_copies() {
-        let r = resolve(&recipe_file("1.12", "copy", ""));
-        assert!(r.ok, "{:?}", r.diagnostics);
-        assert!(r.state.starts_with("recipe:copy:"), "{}", r.state);
-        let o: HashMap<String, f64> = [
-            ("mouthTalk", 1.0),
-            ("audioLevel", 0.7),
-            ("turnYaw", 0.5),
-            ("flutterGain", 0.3),
-        ]
-        .into_iter()
-        .map(|(k, v)| (k.to_string(), v))
-        .collect();
-        for size in [20, 32, 64] {
-            for t in [0.0, 0.7, 2.3] {
-                let got = crate::frame_with_overrides(r.state.clone(), size, t, o.clone());
-                let want = crate::frame_with_overrides("chirp".into(), size, t, o.clone());
-                assert!(got.is_some());
-                assert_eq!(format!("{got:?}"), format!("{want:?}"), "{size} {t}");
-            }
-        }
-        // The same recipe again: the same key.
-        assert_eq!(resolve(&recipe_file("1.12", "copy", "")).state, r.state);
-    }
-
-    #[test]
-    fn a_recipe_needs_1_12_a_character_and_its_own_id() {
-        let old = resolve(&recipe_file("1.11", "copy", ""));
-        assert!(old
-            .diagnostics
-            .iter()
-            .any(|d| d.path == "/recipe" && d.message.contains("needs \"fxSpec\": \"1.12\"")));
-        let builtin = resolve(&recipe_file("1.12", "chirp", ""));
-        assert!(builtin.diagnostics.iter().any(|d| d.path == "/recipe/id"));
-        let orb = resolve(
-            r##"{ "fxSpec": "1.12", "object": "orb", "pattern": "working", "recipe": {} }"##,
-        );
-        assert!(orb.diagnostics.iter().any(|d| d.path == "/recipe"));
-        let unused = resolve(&recipe_file("1.12", "copy", "").replacen(
-            "\"pattern\": \"copy\"",
-            "\"pattern\": \"buzzy\"",
-            1,
-        ));
-        assert!(unused.ok);
-        assert!(warnings(&unused).iter().any(|d| d.path == "/recipe/id"));
-    }
-
-    #[test]
-    fn recipe_errors_and_limits_point_into_the_recipe() {
-        let cases = [
-            (
-                "\"segments\":10",
-                "\"segments\":1000",
-                "/recipe/parts/2/segments",
-            ),
-            ("\"count\":3", "\"count\":99", "/recipe/parts/7/count"),
-            (
-                "\"segments\":10",
-                "\"segments\":10,\"wobble\":1",
-                "/recipe/parts/2/wobble",
-            ),
-            (
-                "\"stagger\":6.0",
-                "\"stagger\":6000.0",
-                "/recipe/parts/7/stagger",
-            ),
-            (
-                "\"spread\":[-9.0,0.0,9.0]",
-                &format!("\"spread\":[{}0]", "1,".repeat(40)),
-                "/recipe/parts/2/spread",
-            ),
-            (
-                "\"ellipse\":[100.0,110.0,58.0,56.0,0.0,64]",
-                "\"ellipse\":[100.0,110.0,58.0,56.0,0.0,4096]",
-                "/recipe/parts/3/shape",
-            ),
-        ];
-        for (from, to, path) in cases {
-            let f = recipe_file("1.12", "bad", "").replacen(from, to, 1);
-            let r = resolve(&f);
-            assert!(!r.ok, "{to}");
+    fn the_1_15_removals_are_errors_in_any_version() {
+        for (minor, pattern, instead) in [
+            ("1.8", "waveform", "veil"),
+            ("1.10", "signaling", "veil"),
+            ("1.13", "scrolling", "veil"),
+            ("1.14", "metering", "crystal"),
+            ("1.15", "playing", "dune"),
+        ] {
+            let r = resolve(&format!(
+                r##"{{ "fxSpec": "{minor}", "object": "signal", "pattern": "{pattern}" }}"##
+            ));
+            assert!(!r.ok, "{pattern} in {minor}");
             assert!(
-                errors(&r).iter().any(|d| d.path.starts_with(path)),
-                "{to}: {:?}",
-                r.diagnostics
+                errors(&r).iter().any(|d| d.path == "/pattern"
+                    && d.message
+                        .contains("removed in 0.1.0-beta.12 (FX Spec 1.15)")
+                    && d.message.contains(&format!("use `{instead}`"))),
+                "{pattern}: {:?}",
+                errors(&r)
             );
         }
-        let huge = recipe_file(
-            "1.12",
-            "huge",
-            &format!(",\"$comment\":\"{}\"", "x".repeat(70_000)),
+        let sil = resolve(
+            r##"{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette", "silhouette": "helmet" }"##,
         );
-        assert!(errors(&resolve(&huge))
+        assert!(errors(&sil)
             .iter()
-            .any(|d| d.path == "/recipe" && d.message.contains("at most")));
-    }
-
-    #[test]
-    fn a_recipe_with_a_path_body_resolves_and_its_path_errors_point_into_it() {
-        let ell = "\"ellipse\":[100.0,110.0,58.0,56.0,0.0,64]";
-        let path = "\"path\":\"M44 110 C44 40 156 40 156 110 C156 170 44 170 44 110 Z\"";
-        let r = resolve(&recipe_file("1.12", "blob", "").replacen(ell, path, 1));
-        assert!(r.ok, "{:?}", r.diagnostics);
-        assert!(crate::frame_with_overrides(r.state.clone(), 64, 0.5, HashMap::new()).is_some());
-        let bad =
-            resolve(&recipe_file("1.12", "blob", "").replacen(ell, "\"path\":\"M44 110 Q1 2\"", 1));
-        assert!(
-            errors(&bad)
-                .iter()
-                .any(|d| d.path == "/recipe/parts/3/shape/path" && d.message.starts_with("at 12:")),
-            "{:?}",
-            bad.diagnostics
-        );
-    }
-
-    #[test]
-    fn a_recipe_takes_the_shared_profile_or_a_built_in_one_and_its_own_gains() {
-        let shared = resolve_with(
-            &recipe_file("1.12", "plain", ""),
-            Some("speaking"),
-            &HashMap::new(),
-        );
-        assert!(shared.ok, "{:?}", shared.diagnostics);
-        assert_eq!(
-            shared.overrides["squashGain"], 0.045,
-            "the shared language (buzzy's numbers)"
-        );
-        assert!(!shared.overrides.contains_key("flutterGain"));
-        let chirpy = resolve_with(
-            &recipe_file("1.12", "chirpy", ",\"profile\":\"chirp\""),
-            Some("speaking"),
-            &HashMap::new(),
-        );
-        assert_eq!(
-            chirpy.overrides["flutterGain"], 0.3,
-            "chirp's own state language"
-        );
-        // Its own gain is a param; another character's isn't.
-        let f = recipe_file("1.12", "plain", "").replacen(
-            "\"pattern\": \"plain\"",
-            "\"pattern\": \"plain\", \"params\": { \"flutterGain\": 0.2, \"curlGain\": 1 }",
-            1,
-        );
-        let r = resolve(&f);
-        assert!(!r.ok);
-        assert!(
-            errors(&r).iter().all(|d| d.path == "/params/curlGain"),
-            "{:?}",
-            r.diagnostics
-        );
-    }
-
-    #[test]
-    fn expression_sets_a_characters_weights_in_the_base_and_each_state() {
-        let f = |minor: &str, extra: &str| {
-            format!(
-                r##"{{ "fxSpec": "{minor}", "object": "character", "pattern": "cuppa", "expression": "happy"{extra},
-                    "states": {{ "speaking": {{ "expression": "sad" }}, "idle": {{ "expression": null }} }} }}"##
-            )
-        };
-        let base = resolve(&f("1.12", ""));
-        assert!(base.ok, "{:?}", base.diagnostics);
-        assert_eq!(base.overrides["expressionHappy"], 1.0);
-        assert_eq!(base.overrides["expressionSad"], 0.0);
-        let speaking = resolve_with(&f("1.12", ""), Some("speaking"), &HashMap::new());
-        assert_eq!(speaking.overrides["expressionSad"], 1.0);
-        assert_eq!(speaking.overrides["expressionHappy"], 0.0);
-        let idle = resolve_with(&f("1.12", ""), Some("idle"), &HashMap::new());
-        assert!(
-            !idle.overrides.contains_key("expressionHappy"),
-            "null removes it"
-        );
-        // A 1.11 file can't say it.
-        assert!(resolve(&f("1.11", ""))
-            .diagnostics
+            .any(|d| d.path == "/pattern" && d.message.contains("no replacement")));
+        assert!(errors(&sil)
             .iter()
-            .any(|d| d.path == "/expression" && d.message.contains("1.12")));
-        // An unknown name, a non-character, and the weights in params.
-        let typo = resolve(
-            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "bean", "expression": "hapy" }"##,
-        );
-        assert!(errors(&typo)
-            .iter()
-            .any(|d| d.path == "/expression" && d.message.contains("did you mean `happy`")));
-        let orb = resolve(
-            r##"{ "fxSpec": "1.12", "object": "orb", "pattern": "working", "expression": "happy" }"##,
-        );
-        assert!(errors(&orb).iter().any(|d| d.path == "/expression"));
-        let raw = resolve(
-            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "bean", "params": { "expressionSad": 1 } }"##,
-        );
-        assert!(errors(&raw)
-            .iter()
-            .any(|d| d.path == "/params/expressionSad" && d.message.contains("expression")));
-        assert_eq!(
-            crate::expression_overrides("sleepy".into()).unwrap()["expressionSleepy"],
-            1.0
-        );
-        assert!(crate::expression_overrides("grumpy".into()).is_none());
-    }
-
-    #[test]
-    fn palette_repaints_a_characters_slots_in_the_base_and_each_state() {
-        let f = |minor: &str| {
-            format!(
+            .any(|d| d.path == "/silhouette" && d.message.contains("removed in 0.1.0-beta.12")));
+        for minor in ["1.11", "1.14", "1.15"] {
+            let c = resolve(&format!(
                 r##"{{ "fxSpec": "{minor}", "object": "character", "pattern": "buzzy",
-                    "palette": {{ "body": "#E63946" }},
-                    "states": {{ "listening": {{ "palette": {{ "accent": "#FFFFFF" }} }} }} }}"##
-            )
-        };
-        let base = resolve(&f("1.12"));
-        assert!(base.ok, "{:?}", base.diagnostics);
-        assert_eq!(base.overrides["palette.body.w"], 1.0);
-        assert!(
-            base.overrides.contains_key("palette.bodyDark.l"),
-            "the tones follow"
+                      "expression": "happy", "palette": {{ "shell": "#ff0000" }},
+                      "states": {{ "idle": {{ "expression": "sleepy" }} }} }}"##
+            ));
+            assert!(!c.ok, "{minor}");
+            let e = errors(&c);
+            for at in [
+                "/object",
+                "/expression",
+                "/palette",
+                "/states/idle/expression",
+            ] {
+                assert!(
+                    e.iter()
+                        .any(|d| d.path == at && d.message.contains("removed in 0.1.0-beta.12")),
+                    "{minor} {at}: {e:?}"
+                );
+            }
+        }
+        let recipe = resolve(
+            r##"{ "fxSpec": "1.12", "object": "orb", "pattern": "glowing", "recipe": {} }"##,
         );
-        let listening = resolve_with(&f("1.12"), Some("listening"), &HashMap::new());
-        assert_eq!(listening.overrides["palette.accent.l"], 1.0);
-        assert_eq!(
-            listening.overrides["palette.body.w"], 1.0,
-            "merged over the base"
-        );
-        let unset = resolve_with(
-            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "buzzy", "palette": { "body": "#E63946" },
-                "states": { "listening": { "palette": { "body": null } } } }"##,
-            Some("listening"),
-            &HashMap::new(),
-        );
-        assert!(unset.ok, "{:?}", unset.diagnostics);
-        assert!(
-            !unset.overrides.contains_key("palette.body.w"),
-            "null removes a slot"
-        );
-        assert!(resolve(&f("1.11"))
-            .diagnostics
+        assert!(errors(&recipe)
             .iter()
-            .any(|d| d.path == "/palette" && d.message.contains("1.12")));
-        let typo = resolve(
-            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "cuppa", "palette": { "mugg": "#000000" } }"##,
-        );
-        assert!(errors(&typo)
-            .iter()
-            .any(|d| d.path == "/palette/mugg" && d.message.contains("did you mean `mug`")));
-        let orb = resolve(
-            r##"{ "fxSpec": "1.12", "object": "orb", "pattern": "working", "palette": { "shell": "#000000" } }"##,
-        );
-        assert!(errors(&orb).iter().any(|d| d.path == "/palette"));
-        let raw = resolve(
-            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "bean", "params": { "palette.body.w": 1 } }"##,
-        );
-        assert!(errors(&raw)
-            .iter()
-            .any(|d| d.path.starts_with("/params/palette.")));
-        // Eyes given dark on a dark bean: kept, with a warning.
-        let dark = resolve(
-            r##"{ "fxSpec": "1.12", "object": "character", "pattern": "bean", "palette": { "body": "#2B1A12", "eyes": "#111111" } }"##,
-        );
-        assert!(warnings(&dark).iter().any(|d| d.path == "/palette/eyes"));
-        // The view's entry point says the same.
-        let v = crate::palette_overrides("bean".into(), r##"{ "body": "#2B1A12" }"##.into());
-        assert!(v.diagnostics.is_empty() && v.overrides["palette.eyes.l"] > 0.8);
+            .any(|d| d.path == "/recipe" && d.message.contains("removed in 0.1.0-beta.12")));
     }
 
+    /// The light volumes are 1.15 patterns: an older file can't name them, in its base or a state.
     #[test]
-    fn a_palette_change_blends_the_colour_without_a_hue_sweep() {
-        let side = |o: &[(&str, f64)]| crate::transition::TransitionSide {
-            state: "buzzy".into(),
-            speed: 1.0,
-            overrides: o.iter().map(|(k, v)| (k.to_string(), *v)).collect(),
-        };
-        let from = side(&[]);
-        let to = side(&[
-            ("palette.shell.h", 350.0),
-            ("palette.shell.s", 0.8),
-            ("palette.shell.l", 0.5),
-            ("palette.shell.w", 1.0),
-        ]);
-        let m = crate::transition::mix(&from, &to, 64, 0.5, "linear").unwrap();
-        assert_eq!(
-            m.overrides["palette.shell.h"], 350.0,
-            "the colour itself doesn't move"
+    fn the_light_volumes_need_1_15() {
+        for p in ["veil", "crystal", "dune"] {
+            let old = resolve(&format!(
+                r##"{{ "fxSpec": "1.14", "object": "signal", "pattern": "{p}" }}"##
+            ));
+            assert!(!old.ok, "{p}");
+            assert!(errors(&old)
+                .iter()
+                .any(|d| d.path == "/pattern" && d.message.contains("needs \"fxSpec\": \"1.15\"")));
+            let new = resolve(&format!(
+                r##"{{ "fxSpec": "1.15", "object": "signal", "pattern": "{p}" }}"##
+            ));
+            assert!(new.ok, "{p}: {:?}", new.diagnostics);
+        }
+        let entry = resolve(
+            r##"{ "fxSpec": "1.14", "object": "orb", "pattern": "glowing",
+                  "states": { "speaking": { "pattern": "veil" } } }"##,
         );
-        assert!(
-            (m.overrides["palette.shell.w"] - 0.5).abs() < 1e-9,
-            "only the weight blends"
-        );
+        assert!(errors(&entry)
+            .iter()
+            .any(|d| d.path == "/states/speaking/pattern" && d.message.contains("1.15")));
     }
 
     #[test]
@@ -3754,34 +2869,6 @@ mod tests {
                 r.diagnostics
             );
         }
-    }
-
-    #[test]
-    fn a_character_needs_1_11_and_takes_hue_not_colour() {
-        let old = resolve(r##"{ "fxSpec": "1.10", "object": "character", "pattern": "buzzy" }"##);
-        assert!(!old.ok);
-        assert!(old
-            .diagnostics
-            .iter()
-            .any(|d| d.path == "/object" && d.message.contains("1.11")));
-        let colour = resolve(
-            r##"{ "fxSpec": "1.11", "object": "character", "pattern": "buzzy", "color": "#ff0000" }"##,
-        );
-        assert!(!colour.ok);
-        assert!(colour
-            .diagnostics
-            .iter()
-            .any(|d| d.path == "/color" && d.message.contains("params.hue")));
-        let ok = resolve(
-            r##"{ "fxSpec": "1.11", "object": "character", "pattern": "buzzy", "params": { "hue": 120, "gazeX": -4 } }"##,
-        );
-        assert!(ok.ok && ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
-        assert_eq!(ok.overrides["hue"], 120.0);
-        // `stateAge` is the view's, not the file's.
-        let live = resolve(
-            r##"{ "fxSpec": "1.11", "object": "character", "pattern": "buzzy", "params": { "stateAge": 1 } }"##,
-        );
-        assert!(!live.ok);
     }
 
     #[test]
@@ -3889,98 +2976,6 @@ mod tests {
     }
 
     const POWER: &str = include_str!("../../../spec/examples/status-beacon-power.fxspec.json");
-
-    #[test]
-    fn silhouettes_need_1_13_pick_a_built_in_or_register_their_own() {
-        let none = HashMap::new();
-        let errors = |r: &FxSpecResolved| {
-            r.diagnostics
-                .iter()
-                .filter(|d| d.severity == "error")
-                .map(|d| format!("{} {}", d.path, d.message))
-                .collect::<Vec<_>>()
-        };
-        let old = resolve_full(
-            r#"{ "fxSpec": "1.12", "object": "orb", "pattern": "silhouette" }"#,
-            None,
-            &none,
-            false,
-        );
-        assert!(
-            errors(&old)
-                .iter()
-                .any(|e| e.contains("needs \"fxSpec\": \"1.13\"")),
-            "{:?}",
-            old.diagnostics
-        );
-        let plain = resolve_full(
-            r#"{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette" }"#,
-            None,
-            &none,
-            false,
-        );
-        assert!(plain.ok, "{:?}", plain.diagnostics);
-        assert!(!plain.overrides.contains_key("silhouetteId"));
-        let helmet = resolve_full(
-            r#"{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette", "silhouette": "helmet" }"#,
-            None,
-            &none,
-            true,
-        );
-        assert!(helmet.ok, "{:?}", helmet.diagnostics);
-        assert_eq!(helmet.overrides["silhouetteId"], 1.0);
-        assert_eq!(
-            helmet.overrides["silhouetteDots"], 800.0,
-            "low power draws a prefix"
-        );
-        // The docs' example (docs/fx-spec.md, v1.13: silhouettes): `hologram` is the
-        // pattern's own key, not the holographic material's.
-        let look = resolve_full(
-            r#"{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette", "silhouette": "helmet",
-                "params": { "hologram": 1, "scanlines": 0.6, "saturation": 0.5, "hue": 190 } }"#,
-            None,
-            &none,
-            false,
-        );
-        assert!(look.ok, "{:?}", look.diagnostics);
-        assert_eq!(look.overrides["hologram"], 1.0);
-        let own = r#"{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette",
-            "silhouette": { "path": "M10 214 C10 150 60 140 70 120 C40 100 50 30 100 30 C150 30 160 100 130 120 C140 140 190 150 190 214 Z",
-                            "eyes": [85, 115, 70], "mouth": [100, 100] } }"#;
-        let a = resolve_full(own, None, &none, false);
-        let b = resolve_full(own, None, &none, false);
-        assert!(a.ok, "{:?}", a.diagnostics);
-        assert!(a.overrides["silhouetteId"] >= 2.0);
-        assert_eq!(a.overrides["silhouetteId"], b.overrides["silhouetteId"]);
-        for (bad, want) in [
-            (r#""hat""#, "unknown silhouette `hat`"),
-            (r#"{ "path": "M0 0 L10 0 Z" }"#, "expected a name or"),
-            (
-                r#"{ "path": "M0 0 L400 0 L400 400 Z", "eyes": [1, 2, 3], "mouth": [1, 2] }"#,
-                "200 × 200 box",
-            ),
-        ] {
-            let f = format!(
-                r#"{{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette", "silhouette": {bad} }}"#
-            );
-            let r = resolve_full(&f, None, &none, false);
-            assert!(
-                errors(&r).iter().any(|e| e.contains(want)),
-                "{bad}: {:?}",
-                r.diagnostics
-            );
-        }
-        let stray = resolve_full(
-            r#"{ "fxSpec": "1.13", "object": "orb", "pattern": "glowing", "silhouette": "human" }"#,
-            None,
-            &none,
-            false,
-        );
-        assert!(stray
-            .diagnostics
-            .iter()
-            .any(|d| d.message.contains("isn't drawn")));
-    }
 
     #[test]
     fn performance_caps_fps_and_sheds_materials_under_low_power() {

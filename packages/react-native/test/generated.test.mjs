@@ -59,12 +59,12 @@ test("choices and booleans map to engine numbers", () => {
 // object and they are generated independently, so a codegen regression can
 // land on one object alone -- exercise all five here.
 test("every object's own parameters map to their engine keys", () => {
-  assert.deepEqual(sinuaSignalOverrides("signaling", { barCount: 9, barWidth: 0.5 }), { barCount: 9, barWidth: 0.5 });
+  assert.deepEqual(sinuaSignalOverrides("veil", { layerCount: 9, churn: 0.5 }), { layerCount: 9, churn: 0.5 });
   assert.deepEqual(sinuaCoreOverrides("generating", { highlightLength: 0.3 }), { highlightLength: 0.3 });
   assert.deepEqual(sinuaBeaconOverrides("notifying", { ringCount: 3, dotSize: 0.05 }), { ringCount: 3, dotSize: 0.05 });
   // The shared material groups resolve the same way on every object.
   for (const fn of [sinuaSignalOverrides, sinuaCoreOverrides, sinuaBeaconOverrides]) {
-    assert.deepEqual(fn("signaling", { glow: { strength: 0.3 } }), { glowStrength: 0.3 });
+    assert.deepEqual(fn("veil", { glow: { strength: 0.3 } }), { glowStrength: 0.3 });
   }
 });
 

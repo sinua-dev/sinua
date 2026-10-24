@@ -110,8 +110,10 @@ export class SimulatedVoiceSource implements VoiceSource {
     this.metricsCb = cb;
   }
 
+  /** Connected, it replays the current state at once: a view mounted after `connect()` doesn't stay idle. */
   onStateChange(cb: (s: AgentState) => void): void {
     this.stateCb = cb;
+    if (this.connected && this.lastState !== null) cb(this.lastState as AgentState);
   }
 
   onInterrupt(cb: () => void): void {
@@ -143,8 +145,10 @@ export class SimulatedVoiceSource implements VoiceSource {
     return Promise.resolve();
   }
 
+  /** Connected, it replays `true` at once, in any state. */
   onConnectionChange(cb: (connected: boolean) => void): void {
     this.connectionCb = cb;
+    if (this.connected) cb(true);
   }
 
   /** Muted, the user's turns go silent (as a muted mic would); the agent's keep playing. */

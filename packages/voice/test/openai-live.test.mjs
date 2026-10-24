@@ -153,6 +153,22 @@ test("live: a 4xx is fatal, a 2xx without an SDP answer too", async () => {
   await assert.rejects(new OpenAILiveVoiceSource({ sessionUrl: OWN }).connect(), /without an SDP answer/);
 });
 
+test("live: a listener set mid-session gets the current state and the connection at once", async () => {
+  const { OpenAILiveVoiceSource } = await import("../dist/openai.js");
+  const src = new OpenAILiveVoiceSource({ sessionUrl: OWN, reconnect: false });
+  src.onMetrics(() => {});
+  const pc = await connectLive(src);
+  send(pc, { type: "session.delegation.created", delegation: { id: "d1" } });
+  // As a view mounted after connect(): its fan-out subscribes now.
+  const states = [];
+  const connections = [];
+  src.onStateChange((s) => states.push(s));
+  src.onConnectionChange((c) => connections.push(c));
+  assert.deepEqual(states, ["thinking"]);
+  assert.deepEqual(connections, [true]);
+  end(src, pc);
+});
+
 test("live: disconnect is idle at once, then closes gracefully at session.closed", async () => {
   const { OpenAILiveVoiceSource } = await import("../dist/openai.js");
   const src = new OpenAILiveVoiceSource({ sessionUrl: OWN, reconnect: false });
@@ -161,9 +177,10 @@ test("live: disconnect is idle at once, then closes gracefully at session.closed
   pc.dc.readyState = "open";
   const connections = [];
   src.onConnectionChange((c) => connections.push(c));
+  assert.deepEqual(connections, [true], "subscribed mid-session: the connection replays");
   src.disconnect();
   assert.equal(w.states.at(-1), "idle");
-  assert.deepEqual(connections, [false]);
+  assert.deepEqual(connections, [true, false]);
   assert.deepEqual(pc.dc.sent.at(-1), { type: "session.close" });
   assert.equal(mic.stopped, 0, "the call drains until session.closed");
   assert.notEqual(pc.connectionState, "closed");

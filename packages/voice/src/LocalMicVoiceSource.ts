@@ -33,8 +33,10 @@ export class LocalMicVoiceSource implements VoiceSource {
     this.stateCb = cb;
   }
 
+  /** Running, it replays `true` at once (the state follows on the next tick). */
   onConnectionChange(cb: (connected: boolean) => void): void {
     this.connectionCb = cb;
+    if (this.analysis != null) cb(true);
   }
 
   /** Muted, the track is disabled (the browser stops capturing) and the level reads 0. */

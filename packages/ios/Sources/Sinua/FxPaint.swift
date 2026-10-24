@@ -114,6 +114,71 @@ public enum FxPaint {
         draw(&c)
     }
 
+    /// `blend` 3 on dots (1.15 light volumes, docs/engine.md *Light*): each dot is a soft radial
+    /// glow of radius `r` -- a bright core, its colour, then nothing -- added up on a dark
+    /// background (`plusLighter`). A light background can't take added light, so there the glow,
+    /// its core no brighter than the colour, is laid on normally. The Web's `drawLight`.
+    static let light: UInt8 = 3
+
+    private static func drawLight(_ d: Dot, in context: GraphicsContext, dark: Bool, mirror: Bool) {
+        let l = mirror ? 1 - d.white : d.white
+        guard d.r > 0, let sprite = lightSprite(hue: d.hue, saturation: d.saturation, lightness: l, dark: dark) else {
+            return
+        }
+        var c = context
+        c.blendMode = dark ? .plusLighter : .normal
+        c.opacity = min(1, max(0, d.a))
+        c.draw(
+            Image(decorative: sprite, scale: 1),
+            in: CGRect(x: d.x - d.r, y: d.y - d.r, width: d.r * 2, height: d.r * 2))
+    }
+
+    /// One 32-px glow per colour (hue, saturation and lightness in whole steps), drawn once.
+    private static var lightSprites: [Int: CGImage] = [:]
+
+    private static func lightSprite(hue: Double, saturation: Double, lightness: Double, dark: Bool) -> CGImage? {
+        let h = Int(hue.rounded())
+        let s = Int((saturation * 100).rounded())
+        let l = Int((lightness * 100).rounded())
+        let key = (h << 24) | (s << 16) | (l << 8) | (dark ? 1 : 0)
+        if let hit = lightSprites[key] { return hit }
+        let core = dark ? min(0.97, Double(l) / 100 + 0.30) : max(0.10, Double(l) / 100 - 0.22)
+        let tone = dark ? Double(l) / 100 : max(0.10, Double(l) / 100 - 0.22)
+        let rgba = { (w: Double, a: Double) -> CGColor in
+            let (r, g, b) = hslToRGB(Double(h), Double(s) / 100, w)
+            return CGColor(srgbRed: r, green: g, blue: b, alpha: a)
+        }
+        let size = 32
+        guard
+            let ctx = CGContext(
+                data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: 0,
+                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue),
+            let gradient = CGGradient(
+                colorsSpace: CGColorSpace(name: CGColorSpace.sRGB),
+                colors: [rgba(core, 1), rgba(tone, 0.9), rgba(tone, 0.22), rgba(tone, 0)] as CFArray,
+                locations: [0, 0.18, 0.45, 1])
+        else { return nil }
+        let mid = CGPoint(x: Double(size) / 2, y: Double(size) / 2)
+        ctx.drawRadialGradient(
+            gradient, startCenter: mid, startRadius: 0, endCenter: mid, endRadius: Double(size) / 2, options: [])
+        guard let image = ctx.makeImage() else { return nil }
+        if lightSprites.count > 512 { lightSprites.removeAll() }
+        lightSprites[key] = image
+        return image
+    }
+
+    /// HSL (hue in degrees, saturation and lightness 0..1) to sRGB 0..1.
+    private static func hslToRGB(_ h: Double, _ s: Double, _ l: Double) -> (Double, Double, Double) {
+        let c = (1 - abs(2 * l - 1)) * s
+        let hp = (h.truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360) / 60
+        let x = c * (1 - abs(hp.truncatingRemainder(dividingBy: 2) - 1))
+        let (r, g, b): (Double, Double, Double) =
+            hp < 1
+            ? (c, x, 0) : hp < 2 ? (x, c, 0) : hp < 3 ? (0, c, x) : hp < 4 ? (0, x, c) : hp < 5 ? (x, 0, c) : (c, 0, x)
+        let m = l - c / 2
+        return (r + m, g + m, b + m)
+    }
+
     private static func runs(_ effects: [EffectRun], target: UInt8, count: Int) -> [EffectRun?]? {
         var map: [EffectRun?]?
         for e in effects where e.target == target && e.count > 0 {
@@ -123,37 +188,6 @@ public enum FxPaint {
         }
         return map
     }
-
-    /// The grain tile's value at (x, y), 0..1 (< 0.5 dark, >= 0.5 light; alpha = |v - 0.5| * 2):
-    /// the same integer hash as the Web's `grainValue` and Android's (design note 22).
-    public static func grainValue(_ x: Int, _ y: Int) -> Double {
-        var h =
-            (UInt32(truncatingIfNeeded: x) &* 73_856_093) ^ (UInt32(truncatingIfNeeded: y) &* 19_349_663) ^ 0x9E37_79B9
-        h = (h ^ (h >> 13)) &* 1_274_126_177
-        h = h ^ (h >> 16)
-        return Double(h) / 4_294_967_296.0
-    }
-
-    /// The 64-px grain tile (premultiplied RGBA), built once; exporters embed it too.
-    public static let grainTile: CGImage? = {
-        let n = 64
-        var px = [UInt8](repeating: 0, count: n * n * 4)
-        for y in 0..<n {
-            for x in 0..<n {
-                let v = grainValue(x, y)
-                let a = UInt8((abs(v - 0.5) * 2 * 255).rounded())
-                let c: UInt8 = v >= 0.5 ? a : 0
-                let i = (y * n + x) * 4
-                (px[i], px[i + 1], px[i + 2], px[i + 3]) = (c, c, c, a)
-            }
-        }
-        guard let provider = CGDataProvider(data: Data(px) as CFData) else { return nil }
-        return CGImage(
-            width: n, height: n, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: n * 4,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
-            provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
-    }()
 
     private static func shading(_ f: Fill, _ g: FillGradient, mirror: Bool) -> GraphicsContext.Shading {
         let stops = g.stops.map { st in
@@ -186,44 +220,8 @@ public enum FxPaint {
                 path.closeSubpath()
             }
             let style = FillStyle(eoFill: !f.holes.isEmpty)
-            // Grain (blend 2, design note 22): the shape filled with the noise tile
-            // at `a`, one tile pixel per point however large the character is drawn
-            // (the context is in engine units, `scale` points each), anchored at the origin.
-            if f.blend == 2 {
-                if let tile = grainTile {
-                    var c = context
-                    c.opacity = min(1, max(0, f.a))
-                    c.fill(
-                        path,
-                        with: .tiledImage(
-                            Image(decorative: tile, scale: 1), origin: .zero,
-                            sourceRect: CGRect(x: 0, y: 0, width: 1, height: 1), scale: 1 / max(scale, 1e-9)),
-                        style: style)
-                }
-                continue
-            }
             withEffect(context, blur: f.blur, blend: f.blend) { c in
-                if let g = f.gradient, g.stops.count >= 2, g.kind == 2 {
-                    // An elliptical radial: a circle of radius rx in the gradient's own
-                    // space (centre, axis, squash), the path mapped back by the inverse.
-                    let (ux, uy) = (g.x1 - g.x0, g.y1 - g.y0)
-                    let rx = max(1e-9, (ux * ux + uy * uy).squareRoot())
-                    let (cs, sn, k) = (ux / rx, uy / rx, max(1e-9, g.r / rx))
-                    let m = CGAffineTransform(a: cs, b: sn, c: -sn * k, d: cs * k, tx: g.x0, ty: g.y0)
-                    var e = c
-                    e.concatenate(m)
-                    let stops = g.stops.map { st in
-                        Gradient.Stop(
-                            color: ink(
-                                white: st.white, saturation: st.saturation, hue: st.hue, alpha: st.a * f.a, dark: mirror
-                            ),
-                            location: min(1, max(0, st.offset)))
-                    }
-                    e.fill(
-                        path.applying(m.inverted()),
-                        with: .radialGradient(Gradient(stops: stops), center: .zero, startRadius: 0, endRadius: rx),
-                        style: style)
-                } else if let g = f.gradient, g.stops.count >= 2 {
+                if let g = f.gradient, g.stops.count >= 2 {
                     c.fill(path, with: shading(f, g, mirror: mirror), style: style)
                 } else {
                     c.fill(
@@ -269,6 +267,10 @@ public enum FxPaint {
         for (i, d) in frame.dots.enumerated() {
             let rect = CGRect(x: d.x - d.r, y: d.y - d.r, width: d.r * 2, height: d.r * 2)
             let e = dotRuns?[i] ?? nil
+            if e?.blend == light {
+                drawLight(d, in: context, dark: dark, mirror: dark && frame.colorMode != .fixed)
+                continue
+            }
             withEffect(context, blur: e?.blur ?? 0, blend: e?.blend ?? 0) { c in
                 c.fill(
                     Path(ellipseIn: rect),

@@ -8,7 +8,6 @@ pub mod morph;
 pub mod orbits;
 pub mod ribbon;
 pub mod rubik;
-pub mod silhouette;
 pub mod sonar;
 pub mod spectrum;
 pub mod transition;

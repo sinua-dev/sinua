@@ -21,9 +21,6 @@ data class VoiceOverridesOptions(
     val levelEaseRate: Double = 7.0,
     /** `audioBand*` easing per second; `Double.POSITIVE_INFINITY` = raw. */
     val bandEaseRate: Double = 24.0,
-    /** Scrolling-style history size; null = off. */
-    val historyCount: Int? = null,
-    val historyHz: Double = 12.0,
     /** null disables `interruptAge`. */
     val interrupt: InterruptOptions? = InterruptOptions(),
     val muted: Boolean = false,
@@ -31,25 +28,20 @@ data class VoiceOverridesOptions(
     val mutedHue: Double? = null,
 )
 
-/** Pure, stateless form: one reading + one state -> overrides (no easing, no history, no interrupt). */
+/** Pure, stateless form: one reading + one state -> overrides (no easing, no interrupt). */
 fun voiceOverrides(
     metrics: VoiceMetrics,
     state: AgentState,
     options: VoiceOverridesOptions = VoiceOverridesOptions(),
-): Map<String, Double> = buildOverrides(metrics.level, metrics.bands, state, options, options.muted, null, null)
+): Map<String, Double> = buildOverrides(metrics.level, metrics.bands, state, options, options.muted, null)
 
 /**
  * Port of packages/core/src/voice.ts's `VoiceOverrides`: a live voice
  * reading -> the exact `Map<String, Double>` `frameWithOverrides` takes,
- * with the Web Studio's easing, the barge-in age and the scrolling-style
- * history. Clock-free (dt-driven); tested against Web's own output
+ * with the Web Studio's easing and the barge-in age. Clock-free (dt-driven); tested against Web's own output
  * (spec/voice-golden.json).
  */
 class VoiceOverrides(private val options: VoiceOverridesOptions = VoiceOverridesOptions()) {
-    private var history: ArrayDeque<Double>? = options.historyCount?.let { n -> ArrayDeque(List(max(1, n)) { 0.0 }) }
-    private var historyAcc = 0.0
-    private var historyPeak = 0.0
-    private var historyPhase = 0.0
     private var interruptAge: Double? = null
     private var interruptFresh = false
     private var level = 0.0
@@ -78,21 +70,10 @@ class VoiceOverrides(private val options: VoiceOverridesOptions = VoiceOverrides
         interruptFresh = true
     }
 
-    fun setHistoryCount(count: Int) {
-        val n = max(1, count)
-        val h = history ?: ArrayDeque<Double>().also { history = it }
-        while (h.size > n) h.removeFirst()
-        while (h.size < n) h.addFirst(0.0)
-    }
-
     fun reset() {
         metrics = VoiceMetrics.SILENT
         level = 0.0
         bands = DoubleArray(0)
-        history?.let { h -> for (i in h.indices) h[i] = 0.0 }
-        historyAcc = 0.0
-        historyPeak = 0.0
-        historyPhase = 0.0
         interruptAge = null
         interruptFresh = false
     }
@@ -123,23 +104,7 @@ class VoiceOverrides(private val options: VoiceOverridesOptions = VoiceOverrides
             val k = easeK(options.bandEaseRate, dt)
             for (i in raw.indices) bands[i] += (raw[i] - bands[i]) * k
         }
-
-        val h = history
-        var hist: Pair<List<Double>, Double>? = null
-        if (h != null) {
-            val interval = 1 / options.historyHz
-            historyAcc += dt
-            historyPeak = max(historyPeak, metrics.level)
-            while (historyAcc >= interval) {
-                h.addLast(historyPeak)
-                h.removeFirst()
-                historyPeak = 0.0
-                historyAcc -= interval
-            }
-            historyPhase = historyAcc / interval
-            hist = h.toList() to historyPhase
-        }
-        return buildOverrides(level, bands.toList(), state, options, muted, hist, interrupt)
+        return buildOverrides(level, bands.toList(), state, options, muted, interrupt)
     }
 
     companion object {
@@ -172,7 +137,6 @@ private fun buildOverrides(
     state: AgentState,
     options: VoiceOverridesOptions,
     muted: Boolean,
-    history: Pair<List<Double>, Double>?,
     interruptAge: Double?,
 ): Map<String, Double> {
     val out = HashMap<String, Double>()
@@ -182,11 +146,6 @@ private fun buildOverrides(
     val n = min(bands.size, MAX_AUDIO_BANDS)
     out["audioBandCount"] = n.toDouble()
     for (i in 0 until n) out["audioBand$i"] = clamp01(bands[i])
-    if (history != null) {
-        out["historyCount"] = history.first.size.toDouble()
-        history.first.forEachIndexed { i, v -> out["history$i"] = clamp01(v) }
-        out["historyPhase"] = history.second
-    }
     val io = options.interrupt
     if (interruptAge != null && io != null) {
         out["interruptAge"] = interruptAge

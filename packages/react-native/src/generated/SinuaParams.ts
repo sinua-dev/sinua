@@ -140,8 +140,7 @@ export type SinuaOrbPattern =
   | "initializing"
   | "calibrating"
   | "progressing"
-  | "muted"
-  | "silhouette";
+  | "muted";
 
 /** Orb parameters; unset ones keep the pattern's values. */
 export interface SinuaOrbParams {
@@ -229,7 +228,7 @@ export interface SinuaOrbParams {
   hueOffset?: number;
   /** Range of hues across the sphere. Range 0...720 (deg). Patterns: glowing. */
   hueSpread?: number;
-  /** Colour saturation of the aurora. Range 0...1 (fraction). Patterns: glowing, speaking, muted, silhouette. */
+  /** Colour saturation of the aurora. Range 0...1 (fraction). Patterns: glowing, speaking, muted. */
   saturation?: number;
   /** Scale of the flowing colour field on the sphere. Range 0.05...16. Patterns: glowing. */
   surfaceScale?: number;
@@ -243,15 +242,15 @@ export interface SinuaOrbParams {
   nodeSize?: number;
   /** Frequency bars around the orb. Range 1...96. Patterns: speaking. */
   barCount?: number;
-  /** Ink hue in degrees; applies once saturation is above 0. Range 0...360 (deg). Patterns: speaking, muted, silhouette. */
+  /** Ink hue in degrees; applies once saturation is above 0. Range 0...360 (deg). Patterns: speaking, muted. */
   hue?: number;
   /** How fast the synthetic bars jump when no audio is supplied. Range 0...32. Patterns: speaking. */
   jumpSpeed?: number;
   /** Dots stacked in each bar. Range 1...24. Patterns: speaking. */
   barDotCount?: number;
-  /** Dot radius. Range speaking 0...6, silhouette 0...4. Patterns: speaking, silhouette. */
+  /** Dot radius. Range 0...6. Patterns: speaking. */
   dotSize?: number;
-  /** Seconds between sonar pings. Range 0.05...30 (s). Patterns: confirming, initializing, muted, silhouette. */
+  /** Seconds between sonar pings. Range 0.05...30 (s). Patterns: confirming, initializing, muted. */
   period?: number;
   /** Trailing echo rings per ping. Range 0...8. Patterns: confirming. */
   echoCount?: number;
@@ -277,30 +276,6 @@ export interface SinuaOrbParams {
   pulseAmplitude?: number;
   /** Slow turning speed of the sphere. Range -4...4. Patterns: muted. */
   yaw?: number;
-  /** A brighter rim and, now and then, a thin band sliding sideways. Range 0...1 (fraction). Patterns: silhouette. */
-  hologram?: number;
-  /** Strength of the outline and its glow. Range 0...1 (fraction). Patterns: silhouette. */
-  rim?: number;
-  /** Bands moving down over the dots. Range 0...1 (fraction). Patterns: silhouette. */
-  scanlines?: number;
-  /** Thin links between neighbouring dots. Range 0...1 (fraction). Patterns: silhouette. */
-  wire?: number;
-  /** How much the silhouette breathes (idle). Range 0...1 (fraction). Patterns: silhouette. */
-  breath?: number;
-  /** Waves per second for the listening, thinking and speaking motion. Range 0...4 (Hz). Patterns: silhouette. */
-  waveSpeed?: number;
-  /** Dots that catch the light now and then (idle). Range 0...1 (fraction). Patterns: silhouette. */
-  glint?: number;
-  /** Waves travelling in from the outline, stronger with the mic level (listening). Range 0...1 (fraction). Patterns: silhouette. */
-  inward?: number;
-  /** Dots flickering along the eye line (thinking). Range 0...1 (fraction). Patterns: silhouette. */
-  neuron?: number;
-  /** Waves spreading from the mouth with the voice's level (speaking). Range 0...1 (fraction). Patterns: silhouette. */
-  speech?: number;
-  /** Scanline bands per second. Range 0...4 (Hz). Patterns: silhouette. */
-  scanSpeed?: number;
-  /** Where the head faces, sideways (-1..1; negative = the viewer's left). The shoulders stay. Range -1...1. Patterns: silhouette. */
-  turnYaw?: number;
   glow?: SinuaGlow;
   noise?: SinuaNoise;
   pulse?: SinuaPulse;
@@ -308,7 +283,7 @@ export interface SinuaOrbParams {
   color?: SinuaColor;
 }
 
-const ORB_TABLE: Table = {"ghostA":{"key":"ghostA"},"ink":{"key":"ink"},"orbitParticles":{"key":"particles"},"ghostN":{"key":"ghostN"},"ghostR":{"key":"ghostR"},"orbitN":{"key":"orbitN"},"partR":{"key":"partR"},"partRDepth":{"key":"partRDepth"},"rMin":{"key":"rMin"},"rsPow":{"key":"rsPow"},"dimBase":{"key":"dimBase"},"scanMul":{"key":"scanMul"},"inkFar":{"key":"inkFar"},"inkSpan":{"key":"inkSpan"},"latRings":{"key":"latRings"},"lonDensity":{"key":"lonDensity"},"rBase":{"key":"rBase"},"rDepth":{"key":"rDepth"},"rBoost":{"key":"rBoost"},"moveCount":{"key":"moveCount"},"rActive":{"key":"rActive"},"rings":{"key":"rings"},"lineW":{"key":"lineW"},"spread":{"key":"spread"},"thr":{"key":"thr"},"signals":{"key":"signals"},"nodeN":{"key":"nodeN"},"nodeR":{"key":"nodeR"},"nodeRDepth":{"key":"nodeRDepth"},"turns":{"key":"turns"},"strandN":{"key":"strandN"},"bandMul":{"key":"bandMul"},"spin":{"key":"spin"},"wobMul":{"key":"wobMul"},"faceOn":{"key":"faceOn"},"lanes":{"key":"lanes"},"segs":{"key":"segs"},"iconD":{"key":"iconD"},"rDot":{"key":"rDot"},"depthTone":{"key":"depthTone"},"hueOffset":{"key":"hueOffset"},"hueSpread":{"key":"hueSpread"},"saturation":{"key":"saturation"},"surfaceScale":{"key":"surfaceScale"},"hueSpeed":{"key":"hueSpeed"},"surfaceSpeed":{"key":"surfaceSpeed"},"nodeCount":{"key":"nodeCount"},"nodeSize":{"key":"nodeSize"},"barCount":{"key":"barCount"},"hue":{"key":"hue"},"jumpSpeed":{"key":"jumpSpeed"},"barDotCount":{"key":"barDotCount"},"dotSize":{"key":"dotSize"},"period":{"key":"period"},"echoCount":{"key":"echoCount"},"coreSize":{"key":"coreSize"},"ringCount":{"key":"ringCount"},"echoSpacing":{"key":"echoSpacing"},"starCount":{"key":"starCount"},"warpSpeed":{"key":"warpSpeed"},"decay":{"key":"decay"},"holdDuration":{"key":"holdDuration"},"progress":{"key":"progress"},"dim":{"key":"dim"},"pulseAmplitude":{"key":"pulseAmplitude"},"yaw":{"key":"yaw"},"hologram":{"key":"hologram"},"rim":{"key":"rim"},"scanlines":{"key":"scanlines"},"wire":{"key":"wire"},"breath":{"key":"breath"},"waveSpeed":{"key":"waveSpeed"},"glint":{"key":"glint"},"inward":{"key":"inward"},"neuron":{"key":"neuron"},"speech":{"key":"speech"},"scanSpeed":{"key":"scanSpeed"},"turnYaw":{"key":"turnYaw"}};
+const ORB_TABLE: Table = {"ghostA":{"key":"ghostA"},"ink":{"key":"ink"},"orbitParticles":{"key":"particles"},"ghostN":{"key":"ghostN"},"ghostR":{"key":"ghostR"},"orbitN":{"key":"orbitN"},"partR":{"key":"partR"},"partRDepth":{"key":"partRDepth"},"rMin":{"key":"rMin"},"rsPow":{"key":"rsPow"},"dimBase":{"key":"dimBase"},"scanMul":{"key":"scanMul"},"inkFar":{"key":"inkFar"},"inkSpan":{"key":"inkSpan"},"latRings":{"key":"latRings"},"lonDensity":{"key":"lonDensity"},"rBase":{"key":"rBase"},"rDepth":{"key":"rDepth"},"rBoost":{"key":"rBoost"},"moveCount":{"key":"moveCount"},"rActive":{"key":"rActive"},"rings":{"key":"rings"},"lineW":{"key":"lineW"},"spread":{"key":"spread"},"thr":{"key":"thr"},"signals":{"key":"signals"},"nodeN":{"key":"nodeN"},"nodeR":{"key":"nodeR"},"nodeRDepth":{"key":"nodeRDepth"},"turns":{"key":"turns"},"strandN":{"key":"strandN"},"bandMul":{"key":"bandMul"},"spin":{"key":"spin"},"wobMul":{"key":"wobMul"},"faceOn":{"key":"faceOn"},"lanes":{"key":"lanes"},"segs":{"key":"segs"},"iconD":{"key":"iconD"},"rDot":{"key":"rDot"},"depthTone":{"key":"depthTone"},"hueOffset":{"key":"hueOffset"},"hueSpread":{"key":"hueSpread"},"saturation":{"key":"saturation"},"surfaceScale":{"key":"surfaceScale"},"hueSpeed":{"key":"hueSpeed"},"surfaceSpeed":{"key":"surfaceSpeed"},"nodeCount":{"key":"nodeCount"},"nodeSize":{"key":"nodeSize"},"barCount":{"key":"barCount"},"hue":{"key":"hue"},"jumpSpeed":{"key":"jumpSpeed"},"barDotCount":{"key":"barDotCount"},"dotSize":{"key":"dotSize"},"period":{"key":"period"},"echoCount":{"key":"echoCount"},"coreSize":{"key":"coreSize"},"ringCount":{"key":"ringCount"},"echoSpacing":{"key":"echoSpacing"},"starCount":{"key":"starCount"},"warpSpeed":{"key":"warpSpeed"},"decay":{"key":"decay"},"holdDuration":{"key":"holdDuration"},"progress":{"key":"progress"},"dim":{"key":"dim"},"pulseAmplitude":{"key":"pulseAmplitude"},"yaw":{"key":"yaw"}};
 
 /** The engine overrides a SinuaOrb hands to SinuaView. */
 export function sinuaOrbOverrides(pattern: SinuaOrbPattern, params: SinuaOrbParams): Record<string, number> {
@@ -316,53 +291,25 @@ export function sinuaOrbOverrides(pattern: SinuaOrbPattern, params: SinuaOrbPara
 }
 
 export type SinuaSignalPattern =
-  | "signaling"
-  | "waveform"
-  | "scrolling"
-  | "metering"
-  | "playing";
+  | "veil"
+  | "crystal"
+  | "dune";
 
 /** Signal parameters; unset ones keep the pattern's values. */
 export interface SinuaSignalParams {
-  /** Number of level bars. Range signaling 1...64, playing 0...128. Patterns: signaling, playing. */
-  barCount?: number;
-  /** Bar width as a fraction of each slot. Range 0.05...1 (fraction). Patterns: signaling, scrolling, playing. */
-  barWidth?: number;
-  /** Ink hue in degrees; applies once saturation is above 0. Range 0...360 (deg). */
-  hue?: number;
   /** How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction). */
   ink?: number;
-  /** Height of a silent bar, as a fraction of full height. Range 0...1 (fraction). Patterns: signaling, scrolling, playing. */
-  minHeight?: number;
-  /** How far the ink moves from grey toward the hue (0 = the grey ink). Range 0...1 (fraction). */
-  saturation?: number;
-  /** Stacked waveform layers (fainter behind). Range 1...6. Patterns: waveform. */
+  /** Sheets of light, front to back. Range 3...12. Patterns: veil. */
   layerCount?: number;
-  /** Stroke width as a fraction of the frame. Range 0.005...0.2 (fraction). Patterns: waveform. */
-  lineWidth?: number;
-  /** Points along each waveform line. Range 2...512. Patterns: waveform. */
-  pointCount?: number;
-  /** Peak wave height as a fraction of the frame. Range 0...0.5 (fraction). Patterns: waveform. */
-  amplitude?: number;
-  /** Width of the fade at the edges, as a fraction of the frame. Range 0.01...1 (fraction). Patterns: scrolling. */
-  fadeWidth?: number;
-  /** LED columns. Range 1...32. Patterns: metering. */
+  /** Restless work, 0 to 1: the sheet keeps moving with no level (thinking, processing). Range 0...1 (fraction). */
+  churn?: number;
+  /** How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own. Range 0...1 (fraction). Patterns: veil, crystal. */
+  level?: number;
+  /** Columns of cells, one per band or value. Range 4...24. Patterns: crystal. */
   columnCount?: number;
-  /** LEDs per column. Range 2...24. Patterns: metering. */
-  ledCount?: number;
-  /** LED size as a fraction of its cell. Range 0.2...1 (fraction). Patterns: metering. */
-  ledSize?: number;
-  /** Level of a silent column. Range 0...1 (fraction). Patterns: metering. */
-  minLevel?: number;
-  /** Columns grow out from the middle row instead of rising from the bottom. Patterns: metering. */
-  mirror?: boolean;
-  /** Draw a thin line at the playback position. Patterns: playing. */
-  playhead?: boolean;
-  /** Opacity of the bars not played yet, relative to the played ones. Range 0...1 (fraction). Patterns: playing. */
-  unplayedOpacity?: number;
-  /** Playback position, 0 to 1: bars before it are played (full ink), the rest dimmed. Range 0...1 (fraction). Patterns: playing. */
+  /** How much is done, 0 to 1: a clip's position or a long task's progress. The done part glows. Left out, the plane drifts across on its own. Range 0...1 (fraction). Patterns: dune. */
   progress?: number;
-  /** The recorded clip's loudness, oldest first, 0 to 1 per value (up to 64; resample longer clips). Without it a fixed sample message is drawn. Range 0...1 (fraction). Up to 64 values. Patterns: playing. */
+  /** The dune's profile, 0 to 1 per value (a clip's loudness or any series; up to 64). Without it a fixed dune is drawn. Range 0...1 (fraction). Up to 64 values. Patterns: dune. */
   envelope?: number[];
   glow?: SinuaGlow;
   noise?: SinuaNoise;
@@ -371,7 +318,7 @@ export interface SinuaSignalParams {
   color?: SinuaColor;
 }
 
-const SIGNAL_TABLE: Table = {"barCount":{"key":"barCount"},"barWidth":{"key":"barWidth"},"hue":{"key":"hue"},"ink":{"key":"ink"},"minHeight":{"key":"minHeight"},"saturation":{"key":"saturation"},"layerCount":{"key":"layerCount"},"lineWidth":{"key":"lineWidth"},"pointCount":{"key":"pointCount"},"amplitude":{"key":"amplitude"},"fadeWidth":{"key":"fadeWidth"},"columnCount":{"key":"columnCount"},"ledCount":{"key":"ledCount"},"ledSize":{"key":"ledSize"},"minLevel":{"key":"minLevel"},"mirror":{"key":"mirror"},"playhead":{"key":"playhead"},"unplayedOpacity":{"key":"unplayedOpacity"},"progress":{"key":"progress"},"envelope":{"key":"envelope","keys":["envelope0","envelope1","envelope2","envelope3","envelope4","envelope5","envelope6","envelope7","envelope8","envelope9","envelope10","envelope11","envelope12","envelope13","envelope14","envelope15","envelope16","envelope17","envelope18","envelope19","envelope20","envelope21","envelope22","envelope23","envelope24","envelope25","envelope26","envelope27","envelope28","envelope29","envelope30","envelope31","envelope32","envelope33","envelope34","envelope35","envelope36","envelope37","envelope38","envelope39","envelope40","envelope41","envelope42","envelope43","envelope44","envelope45","envelope46","envelope47","envelope48","envelope49","envelope50","envelope51","envelope52","envelope53","envelope54","envelope55","envelope56","envelope57","envelope58","envelope59","envelope60","envelope61","envelope62","envelope63"]}};
+const SIGNAL_TABLE: Table = {"ink":{"key":"ink"},"layerCount":{"key":"layerCount"},"churn":{"key":"churn"},"level":{"key":"level"},"columnCount":{"key":"columnCount"},"progress":{"key":"progress"},"envelope":{"key":"envelope","keys":["envelope0","envelope1","envelope2","envelope3","envelope4","envelope5","envelope6","envelope7","envelope8","envelope9","envelope10","envelope11","envelope12","envelope13","envelope14","envelope15","envelope16","envelope17","envelope18","envelope19","envelope20","envelope21","envelope22","envelope23","envelope24","envelope25","envelope26","envelope27","envelope28","envelope29","envelope30","envelope31","envelope32","envelope33","envelope34","envelope35","envelope36","envelope37","envelope38","envelope39","envelope40","envelope41","envelope42","envelope43","envelope44","envelope45","envelope46","envelope47","envelope48","envelope49","envelope50","envelope51","envelope52","envelope53","envelope54","envelope55","envelope56","envelope57","envelope58","envelope59","envelope60","envelope61","envelope62","envelope63"]}};
 
 /** The engine overrides a SinuaSignal hands to SinuaView. */
 export function sinuaSignalOverrides(pattern: SinuaSignalPattern, params: SinuaSignalParams): Record<string, number> {
@@ -573,103 +520,4 @@ const BEACON_TABLE: Table = {"dotSize":{"key":"dotSize"},"hue":{"key":"hue"},"in
 /** The engine overrides a SinuaBeacon hands to SinuaView. */
 export function sinuaBeaconOverrides(pattern: SinuaBeaconPattern, params: SinuaBeaconParams): Record<string, number> {
   return toOverrides(BEACON_TABLE, pattern, params as Record<string, unknown>);
-}
-
-export type SinuaCharacterPattern =
-  | "buzzy"
-  | "hum"
-  | "wisp"
-  | "chirp"
-  | "cuppa"
-  | "bean"
-  | "beep"
-  | "whirr"
-  | "clank";
-
-/** Character parameters; unset ones keep the pattern's values. */
-export interface SinuaCharacterParams {
-  /** The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  accessories?: boolean;
-  /** Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off. Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  grain?: number;
-  /** Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay. Range 0...360 (deg). Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  hue?: number;
-  /** How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. Range 0...1 (fraction). */
-  ink?: number;
-  /** Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it). */
-  mouth?: boolean;
-  /** Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  shading?: boolean;
-  /** How much the eyes glance around on their own while idle (0 = always at the viewer). Range 0...2. */
-  look?: number;
-  /** Changes when it blinks and glances, so two characters side by side don't move in sync. Range 0...1000000. */
-  seed?: number;
-  /** How far the head turns like a solid (0 = flat, 1 = ±35°; the default is ±25°). Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  turn?: number;
-  /** Makes the left eye shorter (a quizzical look). Range 0...0.6. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  eyeAsym?: number;
-  /** Eye height, in design units. Range 8...40. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  eyeH?: number;
-  /** Eye corner radius, in design units. Range 0...20. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  eyeR?: number;
-  /** The happy arc cut from below the eyes. Range 0...1. */
-  eyeSmile?: number;
-  /** Slope of the lid: positive lowers the outer corners (pensive). Range -1...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  eyeTilt?: number;
-  /** Eye width, in the character's 200-unit design box. Range 8...36. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  eyeW?: number;
-  /** How far the top lid comes down (a squint), 0 to 0.9 of the eye. Range 0...0.9. */
-  lid?: number;
-  /** Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing). Range 0...1. */
-  mouthDots?: number;
-  /** Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice). Range 0...1. */
-  mouthTalk?: number;
-  /** Where the eyes look, sideways, in design units (negative = left). Range -14...14. */
-  gazeX?: number;
-  /** Where the eyes look, up and down, in design units (negative = up). Range -12...12. */
-  gazeY?: number;
-  /** Leans the whole character toward the viewer (design units). Range -8...8. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  lean?: number;
-  /** Tilts the whole character (radians; positive = clockwise). Range -0.3...0.3. */
-  tilt?: number;
-  /** Blink once as this state starts (the end of the user's turn). Range 0...1. */
-  turnBlink?: number;
-  /** How much the head nods with the voice level. Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  turnNod?: number;
-  /** Where this state faces, up or down (-1..1 of the turn; positive = up). Range -1...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  turnPitch?: number;
-  /** How much the head looks from corner to corner on its own, holding each look. Range 0...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  turnWander?: number;
-  /** Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left). Range -1...1. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  turnYaw?: number;
-  /** How far the voice lifts the body while speaking (design units). Range 0...8. */
-  bounceGain?: number;
-  /** Idle breathing bob. Range 0...2. */
-  breath?: number;
-  /** How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing). Range 0...1. */
-  earGain?: number;
-  /** How far the voice line swings with the level (Whirr and Clank: how far the mouth opens). Range 0...2. */
-  mouthGain?: number;
-  /** How much the voice squashes the body while speaking. Range 0...0.12. Patterns: buzzy, hum, wisp, chirp, cuppa, bean, beep. */
-  squashGain?: number;
-  /** How far the capsule sways on its yoke with the voice while speaking (radians). Range 0...0.15. Patterns: hum. */
-  swayGain?: number;
-  /** How tightly the smoke tail curls (thinking curls it most). Range 0...2. Patterns: wisp. */
-  curlGain?: number;
-  /** How much the wings flutter with the voice while speaking (radians). Range 0...0.6. Patterns: chirp. */
-  flutterGain?: number;
-  /** The character's arms (Beep): a hand to the ear while listening, to the chin while thinking, beats while speaking. Off: no arms. Patterns: beep. */
-  arms?: boolean;
-  glow?: SinuaGlow;
-  noise?: SinuaNoise;
-  pulse?: SinuaPulse;
-  gradient?: SinuaGradient;
-  color?: SinuaColor;
-}
-
-const CHARACTER_TABLE: Table = {"accessories":{"key":"accessories"},"grain":{"key":"grain"},"hue":{"key":"hue"},"ink":{"key":"ink"},"mouth":{"key":"mouth"},"shading":{"key":"shading"},"look":{"key":"look"},"seed":{"key":"seed"},"turn":{"key":"turn"},"eyeAsym":{"key":"eyeAsym"},"eyeH":{"key":"eyeH"},"eyeR":{"key":"eyeR"},"eyeSmile":{"key":"eyeSmile"},"eyeTilt":{"key":"eyeTilt"},"eyeW":{"key":"eyeW"},"lid":{"key":"lid"},"mouthDots":{"key":"mouthDots"},"mouthTalk":{"key":"mouthTalk"},"gazeX":{"key":"gazeX"},"gazeY":{"key":"gazeY"},"lean":{"key":"lean"},"tilt":{"key":"tilt"},"turnBlink":{"key":"turnBlink"},"turnNod":{"key":"turnNod"},"turnPitch":{"key":"turnPitch"},"turnWander":{"key":"turnWander"},"turnYaw":{"key":"turnYaw"},"bounceGain":{"key":"bounceGain"},"breath":{"key":"breath"},"earGain":{"key":"earGain"},"mouthGain":{"key":"mouthGain"},"squashGain":{"key":"squashGain"},"swayGain":{"key":"swayGain"},"curlGain":{"key":"curlGain"},"flutterGain":{"key":"flutterGain"},"arms":{"key":"arms"}};
-
-/** The engine overrides a SinuaCharacter hands to SinuaView. */
-export function sinuaCharacterOverrides(pattern: SinuaCharacterPattern, params: SinuaCharacterParams): Record<string, number> {
-  return toOverrides(CHARACTER_TABLE, pattern, params as Record<string, unknown>);
 }

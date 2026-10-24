@@ -163,7 +163,7 @@ A bug was fixed along the way: `apply_glow` used to rebuild the frame with `colo
 Every dot, line endpoint and polyline vertex is displaced by a smooth,
 time-varying field from the engine's real gradient noise (`perlin3`, the
 Perlin 2002 structure added for `aurora`) — so a rigid lattice (`globe`, a
-`bar` row, an `arc`) breathes like something alive with no mode knowing.
+segmented ring, an `arc`) breathes like something alive with no mode knowing.
 The recipe is Nature of Code's noise walker: sample the field from
 **different regions of noise space per axis** (the book starts `x` at `0`
 and `y` at `10,000` "so that x and y appear to act independently of each
@@ -216,7 +216,7 @@ meaningless) and eases toward it via `lerp_hue` otherwise. `white` is
 kept — it is the lightness in every renderer's HSL branch, so a mode's
 depth shading survives the recolor. **A `Polyline` is coloured per
 vertex (2026-09-19):** each vertex samples the ramp at its own position
-into `Polyline.hues`, so a `waveform` layer shades along its length and
+into `Polyline.hues`, so a stroke shades along its length and
 `tracking`'s rings ramp around their sweep. `hue` stays the mean-vertex
 sample, which is the fallback for renderers without per-vertex paint (paint
 rule: [`engine.md`](engine.md#per-vertex-stroke-colour-2026-09-19)). A stroke

@@ -675,673 +675,673 @@
     {
       "age": 0.05,
       "effect": "success",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 2.84238,
-        "cx": 32.022883,
-        "dots": 0,
-        "hue": 140.0,
+        "alpha": 80.241613,
+        "cx": 33.070035,
+        "dots": 200,
+        "hue": 190.990099,
         "lines": 0,
-        "polylines": 5
+        "polylines": 2
       }
     },
     {
       "age": 0.05,
       "effect": "success",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 2.1288,
-        "cx": 31.997941,
-        "dots": 0,
-        "hue": 140.0,
+        "alpha": 78.309374,
+        "cx": 33.090458,
+        "dots": 200,
+        "hue": 191.243781,
         "lines": 0,
-        "polylines": 4
+        "polylines": 1
       }
     },
     {
       "age": 0.3,
       "effect": "success",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 2.484356,
-        "cx": 32.044499,
-        "dots": 0,
-        "hue": 140.0,
+        "alpha": 79.883588,
+        "cx": 33.09717,
+        "dots": 200,
+        "hue": 190.990099,
         "lines": 0,
-        "polylines": 5
+        "polylines": 2
       }
     },
     {
       "age": 0.3,
       "effect": "success",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 2.1288,
-        "cx": 31.997941,
-        "dots": 0,
-        "hue": 140.0,
+        "alpha": 78.309374,
+        "cx": 33.090458,
+        "dots": 200,
+        "hue": 191.243781,
         "lines": 0,
-        "polylines": 4
+        "polylines": 1
       }
     },
     {
       "age": 0.6,
       "effect": "success",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 2.059356,
-        "cx": 32.051358,
-        "dots": 0,
-        "hue": 140.0,
+        "alpha": 79.458588,
+        "cx": 33.105789,
+        "dots": 200,
+        "hue": 190.990099,
         "lines": 0,
-        "polylines": 5
+        "polylines": 2
       }
     },
     {
       "age": 0.6,
       "effect": "success",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 1.970467,
-        "cx": 31.997941,
-        "dots": 0,
-        "hue": 140.0,
+        "alpha": 78.151041,
+        "cx": 33.090458,
+        "dots": 200,
+        "hue": 191.243781,
         "lines": 0,
-        "polylines": 4
+        "polylines": 1
       }
     },
     {
       "age": 1.2,
       "effect": "success",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 1.1788,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 78.578032,
+        "cx": 33.041257,
+        "dots": 200,
+        "hue": 191.5,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "success",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 1.1788,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 77.359374,
+        "cx": 33.093235,
+        "dots": 200,
+        "hue": 191.5,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.05,
       "effect": "error",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 1.1788,
-        "cx": 37.478086,
-        "dots": 0,
+        "alpha": 78.578032,
+        "cx": 38.519342,
+        "dots": 200,
         "hue": 8.0,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.05,
       "effect": "error",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 1.1788,
-        "cx": 32.0,
-        "dots": 0,
+        "alpha": 77.359374,
+        "cx": 33.093235,
+        "dots": 200,
         "hue": 8.0,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.3,
       "effect": "error",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 1.1788,
-        "cx": 29.565295,
-        "dots": 0,
+        "alpha": 78.578032,
+        "cx": 30.606552,
+        "dots": 200,
         "hue": 8.0,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.3,
       "effect": "error",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 1.1788,
-        "cx": 32.0,
-        "dots": 0,
+        "alpha": 77.359374,
+        "cx": 33.093235,
+        "dots": 200,
         "hue": 8.0,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.6,
       "effect": "error",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 1.1788,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 78.578032,
+        "cx": 33.041257,
+        "dots": 200,
+        "hue": 191.5,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.6,
       "effect": "error",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 1.1788,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 77.359374,
+        "cx": 33.093235,
+        "dots": 200,
+        "hue": 191.5,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "error",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 1.1788,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 78.578032,
+        "cx": 33.041257,
+        "dots": 200,
+        "hue": 191.5,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "error",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 1.1788,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 77.359374,
+        "cx": 33.093235,
+        "dots": 200,
+        "hue": 191.5,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.05,
       "effect": "celebrate",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 21.347694,
-        "cx": 31.999249,
-        "dots": 24,
-        "hue": 176.807822,
+        "alpha": 104.275443,
+        "cx": 33.040261,
+        "dots": 224,
+        "hue": 189.925838,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.05,
       "effect": "celebrate",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 1.263,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 82.885044,
+        "cx": 33.093235,
+        "dots": 200,
+        "hue": 191.5,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.3,
       "effect": "celebrate",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 14.815665,
-        "cx": 31.990796,
-        "dots": 24,
-        "hue": 176.807822,
+        "alpha": 112.055248,
+        "cx": 33.029043,
+        "dots": 224,
+        "hue": 189.925838,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.3,
       "effect": "celebrate",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 1.480971,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 97.189508,
+        "cx": 33.093235,
+        "dots": 200,
+        "hue": 191.5,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.6,
       "effect": "celebrate",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 8.391687,
-        "cx": 31.984666,
-        "dots": 24,
-        "hue": 176.807822,
+        "alpha": 96.28499,
+        "cx": 33.020908,
+        "dots": 224,
+        "hue": 189.925838,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.6,
       "effect": "celebrate",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 1.338626,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 87.84804,
+        "cx": 33.093235,
+        "dots": 200,
+        "hue": 191.5,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "celebrate",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": false,
       "summary": {
-        "alpha": 1.629605,
-        "cx": 31.980894,
-        "dots": 24,
-        "hue": 176.807822,
+        "alpha": 79.684717,
+        "cx": 33.015902,
+        "dots": 224,
+        "hue": 189.925838,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "celebrate",
-      "pattern": "waveform",
+      "pattern": "veil",
       "reduced": true,
       "summary": {
-        "alpha": 1.188789,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 78.014916,
+        "cx": 33.093235,
+        "dots": 200,
+        "hue": 191.5,
         "lines": 0,
-        "polylines": 3
+        "polylines": 0
       }
     },
     {
       "age": 0.05,
       "effect": "success",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 20.718519,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 103.577714,
+        "cx": 30.296834,
+        "dots": 216,
+        "hue": 209.931481,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.05,
       "effect": "success",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 20.718519,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 138.466685,
+        "cx": 32.027583,
+        "dots": 216,
+        "hue": 195.749074,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.3,
       "effect": "success",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 26.084045,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 134.861862,
+        "cx": 30.296834,
+        "dots": 216,
+        "hue": 209.931481,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.3,
       "effect": "success",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 26.084045,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 160.042155,
+        "cx": 32.027583,
+        "dots": 216,
+        "hue": 195.749074,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.6,
       "effect": "success",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 15.971011,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 75.896977,
+        "cx": 30.296834,
+        "dots": 216,
+        "hue": 209.931481,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.6,
       "effect": "success",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 15.971011,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 119.376348,
+        "cx": 32.027583,
+        "dots": 216,
+        "hue": 195.749074,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "success",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 12.6,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 56.242015,
+        "cx": 30.296834,
+        "dots": 216,
+        "hue": 209.931481,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "success",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 12.6,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 105.821079,
+        "cx": 32.027583,
+        "dots": 216,
+        "hue": 195.749074,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.05,
       "effect": "error",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 34.52,
-        "cx": 32.0,
-        "dots": 0,
+        "alpha": 184.048403,
+        "cx": 30.296834,
+        "dots": 216,
         "hue": 8.0,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.05,
       "effect": "error",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 34.52,
-        "cx": 32.0,
-        "dots": 0,
+        "alpha": 193.964216,
+        "cx": 32.027583,
+        "dots": 216,
         "hue": 8.0,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.3,
       "effect": "error",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 34.52,
-        "cx": 32.0,
-        "dots": 0,
+        "alpha": 184.048403,
+        "cx": 30.296834,
+        "dots": 216,
         "hue": 8.0,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.3,
       "effect": "error",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 34.52,
-        "cx": 32.0,
-        "dots": 0,
+        "alpha": 193.964216,
+        "cx": 32.027583,
+        "dots": 216,
         "hue": 8.0,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.6,
       "effect": "error",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 12.6,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 56.242015,
+        "cx": 30.296834,
+        "dots": 216,
+        "hue": 209.931481,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.6,
       "effect": "error",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 12.6,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 105.821079,
+        "cx": 32.027583,
+        "dots": 216,
+        "hue": 195.749074,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "error",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 12.6,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 56.242015,
+        "cx": 30.296834,
+        "dots": 216,
+        "hue": 209.931481,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "error",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 12.6,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 105.821079,
+        "cx": 32.027583,
+        "dots": 216,
+        "hue": 195.749074,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.05,
       "effect": "celebrate",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 19.091837,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 92.608655,
+        "cx": 30.296834,
+        "dots": 216,
+        "hue": 209.931481,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.05,
       "effect": "celebrate",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 19.091837,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 132.922294,
+        "cx": 32.027583,
+        "dots": 216,
+        "hue": 195.749074,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.3,
       "effect": "celebrate",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 39.360751,
-        "cx": 32.0,
-        "dots": 0,
+        "alpha": 201.911698,
+        "cx": 30.296834,
+        "dots": 216,
         "hue": 48.0,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.3,
       "effect": "celebrate",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 39.360751,
-        "cx": 32.0,
-        "dots": 0,
+        "alpha": 207.409363,
+        "cx": 32.027583,
+        "dots": 216,
         "hue": 48.0,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.6,
       "effect": "celebrate",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 25.558178,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 128.420313,
+        "cx": 30.296834,
+        "dots": 216,
+        "hue": 209.931481,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 0.6,
       "effect": "celebrate",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 25.558178,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 158.485338,
+        "cx": 32.027583,
+        "dots": 216,
+        "hue": 195.749074,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "celebrate",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": false,
       "summary": {
-        "alpha": 13.331184,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 60.333874,
+        "cx": 30.296834,
+        "dots": 216,
+        "hue": 209.931481,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     },
     {
       "age": 1.2,
       "effect": "celebrate",
-      "pattern": "playing",
+      "pattern": "dune",
       "reduced": true,
       "summary": {
-        "alpha": 13.331184,
-        "cx": 32.0,
-        "dots": 0,
-        "hue": 0.0,
+        "alpha": 108.915757,
+        "cx": 32.027583,
+        "dots": 216,
+        "hue": 195.749074,
         "lines": 0,
-        "polylines": 40
+        "polylines": 0
       }
     }
   ],

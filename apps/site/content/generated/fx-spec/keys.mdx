@@ -5,16 +5,14 @@
 | Key | Type | Description |
 |---|---|---|
 | `$schema` | string |  |
-| `fxSpec` | string | "major.minor", 1.8 or later (the runtime's floor; 1.0-1.7 are rejected). The runtime reads up to 1.14 strictly; a newer 1.x file resolves, with its unknown keys reported as warnings. |
+| `fxSpec` | string | "major.minor", 1.8 or later (the runtime's floor; 1.0-1.7 are rejected). The runtime reads up to 1.15 strictly; a newer 1.x file resolves, with its unknown keys reported as warnings. |
 | `name` | string |  |
 | `description` | string |  |
 | `object` |  |  |
-| `pattern` | string | The visual pattern, e.g. working, metering, tracking, scanning, generating. Must belong to `object`'s family. |
+| `pattern` | string | The visual pattern, e.g. working, veil, tracking, scanning, generating. Must belong to `object`'s family. |
 | `size` |  |  |
 | `speed` | number | Multiplier on the preset's tuned speed; frameFromFxSpec applies elapsed * presetSpeed * speed. |
 | `ink` | number | FX Spec 1.8: the whole visual's opacity, 0 to 1. 1 draws it as the pattern defines it; lower fades everything, halos included. A state patches it (a voice assistant's idle typically sits below 1). |
-| `palette` | object | FX Spec 1.12, `object: character` only: repaint some of the character's colours (its recipe's palette names, e.g. `shell`), as hex or DTCG colours. A slot's Light/Dark tones follow it; the rest stays as drawn. A state patches it. 1.13: role names (`primary`, `secondary`, `accent`, through the recipe's `roles`) and a `dark` variant the views pick in a dark theme. Named palettes (a string, or `theme`) were removed in 0.1.0-beta.9 and are an error. |
-| `expression` |  | FX Spec 1.12, `object: character` only: the character's expression. It shapes the eyes and the resting mouth; the voice state keeps the gaze, the turn and the talking or thinking mouth. A state patches it; `null` there removes it. |
 | `color` |  | A color (shorthand for \{ value, mix: 1 \}) or the full section. |
 | `gradient` | object | see gradient |
 | `materials` | object |  |
@@ -25,8 +23,6 @@
 | `transitions` | object | see transitions |
 | `rules` | object | see rules |
 | `accessibility` | object | see accessibility |
-| `recipe` | object | 1.12: a character recipe (the format of spec/characters/*.json) for `object: character`; `pattern` equal to its `id` draws it. Every field: spec/character-recipe-1.schema.json and docs/character-recipe.md. |
-| `silhouette` |  | FX Spec 1.13, `pattern: silhouette`: which head and shoulders the dots fill. A built-in by name, or a file's own outline in a 200 × 200 box (start and end the path below the shoulders: the bottom stays open and fades) with its landmarks. File-wide. See docs/fx-spec.md. |
 
 ### A `states` entry
 
@@ -35,8 +31,6 @@
 | `pattern` | string | The pattern for this lifecycle key; defaults to the top-level pattern. |
 | `speed` | number |  |
 | `ink` | number | FX Spec 1.8: this state's opacity; inherits the top-level `ink` when absent. |
-| `palette` |  | FX Spec 1.12: this state's palette override (a character); merged over the top-level `palette`. 1.13: also role names and `dark`. |
-| `expression` |  | FX Spec 1.12: this state's expression (a character); inherits the top-level `expression`, `null` removes it. |
 | `color` | object \| null |  |
 | `gradient` | object \| null |  |
 | `materials` | object \| null |  |

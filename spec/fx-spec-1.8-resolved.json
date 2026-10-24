@@ -311,46 +311,6 @@
         "stateKeys": []
       }
     },
-    "signal-matrix.fxspec.json": {
-      "": {
-        "diagnostics": [],
-        "disabledMaterials": [],
-        "inactiveBindings": [],
-        "maxFps": null,
-        "ok": true,
-        "overrides": {
-          "colorHue": 347.9,
-          "colorMix": 1.0,
-          "colorSaturation": 0.754,
-          "columnCount": 7.0,
-          "ledCount": 5.0
-        },
-        "size": 32,
-        "speed": 1.25,
-        "state": "metering",
-        "stateKey": "",
-        "stateKeys": []
-      },
-      "|lowPower": {
-        "diagnostics": [],
-        "disabledMaterials": [],
-        "inactiveBindings": [],
-        "maxFps": null,
-        "ok": true,
-        "overrides": {
-          "colorHue": 347.9,
-          "colorMix": 1.0,
-          "colorSaturation": 0.754,
-          "columnCount": 7.0,
-          "ledCount": 5.0
-        },
-        "size": 32,
-        "speed": 1.25,
-        "state": "metering",
-        "stateKey": "",
-        "stateKeys": []
-      }
-    },
     "status-beacon-power.fxspec.json": {
       "": {
         "diagnostics": [],

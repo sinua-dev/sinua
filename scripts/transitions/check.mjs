@@ -4,7 +4,7 @@
 // any bound is crossed. `--quick`: a few patterns only (while iterating).
 //   node scripts/transitions/check.mjs [--quick] [--json out.json]
 import { writeFileSync } from "node:fs";
-import { run, score, ORBS, CHARACTERS } from "./drive.mjs";
+import { run, score, ORBS } from "./drive.mjs";
 import { SCENARIOS, states } from "./scenarios.mjs";
 
 const args = process.argv.slice(2);
@@ -14,25 +14,23 @@ const jsonOut = args.includes("--json") ? args[args.indexOf("--json") + 1] : nul
 // 1 = a perfect transition. Each bound sits ~10-15 % over what the contract measures
 // (design note 31, "Sınırlar: ölçülen / sınır"), so a regression shows; the exceptions are
 // motion that is meant to travel, each with its measured value.
-const GENERAL = { peak: 2.7, path: 2.25 }; // measured 2.39 (glowing, a 5-minute session) / 1.99 (chirp)
+const GENERAL = { peak: 2.7, path: 2.25 }; // measured 2.39 (glowing, a 5-minute session) / 1.98 (shaping)
 const RING = { path: 3.3, why: "thinking starts the ring's own brightness pulse with the change (measured 2.93)" };
 const EXCEPT = {
   speaking: { peak: 3.0, path: 5.8, why: "the spectrum's bars join one at a time and slide, the user's pick (measured 2.64 / 5.12)" },
   muted: { peak: 6.8, path: 5.4, why: "the sphere turns (yaw 1.2 / 1.0 / none per state): a rigid turn of a dense lattice (measured 6.07 / 4.79)" },
   calibrating: { peak: 12.2, why: "chladni snaps to a new mode every holdDuration; smoothing it is a 1.14 candidate (measured 10.85)" },
-  beep: { peak: 3.7, path: 3.3, why: "the arms swing out wide, a big continuous move (measured 3.33 / 2.91)" },
   completing: RING,
   tracking: RING,
   stepping: RING,
   measuring: RING,
-  playing: { path: 2.5, why: "playback steps (measured 2.19)" },
 };
 const bound = (p, k) => EXCEPT[p]?.[k] ?? GENERAL[k];
 
 const V = ["idle", "listening", "thinking", "speaking"];
 const pairs = [["initializing", "idle"]];
 for (const a of V) for (const b of V) if (a !== b) pairs.push([a, b]);
-const patterns = quick ? ["glowing", "tracking", "speaking", "buzzy"] : [...ORBS, ...CHARACTERS];
+const patterns = quick ? ["glowing", "tracking", "speaking", "veil"] : ORBS;
 
 const failures = [];
 const report = { pairs: [], scenarios: [] };
@@ -56,7 +54,7 @@ for (const p of patterns) {
 // Conversations: each answer is exactly one speaking stretch (the adaptive tail holds every
 // pause the scripts leave, design note 31 V7), and the transitions stay inside the bounds on
 // representative patterns, as smooth at the end of a 5-minute session as at its start.
-const SAMPLE = quick ? ["glowing"] : ["glowing", "working", "breathing", "tracking", "speaking", "buzzy"];
+const SAMPLE = quick ? ["glowing"] : ["glowing", "working", "breathing", "tracking", "speaking", "veil"];
 for (const sc of SCENARIOS) {
   const { changes, answers, seconds } = states(sc);
   const entries = changes.filter((c) => c[1] === "speaking").length;

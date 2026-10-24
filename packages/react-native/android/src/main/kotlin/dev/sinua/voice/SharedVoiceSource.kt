@@ -56,15 +56,22 @@ class SharedVoiceSource private constructor(
 
     fun listenMetrics(cb: (VoiceMetrics) -> Unit): () -> Unit = add(metricsCbs, cb)
 
-    fun listenState(cb: (AgentState) -> Unit): () -> Unit = add(stateCbs, cb)
+    /** A listener added mid-session gets the current state at once. */
+    fun listenState(cb: (AgentState) -> Unit): () -> Unit {
+        if (state != AgentState.IDLE) cb(state)
+        return add(stateCbs, cb)
+    }
 
     fun listenInterrupt(cb: () -> Unit): () -> Unit = add(interruptCbs, cb)
 
     /** Called with the new value whenever [setMuted] changes it. */
     fun listenMute(cb: (Boolean) -> Unit): () -> Unit = add(muteCbs, cb)
 
-    /** Only fires for a source that reports it ([reportsConnection]). */
-    fun listenConnection(cb: (Boolean) -> Unit): () -> Unit = add(connectionCbs, cb)
+    /** Only fires for a source that reports it ([reportsConnection]). A listener added while connected gets `true` at once. */
+    fun listenConnection(cb: (Boolean) -> Unit): () -> Unit {
+        if (connected) cb(true)
+        return add(connectionCbs, cb)
+    }
 
     fun listenError(cb: (Throwable) -> Unit): () -> Unit = add(errorCbs, cb)
 
@@ -129,7 +136,7 @@ class SharedVoiceSource private constructor(
     }
 
     /**
-     * A view's own tracker fed from this fan-out: its family's easing and history, the muted
+     * A view's own tracker fed from this fan-out: its family's easing, the muted
      * cue following [muted]. [Tracked.release] unsubscribes it.
      */
     fun track(options: VoiceOverridesOptions = VoiceOverridesOptions()): Tracked {

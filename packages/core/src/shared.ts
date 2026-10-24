@@ -72,8 +72,9 @@ export class SharedVoiceSource implements VoiceSource {
     return add(this.metricsCbs, cb);
   }
 
-  /** Adds a listener; returns its unsubscribe. */
+  /** Adds a listener; returns its unsubscribe. A listener added mid-session gets the current state at once. */
   onStateChange(cb: (s: AgentState) => void): () => void {
+    if (this.currentState !== "idle") cb(this.currentState);
     return add(this.stateCbs, cb);
   }
 
@@ -82,8 +83,12 @@ export class SharedVoiceSource implements VoiceSource {
     return add(this.interruptCbs, cb);
   }
 
-  /** Adds a listener; returns its unsubscribe. Only fires for a source that reports it (`reportsConnection`). */
+  /**
+   * Adds a listener; returns its unsubscribe. Only fires for a source that reports it
+   * (`reportsConnection`). A listener added while connected gets `true` at once.
+   */
   onConnectionChange(cb: (connected: boolean) => void): () => void {
+    if (this.isConnected) cb(true);
     return add(this.connectionCbs, cb);
   }
 
@@ -158,7 +163,7 @@ export class SharedVoiceSource implements VoiceSource {
   }
 
   /**
-   * A view's own tracker, fed from this fan-out: its family's easing and history
+   * A view's own tracker, fed from this fan-out: its family's easing
    * (`opts`), the muted cue following `muted`. `release()` unsubscribes it.
    */
   track(opts?: VoiceOverridesOptions): { overrides: VoiceOverrides; release(): void } {

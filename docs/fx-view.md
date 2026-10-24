@@ -145,8 +145,6 @@ effects", families). This section covers how each renderer draws it.
 | Additive | `globalCompositeOperation = "lighter"` | `blendMode = .plusLighter` | `BlendMode.Plus` |
 | Blur σ | **canvas shadow**: `shadowBlur = 2σ·scale` (the HTML spec's σ = shadowBlur/2, device px), element drawn 10 000 units away and shifted back via `shadowOffsetX`, `shadowColor` = opaque ink. Safari has no `ctx.filter` (WebKit bug 198416) | `addFilter(.blur(radius: σ · FxPaint.blurRadiusPerSigma))`, constant **1.0** (measured, see below) | `BlurMaskFilter(radius)` on a framework `Paint`, `radius = (σ·scale − 0.5) / 0.57735` (Skia's conversion) |
 | Fallback | a **blurred gradient fill** uses `ctx.filter` where present; Safari draws it sharp | none needed | **API < 29: no blur** (BlurMaskFilter isn't reliable under HW acceleration before Android 10); additive still works |
-| Elliptical gradient (`kind` 2, FX Spec 1.13) | translate + `transform(c, s, −s·k, c·k)` to the gradient's unit circle, `createRadialGradient(0,0,0, 0,0,rx)`, the path's points mapped back by the inverse | `concatenate` the same matrix, fill `path.applying(m.inverted())` with `.radialGradient(center: .zero, endRadius: rx)` | `RadialGradient(0, 0, rx)` with `setLocalMatrix` (framework paint, and a `ShaderBrush` in Compose) |
-| Grain (`blend` 2, FX Spec 1.13) | the shape filled with a `createPattern` of the 64-px tile (`setTransform` scale dpr / scale) at `globalAlpha = a` | `.tiledImage` of `FxPaint.grainTile` (scale 1 / scale) at `opacity = a` | a REPEAT `BitmapShader` of the tile (local matrix `density`) in a `ShaderBrush`, `alpha = a` |
 
 - **Draw order:** fills → polylines → lines → dots, as before. Effect runs
   (`EffectRun`) apply blur/blend to a range of one list and never reorder.
@@ -154,19 +152,6 @@ effects", families). This section covers how each renderer draws it.
 - **Low power:** FX Spec 1.3 `performance.lowPower.disable: ["blur"]` makes
   the resolver emit no runs and σ 0, so renderers do nothing special. (The
   Web test asserts the low-power frame has no runs.)
-- **Dark palettes** (FX Spec 1.13): a view in a dark theme adds the runtime
-  key `dark` = 1 when the frame may have a palette's dark variant (a character from an FX Spec,
-  or `palette.dark.*` among its keys); the engine then reads `palette.dark.<slot>.*`. Other
-  frames are untouched. Web `mount.ts`, iOS `SinuaView` (`specIsCharacter`), Android `FxModel.dark`.
-- **Grain tile**: 64 × 64, one tile pixel per CSS px / pt / dp
-  however large the character is drawn (the pattern undoes the engine scale),
-  anchored at the origin; pixel (x, y) is the integer hash `grainValue(x, y)`
-  (`h = x·73856093 ^ y·19349663 ^ 0x9E3779B9`, then `h = (h ^ h>>13)·1274126177`,
-  `h ^= h>>16`, `v = h / 2³²`, all in wrapping 32-bit arithmetic): v < 0.5 is a
-  black speck, v ≥ 0.5 a white one, at alpha |v − 0.5|·2. Every platform
-  builds the same tile; the Web (`grainValue`), Swift (`FxPaint.grainValue`)
-  and Kotlin (`fxGrainValue`) tests check the same five vectors. The Studio's
-  SVG exporters embed the tile as a PNG `<pattern>`.
 - **Liquid, particles and holographic** (phases 2–4) were removed in
   0.1.0-beta.9; the measurements below that name them are history.
 - **Plain frames are untouched.** A frame without fills or effects takes
@@ -678,35 +663,6 @@ carry on underneath.
 | `success` | a green tint pulse, one ring expanding from the shape, a tick drawn in the middle | 0.9 s | "Done" |
 | `error` | a short horizontal shake (three decaying swings) with a red tint | 0.5 s | "Something went wrong" |
 | `celebrate` | a seeded burst of particles out of the shape, and a small brightness lift | 1.4 s | "Well done" |
-| `hop` | characters only: a crouch, a hop and a squash on landing, with a smile; other families draw nothing | 0.6 s | nothing |
-
-**Expression** (FX Spec 1.12): a character's `expression` prop.
-- **Values:** `happy`, `surprised`, `thoughtful`, `sad`, `sleepy`, or `"none"` / `null` for none.
-- **Over the spec:** it wins over a spec's `expression`. Left unset, the spec decides.
-- **Easing:** a change eases over 0.6 s; reduced motion cuts.
-- **What it changes:** the eyes and the resting mouth. The voice state keeps the gaze and the
-  talking mouth. It is never announced.
-
-**Palette** (FX Spec 1.12): a character's `palette` prop, slot -> hex (Web /
-React / RN `{ body: "#E63946" }`, SwiftUI `["body": "#E63946"]`, Compose
-`mapOf("body" to "#E63946")`; on `<sinua-character>` a property).
-- **Over the spec:** it wins over a spec's `palette`, slot by slot through the engine's own
-  rules (tones follow, a dark ground lifts the eyes). See [`character.md`](character.md), *Palette*.
-- **A change is immediate**, no easing. An unknown slot draws nothing new (Web: `onError`).
-
-**Tap to hop** (FX Spec 1.12).
-- **Option:** `tap` (Web `tap`, SwiftUI / Compose `tap:`, RN `tap`). It is on by default on
-  `SinuaCharacter` / `<sinua-character>` and off on the plain view.
-- **What a tap does:** a click or a touch on the view plays `hop`. The character's eyes glance
-  toward the tap for the first two thirds of it (`tapX` / `tapY`, -1..1 from the drawn
-  square's centre, set by the view), then return to the voice state's gaze.
-- **The voice state goes on underneath:** the mouth, the ears and the lids stay its own.
-- **Limits:** a tap never cuts a running `success` / `error` / `celebrate`, and the view
-  plays at most two hops a second.
-- **Reduced motion:** only the smile, no hop and no glance.
-- **Scrolling:** on iOS a touch that moves more than 10 pt is a scroll, not a tap.
-- **Not used:** a continuous pointer gaze was considered and left out. Phones have no hover,
-  and it would fight the voice's gaze language.
 
 - A new trigger replaces a running effect.
 - Under reduced motion there's no shake, no burst and no moving ring: the tint pulse
@@ -714,11 +670,11 @@ React / RN `{ body: "#E63946" }`, SwiftUI `["body": "#E63946"]`, Compose
 - The effect is spoken at once (it's an event, so the state rate limit doesn't apply)
   unless `announce` is false. `labels["effect:success"]` etc. replace the words.
 - Unknown names do nothing.
-- Box-layout patterns play effects in place: the voice-message bar `playing`. The bars
-  turn green, red or gold where they are, and nothing is drawn in the middle. There's no
-  ring, tick, burst or shake, which would otherwise spill out of the bar or slide it about.
+- Box-layout patterns play effects in place: the voice message's `dune`. Its light turns
+  green, red or gold where it is, and nothing is drawn in the middle. There's no ring, tick,
+  burst or shake, which would otherwise spill out of the strip or slide it about.
 - The typed components take the same parameter (`SinuaRing(…, effect:)`,
-  `SinuaCharacter(…, effect = …)`), along with `labels`, `announce`, `haptics` and, on a spec,
+  `SinuaOrb(…, effect = …)`), along with `labels`, `announce`, `haptics` and, on a spec,
   `rules`.
 
 ```ts
@@ -745,7 +701,7 @@ the effect runs. So it works on every pattern of every family and looks identica
 every platform (`spec/effect-vectors.json`). The durations and words come from
 `effect_info(name)`.
 
-## Typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaCore`, `SinuaBeacon`, `SinuaCharacter`)
+## Typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaCore`, `SinuaBeacon`)
 
 One component per engine object, generated from the parameter catalog
 (`spec/parameters.json`). Each one is a thin wrapper over `FxView`, with no

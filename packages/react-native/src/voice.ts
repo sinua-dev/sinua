@@ -196,6 +196,8 @@ function transcriptOf(e: VoiceEvent): TranscriptUpdate {
 type Listener = { id: string; event: string; cb: (payload: never) => void };
 const listeners: Listener[] = [];
 let emitter: NativeEventEmitter | null = null;
+/** Each source's last state and connection, replayed to a listener added mid-session (a view mounted after `connect()`). */
+const latest = new Map<string, { state?: string; connected?: boolean }>();
 
 function subscribe(id: string, event: string, cb: (payload: never) => void): () => void {
   if (!emitter) {
@@ -204,11 +206,16 @@ function subscribe(id: string, event: string, cb: (payload: never) => void): () 
       const e = raw as VoiceEvent;
       if (e.event === "credentialRequest") return void credentialRequest(e.id, e.requestId ?? "");
       const payload = e.event === "transcript" ? transcriptOf(e) : (e.state ?? e.message ?? e.connected ?? e.muted);
+      if (e.event === "state") latest.set(e.id, { ...latest.get(e.id), state: e.state });
+      if (e.event === "connection") latest.set(e.id, { ...latest.get(e.id), connected: e.connected });
       for (const l of [...listeners]) if (l.id === e.id && l.event === e.event) (l.cb as (p: unknown) => void)(payload);
     });
   }
   const listener: Listener = { id, event, cb };
   listeners.push(listener);
+  const now = latest.get(id);
+  if (event === "state" && now?.state !== undefined && now.state !== "idle") (cb as (p: unknown) => void)(now.state);
+  if (event === "connection" && now?.connected === true) (cb as (p: unknown) => void)(true);
   return () => {
     const i = listeners.indexOf(listener);
     if (i >= 0) listeners.splice(i, 1);
@@ -323,6 +330,7 @@ export function createVoiceSource(config: VoiceSourceConfig): VoiceSourceHandle 
       if (released) return;
       released = true;
       providers.delete(id);
+      latest.delete(id);
       for (let i = listeners.length - 1; i >= 0; i--) if (listeners[i].id === id) listeners.splice(i, 1);
       nativeOrThrow().release(id);
     },

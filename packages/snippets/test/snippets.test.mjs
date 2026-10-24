@@ -115,9 +115,9 @@ test("the typed snippet prints the component with its props", () => {
 
 test("a box-layout pattern's snippet gets its own box; square ones stay 160", async () => {
   const { snippetBox } = await import("../dist/index.js");
-  assert.deepEqual(snippetBox("playing"), [220, 44]);
+  assert.deepEqual(snippetBox("dune"), [220, 44]);
   assert.deepEqual(snippetBox("working"), [160, 160]);
-  const tabs = buildSnippets({ state: "playing", size: 64, overrides: {}, specFile: "signal-playing.fxspec.json" }).code;
+  const tabs = buildSnippets({ state: "dune", size: 64, overrides: {}, specFile: "signal-dune.fxspec.json" }).code;
   const compose = tabs.find((t) => t.id === "compose").code;
   assert.match(compose, /Modifier\.size\(220\.dp, 44\.dp\)/);
   assert.match(tabs.find((t) => t.id === "react").code, /style=\{\{ width: 220, height: 44 \}\}/);
@@ -142,16 +142,4 @@ test("a played effect adds how the app plays it; without one the text is unchang
   assert.match(byId.compose, /SinuaEffectTrigger\(SinuaEffect\.CELEBRATE\)/);
   assert.match(byId.rn, /effect=\{\{ name: "celebrate", key \}\}/);
   assert.match(byId.react, /trigger\("celebrate"\)/);
-});
-
-test("a palette prints as the palette prop, its engine keys left out; without one the text is unchanged", () => {
-  const base = { state: "buzzy", size: 64, overrides: { look: 0.5, "palette.shell.h": 355, "palette.shell.w": 1 }, specFile: "character-buzzy.fxspec.json" };
-  const tab = (s, id) => s.code.find((t) => t.id === id).code;
-  const s = buildSnippets({ ...base, palette: { body: "#e63946", accent: "#ffffff" } });
-  assert.match(tab(s, "react"), /overrides=\{\{ look: 0\.5 \}\} palette=\{\{ accent: "#ffffff", body: "#e63946" \}\}/);
-  assert.match(tab(s, "web"), /palette: \{ accent: "#ffffff", body: "#e63946" \}/);
-  assert.match(tab(s, "swiftui"), /overrides: \["look": 0\.5\], palette: \["accent": "#ffffff", "body": "#e63946"\]/);
-  assert.match(tab(s, "compose"), /palette = mapOf\("accent" to "#ffffff", "body" to "#e63946"\)/);
-  for (const t of s.code) assert.doesNotMatch(t.code, /palette\.shell/);
-  assert.deepEqual(buildSnippets(base), buildSnippets({ ...base, palette: {} }));
 });

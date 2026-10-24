@@ -349,7 +349,7 @@ mod tests {
         .unwrap();
         assert_eq!((sh.fills, sh.polylines, sh.elements), (2, 0, 2));
         assert!(sh.coverage > 0.0);
-        let sc = estimate("scrolling", 64, &HashMap::new()).unwrap();
+        let sc = estimate("loading", 64, &HashMap::new()).unwrap();
         assert!(sc.polylines > 0 && sc.points > sc.polylines);
     }
 

@@ -7,7 +7,7 @@ import { sinuaSignalOverrides, sinuaSpecError, type SinuaSize, type SinuaSignalP
 
 type Options = Omit<SinuaViewProps, "spec" | "pattern" | "state" | "specState" | "size" | "overrides" | "inputs" | "voiceLevelInput" | "crossFade">;
 
-/** Signal, typed: `<SinuaSignal pattern="signaling" />` plus any of its parameters. */
+/** Signal, typed: `<SinuaSignal pattern="veil" />` plus any of its parameters. */
 export type SinuaSignalProps = Options &
   (
     | (SinuaSignalParams & {
@@ -49,4 +49,4 @@ export function SinuaSignal(props: SinuaSignalProps) {
   return <SinuaView {...(options as Options)} pattern={pattern} size={size} state={state} inputs={inputs} overrides={overrides} />;
 }
 
-const PARAM_KEYS = ["barCount","barWidth","hue","ink","minHeight","saturation","layerCount","lineWidth","pointCount","amplitude","fadeWidth","columnCount","ledCount","ledSize","minLevel","mirror","playhead","unplayedOpacity","progress","envelope","glow","noise","pulse","gradient","color"];
+const PARAM_KEYS = ["ink","layerCount","churn","level","columnCount","progress","envelope","glow","noise","pulse","gradient","color"];

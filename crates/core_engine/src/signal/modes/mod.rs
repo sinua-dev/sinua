@@ -1,5 +1,3 @@
-pub mod bar;
-pub mod matrix;
-pub mod playback;
-pub mod scroll;
-pub mod waveform;
+pub mod crystal;
+pub mod dune;
+pub mod veil;

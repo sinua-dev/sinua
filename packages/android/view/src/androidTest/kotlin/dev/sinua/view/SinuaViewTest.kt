@@ -61,13 +61,14 @@ class SinuaViewTest {
         }
     }
 
-    /** The catalog's `character` patterns: drawn with fills by default (docs/character.md). */
-    private val characterPatterns: Int by lazy {
+    /** The catalog's `signal` patterns: light volumes, drawn with light effect runs by default. */
+    private val signalPatterns: Set<String> by lazy {
         val objects = JSONObject(spec("parameters.json")).getJSONArray("objects")
         (0 until objects.length())
             .map { objects.getJSONObject(it) }
-            .filter { it.getString("id") == "character" }
-            .sumOf { it.getJSONArray("patterns").length() }
+            .filter { it.getString("id") == "signal" }
+            .flatMap { o -> o.getJSONArray("patterns").let { p -> (0 until p.length()).map { p.getJSONObject(it).getString("id") } } }
+            .toSet()
     }
 
     private fun raster(block: CanvasDrawScope.() -> Unit): IntArray {
@@ -81,10 +82,11 @@ class SinuaViewTest {
     @Test
     fun fxPaintIsPixelIdenticalToTheStudioPainter() {
         // A floor, not a count: it only guards a loader that read too little.
-        assertTrue("only ${states.size} patterns read -- the asset or the loader moved", states.size >= 34)
+        assertTrue("only ${states.size} patterns read -- the asset or the loader moved", states.size >= 31)
         var compared = 0
         var perVertex = 0
         var filled = 0
+        val lit = mutableSetOf<String>()
         for (s in states) {
             val f: OrbFrame = frame(s, 64u, 1.7)
                 ?: throw AssertionError("$s is in spec/parameters.json but does not render through core_engine")
@@ -95,10 +97,14 @@ class SinuaViewTest {
                 perVertex++
                 continue
             }
-            // Nor fills (materials phase 1): a character is drawn with fills only
-            // (docs/character.md). The materials cases hold fills across platforms.
+            // Nor fills or effect runs (materials): a light volume draws its dots as light
+            // (blend 3). The materials cases hold those across platforms.
             if (f.fills.isNotEmpty()) {
                 filled++
+                continue
+            }
+            if (f.effects.isNotEmpty()) {
+                lit += s
                 continue
             }
             for (dark in listOf(false, true)) {
@@ -111,9 +117,10 @@ class SinuaViewTest {
             }
         }
         // The denominator, exactly: two themes x two alphas for every pattern.
-        assertEquals("four rasters per pattern", (states.size - perVertex - filled) * 4, compared)
+        assertEquals("four rasters per pattern", (states.size - perVertex - filled - lit.size) * 4, compared)
         assertEquals("no pattern draws per-vertex colour by default", 0, perVertex)
-        assertEquals("exactly the character patterns draw fills by default", characterPatterns, filled)
+        assertEquals("no pattern draws fills by default", 0, filled)
+        assertTrue("only light volumes draw effect runs by default: $lit", signalPatterns.containsAll(lit))
         println("FxPaint parity: $compared rasters identical across ${states.size} patterns")
     }
 
@@ -342,20 +349,6 @@ class SinuaViewTest {
                     "gradientHue3" to 40.0,
                 ),
             ),
-            // A character is fills only (docs/character.md): celebrate and one everyday frame each.
-            Triple("buzzy-64-0.6-celebrate", "buzzy", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
-            Triple("buzzy-64-0.6-muted", "buzzy", mapOf("look" to 0.0, "muted" to 1.0)),
-            Triple("hum-64-0.6-celebrate", "hum", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
-            Triple("hum-64-0.6-barge-in", "hum", mapOf("look" to 0.0, "interruptAge" to 0.05)),
-            Triple("wisp-64-0.6-celebrate", "wisp", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
-            Triple("wisp-64-0.6-barge-in", "wisp", mapOf("look" to 0.0, "interruptAge" to 0.05)),
-            Triple("chirp-64-0.6-celebrate", "chirp", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
-            Triple("chirp-64-0.6-barge-in", "chirp", mapOf("look" to 0.0, "interruptAge" to 0.05)),
-            Triple("buzzy-64-0.6-turned", "buzzy", mapOf("turnYaw" to -0.7, "turnPitch" to 0.8, "gazeX" to -8.0, "gazeY" to -4.0, "look" to 0.0)),
-            Triple("chirp-64-0.6-turned", "chirp", mapOf("turnYaw" to -0.7, "turnPitch" to 0.8, "gazeX" to -8.0, "gazeY" to -4.0, "look" to 0.0)),
-            Triple("cuppa-64-0.6-celebrate", "cuppa", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
-            Triple("bean-64-0.6-turned", "bean", mapOf("turnYaw" to -0.7, "turnPitch" to 0.8, "gazeX" to -8.0, "gazeY" to -4.0, "look" to 0.0)),
-            Triple("beep-64-0.6-celebrate", "beep", mapOf("effectCode" to 3.0, "effectAge" to 0.5)),
             // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC).
             Triple(
                 "x-completing-64-0.6-gradient-glowblur",
@@ -385,23 +378,6 @@ class SinuaViewTest {
         )
         val frames = cases.map { (key, state, overrides) ->
             key to uniffi.core_engine.frameWithOverrides(state, 64u, 0.6, overrides)!!
-        }.toMutableList()
-        // FX Spec rows (1.13, design note 22; frames.mjs SPEC_ROWS): the showcase examples
-        // resolved at their base design -- elliptical gradients, soft layers, rims, grain.
-        val assets = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().context.assets
-        for ((key, file) in listOf(
-            "rich-bean-64-0.6-spec" to "rich-bean.fxspec.json",
-            "rich-buzzy-64-0.6-spec" to "rich-buzzy.fxspec.json",
-        )) {
-            val json = assets.open(file).bufferedReader().use { it.readText() }
-            val r = uniffi.core_engine.resolveFxSpecWith(json, "idle", emptyMap())
-            assertTrue("$file: ${r.diagnostics}", r.ok)
-            val f = uniffi.core_engine.frameWithOverrides(r.state, 64u, 0.6, r.overrides)!!
-            if (key.startsWith("rich-")) {
-                assertTrue("$key has grain", f.fills.any { it.blend.toInt() == 2 })
-                assertTrue("$key has an elliptical gradient", f.fills.any { it.gradient?.kind?.toInt() == 2 })
-            }
-            frames.add(key to f)
         }
         for ((key, f) in frames) {
             if (!key.contains("gradient3")) {

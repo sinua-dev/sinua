@@ -128,3 +128,42 @@ test("transcripts: a muted user says nothing", async () => {
   assert.ok(got.every((u) => u.role === "assistant"));
   src.disconnect();
 });
+
+test("connected before anyone listens: the source and the fan-out replay the state and the connection", async () => {
+  for (const state of ["listening", "thinking", "speaking"]) {
+    const src = new SimulatedVoiceSource({ turns: [{ state, seconds: 60, voice: state === "speaking" ? "agent" : state === "listening" ? "user" : undefined }] }, { autoTick: false });
+    await src.connect();
+    src.advance(0.1);
+    // As a view mounted after `connect()`: the fan-out subscribes now.
+    const shared = SharedVoiceSource.of(src);
+    assert.equal(shared.state, state);
+    const seen = [];
+    let up = null;
+    shared.onStateChange((s) => seen.push(s));
+    shared.onConnectionChange((c) => (up = c));
+    assert.deepEqual(seen, [state], "a late listener gets the current state at once");
+    assert.equal(up, true);
+    const t = shared.track();
+    assert.equal(t.overrides.state, state);
+    t.release();
+    src.disconnect();
+  }
+});
+
+test("connected but idle: the connection still replays, the state doesn't", async () => {
+  const src = new SimulatedVoiceSource({ turns: [{ state: "idle", seconds: 60 }] }, { autoTick: false });
+  await src.connect();
+  src.advance(0.1);
+  const shared = SharedVoiceSource.of(src);
+  const seen = [];
+  let up = null;
+  shared.onStateChange((s) => seen.push(s));
+  shared.onConnectionChange((c) => (up = c));
+  assert.deepEqual(seen, []);
+  assert.equal(up, true, "the view knows the session is live");
+  assert.equal(shared.connected, true);
+  src.disconnect();
+  let after = null;
+  shared.onConnectionChange((c) => (after = c));
+  assert.equal(after, null, "nothing replays once disconnected");
+});

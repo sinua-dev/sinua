@@ -67,8 +67,6 @@ export class StateTransition {
   private size: OrbSize = 64;
   private rates = new Map<string, Rates>();
   private lastT: number | null = null;
-  /** Seconds since the last state change (any change, cut or not); infinite before the first. */
-  private since = Infinity;
 
   /**
    * A state change happened: the weights head for the new state from where they are.
@@ -77,7 +75,6 @@ export class StateTransition {
    * way in `duration`.
    */
   start(duration: number, curve: string, authored = false): void {
-    if (this.entries.length) this.since = 0;
     if (!(duration > 0) || !this.entries.length) {
       this.entries = [entry(null, 1)];
       this.authored = null;
@@ -106,7 +103,6 @@ export class StateTransition {
 
   advance(dt: number): void {
     const raw = Math.max(0, dt);
-    this.since += raw;
     if (raw > SETTLE_GAP_S) {
       const t = this.target;
       if (t) this.entries = [entry(t.side, 1)];
@@ -149,15 +145,6 @@ export class StateTransition {
     }
   }
 
-  /**
-   * Seconds since the lifecycle state last changed, or `null` before the first
-   * change. The frames carry it as the `stateAge` runtime key (a character
-   * blinks at the end of the user's turn); other patterns ignore it.
-   */
-  get stateAge(): number | null {
-    return Number.isFinite(this.since) ? this.since : null;
-  }
-
   /** More than one state is on screen. */
   get active(): boolean {
     return this.entries.length > 1;
@@ -196,7 +183,6 @@ export class StateTransition {
     if (!this.entries.length) this.entries = [entry(to, 1)];
     const target = this.target!;
     target.side = to;
-    const extra = Number.isFinite(this.since) ? { ...live, stateAge: this.since } : live;
     const dp = this.tick(t);
 
     // One group per pattern; within it the engine blends the sides by weight.
@@ -212,7 +198,7 @@ export class StateTransition {
       .sort((a, b) => b.w - a.w)
       .slice(0, 2);
     const blended = drawn.map((g) => this.blend(g.pattern, g.es, target, size, t, dp));
-    const withExtra = (o: Record<string, number>) => ({ ...o, ...extra });
+    const withExtra = (o: Record<string, number>) => ({ ...o, ...live });
     const draw = (pattern: string, o: Record<string, number>) => frameWithOverrides(pattern as OrbState, size, t, withExtra(o));
 
     if (drawn.length === 1) {

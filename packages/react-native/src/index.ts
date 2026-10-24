@@ -34,10 +34,9 @@ export type OrbState =
   | "calibrating"
   | "progressing"
   | "muted"
-  | "signaling"
-  | "waveform"
-  | "scrolling"
-  | "metering"
+  | "veil"
+  | "crystal"
+  | "dune"
   | "completing"
   | "loading"
   | "tracking"
@@ -126,7 +125,7 @@ export interface OrbFrame {
 /** Mirrors `primitives::Fill` -- see docs/engine.md, *Paint contract*. */
 export interface Fill {
   points: { x: number; y: number }[];
-  /** Inner rings (a character's ring shapes): paint outer + holes as one even-odd path. Absent when none. */
+  /** Inner rings: paint outer + holes as one even-odd path. Absent when none. */
   holes?: { x: number; y: number }[][];
   white: number;
   a: number;

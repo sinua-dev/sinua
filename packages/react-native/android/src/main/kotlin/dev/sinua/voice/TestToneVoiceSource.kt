@@ -36,8 +36,10 @@ class TestToneVoiceSource(private val sampleRate: Double = 48_000.0) : VoiceSour
     private var connectionCb: ((Boolean) -> Unit)? = null
     private var muted = false
 
+    /** Running, it replays `true` at once (the state follows on the next tick). */
     override fun onConnectionChange(cb: (Boolean) -> Unit) {
         connectionCb = cb
+        if (running) cb(true)
     }
 
     /** Muted, the tone stands in for a muted mic: the level reads 0. */

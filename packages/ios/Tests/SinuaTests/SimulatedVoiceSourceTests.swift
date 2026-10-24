@@ -74,6 +74,44 @@ final class SimulatedVoiceSourceTests: XCTestCase {
         XCTAssertEqual(conn, [true, false])
     }
 
+    func testConnectedBeforeAnyoneListensTheSourceAndTheFanOutReplay() async throws {
+        for state in ["listening", "thinking", "speaking"] {
+            let voice = state == "speaking" ? #","voice":"agent""# : state == "listening" ? #","voice":"user""# : ""
+            let src = try SimulatedVoiceSource(script: #"{"turns":[{"state":"\#(state)","seconds":60\#(voice)}]}"#)
+            try await src.connect()
+            src.pause()
+            src.play()
+            src.advance(0.1)
+            // As a view mounted after connect(): the fan-out subscribes now.
+            let shared = SharedVoiceSource.of(src)
+            XCTAssertEqual(shared.state.rawValue, state)
+            var seen: [AgentState] = []
+            var up: Bool?
+            shared.listenState { seen.append($0) }
+            shared.listenConnection { up = $0 }
+            XCTAssertEqual(seen.map(\.rawValue), [state], "a late listener gets the current state at once")
+            XCTAssertEqual(up, true)
+            XCTAssertEqual(shared.track().overrides.state.rawValue, state)
+            src.disconnect()
+        }
+    }
+
+    func testConnectedButIdleStillReplaysTheConnection() async throws {
+        let src = try SimulatedVoiceSource(script: #"{"turns":[{"state":"idle","seconds":60}]}"#)
+        try await src.connect()
+        let shared = SharedVoiceSource.of(src)
+        var seen: [AgentState] = []
+        var up: Bool?
+        shared.listenState { seen.append($0) }
+        shared.listenConnection { up = $0 }
+        XCTAssertEqual(seen, [])
+        XCTAssertEqual(up, true, "the view knows the session is live")
+        src.disconnect()
+        var after: Bool?
+        shared.listenConnection { after = $0 }
+        XCTAssertNil(after, "nothing replays once disconnected")
+    }
+
     func testABadScriptThrowsWithItsPath() {
         XCTAssertThrowsError(try SimulatedVoiceSource(script: #"{"turns":[{"state":"idle","seconds":0}]}"#)) {
             XCTAssertTrue($0.localizedDescription.contains("/turns/0/seconds"), $0.localizedDescription)

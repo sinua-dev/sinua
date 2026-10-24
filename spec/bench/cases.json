@@ -11,7 +11,9 @@
     { "id": "orbs-holo", "label": "Orbs · glowing + holographic", "state": "glowing", "overrides": { "holoStrength": 1 } },
     { "id": "orbs-glow-heavy", "label": "Orbs · working + glow (heavy)", "state": "working", "overrides": { "glowStrength": 1 } },
     { "id": "ring-holo-hues", "label": "Ring · tracking + holographic (per-vertex hues)", "state": "tracking", "overrides": { "holoStrength": 1 } },
-    { "id": "signal-waveform", "label": "Signal · waveform", "state": "waveform", "overrides": {} },
-    { "id": "beacon-locating", "label": "Beacon · locating", "state": "locating", "overrides": {} }
+    { "id": "beacon-locating", "label": "Beacon · locating", "state": "locating", "overrides": {} },
+    { "id": "signal-veil", "label": "Signal · veil (light volume)", "state": "veil", "overrides": { "audioLevel": 0.6 } },
+    { "id": "signal-crystal", "label": "Signal · crystal (light volume, 16 bands)", "state": "crystal", "overrides": { "audioBandCount": 16, "audioBand0": 0.7, "audioBand1": 0.66, "audioBand2": 0.62, "audioBand3": 0.58, "audioBand4": 0.54, "audioBand5": 0.5, "audioBand6": 0.46, "audioBand7": 0.42, "audioBand8": 0.38, "audioBand9": 0.34, "audioBand10": 0.3, "audioBand11": 0.26, "audioBand12": 0.22, "audioBand13": 0.18, "audioBand14": 0.14, "audioBand15": 0.1 } },
+    { "id": "signal-dune", "label": "Signal · dune (light volume)", "state": "dune", "overrides": { "progress": 0.6 } }
   ]
 }

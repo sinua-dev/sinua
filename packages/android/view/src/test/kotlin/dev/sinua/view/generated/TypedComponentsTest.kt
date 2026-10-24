@@ -30,7 +30,7 @@ class TypedComponentsTest {
     fun orbFlatParticlesAndTheMaterialStayApart() {
         val o = SinuaOrbProps(SinuaOrbPattern.WORKING, orbitParticles = 4, noise = SinuaNoise(strength = 0.5)).toOverrides()
         assertEquals(mapOf("particles" to 4.0, "noiseStrength" to 0.5), o)
-        assertEquals(emptyMap<String, Double>(), SinuaSignalProps(SinuaSignalPattern.WAVEFORM).toOverrides())
+        assertEquals(emptyMap<String, Double>(), SinuaSignalProps(SinuaSignalPattern.VEIL).toOverrides())
     }
 
     @Test

@@ -60,16 +60,12 @@ internal class StateTransition {
     private val rates = HashMap<String, Rates>()
     private var lastT: Double? = null
 
-    /** Seconds since the last state change (cut or not); infinite before the first. */
-    private var since = Double.POSITIVE_INFINITY
-
     /**
      * A state change happened: the weights head for the new state from where they are.
      * [duration] 0 = a cut. [authored]: the file wrote [curve] for this change, so it is
      * kept (velocity carried); otherwise the lag clock, ~95 % of the way in [duration].
      */
     fun start(duration: Double, curve: String, authored: Boolean = false) {
-        if (entries.isNotEmpty()) since = 0.0
         if (!(duration > 0) || entries.isEmpty()) {
             entries = mutableListOf(Entry(null, 1.0))
             this.authored = null
@@ -98,7 +94,6 @@ internal class StateTransition {
 
     fun advance(dt: Double) {
         val raw = maxOf(0.0, dt)
-        since += raw
         if (raw > SETTLE_GAP_SECONDS) {
             entries.lastOrNull()?.let { entries = mutableListOf(Entry(it.side, 1.0)) }
             authored = null
@@ -143,13 +138,6 @@ internal class StateTransition {
         }
     }
 
-    /**
-     * Seconds since the lifecycle state last changed, or null before the first change.
-     * The frames carry it as the `stateAge` runtime key (a character blinks at the end
-     * of the user's turn); other patterns ignore it.
-     */
-    val stateAge: Double? get() = if (since.isFinite()) since else null
-
     /** More than one state is on screen. */
     val active: Boolean get() = entries.size > 1
 
@@ -190,7 +178,6 @@ internal class StateTransition {
         if (entries.isEmpty()) entries = mutableListOf(Entry(to, 1.0))
         val target = entries.size - 1
         entries[target].side = to
-        val extra = if (since.isFinite()) live + ("stateAge" to since) else live
         val dp = tick(t)
 
         // One group per pattern; within it the engine blends the sides by weight.
@@ -208,7 +195,7 @@ internal class StateTransition {
                 .take(2)
         val blended = drawn.map { blend(it.pattern, it.idx, size, t, dp) }
 
-        fun draw(pattern: String, o: Map<String, Double>): OrbFrame? = frameWithOverrides(pattern, size, t, o + extra)
+        fun draw(pattern: String, o: Map<String, Double>): OrbFrame? = frameWithOverrides(pattern, size, t, o + live)
         if (drawn.size == 1) {
             val (m, o) = blended[0]
             val pattern = drawn[0].pattern
@@ -222,8 +209,8 @@ internal class StateTransition {
         val blend = drawn[j].w / (drawn[i].w + drawn[j].w)
         if (drawn[i].pattern in LATTICE && drawn[j].pattern in LATTICE) {
             frameTransitionWithOverrides(
-                TransitionSide(drawn[i].pattern, 1.0, blended[i].second + extra),
-                TransitionSide(drawn[j].pattern, 1.0, blended[j].second + extra),
+                TransitionSide(drawn[i].pattern, 1.0, blended[i].second + live),
+                TransitionSide(drawn[j].pattern, 1.0, blended[j].second + live),
                 size,
                 t,
                 blend,

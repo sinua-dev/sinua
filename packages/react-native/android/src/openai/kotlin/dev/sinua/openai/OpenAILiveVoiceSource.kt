@@ -160,8 +160,10 @@ class OpenAILiveVoiceSource(
     override val supportsMute: Boolean get() = true
     override val reportsConnection: Boolean get() = true
 
+    /** While the session is up, it replays `true` at once, in any state. */
     override fun onConnectionChange(cb: (Boolean) -> Unit) {
         connectionCb = cb
+        if (sessionUp) cb(true)
     }
 
     private fun setSessionUp(up: Boolean) {
@@ -183,8 +185,10 @@ class OpenAILiveVoiceSource(
         metricsCb = cb
     }
 
+    /** Mid-session, it replays the current state at once: a view mounted after [connect] doesn't stay idle. */
     override fun onStateChange(cb: (AgentState) -> Unit) {
         session.onState = cb
+        if (session.state != AgentState.IDLE) cb(session.state)
     }
 
     override fun onInterrupt(cb: () -> Unit) {

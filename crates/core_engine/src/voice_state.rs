@@ -118,16 +118,6 @@ pub const DENSITY_FROM_MINOR: u64 = 13;
 /// The profile as a file of FX Spec `1.<minor>` reads it (the minor gates TS7's densities).
 /// Order: the generic state, then the pattern's own entry.
 pub fn profile_for_minor(pattern: &str, state: &str, minor: u64) -> Option<VoiceStateProfile> {
-    // A recipe from the file (1.12): the built-in character it names, else the
-    // shared `character` language.
-    let inherited;
-    let pattern = match crate::character::registry::get(pattern) {
-        Some(r) => {
-            inherited = r.profile.clone().unwrap_or_else(|| "character".into());
-            inherited.as_str()
-        }
-        None => pattern,
-    };
     let src = source();
     let generic = src["states"].get(state)?;
     let own = src["patterns"]

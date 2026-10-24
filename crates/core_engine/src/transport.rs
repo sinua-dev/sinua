@@ -522,7 +522,7 @@ mod tests {
             ("scanning", o(&[("trailFill", 1.0)])),
             ("working", o(&[("glowStrength", 1.0), ("glowMode", 1.0)])),
             (
-                "scrolling",
+                "loading",
                 o(&[("glowStrength", 1.0), ("glowMode", 1.0), ("glowBlend", 1.0)]),
             ),
             ("connecting", o(&[("glowStrength", 1.0), ("glowMode", 1.0)])),
@@ -551,7 +551,7 @@ mod tests {
         let cases: [(&str, HashMap<String, f64>); 5] = [
             ("working", HashMap::new()),
             ("connecting", HashMap::new()),
-            ("scrolling", HashMap::new()),
+            ("loading", HashMap::new()),
             ("tracking", HashMap::from([("progress0".to_string(), 1.4)])),
             (
                 "working",

@@ -50,8 +50,10 @@ class LocalMicVoiceSource : VoiceSource {
     private var connectionCb: ((Boolean) -> Unit)? = null
     private var muted = false
 
+    /** Running, it replays `true` at once (the state follows on the next tick). */
     override fun onConnectionChange(cb: (Boolean) -> Unit) {
         connectionCb = cb
+        if (running) cb(true)
     }
 
     /** Muted, the level reads 0 (the analysis never leaves the device either way). */

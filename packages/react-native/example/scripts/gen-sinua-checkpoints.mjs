@@ -9,8 +9,8 @@ import { fileURLToPath } from "node:url";
 
 /** Which cases, and why (orchestrator 2026-09-18: one of each kind). */
 export const CHECKPOINT_KEYS = [
-  "scrolling-64-0.6", // polyline-heavy (40 stroked pills)
-  "metering-64-0.6", // dot-heavy (96 LEDs)
+  "stepping-64-0.6", // polyline-heavy (5 stroked segments)
+  "dune-64-0.6", // dot-heavy (216 dots)
   "glowing-64-0.6", // coloured additive orb (saturation/hue through the bridge)
   "tracking-64-0.6-laps", // input-driven (overrides; lap + halo polylines)
   "working-64-0.6-color-fixed", // Color system: apply_color + colorMode "fixed" through the bridge

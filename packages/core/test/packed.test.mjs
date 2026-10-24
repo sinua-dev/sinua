@@ -58,7 +58,7 @@ test("packed == JSON for every FX Spec example, state and power state", () => {
 });
 
 test("readPacked visits polylines, lines, dots with their data", () => {
-  for (const [state, ov] of [["connecting", {}], ["scrolling", {}], ["tracking", { progress0: 1.4 }]]) {
+  for (const [state, ov] of [["connecting", {}], ["scanning", {}], ["tracking", { progress0: 1.4 }]]) {
     const p = frameWithOverridesPacked(state, 64, 1.3, ov);
     const f = frameWithOverrides(state, 64, 1.3, ov);
     const seen = { poly: [], line: [], dot: [] };

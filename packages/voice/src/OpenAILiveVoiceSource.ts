@@ -132,8 +132,10 @@ export class OpenAILiveVoiceSource implements VoiceSource {
     this.metricsCb = cb;
   }
 
+  /** Mid-session, it replays the current state at once: a view mounted after `connect()` doesn't stay idle. */
   onStateChange(cb: (s: AgentState) => void): void {
     this.session.onState = cb;
+    if (this.session.state !== "idle") cb(this.session.state);
   }
 
   onInterrupt(cb: () => void): void {
@@ -148,8 +150,10 @@ export class OpenAILiveVoiceSource implements VoiceSource {
     this.session.onTranscript = cb;
   }
 
+  /** While the session is up, it replays `true` at once, in any state. */
   onConnectionChange(cb: (connected: boolean) => void): void {
     this.connectionCb = cb;
+    if (this.sessionUp) cb(true);
   }
 
   /** Muted, the mic track is disabled: WebRTC sends silence and the session stays up. */

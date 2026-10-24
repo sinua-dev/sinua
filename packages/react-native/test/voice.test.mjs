@@ -70,6 +70,25 @@ test("events reach only their own handle, and stop after release / unsubscribe",
   await assert.rejects(a.connect(), /released/);
 });
 
+test("a listener added mid-session gets the last state and the connection at once (a view mounted after connect)", () => {
+  const a = createVoiceSource({ vendor: "test" });
+  a.onStateChange(() => {});
+  emit({ id: a.id, event: "connection", connected: true });
+  emit({ id: a.id, event: "state", state: "thinking" });
+  const late = { states: [], connections: [] };
+  a.onStateChange((s) => late.states.push(s));
+  a.onConnectionChange((c) => late.connections.push(c));
+  assert.deepEqual(late.states, ["thinking"]);
+  assert.deepEqual(late.connections, [true]);
+  emit({ id: a.id, event: "state", state: "idle" });
+  emit({ id: a.id, event: "connection", connected: false });
+  const after = { states: [], connections: [] };
+  a.onStateChange((s) => after.states.push(s));
+  a.onConnectionChange((c) => after.connections.push(c));
+  assert.deepEqual(after, { states: [], connections: [] }, "nothing replays once idle and disconnected");
+  a.release();
+});
+
 test("openai: the native side asks for a credential and gets the fresh one", async () => {
   const keys = ["ek_first", "ek_second"];
   const voice = createVoiceSource({ vendor: "openai", getCredential: async () => keys.shift() });

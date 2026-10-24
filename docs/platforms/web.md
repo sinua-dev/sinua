@@ -65,9 +65,8 @@ frameViaJson / frameWithOverridesViaJson / frameFromFxSpecViaJson  // the JSON b
 ```
 
 `@sinua/core/dev` also re-exports the whole default API, bound to the same (dev) wasm. A tool
-that registers recipes should import everything from it (or alias
-`@sinua/core` to it in its bundler, as the Studio does), so it runs one engine and its views
-draw what it registered.
+that uses the dev functions should import everything from it (or alias
+`@sinua/core` to it in its bundler, as the Studio does), so it runs one engine.
 
 ### Frame transport: packed `Float64Array` (2026-09-18)
 
@@ -115,6 +114,8 @@ A zero-copy `Float64Array::view` into wasm memory was rejected. It's `unsafe`, a
 | `breathing` + glow | 2420 | 4.39 | 0.25 | 3.59 | 0.26 |
 | `metering` | 96 | 0.16 | 0.010 | 0.13 | 0.009 |
 | `scrolling` | 40 | 0.09 | 0.012 | 0.08 | 0.011 |
+
+(`metering` and `scrolling` were removed in 0.1.0-beta.12; `bench/transport.mjs` now runs `loading` and `veil` in their place.)
 
 That is 7–18× less time per frame. Chrome rounds `performance.now()` to 0.1 ms without cross-origin isolation, so the Chrome figures are batch averages. Painting is now the dominant Web cost, and that is `@sinua/web`'s side.
 

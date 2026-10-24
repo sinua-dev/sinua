@@ -50,12 +50,12 @@ This is the role Jest's snapshot docs describe (fetched, `jestjs.io/docs/snapsho
 **What it freezes** (`cases()` in `tests/sinua_golden.rs` is the single source of truth):
 - **Plain `frame()` for all 25 non-ported states:**
   - the 9 additive orbs, including `drifting` and `muted`
-  - signal ×4, ring ×5, beacon ×5, core ×2
+  - signal ×3 (the light volumes), ring ×5, beacon ×5, core ×2
   - sizes 64 and 20 and times 0.6 / 1.7 / 3.3 / 5.1, which are upstream's own sizes and times; the file is ~0.9 MB
 - **10 input-driven cases at 64 px, t = 0.6** that plain `frame()` never reaches:
   - ring `completing`/`stepping`/`measuring` with a fixed `progress` (a 0% ring is just a dot)
   - `tracking` with an overflowing lap
-  - signal `signaling`/`waveform`/`metering` with 8 fixed audio bands, and `scrolling` with a fixed history buffer
+  - signal `crystal` with 8 fixed audio bands, and `dune` as a voice message's strip (aspect 5.5, an envelope, progress 0.4)
   - beacon `reconnecting` with `quality: 0.66` and `broadcasting` with `level: 0.5`
 - **The `resolved` preset** (mode / speed / opts) per state and size.
 
@@ -123,8 +123,6 @@ Every binding checks the frozen file itself. The rules mirror the Rust checker: 
   - `packages/core/test/sinua-checkpoints.test.mjs` fails if the checkpoints drift from the spec file. It also runs the *same* check function against wasm, including a perturbation it must catch.
 
 - **FX Spec** (see [`fx-spec.md`](fx-spec.md#tests)): every `spec/examples/*.fxspec.json` is rendered on wasm (`packages/core/test/fx-spec.test.mjs`), iOS (`FxSpecTests.swift`) and Android (`FxSpecTests.kt`, from the same `spec/` androidTest assets, under `examples/`), and must equal `frameWithOverrides` of the resolved spec. The RN example runs one spec round trip through the bridge (`runFxSpecCheck`). `spec/fx-color-vectors.json` is checked by Rust (`tests/fx_color_vectors.rs`) and by `packages/core/test/fx-color-parity.test.mjs`, which imports the web Studio's own `kit/color.ts` as well as the wasm build. Regenerate the vectors only with `FX_COLOR_VECTORS_WRITE=1 cargo test -p core_engine --test fx_color_vectors -- --ignored`, the same deliberate-rebaseline rule as the golden set.
-- **The richer look** (FX Spec 1.13): `character/recipe_tests/rich.rs` holds the two showcases (`spec/examples/rich-bean`, `rich-buzzy`): elliptical gradients map exactly, soft masses fade to 0, rims, grain one per body under its outline, overlay bodies draw no fill, the `grain` / `shading` options, 20 px, low power (only for rich characters; back to "light"), never heavy, and 4 frozen digests. The painters check the grain hash against the same five vectors (`materials.test.mjs`, `MaterialsRenderTests.testGrainHashMatchesTheVectors`, `GrainVectorsTest.kt`). The materials check renders `rich-bean-64-0.6-spec` and `rich-buzzy-64-0.6-spec` on every platform (FX Spec rows, failing on a mismatch). The golden file and every built-in frame stayed byte-identical.
-- **Palettes** (FX Spec 1.13): `character/recipe_tests/palettes.rs`: every built-in maps primary and accent; the `dark` opt picks a file's dark variant and leaves plain characters as they are; slot > role; a role a character lacks is an error; the 1.13 gate for `dark`; a state patching the palette; a 1.12 `accent` slot kept; the views' `palette_overrides` carry the dark variant; a named palette (a string or `theme`) is an error at every version. `character/recipe_tests/removed.rs` checks the other 0.1.0-beta.9 removals: a recipe's `slots`, `tags`, `cosmetics`, `role`, eye `style` / `iris` / `sclera` and `roles.iris`, and a file's `cosmetics`, `wardrobe` and `params.eyeStyle` are errors.
   - **v1.1:** the parity tests also render every `states` key of the state-map examples with one fixed inputs map (`TEST_INPUTS` in `fx-spec.test.mjs`, mirrored in `FxSpecTests.swift`/`.kt`).
   - **Materials phase 1:**
     - The sinua golden set is now **spec 1.2.0**: 4 **added** cases (`generating` + highlight fill, `scanning` + trail fill, `glowing` + blur glow, `tracking` + additive blur glow) carry `fills` / `effects`.
@@ -175,6 +173,7 @@ Every binding checks the frozen file itself. The rules mirror the Rust checker: 
         lifted on a dark ground) and `cuppa-64-0.6-palette-hue` (`hue` with a palette: the given
         colour isn't turned). Their keys come from `palette_overrides`, the views' entry point.
       - 510 old cases, 510 digests and 105 resolved entries unchanged. The regenerate test is `#[ignore]`: without `-- --ignored` nothing is written, so a `cmp` alone proves nothing.
+    - **The 1.15 cleanup (0.1.0-beta.12):** sinua golden **5.0.0**, a removal, hence the major. The flat signal patterns (66 cases), the character family (175) and the orb's silhouette (17) are gone; the light volumes `veil`, `crystal` and `dune` are in `STATES`, plus `crystal-64-0.6-speaking-bands` and `dune-64-0.6-voice-message-progress40`. The digest diff against the tree before the removal: 258 removed, 2 added, 0 changed. The FX Spec locks lost the removed examples only (0 rows changed), and a 1.15 lock was captured.
     - **Liquid, particles and holographic removed (0.1.0-beta.9):** sinua golden **3.0.0**, a removal, hence the major.
       - Their 14 cases are gone (liquid ×3, particles ×4, holographic ×7, the per-vertex holo cases included); 516 cases, 516 digests and 108 resolved entries unchanged.
       - The FX Spec locks lost the three examples and the removed keys only; every other value is unchanged (`the_current_runtimes_lock_is_present_and_still_matches` and the per-minor locks pass).
@@ -255,8 +254,7 @@ exception is listed with its measured value: progressing's idle → listening wa
 
 The contract itself:
 
-- **Every pattern** (31 orb patterns, 7 characters; the script stops if the catalog has an
-  orb or character pattern its lists miss) through every voice-state pair and
+- **Every pattern** (the script stops if the catalog has an orb pattern its lists miss) through every voice-state pair and
   `initializing -> idle`, at 10 s and at 300 s into the session, plus an interruption, on
   the real view clock (`StateTransition`) and engine. Each frame is rasterized and two
   numbers judge the change (1 = ideal): *peak*, the worst frame over what a smooth change

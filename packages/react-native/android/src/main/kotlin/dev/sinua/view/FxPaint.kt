@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
-import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.TileMode
@@ -159,65 +158,6 @@ private fun DrawScope.withEffect(
     }
 }
 
-/**
- * The grain tile's value at (x, y), 0..1 (< 0.5 dark, >= 0.5 light; alpha = |v - 0.5| * 2): the same
- * integer hash as the Web's `grainValue` and FxPaint.swift (design note 22).
- */
-fun fxGrainValue(x: Int, y: Int): Double {
-    var h = (x * 73856093) xor (y * 19349663) xor 0x9E3779B9.toInt()
-    h = (h xor (h ushr 13)) * 1274126177
-    h = h xor (h ushr 16)
-    return (h.toLong() and 0xFFFFFFFFL).toDouble() / 4294967296.0
-}
-
-/** The 64-px grain tile, built once; exporters embed it too ([fxGrainTile]). */
-private val grainTile: android.graphics.Bitmap by lazy {
-    val n = 64
-    val px = IntArray(n * n)
-    for (y in 0 until n) {
-        for (x in 0 until n) {
-            val v = fxGrainValue(x, y)
-            val a = (kotlin.math.abs(v - 0.5) * 2 * 255).roundToInt()
-            val c = if (v >= 0.5) 255 else 0
-            px[y * n + x] = android.graphics.Color.argb(a, c, c, c)
-        }
-    }
-    android.graphics.Bitmap.createBitmap(px, n, n, android.graphics.Bitmap.Config.ARGB_8888)
-}
-
-/** The 64-px grain tile (design note 22), for exporters that embed it. */
-fun fxGrainTile(): android.graphics.Bitmap = grainTile
-
-/**
- * An elliptical radial gradient (`kind` 2): a circle of radius rx (device px) whose local matrix
- * turns and squashes it onto the ellipse -- centre (x0, y0), first radius to (x1, y1), second `r`.
- */
-private fun ellipticalShader(
-    g: uniffi.core_engine.FillGradient,
-    scale: Float,
-    colors: IntArray,
-    pos: FloatArray,
-): android.graphics.Shader {
-    val ux = g.x1 - g.x0
-    val uy = g.y1 - g.y0
-    val rx = max(1e-9, hypot(ux, uy))
-    val cs = (ux / rx).toFloat()
-    val sn = (uy / rx).toFloat()
-    val k = max(1e-9, g.r / rx).toFloat()
-    val shader = android.graphics.RadialGradient(
-        0f,
-        0f,
-        maxOf(1e-3f, (rx * scale).toFloat()),
-        colors,
-        pos,
-        android.graphics.Shader.TileMode.CLAMP,
-    )
-    val m = android.graphics.Matrix()
-    m.setValues(floatArrayOf(cs, -sn * k, (g.x0 * scale).toFloat(), sn, cs * k, (g.y0 * scale).toFloat(), 0f, 0f, 1f))
-    shader.setLocalMatrix(m)
-    return shader
-}
-
 private fun DrawScope.paintWithMaterials(frame: OrbFrame, engineSize: Int, dark: Boolean, alphaScale: Float) {
     val mirror = dark && frame.colorMode != ColorMode.FIXED
     val k = alphaScale.toDouble()
@@ -234,18 +174,6 @@ private fun DrawScope.paintWithMaterials(frame: OrbFrame, engineSize: Int, dark:
             path.close()
         }
         if (f.holes.isNotEmpty()) path.fillType = PathFillType.EvenOdd
-        // Grain (blend 2, design note 22): the shape filled with the noise tile at `a`, one tile
-        // pixel per dp however large the character is drawn, anchored at the origin.
-        if (f.blend.toInt() == 2) {
-            val shader = android.graphics.BitmapShader(
-                grainTile,
-                android.graphics.Shader.TileMode.REPEAT,
-                android.graphics.Shader.TileMode.REPEAT,
-            )
-            shader.setLocalMatrix(android.graphics.Matrix().apply { setScale(density, density) })
-            drawPath(path, ShaderBrush(shader), alpha = (f.a * k).coerceIn(0.0, 1.0).toFloat())
-            continue
-        }
         val g = f.gradient?.takeIf { it.stops.size >= 2 }
         val stops = g?.stops?.map { st ->
             st.offset.coerceIn(0.0, 1.0).toFloat() to
@@ -259,9 +187,7 @@ private fun DrawScope.paintWithMaterials(frame: OrbFrame, engineSize: Int, dark:
                 if (g != null && stops != null) {
                     val colors = IntArray(stops.size) { stops[it].second.toArgb() }
                     val pos = FloatArray(stops.size) { stops[it].first }
-                    paint.shader = if (g.kind.toInt() == 2) {
-                        ellipticalShader(g, scale, colors, pos)
-                    } else if (g.kind.toInt() == 1) {
+                    paint.shader = if (g.kind.toInt() == 1) {
                         android.graphics.RadialGradient(
                             (g.x0 * scale).toFloat(),
                             (g.y0 * scale).toFloat(),
@@ -297,16 +223,7 @@ private fun DrawScope.paintWithMaterials(frame: OrbFrame, engineSize: Int, dark:
             },
             compose = { mode ->
                 if (g != null && stops != null) {
-                    val brush = if (g.kind.toInt() == 2) {
-                        ShaderBrush(
-                            ellipticalShader(
-                                g,
-                                scale,
-                                IntArray(stops.size) { stops[it].second.toArgb() },
-                                FloatArray(stops.size) { stops[it].first },
-                            ),
-                        )
-                    } else if (g.kind.toInt() == 1) {
+                    val brush = if (g.kind.toInt() == 1) {
                         Brush.radialGradient(
                             *stops.toTypedArray(),
                             center = Offset(
@@ -406,6 +323,10 @@ private fun DrawScope.paintWithMaterials(frame: OrbFrame, engineSize: Int, dark:
     val dotRuns = effectRuns(frame.effects, 0, frame.dots.size)
     frame.dots.forEachIndexed { i, d ->
         val e = dotRuns?.get(i)
+        if (e?.blend?.toInt() == FX_LIGHT) {
+            drawLight(d, scale, dark, mirror, k)
+            return@forEachIndexed
+        }
         val color = fxInk(d.white, d.a * k, mirror, d.saturation, d.hue)
         val c = Offset((d.x * scale).toFloat(), (d.y * scale).toFloat())
         val r = (d.r * scale).toFloat()
@@ -420,6 +341,68 @@ private fun DrawScope.paintWithMaterials(frame: OrbFrame, engineSize: Int, dark:
             compose = { mode -> drawCircle(color, radius = r, center = c, blendMode = mode) },
         )
     }
+}
+
+// ---------------------------------------------------------------- light --
+
+/**
+ * `blend` 3 on dots (1.15 light volumes, docs/engine.md *Light*): each dot is a soft radial
+ * glow of radius `r` -- a bright core, its colour, then nothing -- added up on a dark
+ * background (`BlendMode.Plus`). A light background can't take added light, so there the
+ * glow, its core no brighter than the colour, is laid on normally. The Web's `drawLight`.
+ */
+internal const val FX_LIGHT = 3
+
+private fun DrawScope.drawLight(d: uniffi.core_engine.Dot, scale: Float, dark: Boolean, mirror: Boolean, k: Double) {
+    val r = (d.r * scale).toFloat()
+    if (r <= 0f) return
+    val l = if (mirror) 1.0 - d.white else d.white
+    val sprite = lightSprite(d.hue, d.saturation, l, dark)
+    val x = (d.x * scale).toFloat()
+    val y = (d.y * scale).toFloat()
+    val paint = if (dark) lightPaintAdd else lightPaintOver
+    paint.alpha = ((d.a * k).coerceIn(0.0, 1.0) * 255).roundToInt()
+    lightRect.set(x - r, y - r, x + r, y + r)
+    drawIntoCanvas { it.nativeCanvas.drawBitmap(sprite, null, lightRect, paint) }
+}
+
+// Lazy: created on the first light dot, so loading this file (JVM unit tests) needs no Paint.
+private val lightRect by lazy { android.graphics.RectF() }
+private val lightPaintAdd by lazy {
+    android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG).apply {
+        xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.ADD)
+    }
+}
+private val lightPaintOver by lazy { android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG) }
+
+/** One 32-px glow per colour (hue, saturation and lightness in whole steps), drawn once and reused. */
+private val lightSprites = object : java.util.LinkedHashMap<Long, android.graphics.Bitmap>(64, 0.75f, true) {
+    override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Long, android.graphics.Bitmap>?) = size > 512
+}
+
+private fun lightSprite(hue: Double, sat: Double, light: Double, dark: Boolean): android.graphics.Bitmap {
+    val h = hue.roundToInt()
+    val s = (sat * 100).roundToInt()
+    val l = (light * 100).roundToInt()
+    val key = (h.toLong() shl 24) or (s.toLong() shl 16) or (l.toLong() shl 8) or (if (dark) 1L else 0L)
+    lightSprites[key]?.let { return it }
+    val core = if (dark) min(0.97, l / 100.0 + 0.30) else max(0.10, l / 100.0 - 0.22)
+    val tone = if (dark) l / 100.0 else max(0.10, l / 100.0 - 0.22)
+    val ink = { w: Double, a: Double -> fxInk(w, a, false, s / 100.0, h.toDouble()).toArgb() }
+    val size = 32
+    val bmp = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+    paint.shader = android.graphics.RadialGradient(
+        size / 2f,
+        size / 2f,
+        size / 2f,
+        intArrayOf(ink(core, 1.0), ink(tone, 0.9), ink(tone, 0.22), ink(tone, 0.0)),
+        floatArrayOf(0f, 0.18f, 0.45f, 1f),
+        android.graphics.Shader.TileMode.CLAMP,
+    )
+    android.graphics.Canvas(bmp).drawRect(0f, 0f, size.toFloat(), size.toFloat(), paint)
+    lightSprites[key] = bmp
+    return bmp
 }
 
 // ------------------------------------------- per-vertex stroke colour --

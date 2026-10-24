@@ -18,7 +18,6 @@ mod catalog;
 /// For the test that writes spec/parameters.json (the catalog with its words).
 #[doc(hidden)]
 pub use catalog::catalog_json_from_source;
-mod character;
 mod conversation;
 mod core_fx;
 mod cost;
@@ -35,6 +34,7 @@ mod voice_state;
 // Only the wasm bridge packs frames; native tests still cover the layout.
 #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
 mod transport;
+mod volume;
 
 use std::collections::HashMap;
 
@@ -107,14 +107,10 @@ fn render(
         "eclipse" => orbs::modes::eclipse::frame_eclipse(size as f64, t, opts),
         // Not a port -- the `muted` resting state, see hush.rs's header.
         "hush" => orbs::modes::hush::frame_hush(size as f64, t, opts),
-        // A head and shoulders of dots (design note 32).
-        "silhouette" => orbs::modes::silhouette::frame_silhouette(size as f64, t, opts),
         // The `signal` family -- a sibling to `orbs`, see `signal/mod.rs`.
-        "bar" => signal::modes::bar::frame_bar(size as f64, t, opts),
-        "waveform" => signal::modes::waveform::frame_waveform(size as f64, t, opts),
-        "scroll" => signal::modes::scroll::frame_scroll(size as f64, t, opts),
-        "matrix" => signal::modes::matrix::frame_matrix(size as f64, t, opts),
-        "playback" => signal::modes::playback::frame_playback(size as f64, t, opts),
+        "veil" => signal::modes::veil::frame_veil(size as f64, t, opts),
+        "crystal" => signal::modes::crystal::frame_crystal(size as f64, t, opts),
+        "dune" => signal::modes::dune::frame_dune(size as f64, t, opts),
         // The `ring` family -- the third sibling, see `ring/mod.rs`.
         "arc" => ring::modes::arc::frame_arc(size as f64, t, opts),
         "spinner" => ring::modes::spinner::frame_spinner(size as f64, t, opts),
@@ -131,31 +127,7 @@ fn render(
         // The `core` family (module `core_fx`, see its header for the name).
         "shimmer" => core_fx::modes::shimmer::frame_shimmer(size as f64, t, opts),
         "dots" => core_fx::modes::dots::frame_dots(size as f64, t, opts),
-        // The `character` family (faces with voice states), see `character/mod.rs`.
-        "buzzy" => {
-            character::recipe::frame("buzzy", size as f64, t, opts).expect("a built-in recipe")
-        }
-        "hum" => character::recipe::frame("hum", size as f64, t, opts).expect("a built-in recipe"),
-        "wisp" => {
-            character::recipe::frame("wisp", size as f64, t, opts).expect("a built-in recipe")
-        }
-        "chirp" => {
-            character::recipe::frame("chirp", size as f64, t, opts).expect("a built-in recipe")
-        }
-        "cuppa" => {
-            character::recipe::frame("cuppa", size as f64, t, opts).expect("a built-in recipe")
-        }
-        "bean" => {
-            character::recipe::frame("bean", size as f64, t, opts).expect("a built-in recipe")
-        }
-        "beep" => {
-            character::recipe::frame("beep", size as f64, t, opts).expect("a built-in recipe")
-        }
-        // 1.15 characters, each its own drawing and rig (`character/bots`).
-        "whirr" => character::bots::hover::frame(size as f64, t, opts),
-        "clank" => character::bots::walker::frame(size as f64, t, opts),
-        // A recipe from an FX Spec (FX Spec 1.12): its registry key.
-        k => character::registry::frame(k, size as f64, t, opts)?,
+        _ => return None,
     };
     Some(post(frame, mode, size, wall, opts))
 }
@@ -172,9 +144,9 @@ fn post(
     opts: &primitives::ModeOpts,
 ) -> OrbFrame {
     let frame = primitives::apply_pointer(frame, opts);
-    // A character moves with the voice itself (the mouth, a squash: `character/rig.rs`);
-    // a bound voice's `audioStrength` would also swell the whole body.
-    let frame = if effects::draws_own(mode) {
+    // A light volume shapes itself from its inputs (`crate::volume`): no generic swell.
+    let light = volume::MODES.contains(&mode);
+    let frame = if light {
         frame
     } else {
         primitives::apply_audio_reactive(frame, opts)
@@ -190,20 +162,14 @@ fn post(
     let frame = primitives::apply_noise(frame, size as f64, wall, opts);
     // Colour is the base tint (and carries the ink|fixed paint mode); the
     // gradient is more specific and wins where it's set; glow inherits both.
-    // A character's palette is drawn, not tinted: a frame-wide colour or
-    // gradient would repaint its eyes and screen (`hue` turns its shell). The
-    // FX Spec rejects both sections on a character; this covers raw overrides.
-    let (frame, tint) = if effects::draws_own(mode) {
-        (frame, false)
-    } else {
-        (primitives::apply_color(frame, opts), true)
-    };
-    let frame = if tint {
-        primitives::apply_gradient(frame, size as f64, opts)
-    } else {
+    let frame = primitives::apply_color(frame, opts);
+    let frame = primitives::apply_gradient(frame, size as f64, opts);
+    // Its dots already glow: no stacked halos (they'd also fall outside its light run).
+    let frame = if light {
         frame
+    } else {
+        primitives::apply_glow(frame, opts)
     };
-    let frame = primitives::apply_glow(frame, opts);
     // `ink` (FX Spec 1.8) fades the finished visual as one thing, halos
     // included -- hence after glow. It sits *before* the barge-in flash and
     // the mute cue on purpose: those two are events the user must notice,
@@ -212,29 +178,12 @@ fn post(
     // The one-shot barge-in flash sits on top of everything above; a one-shot
     // decay then fades everything drawn (flash included); the mute cue runs
     // last so its dimming has the final word even mid-flash.
-    // A character startles instead (eyes wide, a hop back: `character/rig.rs`);
-    // the generic flash darkens its whole palette.
-    let frame = if effects::draws_own(mode) {
-        frame
-    } else {
-        primitives::apply_interrupt(frame, opts)
-    };
+    let frame = primitives::apply_interrupt(frame, opts);
     // A one-shot feedback effect (success / error / celebrate) the view is
     // playing: on top of the flash, before the decay and the mute cue.
-    // A character draws the effect as its own expression (`character/rig.rs`).
-    let frame = if effects::draws_own(mode) {
-        frame
-    } else {
-        effects::apply_effect(frame, size as f64, opts, effects::plays_in_place(mode))
-    };
+    let frame = effects::apply_effect(frame, size as f64, opts, effects::plays_in_place(mode));
     let frame = primitives::apply_decay(frame, opts);
-    // A character keeps its colours when muted: it squints and fades a little
-    // itself (`character/rig.rs`, the mode), instead of the generic grey-out.
-    let frame = if effects::draws_own(mode) {
-        frame
-    } else {
-        primitives::apply_muted(frame, opts)
-    };
+    let frame = primitives::apply_muted(frame, opts);
     // Last: `blurScale` (low power) scales / strips every blur sigma.
     primitives::apply_blur_scale(frame, opts)
 }
@@ -278,13 +227,6 @@ fn resolve_any(state: &str, size: u32) -> Option<AnyResolved> {
         });
     }
     if let Some(r) = beacon::presets::resolve_preset(state, size) {
-        return Some(AnyResolved {
-            mode: r.mode,
-            speed: r.speed,
-            opts: r.opts,
-        });
-    }
-    if let Some(r) = character::presets::resolve_preset(state, size) {
         return Some(AnyResolved {
             mode: r.mode,
             speed: r.speed,
@@ -592,66 +534,6 @@ pub fn voice_state_profile(pattern: String, state: String) -> Option<VoiceStateP
     voice_state::profile(&pattern, &state)
 }
 
-/// A character's palette override (design note 19), resolved for a view: the
-/// engine opts (`palette.<slot>.h/.s/.l/.w`) and what went wrong or reads badly.
-#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
-#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]
-#[derive(Clone, Debug, PartialEq)]
-pub struct FxPaletteResult {
-    pub overrides: HashMap<String, f64>,
-    pub diagnostics: Vec<fx_spec::FxDiagnostic>,
-}
-
-/// `palette` (a JSON object: slots or roles -> hex or DTCG colour, `theme`,
-/// `dark`; design notes 19, 23) on `pattern`, through the FX Spec's own
-/// `palette` rules, so a view and a file paint alike. The dark variant comes
-/// back as `palette.dark.<slot>.*`, picked when the view passes `dark`.
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
-pub fn palette_overrides(pattern: String, palette_json: String) -> FxPaletteResult {
-    let palette: serde_json::Value =
-        serde_json::from_str(&palette_json).unwrap_or(serde_json::Value::Null);
-    let doc = serde_json::json!({
-        "fxSpec": "1.13", "object": "character", "pattern": pattern, "palette": palette,
-    });
-    let r = fx_spec::resolve(&doc.to_string());
-    FxPaletteResult {
-        overrides: r
-            .overrides
-            .into_iter()
-            .filter(|(k, _)| k.starts_with("palette."))
-            .collect(),
-        diagnostics: r
-            .diagnostics
-            .into_iter()
-            .filter(|d| d.path.starts_with("/palette"))
-            .collect(),
-    }
-}
-
-/// A built-in character's recipe (design note 18), its JSON as the engine
-/// carries it (minified, without `$comment`); `None` for another id. The
-/// Studio's editor starts from it ("Customize").
-pub fn character_recipe(id: &str) -> Option<&'static str> {
-    character::recipe::RECIPES
-        .iter()
-        .find(|(k, _)| *k == id)
-        .map(|(_, json)| *json)
-}
-
-/// A character's expression (design note 16) as the engine opts that weigh
-/// it: the named one 1, the others 0; `"none"` all 0. `None` for an unknown
-/// name. A view sets these (eased over a change) to draw `expression`.
-#[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
-pub fn expression_overrides(name: String) -> Option<HashMap<String, f64>> {
-    let known = name == "none" || character::rig::EXPRESSIONS.iter().any(|(n, _)| *n == name);
-    known.then(|| {
-        character::rig::EXPRESSIONS
-            .iter()
-            .map(|(n, k)| (k.to_string(), if *n == name { 1.0 } else { 0.0 }))
-            .collect()
-    })
-}
-
 /// How a pattern lays out in a view's box: `"box"` -- engine space follows
 /// the box ratio, which the view passes as the `aspect` input (width
 /// `size * aspect`, height `size`) and fills the box with -- or `"square"`,
@@ -662,13 +544,13 @@ pub fn pattern_layout(pattern: String) -> String {
     catalog::layout_of(&pattern).to_string()
 }
 
-/// Signal `playing`: the playback position under a touch. `x` is the touch's
-/// distance from the box's left edge over the box's height, the box is `aspect`
-/// wide (width / height); the result is `0..1`, on the same row of bars the
-/// pattern draws. Views use it for drag-to-seek.
+/// Signal `dune` (a voice message): the playback position under a touch. `x` is the
+/// touch's distance from the box's left edge over the box's height, the box is `aspect`
+/// wide (width / height); the result is `0..1`, on the dune the pattern draws. Views use
+/// it for drag-to-seek.
 #[cfg_attr(not(target_arch = "wasm32"), uniffi::export)]
 pub fn playback_seek_progress(aspect: f64, x: f64) -> f64 {
-    signal::modes::playback::seek_progress(aspect, x)
+    signal::modes::dune::seek_progress(aspect, x)
 }
 
 /// The FX Spec minor this runtime speaks (`1.<minor>`): a file above it
@@ -1107,21 +989,6 @@ mod wasm {
         }
     }
 
-    /// `character_recipe` (`""` for an id that isn't a built-in character).
-    #[wasm_bindgen]
-    pub fn character_recipe_json(id: String) -> String {
-        crate::character_recipe(&id).unwrap_or("").to_string()
-    }
-
-    /// `expression_overrides` as JSON (`null` for an unknown name).
-    #[wasm_bindgen]
-    pub fn expression_overrides_json(name: String) -> String {
-        match crate::expression_overrides(name) {
-            Some(m) => serde_json::to_string(&m).unwrap_or_else(|_| "null".to_string()),
-            None => "null".to_string(),
-        }
-    }
-
     #[wasm_bindgen]
     pub fn pattern_layout_json(pattern: String) -> String {
         crate::pattern_layout(pattern)
@@ -1166,7 +1033,7 @@ mod wasm {
     }
 }
 
-/// Every pattern this engine has, from the six families' own `STATES`.
+/// Every pattern this engine has, from the five families' own `STATES`.
 ///
 /// One place to ask the question, because the answer used to be spelled out
 /// independently in `cost.rs`'s tests and `liquid.rs`'s, and asserted as a bare
@@ -1181,7 +1048,6 @@ pub(crate) fn all_states() -> Vec<&'static str> {
         crate::ring::presets::STATES,
         crate::beacon::presets::STATES,
         crate::core_fx::presets::STATES,
-        crate::character::presets::STATES,
     ]
     .concat()
 }

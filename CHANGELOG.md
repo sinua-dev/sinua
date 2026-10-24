@@ -13,16 +13,56 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 ### Added
 
-- **Two new characters, each its own drawing and rig: `whirr` and `clank`** (`SinuaCharacter`,
-  every platform). Whirr is a floating egg-shaped robot with a screen face and a glowing antenna;
-  Clank is a standing robot with ear lights, a chest light and jointed arms. They are drawn from
-  the artist's vector art (gradients and all) and move with their own rigs: Whirr hovers over its
-  shadow, Clank shifts its weight and waves, and antennas and hands follow a beat late. Their
-  voice states read at a glance (listening leans in with lights pulsing, thinking looks up and
-  away, speaking opens the mouth and swells a light with the voice), and every state change
-  settles with a small overshoot. They keep their drawn colours (`palette` for them is an error in
-  an FX Spec) and have no head turn. See [`docs/character.md`](docs/character.md), *Characters
-  built on their own*.
+- **Light volumes in `SinuaSignal`: `veil`, `crystal` and `dune`** (every platform). Each is
+  hundreds of points of light in 3D seen through a perspective camera, lit by depth and drawn as
+  soft glows that add up on a dark background; their motion comes from a noise field, so it doesn't
+  repeat. Veil is a sheet of light that swells with a value, Crystal fills from below by column,
+  Dune's done part glows with a plane of light at the position. Their inputs aren't tied to the
+  voice: `level` / `progress` (any app value or FX Spec binding), else a bound voice's level and
+  bands, else they move on their own, so they work as status visuals too (processing, a battery or
+  quota, a long task's progress). The point count follows the view's size; low power drops the soft
+  glow. Painters draw a new dot effect, light (`EffectRun.blend` 3). See
+  [`docs/signal.md`](docs/signal.md), *Light volumes*.
+- **FX Spec 1.15.** `veil`, `crystal` and `dune` need `"fxSpec": "1.15"`; an older file that names
+  one gets an error at that `pattern`. Every older minor still resolves as before (its lock lost
+  only the examples removed below).
+
+### Changed
+
+- **`SinuaVoiceMessage` draws `dune`** (every platform). In a wide box dune turns to a side view
+  that fills the strip, with the clip's loudness as its profile, the played part glowing and a
+  plane of light at the position. The props are the same (`envelope`, `progress`, `onSeek`), and
+  `playbackSeekProgress(aspect, x)` keeps its name; it now maps a touch through dune's own drawn
+  line.
+
+### Removed
+
+A pre-1.0 cleanup (the third, after 0.1.0-beta.8 and 0.1.0-beta.9). A file that still uses a
+removed pattern, object or key gets an error at every FX Spec version, naming the replacement
+where there is one.
+
+- **The flat signal patterns** `signaling`, `waveform`, `scrolling`, `metering` and `playing`:
+  use `veil` (for the first three), `crystal` (for `metering`) or `dune` (for `playing`). With
+  `scrolling` and `metering` go their caller-owned inputs (`history0..N`, `historyCount`,
+  `historyPhase`, `peak0..N`) and `VoiceOverrides`' `history` option on every platform.
+- **The character family**: `SinuaCharacter` / `<sinua-character>` on every platform, the
+  characters `buzzy`, `hum`, `wisp`, `chirp`, `cuppa`, `bean` and `beep`, recipes (FX Spec
+  `recipe`, the recipe schema), `expression`, `palette`, the tap hop (the `tap` option and the
+  `hop` effect), `stateAge`, and the engine functions `paletteOverrides`, `expressionOverrides`
+  and `characterRecipe`. There is no replacement.
+- **The orb's `silhouette` pattern** and the FX Spec `silhouette` key. There is no replacement.
+
+### Fixed
+
+- **`glowing`, `calibrating` and `progressing` crashed (web: `RuntimeError: unreachable`) when an
+  FX Spec set `nodeCount` above the largest of the pattern's voice states** (e.g. 360 on
+  `glowing`, whose busiest state has 340). The points past the voice states' shared layout fell off
+  the sphere; they now use the plain lattice for that count.
+- **A view mounted after the source connected stayed `idle`** (all platforms). A source sends its
+  state once per change, and a view (or a voice button) that subscribed later missed it, so the view
+  never showed listening, thinking or speaking until the next change. Every built-in source now
+  replays its current state, and `true` while its session is up, to a callback set mid-session;
+  `SharedVoiceSource` does the same for its listeners (on React Native, the JS handle too).
 
 ## 0.1.0-beta.11
 

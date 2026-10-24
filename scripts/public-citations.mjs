@@ -3,7 +3,7 @@
 // exempt; this checks what users read: docs, the CHANGELOG, READMEs and spec data.
 //   node scripts/public-citations.mjs
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,7 +11,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CITATION = /design[ -]notes? ?\d+|design-\d{2}\b/i;
 const files = execFileSync("git", ["ls-files", "docs/*.md", "CHANGELOG.md", "README.md", "packages/*/README.md", "spec/*.json", "spec/**/*.json"], { cwd: root, encoding: "utf8" })
   .split("\n")
-  .filter(Boolean);
+  .filter((f) => f && existsSync(join(root, f))); // a file deleted in the working tree is still tracked until committed
 const hits = [];
 for (const f of new Set(files)) {
   readFileSync(join(root, f), "utf8")

@@ -212,28 +212,15 @@ fn weighted(
     sides
         .iter()
         .zip(w)
-        .map(|(s, w)| side_value(s, sides, preset, mode, key) * w)
+        .map(|(s, w)| side_value(s, preset, mode, key) * w)
         .sum()
 }
 
-/// A side's value of `key`: its own, else the preset's / catalog's. A palette colour
-/// (design note 19) a side lacks is another side's, so only its weight `.w` blends and
-/// the hue never sweeps from 0.
+/// A side's value of `key`: its own, else the preset's / catalog's.
 #[inline(never)]
-fn side_value(
-    s: &TransitionSide,
-    sides: &[TransitionSide],
-    preset: &HashMap<String, f64>,
-    mode: &str,
-    key: &str,
-) -> f64 {
+fn side_value(s: &TransitionSide, preset: &HashMap<String, f64>, mode: &str, key: &str) -> f64 {
     if let Some(v) = s.overrides.get(key) {
         return *v;
-    }
-    if key.starts_with("palette.") && !key.ends_with(".w") {
-        if let Some(v) = sides.iter().find_map(|o| o.overrides.get(key)) {
-            return *v;
-        }
     }
     effective(preset, mode, key)
 }
@@ -302,7 +289,7 @@ fn blend_core(
         if key.ends_with("Layout") && out.overrides.contains_key(key.as_str()) {
             continue;
         }
-        let val = |s: &TransitionSide| side_value(s, sides, &preset, mode, key);
+        let val = |s: &TransitionSide| side_value(s, &preset, mode, key);
         // A count the mode draws as a density (TS7), when the sides carry its layout
         // (the profile adds it for 1.13+): blended like any number. Otherwise it swaps.
         let layout = density_layout(mode, key)
@@ -314,9 +301,6 @@ fn blend_core(
                 .fold(f64::MIN, f64::max);
             out.overrides.insert(layout.to_string(), max);
             weighted(sides, w, &preset, mode, key)
-        } else if catalog::arrives_at_once(mode, key) {
-            // An arrival value (a character's `turnBlink`): the new state's, at once.
-            val(&sides[target])
         } else if is_structural(mode, key) {
             let a = val(&sides[i1]);
             if i2 != usize::MAX {
@@ -326,7 +310,7 @@ fn blend_core(
                 }
             }
             a
-        } else if is_hue(key) || (key.starts_with("palette.") && key.ends_with(".h")) {
+        } else if is_hue(key) {
             // Folded shortest-way blends: exact for two sides, close for three.
             let (mut h, mut seen) = (0.0, 0.0);
             for (s, w) in sides.iter().zip(w) {
@@ -432,25 +416,6 @@ mod tests {
             speed,
             overrides: o.iter().map(|(k, v)| (k.to_string(), *v)).collect(),
         }
-    }
-
-    #[test]
-    fn an_arrival_value_takes_the_new_states_value_at_once() {
-        // A character's turn blink: on at once entering thinking, off at once leaving it.
-        let listening = side("buzzy", 1.0, &[("turnBlink", 0.0), ("gazeX", 0.0)]);
-        let thinking = side("buzzy", 1.0, &[("turnBlink", 1.0), ("gazeX", -8.0)]);
-        let into = mix(&listening, &thinking, 64, 0.1, "linear").unwrap();
-        assert_eq!(into.overrides["turnBlink"], 1.0);
-        assert!(
-            (into.overrides["gazeX"] + 0.8).abs() < 1e-12,
-            "the gaze still slides"
-        );
-        let out_of = mix(&thinking, &listening, 64, 0.1, "linear").unwrap();
-        assert_eq!(out_of.overrides["turnBlink"], 0.0);
-        assert!(
-            out_of.structural_to.is_empty() && out_of.swap == 0.0,
-            "no dissolve for it"
-        );
     }
 
     #[test]
@@ -612,12 +577,6 @@ mod tests {
             keys.extend(s["overrides"].as_object().unwrap().keys().cloned());
         }
         for (pattern, p) in src["patterns"].as_object().unwrap() {
-            // `character`: every recipe from a file (1.12), which reads buzzy's keys.
-            let pattern = if pattern == "character" {
-                "buzzy"
-            } else {
-                pattern
-            };
             let (mode, _) = crate::resolve_state(pattern, 64).unwrap();
             for s in p["states"].as_object().unwrap().values() {
                 for k in s["overrides"]
@@ -814,7 +773,7 @@ mod tests {
             (half.overrides["period"] - 5.0).abs() < 1e-12 && (half.speed - 0.875).abs() < 1e-12
         );
         assert!(blend(
-            &[side("glowing", 1.0, &[]), side("buzzy", 1.0, &[])],
+            &[side("glowing", 1.0, &[]), side("loading", 1.0, &[])],
             &[1.0, 0.0],
             0,
             64
@@ -823,12 +782,7 @@ mod tests {
     }
 
     #[test]
-    fn a_voice_blend_takes_arrival_keys_from_the_target_and_lays_out_densities() {
-        let listening = side("buzzy", 1.0, &[("turnBlink", 0.0)]);
-        let thinking = side("buzzy", 1.0, &[("turnBlink", 1.0)]);
-        // Barely started towards thinking: the blink is already thinking's.
-        let m = blend(&[listening, thinking], &[0.95, 0.05], 1, 64).unwrap();
-        assert_eq!(m.overrides["turnBlink"], 1.0);
+    fn a_voice_blend_lays_out_densities() {
         // glowing's profile varies its count (220 / 260 / 340): from 1.13 its voice states
         // carry the layout, so the count blends and the dots fade.
         let prof = |st: &str| {

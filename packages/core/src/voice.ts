@@ -7,7 +7,7 @@
 // Why this exists: before it, every consumer hand-built the opts map and
 // had to know three non-obvious things the Studio learned the hard way --
 // the key encodings (`audioBand0..15` + `audioBandCount`, `voiceStateCode`
-// 0..4, `history0..N` + `historyPhase` for the scrolling style), that a
+// 0..4), that a
 // ~30 fps metrics feed must be eased at render rate or the visual visibly
 // steps (a real, user-reported stutter -- docs/audio-pipeline.md, "A
 // second, slower smoothing pass"), and the `muted` cue flag. The numbers
@@ -66,6 +66,11 @@ export interface VoiceSource {
   connect(): Promise<void>;
   disconnect(): void;
   onMetrics(cb: (m: VoiceMetrics) => void): void;
+  /**
+   * Set mid-session, the callback gets the current state at once (when it isn't `idle`):
+   * a view mounted after `connect()` must not wait for the next change. Every built-in
+   * source does this; do the same in your own.
+   */
   onStateChange(cb: (s: AgentState) => void): void;
   /**
    * Optional: the barge-in moment -- the user started talking while the
@@ -145,17 +150,6 @@ export interface VoiceOverridesOptions {
    */
   bandEaseRate?: number;
   /**
-   * Enables the scrolling-style history ring buffer (`historyCount`,
-   * `history0..N-1`, `historyPhase` -- the engine is stateless, so the
-   * caller owns this; see docs/signal.md, *`scroll`*). `count` samples,
-   * pushed `hz` times per second (default 12 -- react-native-waveform-
-   * recorder's `samplesPerSecond`, and `scroll.rs`'s synthetic rate, so
-   * live and idle scroll at the same pace). Each push is the *peak* level
-   * seen since the previous push, so a short burst between pushes isn't
-   * lost. Off unless set.
-   */
-  history?: { count: number; hz?: number };
-  /**
    * The barge-in flash (`primitives::apply_interrupt`). On by default:
    * after `interrupt()` (or a bound source's `onInterrupt`), `interruptAge`
    * is emitted for `window` seconds (default 1 -- the Signal Studio's
@@ -192,14 +186,13 @@ export type VoiceOverridesMap = Record<string, number>;
 const DEFAULT_AUDIO_STRENGTH = 0.18;
 const DEFAULT_LEVEL_EASE_RATE = 7;
 const DEFAULT_BAND_EASE_RATE = 24;
-const DEFAULT_HISTORY_HZ = 12;
 const DEFAULT_INTERRUPT_WINDOW_S = 1;
 /** Clamp a stalled frame (backgrounded tab) the same way both Studios do. */
 const MAX_DT_S = 0.1;
 
 /**
  * Pure and stateless: one reading + one state -> the overrides object. No
- * easing, no history -- use this when you already run your own smoothing,
+ * easing -- use this when you already run your own smoothing,
  * or for a one-off frame. Otherwise use `VoiceOverrides`.
  */
 export function voiceOverrides(
@@ -207,31 +200,25 @@ export function voiceOverrides(
   state: AgentState,
   opts: VoiceOverridesOptions = {}
 ): VoiceOverridesMap {
-  return buildOverrides(metrics.level, metrics.bands, state, opts, null);
+  return buildOverrides(metrics.level, metrics.bands, state, opts);
 }
 
 /**
  * Stateful: feed it a `VoiceSource` (or raw readings), call `overrides(dt)`
  * once per rendered frame, spread the result into `frameWithOverrides`.
- * Eases level and bands at render rate, keeps the optional scrolling
- * history, and knows every key the engine reads.
+ * Eases level and bands at render rate and knows every key the engine reads.
  *
  * ```ts
- * const voice = VoiceOverrides.bind(source, { history: { count: 40 } });
+ * const voice = VoiceOverrides.bind(source);
  * await source.connect();
  * // per frame:
- * const frame = frameWithOverrides("signaling", 64, t, { ...knobs, ...voice.overrides(dt) });
+ * const frame = frameWithOverrides("veil", 64, t, { ...knobs, ...voice.overrides(dt) });
  * ```
  */
 export class VoiceOverrides {
   private readonly audioStrength: number;
   private readonly levelEaseRate: number;
   private readonly bandEaseRate: number;
-  private readonly historyHz: number;
-  private history: number[] | null;
-  private historyAcc = 0;
-  private historyPeak = 0;
-  private historyPhase = 0;
   private readonly interruptOpts: InterruptOptions | null;
   /** Seconds since the last interrupt, or null when none is live. */
   private interruptAge: number | null = null;
@@ -252,11 +239,6 @@ export class VoiceOverrides {
     this.audioStrength = opts.audioStrength ?? DEFAULT_AUDIO_STRENGTH;
     this.levelEaseRate = opts.levelEaseRate ?? DEFAULT_LEVEL_EASE_RATE;
     this.bandEaseRate = opts.bandEaseRate ?? DEFAULT_BAND_EASE_RATE;
-    this.historyHz = opts.history?.hz ?? DEFAULT_HISTORY_HZ;
-    // Pre-filled with silence so a scrolling strip is full-width from the
-    // first frame and simply starts moving, instead of filling in from the
-    // right over the first few seconds (the Studio does the same on connect).
-    this.history = opts.history ? new Array<number>(Math.max(1, Math.floor(opts.history.count))).fill(0) : null;
     this.interruptOpts = opts.interrupt === false ? null : opts.interrupt ?? {};
     this.muted = opts.muted ?? false;
     this.mutedTint = opts.mutedTint;
@@ -277,7 +259,7 @@ export class VoiceOverrides {
     source.onStateChange((s) => {
       v.setState(s);
       // A source reports `idle` from its own disconnect (or a remote drop):
-      // clear easing + history so a reconnect doesn't start mid-decay.
+      // clear the easing so a reconnect doesn't start mid-decay.
       if (s === "idle") v.reset();
     });
     return v;
@@ -314,26 +296,11 @@ export class VoiceOverrides {
     }
   }
 
-  /** Resize the scrolling history (e.g. from a knob); newest samples are kept. */
-  setHistoryCount(count: number): void {
-    const n = Math.max(1, Math.floor(count));
-    if (!this.history) {
-      this.history = new Array<number>(n).fill(0);
-      return;
-    }
-    while (this.history.length > n) this.history.shift();
-    while (this.history.length < n) this.history.unshift(0);
-  }
-
-  /** Back to silence: clears the eased values and refills the history with zeros. */
+  /** Back to silence: clears the eased values and any live interrupt. */
   reset(): void {
     this.raw = { level: 0, bands: [] };
     this.level = 0;
     this.bands = [];
-    if (this.history) this.history.fill(0);
-    this.historyAcc = 0;
-    this.historyPeak = 0;
-    this.historyPhase = 0;
     this.interruptAge = null;
     this.interruptFresh = false;
   }
@@ -374,23 +341,6 @@ export class VoiceOverrides {
       }
     }
 
-    let history: { buf: number[]; phase: number } | null = null;
-    if (this.history) {
-      const interval = 1 / this.historyHz;
-      this.historyAcc += dt;
-      this.historyPeak = Math.max(this.historyPeak, this.raw.level);
-      // Remainder-carrying cadence: a slow frame pushes once and keeps the
-      // leftover, so the scroll rate never drifts with frame timing.
-      while (this.historyAcc >= interval) {
-        this.history.push(this.historyPeak);
-        this.history.shift();
-        this.historyPeak = 0;
-        this.historyAcc -= interval;
-      }
-      this.historyPhase = this.historyAcc / interval;
-      history = { buf: this.history, phase: this.historyPhase };
-    }
-
     return buildOverrides(
       this.level,
       this.bands,
@@ -401,7 +351,6 @@ export class VoiceOverrides {
         mutedTint: this.mutedTint,
         mutedHue: this.mutedHue,
       },
-      history,
       interrupt == null ? null : { age: interrupt, opts: this.interruptOpts! }
     );
   }
@@ -412,7 +361,6 @@ function buildOverrides(
   bands: ReadonlyArray<number>,
   state: AgentState,
   opts: VoiceOverridesOptions,
-  history: { buf: ReadonlyArray<number>; phase: number } | null,
   interrupt: { age: number; opts: InterruptOptions } | null = null
 ): VoiceOverridesMap {
   const out: VoiceOverridesMap = {
@@ -425,11 +373,6 @@ function buildOverrides(
   const n = Math.min(bands.length, MAX_AUDIO_BANDS);
   out.audioBandCount = n;
   for (let i = 0; i < n; i++) out[`audioBand${i}`] = clamp01(bands[i]);
-  if (history) {
-    out.historyCount = history.buf.length;
-    for (let i = 0; i < history.buf.length; i++) out[`history${i}`] = clamp01(history.buf[i]);
-    out.historyPhase = history.phase;
-  }
   if (interrupt) {
     out.interruptAge = interrupt.age;
     const o = interrupt.opts;

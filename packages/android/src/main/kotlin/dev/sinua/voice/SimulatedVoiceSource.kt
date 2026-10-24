@@ -117,8 +117,11 @@ class SimulatedVoiceSource(
         metricsCb = cb
     }
 
+    /** Connected, it replays the current state at once: a view mounted after [connect] doesn't stay idle. */
     override fun onStateChange(cb: (AgentState) -> Unit) {
         stateCb = cb
+        val s = lastState
+        if (connected && s != null) cb(AgentState.fromWire(s) ?: AgentState.IDLE)
     }
 
     override fun onInterrupt(cb: () -> Unit) {
@@ -128,8 +131,10 @@ class SimulatedVoiceSource(
     override val supportsMute: Boolean get() = true
     override val reportsConnection: Boolean get() = true
 
+    /** Connected, it replays `true` at once, in any state. */
     override fun onConnectionChange(cb: (Boolean) -> Unit) {
         connectionCb = cb
+        if (connected) cb(true)
     }
 
     /** Muted, the user's turns go silent (as a muted mic would); the agent's keep playing. */

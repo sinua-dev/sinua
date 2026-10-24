@@ -4,7 +4,7 @@ A small harness that runs a fixed set of Sinua views on a real device and report
 
 | Piece | Where |
 |---|---|
-| Cases (8, each run at normal and low power) | [`spec/bench/cases.json`](../spec/bench/cases.json) |
+| Cases (10, each run at normal and low power) | [`spec/bench/cases.json`](../spec/bench/cases.json) |
 | Result format (JSON Schema) | [`spec/bench/result.schema.json`](../spec/bench/result.schema.json) |
 | Web | `apps/fx-bench-web` (Vite; `@sinua/web`'s `mount`) |
 | iOS | `apps/fx-bench-ios` (xcodegen; SwiftUI `FxView` from the `CoreEngine` package) |
@@ -50,7 +50,7 @@ It is vsync-quantized on purpose. Summing raw `dt − interval` counted ordinary
 
 ## How to run it on your phone
 
-Plug the phone in, close other apps, set brightness to a fixed level, and don't touch the screen while it runs. A full run is 8 cases × 2 × 11 s ≈ 3 minutes.
+Plug the phone in, close other apps, set brightness to a fixed level, and don't touch the screen while it runs. A full run is 10 cases × 2 × 11 s ≈ 4 minutes.
 
 **iPhone**
 1. `cd apps/fx-bench-ios && xcodegen generate`, then open `FxBench.xcodeproj`.

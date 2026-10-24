@@ -3,81 +3,81 @@
   "tolerance": 0.0001,
   "cases": [
     {
-      "key": "scrolling-64-0.6",
-      "state": "scrolling",
+      "key": "stepping-64-0.6",
+      "state": "stepping",
       "size": 64,
       "t": 0.6,
       "overrides": {},
       "dotCount": 0,
       "lineCount": 0,
-      "polylineCount": 40,
+      "polylineCount": 5,
       "colorMode": "ink",
       "firstDot": null,
       "lastDot": null,
       "firstPolyline": {
         "style": [
           0.15,
-          0.06,
-          0.8064,
+          0.18,
+          5.44,
           0,
-          200
+          0
         ],
         "first": [
-          5.5232,
-          27.797795
+          35.626667,
+          8.761289
         ],
         "last": [
-          5.5232,
-          36.202205
+          52.980626,
+          21.369678
         ]
       },
       "lastPolyline": {
         "style": [
           0.15,
-          0.396,
-          0.8064,
+          0.18,
+          5.44,
           0,
-          200
+          0
         ],
         "first": [
-          57.9392,
-          31.408218
+          11.019374,
+          21.369678
         ],
         "last": [
-          57.9392,
-          32.591782
+          28.373333,
+          8.761289
         ]
       }
     },
     {
-      "key": "metering-64-0.6",
-      "state": "metering",
+      "key": "dune-64-0.6",
+      "state": "dune",
       "size": 64,
       "t": 0.6,
       "overrides": {},
-      "dotCount": 96,
+      "dotCount": 216,
       "lineCount": 0,
       "polylineCount": 0,
-      "colorMode": "ink",
+      "colorMode": "fixed",
       "firstDot": [
-        8.533333,
-        48.8,
-        0,
-        1.493333,
-        0.72,
-        0.32,
-        0,
-        200
+        14.817434,
+        28.374068,
+        -0.441705,
+        1.696348,
+        0.53,
+        0.526131,
+        0.76,
+        165
       ],
       "lastDot": [
-        55.466667,
-        15.2,
-        0,
-        1.493333,
-        0.5,
-        0.133333,
-        0,
-        200
+        55.35178,
+        26.035251,
+        0.562067,
+        1.837439,
+        0.632,
+        0.200695,
+        0.964,
+        210.05
       ],
       "firstPolyline": null,
       "lastPolyline": null

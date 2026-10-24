@@ -106,7 +106,10 @@ impl Density {
 /// size it is the same set of points as the plain lattice.
 #[inline(never)]
 pub fn lattice_dir(i: i64, n: i64, layout: i64) -> (f64, f64, f64) {
-    if layout <= 0 {
+    // A layout smaller than the count can't hold it (a file's count above every voice
+    // state's, so the profile's layout is too small): the plain lattice of `n`, the same
+    // rule as `Density::read`. Points past the layout used to fall off the sphere (NaN).
+    if layout <= 0 || layout < n {
         return fib_dir(i as f64, n as f64);
     }
     let k = ranked(layout as usize, i as usize);
@@ -193,5 +196,53 @@ impl Proj {
         let y1 = y * self.ct - z1 * self.st;
         let z2 = y * self.st + z1 * self.ct;
         (self.cx + x1 * self.scale, self.cy - y1 * self.scale, z2)
+    }
+}
+
+#[cfg(test)]
+mod lattice_tests {
+    use super::*;
+
+    /// A6: a count above the layout (an FX Spec's `nodeCount` 360 over `glowing`'s profile,
+    /// whose largest state is 340) stays on the sphere.
+    #[test]
+    fn a_count_above_the_layout_stays_on_the_sphere() {
+        for i in 0..360 {
+            let (x, y, z) = lattice_dir(i, 360, 340);
+            assert!((x * x + y * y + z * z - 1.0).abs() < 1e-9, "{i}");
+        }
+        // Within the layout it's the layout's order, unchanged.
+        assert_eq!(
+            lattice_dir(5, 300, 340),
+            fib_dir(ranked(340, 5) as f64, 340.0)
+        );
+    }
+
+    /// The same through the FX Spec path the bug report used (every lattice orb).
+    #[test]
+    fn an_fx_spec_count_above_the_profile_draws() {
+        for pattern in ["glowing", "calibrating", "progressing"] {
+            for n in [360, 400, 1000] {
+                let spec = format!(
+                    r#"{{"fxSpec":"1.13","object":"orb","pattern":"{pattern}","params":{{"nodeCount":{n}}},"states":{{"listening":{{}}}}}}"#
+                );
+                for st in ["idle", "listening", "thinking", "speaking"] {
+                    let f = crate::frame_from_fx_spec_with(
+                        spec.clone(),
+                        1.2,
+                        Some(st.into()),
+                        Default::default(),
+                        false,
+                    );
+                    assert!(
+                        f.is_some_and(|f| f
+                            .dots
+                            .iter()
+                            .all(|d| d.x.is_finite() && d.z.is_finite())),
+                        "{pattern} {n} {st}"
+                    );
+                }
+            }
+        }
     }
 }

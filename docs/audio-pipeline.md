@@ -879,6 +879,7 @@ shared.setMuted(true);                         // views bound to it show the mut
 - On React Native the native registry keeps every source behind its fan-out, so the JS events (`onStateChange`, `onError`, `onConnectionChange`, `onMuteChange`) and each view bound by id listen side by side. `handle.setMuted(muted)` crosses to it.
 - The instances are held weakly: the fan-out lives while a view, a button or your code holds it.
 - Once a source is shared, don't subscribe on the raw source: that takes its one callback away from the fan-out.
+- **Late subscribers catch up.** A source sends its state once per change, so a view mounted after `connect()` (or remounted) would wait for the next change. Every built-in source replays its current state (when it isn't `idle`) to a callback set mid-session, and `true` to a connection callback while its session is up, in any state. `SharedVoiceSource` does the same for every listener it adds, and so does the React Native JS handle. A source of your own should follow the same rule.
 
 ## Wiring a `VoiceSource` into Orb/Signal — the `VoiceOverrides` helper
 
@@ -900,10 +901,10 @@ The five-minute path:
 ```ts
 import { frameWithOverrides, VoiceOverrides } from "@sinua/core";
 
-const voice = VoiceOverrides.bind(source, { history: { count: 40 } }); // history only for "scrolling"
+const voice = VoiceOverrides.bind(source);
 await source.connect();
 // per rendered frame, dt = seconds since the previous frame:
-const frame = frameWithOverrides("signaling", 64, t, { ...myKnobs, ...voice.overrides(dt) });
+const frame = frameWithOverrides("veil", 64, t, { ...myKnobs, ...voice.overrides(dt) });
 // voice.state / voice.metrics are there for a lifecycle pill and a level meter.
 ```
 
@@ -911,15 +912,14 @@ What `overrides(dt)` emits, and what reads it:
 
 | Key(s) | Engine reader | Notes |
 |---|---|---|
-| `audioLevel`, `audioStrength` | `primitives::apply_audio_reactive` (every `orbs` state) | `audioLevel` eased at `levelEaseRate` 7/s (~150 ms, the Orb Studio's value — it smooths a whole-orb breathing motion); `audioStrength` default 0.18, `0` disables; a no-op for `signal` frames (no dots) |
-| `audioBandCount`, `audioBand0..15` | `spectrum.rs`, `bar.rs`, `waveform.rs` via `primitives::audio_band` | eased at `bandEaseRate` 24/s (~40 ms, the Signal Studio's value — just enough to bridge two analysis updates); capped at 16, the engine's key count; `audioBandCount: 0` means "no real audio, use the synthetic pattern" |
-| `voiceStateCode` | every `signal` style (`bar.rs`'s `VoiceState`) | `idle 0 / initializing 1 / listening 2 / thinking 3 / speaking 4`; ignored by `orbs`, which never auto-switch on voice state |
-| `historyCount`, `history0..N-1`, `historyPhase` | `scroll.rs` | only with `history: { count, hz }`; the caller-owned ring buffer `signal.md` describes, pre-filled with silence, pushed at `hz` (default 12) with the *peak* level since the previous push and a remainder-carrying cadence, `historyPhase` = fraction of the interval elapsed |
+| `audioLevel`, `audioStrength` | `primitives::apply_audio_reactive` (every `orbs` state); the light volumes read `audioLevel` themselves | `audioLevel` eased at `levelEaseRate` 7/s (~150 ms, the Orb Studio's value — it smooths a whole-orb breathing motion); `audioStrength` default 0.18, `0` disables; the light volumes skip the generic swell |
+| `audioBandCount`, `audioBand0..15` | `spectrum.rs`, `crystal.rs` via `primitives::audio_band` | eased at `bandEaseRate` 24/s (~40 ms — just enough to bridge two analysis updates); capped at 16, the engine's key count; `audioBandCount: 0` means "no real audio" |
+| `voiceStateCode` | the light volumes (`volume::voice_audio`) | `idle 0 / initializing 1 / listening 2 / thinking 3 / speaking 4`; a bound voice counts as input only while listening (2) or speaking (4); ignored by `orbs`, which never auto-switch on voice state |
 | `muted`, `mutedTint`, `mutedHue` | `primitives::apply_muted` (every family) | from the tracker's `muted` flag / options; the animation slowdown that goes with it is the caller's clock (see `signal.md`), not an opt |
 | `interruptAge` (+ `interruptDuration`/`Strength`/`Tint`/`Hue`) | `primitives::apply_interrupt` (every family) | only for `window` seconds (default 1) after `interrupt()` or a bound source's `onInterrupt`; the age grows with the *unclamped* `dt` (it's an age on the caller's clock, per the engine contract — the 0.1 s clamp is for easing only); companions only when set in `interrupt: {…}`; `interrupt: false` never emits it. See *Barge-in* below |
 
 `voiceOverrides(metrics, state, opts)` is the pure, stateless form of the
-same mapping (no easing, no history) for callers that already smooth their
+same mapping (no easing) for callers that already smooth their
 own readings. `bind` takes a `VoiceSource`'s single metrics and state
 callbacks — read `metrics`/`state` off the tracker instead of subscribing
 twice, or skip `bind` and feed `push`/`setState` from your own callbacks
@@ -1067,15 +1067,8 @@ It's fed via `push`/`setState`/`onInterrupt` from the panel's own source
 callbacks, stepped once per RAF tick with the real unclamped `dt`, and the
 same instance ages the toolbar's Interrupt button (so the flash works with
 no source connected). Orb uses `bandEaseRate: Infinity`; Signal uses
-`audioStrength: 0` and `history: { count, hz: 12 }` with
-`setHistoryCount` on the knob. The swap was checked against the pre-swap
-code with a side-by-side harness on the same scripted feed: Orb and the
-`signaling`/`waveform` maps are identical frame for frame. `scrolling`
-differs only (a) after a frame stall >0.1 s, where the history cadence
-now runs on the clamped `dt` (a one-time phase shift, same 12 Hz rate),
-and (b) for ≤83 ms after a `historyCount` knob change (the buffer now
-resizes immediately instead of at the next push). What each panel does
-with the resulting `{level, bands}` differs by design, on purpose:
+`audioStrength: 0`. What each panel does with the resulting
+`{level, bands}` differs by design, on purpose:
 
 - **`OrbStudio`**: feeds `audioLevel`/`audioStrength` into the generic,
   mode-agnostic `apply_audio_reactive` post-process (see
@@ -1089,8 +1082,8 @@ with the resulting `{level, bands}` differs by design, on purpose:
   switching code was written, then reverted for exactly this reason.
 - **`SignalStudio`**: the opposite call, deliberately — a connected
   `VoiceSource`'s real lifecycle state **does** drive the current
-  `signal` style's `voiceStateCode` directly (both `bar` and `waveform`
-  read the same opt, see [`signal.md`](signal.md)), overriding the manual
+  `signal` pattern's `voiceStateCode` directly (see [`signal.md`](signal.md)),
+  overriding the manual
   "Preview state" picker. For `signal`, driving its own built-in state
   machine from real voice state is the entire point of the family, not a
   state swap between different products.
@@ -1117,8 +1110,8 @@ share the *contract*:
   onStateChange, optional onInterrupt).
 - **Output:** the same opts keys. `VoiceOverrides.overrides(dt)` returns the
   `[String: Double]` / `Map<String, Double>` that UniFFI's
-  `frameWithOverrides` takes, with the same easing, interrupt age and
-  scrolling history as Web's `voice.ts`.
+  `frameWithOverrides` takes, with the same easing and interrupt age as
+  Web's `voice.ts`.
 
 | Piece | iOS (`SinuaVoice`) | Android (`dev.sinua.voice`) |
 |---|---|---|

@@ -26,18 +26,18 @@ test("SinuaVoiceMessage: a slider with the position, over a box-layout canvas", 
   assert.match(html, /aria-label="Voice message"/);
   assert.match(html, /aria-valuenow="42"/);
   assert.match(html, /tabindex="0"/);
-  assert.doesNotMatch(html, /aspect-ratio:1/, "the waveform fills its box, no square default");
+  assert.doesNotMatch(html, /aspect-ratio:1/, "the dune fills its box, no square default");
 });
 
-test("voiceMessageSeek maps a touch onto the engine's row of bars", () => {
-  assert.equal(voiceMessageSeek(200, 40, 0), 0, "left of the row");
-  assert.equal(voiceMessageSeek(200, 40, 200), 1, "right of the row");
+test("voiceMessageSeek maps a touch onto the dune the engine draws", () => {
+  assert.equal(voiceMessageSeek(200, 40, 0), 0, "left of the dune");
+  assert.equal(voiceMessageSeek(200, 40, 200), 1, "right of the dune");
   assert.equal(voiceMessageSeek(200, 40, 100), playbackSeekProgress(5, 2.5));
-  assert.ok(Math.abs(voiceMessageSeek(200, 40, 100) - 0.5) < 1e-9, "the middle of the box is the middle of the row");
+  assert.ok(Math.abs(voiceMessageSeek(200, 40, 100) - 0.5) < 1e-9, "the middle of the box is the middle of the dune");
   assert.equal(voiceMessageSeek(0, 40, 10), 0, "no box yet");
 });
 
 test("SinuaView: a box-layout pattern gets no square default; others do", () => {
-  assert.doesNotMatch(renderToStaticMarkup(createElement(SinuaView, { pattern: "playing" })), /aspect-ratio/);
+  assert.doesNotMatch(renderToStaticMarkup(createElement(SinuaView, { pattern: "dune" })), /aspect-ratio/);
   assert.match(renderToStaticMarkup(createElement(SinuaView, { pattern: "breathing" })), /aspect-ratio:1/);
 });

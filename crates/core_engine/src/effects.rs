@@ -33,14 +33,10 @@ pub struct EffectInfo {
 pub const SUCCESS: u32 = 1;
 pub const ERROR: u32 = 2;
 pub const CELEBRATE: u32 = 3;
-/// A tap on a character: a short hop (design note 15). Characters only; other
-/// families draw nothing for it, and it has no words (nothing is announced).
-pub const HOP: u32 = 4;
 
 const SUCCESS_S: f64 = 0.9;
 const ERROR_S: f64 = 0.5;
 const CELEBRATE_S: f64 = 1.4;
-const HOP_S: f64 = 0.6;
 
 /// The effect called `name`, or `None` for an unknown one.
 pub fn info(name: &str) -> Option<EffectInfo> {
@@ -48,7 +44,6 @@ pub fn info(name: &str) -> Option<EffectInfo> {
         "success" => (SUCCESS, SUCCESS_S, "Done"),
         "error" => (ERROR, ERROR_S, "Something went wrong"),
         "celebrate" => (CELEBRATE, CELEBRATE_S, "Well done"),
-        "hop" => (HOP, HOP_S, ""),
         _ => return None,
     };
     Some(EffectInfo {
@@ -63,7 +58,6 @@ fn duration(code: u32) -> Option<f64> {
         SUCCESS => Some(SUCCESS_S),
         ERROR => Some(ERROR_S),
         CELEBRATE => Some(CELEBRATE_S),
-        HOP => Some(HOP_S),
         _ => None,
     }
 }
@@ -236,18 +230,7 @@ fn hash01(i: u32, salt: u32) -> f64 {
 }
 
 /// Modes whose patterns fill a box (the catalog's `layout: "box"`): effects play in place there.
-const IN_PLACE_MODES: [&str; 1] = ["playback"];
-
-/// True when `mode` draws the effect itself: a character's face *is* the effect
-/// (a happy face, an X, star eyes), so the generic ring / tick / burst isn't added.
-pub fn draws_own(mode: &str) -> bool {
-    crate::character::presets::is_character_mode(mode)
-}
-
-/// The effect with this code's length in seconds, or `None` for no effect.
-pub(crate) fn duration_of(code: u32) -> Option<f64> {
-    duration(code)
-}
+const IN_PLACE_MODES: [&str; 1] = ["dune"];
 
 /// True when effects on `mode` play in place (see the module docs).
 pub fn plays_in_place(mode: &str) -> bool {
@@ -261,10 +244,6 @@ pub fn apply_effect(mut frame: OrbFrame, size: f64, opts: &ModeOpts, in_place: b
         return frame;
     };
     let code = opts.get("effectCode").copied().unwrap_or(0.0) as u32;
-    // The hop is a character's own (rig.rs); other families draw nothing for it.
-    if code == HOP {
-        return frame;
-    }
     let Some(dur) = duration(code) else {
         return frame;
     };

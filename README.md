@@ -2,16 +2,14 @@
 
 One visual-effects engine, written once in Rust and drawn identically on Web,
 iOS, Android and React Native. It renders animated visuals for voice agents and
-assistants — a listening orb, an audio-reactive strip, a progress ring, a character
-with a face — and the
+assistants — a listening orb, a voice drawn as light, a progress ring, a status
+beacon — and the
 four platforms are proven identical by testing them against the same frozen
 vectors, not by reading the code side by side.
 
-**6 objects, 43 patterns:** orb (18), signal (5), ring (6), core (2), beacon (5),
-character (7). A design is either a few typed props or an **FX Spec** file
-(`.fxspec.json`, currently 1.12) that every platform resolves the same way. A
-character is data: a recipe that can ship inside an FX Spec file, so a brand's own
-character needs no code (see [docs/character-remix.md](docs/character-remix.md)).
+**5 objects, 33 patterns:** orb (17), signal (3), ring (6), core (2), beacon (5).
+A design is either a few typed props or an **FX Spec** file (`.fxspec.json`,
+currently 1.15) that every platform resolves the same way.
 
 > **Public beta.** The packages are on npm (`@sinua/*`, `beta` tag), Maven Central
 > (`dev.sinua:sinua-*`) and SwiftPM ([`sinua-dev/sinua-swift`](https://github.com/sinua-dev/sinua-swift))

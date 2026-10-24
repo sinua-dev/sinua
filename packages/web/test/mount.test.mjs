@@ -564,15 +564,22 @@ test("a 1.7 spec with a state renders exactly as before: no profile is applied",
   fx.destroy();
 });
 
-test("two views on one raw source both follow it, each with its own tracker, and show its mute", async () => {
+test("two views on one raw source both follow it, each with its own tracker, and show its mute", async (t) => {
   const { SharedVoiceSource } = await import("@sinua/core");
+  // veil's light run draws cached sprites.
+  globalThis.OffscreenCanvas = class {
+    constructor(w, h) { this.width = w; this.height = h; }
+    getContext() { return { createRadialGradient: () => ({ addColorStop() {} }), fillRect() {} }; }
+  };
+  t.after(() => delete globalThis.OffscreenCanvas);
   const { step } = env();
   const a = canvas();
   const b = canvas();
   // One callback of each kind, like every real source: a second direct bind would steal it.
   const src = { cbs: {}, onMetrics(cb) { this.cbs.m = cb; }, onStateChange(cb) { this.cbs.s = cb; }, async connect() {}, disconnect() {}, setMuted() {} };
   const orb = mount(a.el, { pattern: "working", voice: src });
-  const signal = mount(b.el, { pattern: "waveform", voice: src });
+  b.el.getContext().drawImage = () => {};
+  const signal = mount(b.el, { pattern: "veil", voice: src });
   assert.notEqual(orb.voice, signal.voice, "each view keeps its family's tracker");
   src.cbs.s("listening");
   src.cbs.m({ level: 0.6, bands: Array(16).fill(0.3) });
@@ -589,6 +596,41 @@ test("two views on one raw source both follow it, each with its own tracker, and
   assert.equal(orb.voice.metrics.level, 0.6, "a destroyed view is unsubscribed");
   assert.equal(signal.voice.metrics.level, 0.2);
   signal.destroy();
+});
+
+test("a source connected before mount: the view picks up its state, and veil/crystal/dune draw the four states apart", async (t) => {
+  const { SimulatedVoiceSource } = await import("@sinua/core/dev");
+  globalThis.OffscreenCanvas = class {
+    constructor(w, h) { this.width = w; this.height = h; }
+    getContext() { return { createRadialGradient: () => ({ addColorStop() {} }), fillRect() {} }; }
+  };
+  t.after(() => delete globalThis.OffscreenCanvas);
+  for (const pattern of ["veil", "crystal", "dune"]) {
+    const drawn = new Map();
+    for (const state of ["idle", "listening", "thinking", "speaking"]) {
+      const { step } = env();
+      const c = canvas();
+      const turn = { state, seconds: 60 };
+      if (state === "speaking") turn.voice = "agent";
+      if (state === "listening") turn.voice = "user";
+      const src = new SimulatedVoiceSource({ turns: [turn] }, { autoTick: false });
+      await src.connect();
+      src.advance(0.5);
+      // The app connected first; the view comes later (or remounts).
+      // The light run draws cached sprites: record where each one lands.
+      c.el.getContext().drawImage = (_img, x, y, w) => c.calls.push(["sprite", x, y, w]);
+      const fx = mount(c.el, { pattern, voice: src });
+      assert.equal(fx.voice.state, state, `${pattern}: the view starts in the source's state`);
+      for (let i = 0; i < 30; i++) {
+        src.advance(1 / 60);
+        step(1);
+      }
+      drawn.set(state, JSON.stringify(c.calls.slice(-400)));
+      fx.destroy();
+      src.disconnect();
+    }
+    assert.equal(new Set(drawn.values()).size, 4, `${pattern}: four states, four different frames`);
+  }
 });
 
 // --- Accessibility (docs/fx-view.md, *Accessibility*) and the 1.9 rules glue ---
@@ -707,18 +749,26 @@ const pathExtent = (calls) => {
   return { maxX: Math.max(...pts.map((c) => c[1])), maxY: Math.max(...pts.map((c) => c[2])), n: pts.length };
 };
 
-test("a box-layout pattern fills a wide box: the box ratio goes in as aspect, nothing is centred", () => {
+test("a box-layout pattern fills a wide box: the box ratio goes in as aspect, nothing is centred", (t) => {
+  globalThis.OffscreenCanvas = class {
+    constructor(w, h) { this.width = w; this.height = h; }
+    getContext() { return { createRadialGradient: () => ({ addColorStop() {} }), fillRect() {} }; }
+  };
+  t.after(() => delete globalThis.OffscreenCanvas);
   const { step } = env();
   const c = canvas();
   c.el.clientWidth = 400;
   c.el.clientHeight = 100;
-  // The voice-message bar: grey ink (saturation 0); the geometry is what's under test.
-  const fx = mount(c.el, { pattern: "playing", overrides: { progress: 0.4, saturation: 0 }, reducedMotion: "never" });
+  // The voice message (dune): its light run draws cached sprites, so record where each lands.
+  c.el.getContext().drawImage = (_img, x, y, w) => c.calls.push(["sprite", x + w / 2, y + w / 2]);
+  const fx = mount(c.el, { pattern: "dune", overrides: { progress: 0.4, saturation: 0 }, reducedMotion: "never" });
   step(2);
-  const { maxX, maxY, n } = pathExtent(c.calls);
-  assert.ok(n > 0, "the bars were stroked");
-  // aspect 4: engine space is 256 x 64; the last bar sits near x = 256.
-  assert.ok(maxX > 240 && maxX <= 256, `right edge at ${maxX}`);
+  const sprites = c.calls.filter((k) => k[0] === "sprite");
+  assert.ok(sprites.length > 0, "the dune was drawn");
+  const maxX = Math.max(...sprites.map((k) => k[1]));
+  const maxY = Math.max(...sprites.map((k) => k[2]));
+  // aspect 4: engine space is 256 x 64; the dune runs on past the square's 64.
+  assert.ok(maxX > 200 && maxX <= 256, `right edge at ${maxX}`);
   assert.ok(maxY > 32 && maxY <= 64, `bottom edge at ${maxY}`);
   assert.ok(!c.calls.some((k) => k[0] === "translate"), "no centring translate");
   assert.deepEqual(c.calls.find((k) => k[0] === "scale"), ["scale", 100 / 64], "scaled by the box height");
@@ -836,127 +886,9 @@ test("under reduced motion an effect still draws (its reduced variant) and then 
 });
 
 test("viewLayout: box for the box-layout patterns (plain or spec), square otherwise", () => {
-  assert.equal(viewLayout({ pattern: "playing" }), "box");
+  assert.equal(viewLayout({ pattern: "dune" }), "box");
   assert.equal(viewLayout({ pattern: "completing" }), "square");
-  assert.equal(viewLayout({ spec: { fxSpec: "1.9", object: "signal", pattern: "playing" } }), "box");
+  assert.equal(viewLayout({ spec: { fxSpec: "1.15", object: "signal", pattern: "dune" } }), "box");
   assert.equal(viewLayout({ spec: specText }), "square");
   assert.equal(viewLayout({ pattern: "no-such-pattern" }), "square", "invalid input is square");
-});
-
-// Tap to hop (design note 15): a character's fills, compared by their path points.
-const paths = (calls) => calls.filter((c) => c[0] === "moveTo" || c[0] === "lineTo").map((c) => c.slice(1));
-
-test("tap: a tap hops a character for 0.6 s, then it draws as if untouched", async () => {
-  const { step } = env();
-  const a = canvas(100);
-  const b = canvas(100);
-  const tapped = mount(a.el, { pattern: "buzzy", tap: true });
-  const still = mount(b.el, { pattern: "buzzy", tap: true });
-  step(5);
-  a.fire("pointerdown", { clientX: 90, clientY: 20 });
-  step(10);
-  assert.notDeepEqual(paths(a.calls), paths(b.calls), "mid-hop: the tapped one moved");
-  // Effects run on the real clock (performance.now), not the frame clock: wait it out.
-  await new Promise((r) => setTimeout(r, 650));
-  step(2);
-  assert.deepEqual(paths(a.calls), paths(b.calls), "after the hop: the same frame again");
-  tapped.destroy();
-  still.destroy();
-  assert.equal(a.listening, 0, "destroy removes the tap listener");
-});
-
-test("tap: off by default; a running success isn't cut by a tap", () => {
-  const { step } = env();
-  const off = canvas(100);
-  const v = mount(off.el, { pattern: "buzzy" });
-  assert.equal(off.listening, 0, "no tap option: no listeners");
-  v.destroy();
-
-  const a = canvas(100);
-  const b = canvas(100);
-  const x = mount(a.el, { pattern: "buzzy", tap: true, announce: false });
-  const y = mount(b.el, { pattern: "buzzy", tap: true, announce: false });
-  x.trigger("success");
-  y.trigger("success");
-  step(5);
-  a.fire("pointerdown", { clientX: 10, clientY: 10 });
-  step(10);
-  assert.deepEqual(paths(a.calls), paths(b.calls), "the tap is ignored while success plays");
-  x.destroy();
-  y.destroy();
-});
-
-// Expressions (design note 16): eased in over 0.6 s, `null` eases back out.
-test("expression: shapes a character, eases in, and null takes it back out", async () => {
-  const { step } = env();
-  const a = canvas(100);
-  const b = canvas(100);
-  const sad = mount(a.el, { pattern: "bean", expression: "sad", reducedMotion: "never" });
-  const plain = mount(b.el, { pattern: "bean", reducedMotion: "never" });
-  await new Promise((r) => setTimeout(r, 650));
-  step(2);
-  assert.notDeepEqual(paths(a.calls), paths(b.calls), "the sad bean differs");
-  sad.update({ expression: null });
-  await new Promise((r) => setTimeout(r, 650));
-  step(2);
-  assert.deepEqual(paths(a.calls), paths(b.calls), "null: back to no expression");
-  sad.destroy();
-  plain.destroy();
-});
-
-test("expression: the view's wins over the spec's", async () => {
-  const { step } = env();
-  const spec = { fxSpec: "1.12", object: "character", pattern: "cuppa", expression: "sad" };
-  const a = canvas(100);
-  const b = canvas(100);
-  const own = mount(a.el, { spec, expression: "happy", reducedMotion: "never" });
-  const plainHappy = mount(b.el, { spec: { ...spec, expression: "happy" }, reducedMotion: "never" });
-  await new Promise((r) => setTimeout(r, 650));
-  step(2);
-  assert.deepEqual(paths(a.calls), paths(b.calls), "the prop's happy draws as the spec's happy");
-  own.destroy();
-  plainHappy.destroy();
-});
-
-// Palette (design note 19): a prop repaints the slots and wins over the spec's.
-test("palette: repaints a character, and the prop wins over the spec's", () => {
-  const { step } = env();
-  const a = canvas(100);
-  const b = canvas(100);
-  const red = mount(a.el, { pattern: "buzzy", palette: { body: "#E63946" }, reducedMotion: "always" });
-  const plain = mount(b.el, { pattern: "buzzy", reducedMotion: "always" });
-  step(2);
-  const fills = (calls) => calls.filter((x) => x[0] === "fill").map((x) => JSON.stringify(x[1]));
-  assert.notDeepEqual(fills(a.calls), fills(b.calls), "the body is another colour");
-  red.destroy();
-  plain.destroy();
-
-  const spec = { fxSpec: "1.12", object: "character", pattern: "cuppa", palette: { mug: "#E63946" } };
-  const c = canvas(100);
-  const d = canvas(100);
-  const own = mount(c.el, { spec, palette: { mug: "#2A9D8F" }, reducedMotion: "always" });
-  const file = mount(d.el, { spec: { ...spec, palette: { mug: "#2A9D8F" } }, reducedMotion: "always" });
-  step(2);
-  assert.deepEqual(fills(c.calls), fills(d.calls), "the prop's mug draws as the spec's");
-  own.destroy();
-  file.destroy();
-});
-
-test("palette: the prop on a file's own recipe draws as the file's palette", () => {
-  const { step } = env();
-  const spec = JSON.parse(readFileSync(new URL("../../../spec/examples/custom-character.fxspec.json", import.meta.url), "utf8"));
-  const slot = "belly"; // a solid fill: the stub's gradients don't show their stops
-  const fills = (calls) => calls.filter((x) => x[0] === "fill").map((x) => JSON.stringify(x[1]));
-  const a = canvas(100);
-  const b = canvas(100);
-  const c = canvas(100);
-  const errors = [];
-  const prop = mount(a.el, { spec, palette: { [slot]: "#E63946" }, reducedMotion: "always", onError: (d) => errors.push(d) });
-  const file = mount(b.el, { spec: { ...spec, fxSpec: "1.12", palette: { [slot]: "#E63946" } }, reducedMotion: "always" });
-  const plain = mount(c.el, { spec, reducedMotion: "always" });
-  step(2);
-  assert.deepEqual(errors, []);
-  assert.deepEqual(fills(a.calls), fills(b.calls));
-  assert.notDeepEqual(fills(a.calls), fills(c.calls));
-  for (const v of [prop, file, plain]) v.destroy();
 });

@@ -111,6 +111,32 @@ class VoiceButtonTest {
         assertEquals(listOf(AgentState.LISTENING, AgentState.SPEAKING), two)
     }
 
+    @Test fun aLateListenerGetsTheCurrentStateAndConnectionAtOnce() {
+        val src = Fake()
+        val shared = SharedVoiceSource.of(src)
+        shared.connect()
+        src.stateCb!!(AgentState.THINKING)
+        // As a view mounted mid-session (or a voice button shown later).
+        val seen = mutableListOf<AgentState>()
+        var up: Boolean? = null
+        shared.listenState { seen.add(it) }
+        shared.listenConnection { up = it }
+        assertEquals(listOf(AgentState.THINKING), seen)
+        assertEquals(true, up)
+        assertEquals(AgentState.THINKING, shared.track().overrides.state)
+        src.stateCb!!(AgentState.IDLE)
+        val idle = mutableListOf<AgentState>()
+        var idleUp: Boolean? = null
+        shared.listenState { idle.add(it) }
+        shared.listenConnection { idleUp = it }
+        assertEquals("connected but idle: no state replay", emptyList<AgentState>(), idle)
+        assertEquals("connected but idle: the connection still replays", true, idleUp)
+        shared.disconnect()
+        var after: Boolean? = null
+        shared.listenConnection { after = it }
+        assertEquals(null, after)
+    }
+
     @Test fun trackedViewsKeepTheirOwnTrackerAndFollowTheMute() {
         val src = Fake()
         val shared = SharedVoiceSource.of(src)

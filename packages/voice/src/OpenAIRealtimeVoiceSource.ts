@@ -254,16 +254,20 @@ export class OpenAIRealtimeVoiceSource implements VoiceSource {
     this.metricsCb = cb;
   }
 
+  /** Mid-session, it replays the current state at once: a view mounted after `connect()` doesn't stay idle. */
   onStateChange(cb: (s: AgentState) => void): void {
     this.stateCb = cb;
+    if (this.state !== "idle") cb(this.state);
   }
 
   onInterrupt(cb: () => void): void {
     this.interruptCb = cb;
   }
 
+  /** While the session is up, it replays `true` at once, in any state. */
   onConnectionChange(cb: (connected: boolean) => void): void {
     this.connectionCb = cb;
+    if (this.sessionUp) cb(true);
   }
 
   /**

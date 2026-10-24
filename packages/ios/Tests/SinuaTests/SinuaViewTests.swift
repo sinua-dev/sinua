@@ -28,19 +28,6 @@ final class SinuaViewTests: XCTestCase {
         return objects.flatMap { ($0["patterns"] as? [[String: Any]] ?? []).compactMap { $0["id"] as? String } }
     }
 
-    /// The catalog's `character` patterns: drawn with fills by default (docs/character.md).
-    private static func characterPatternCount() throws -> Int {
-        let url = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("spec/parameters.json")
-        let data = try Data(contentsOf: url)
-        let root = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        let objects = try XCTUnwrap(root["objects"] as? [[String: Any]])
-        return objects.filter { $0["id"] as? String == "character" }
-            .reduce(0) { $0 + (($1["patterns"] as? [[String: Any]])?.count ?? 0) }
-    }
-
     private func bitmap(_ draw: @escaping (inout GraphicsContext, CGSize) -> Void) -> Data {
         let view = Canvas { ctx, size in draw(&ctx, size) }.frame(width: 128, height: 128)
         let r = ImageRenderer(content: view)
@@ -53,10 +40,11 @@ final class SinuaViewTests: XCTestCase {
         let states = try Self.catalogPatterns()
         // A floor, not a count: it only guards a loader that read too little.
         XCTAssertGreaterThanOrEqual(
-            states.count, 34, "only \(states.count) patterns read -- the file or the loader moved")
+            states.count, 33, "only \(states.count) patterns read -- the file or the loader moved")
         var compared = 0
         var perVertex = 0
         var filled = 0
+        var light = 0
         for s in states {
             guard let frame = frame(state: s, size: 64, t: 1.7) else {
                 XCTFail("\(s) is in spec/parameters.json but does not render through CoreEngine")
@@ -70,10 +58,18 @@ final class SinuaViewTests: XCTestCase {
                 perVertex += 1
                 continue
             }
-            // Nor fills (materials phase 1): a character is drawn with fills only
-            // (docs/character.md). MaterialsRenderTests holds fills across platforms.
+            // Nor fills (materials phase 1): no pattern draws them by default.
+            // MaterialsRenderTests holds fills across platforms.
             if !frame.fills.isEmpty {
                 filled += 1
+                continue
+            }
+            // Nor the light volumes' soft glows (`EffectRun.blend` 3, 1.15): the old painter
+            // has no light blend. They are signal patterns; their paint is held by the light
+            // painter's own tests and renders.
+            if frame.effects.contains(where: { $0.blend == 3 }) {
+                XCTAssertTrue(["veil", "crystal", "dune"].contains(s), "\(s) draws light but isn't a light volume")
+                light += 1
                 continue
             }
             for dark in [false, true] {
@@ -88,9 +84,10 @@ final class SinuaViewTests: XCTestCase {
             }
         }
         // The denominator, exactly: two themes for every pattern that exists.
-        XCTAssertEqual(compared, (states.count - perVertex - filled) * 2, "one bitmap pair per pattern")
+        XCTAssertEqual(compared, (states.count - perVertex - filled - light) * 2, "one bitmap pair per pattern")
+        XCTAssertEqual(light, 3, "veil, crystal and dune")
         XCTAssertEqual(perVertex, 0, "no pattern draws per-vertex colour by default")
-        XCTAssertEqual(filled, try Self.characterPatternCount(), "exactly the character patterns draw fills by default")
+        XCTAssertEqual(filled, 0, "no pattern draws fills by default")
         print("FxPaint parity: \(compared) bitmaps identical across \(states.count) patterns")
     }
 
@@ -213,42 +210,10 @@ final class SinuaViewTests: XCTestCase {
         }
     }
 
-    /// A palette's dark variant (design note 23): the view passes `dark` in a dark theme and
-    /// the engine picks it. Cuppa's sleeve (its `secondary`): #D4EDF7 light, #72ADCA dark.
-    func testADarkThemePicksThePalettesDarkVariant() throws {
-        let json = """
-            {"fxSpec": "1.13", "object": "character", "pattern": "cuppa",
-             "palette": {"secondary": "#D4EDF7", "dark": {"secondary": "#72ADCA"}}}
-            """
-        func sleeve(_ theme: FxTheme) throws -> Double {
-            let r = ImageRenderer(
-                content: SinuaView(spec: json, theme: theme, reducedMotion: .always).frame(width: 160, height: 160))
-            r.scale = 2
-            let cg = try XCTUnwrap(r.cgImage)
-            let bytes = CFDataGetBytePtr(cg.dataProvider!.data!)!
-            // The sleeve band (box y ~140, left of the heart), averaged over a small patch.
-            var sum = 0.0
-            var n = 0.0
-            for y in 222..<228 {
-                for x in 92..<98 {
-                    let i = y * cg.bytesPerRow + x * 4
-                    sum += (Double(bytes[i]) + Double(bytes[i + 1]) + Double(bytes[i + 2])) / (3 * 255)
-                    n += 1
-                }
-            }
-            return sum / n
-        }
-        let light = try sleeve(.light)
-        let dark = try sleeve(.dark)
-        XCTAssertGreaterThan(light - dark, 0.12, "light \(light), dark \(dark)")
-    }
-
     func testFamilyVoiceDefaultsMatchTheStudios() {
-        XCTAssertEqual(FxModel.voiceOptions(family: "orb", overrides: [:]).bandEaseRate, .infinity)
-        let sig = FxModel.voiceOptions(family: "signal", overrides: ["historyCount": 24])
-        XCTAssertEqual(sig.audioStrength, 0)
-        XCTAssertEqual(sig.historyCount, 24)
-        XCTAssertNil(FxModel.voiceOptions(family: "ring", overrides: [:]).historyCount)
+        XCTAssertEqual(FxModel.voiceOptions(family: "orb").bandEaseRate, .infinity)
+        XCTAssertEqual(FxModel.voiceOptions(family: "signal").audioStrength, 0)
+        XCTAssertEqual(FxModel.voiceOptions(family: "ring").audioStrength, VoiceOverridesOptions().audioStrength)
     }
 }
 

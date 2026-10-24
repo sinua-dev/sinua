@@ -93,7 +93,6 @@ for (let i = 0; i < 150; i++) {
   if (i % 2 === 0) st.metrics = { level: rnd(), bands: Array.from({ length: i > 120 ? 8 : 16 }, rnd) };
   if (i % 20 === 0) st.state = states[(i / 20) % states.length];
   if (i === 30 || i === 90 || i === 91) st.interrupt = true;
-  if (i === 80) st.historyCount = 12;
   if (i === 100) st.muted = true;
   if (i === 115) st.muted = false;
   if (i === 130) st.reset = true;
@@ -103,14 +102,13 @@ for (let i = 0; i < 150; i++) {
 const configs = {
   default: {},
   orb: { bandEaseRate: "inf" },
-  signal: { audioStrength: 0, historyCount: 20, historyHz: 12, interrupt: { window: 0.6, duration: 0.5, strength: 0.7, tint: 1, hue: 200 }, mutedTint: 0.4, mutedHue: 8 },
+  signal: { audioStrength: 0, interrupt: { window: 0.6, duration: 0.5, strength: 0.7, tint: 1, hue: 200 }, mutedTint: 0.4, mutedHue: 8 },
   nointerrupt: { interrupt: false, levelEaseRate: "inf" },
 };
 const toWeb = (c) => ({
   ...(c.audioStrength != null && { audioStrength: c.audioStrength }),
   ...(c.levelEaseRate != null && { levelEaseRate: c.levelEaseRate === "inf" ? Infinity : c.levelEaseRate }),
   ...(c.bandEaseRate != null && { bandEaseRate: c.bandEaseRate === "inf" ? Infinity : c.bandEaseRate }),
-  ...(c.historyCount != null && { history: { count: c.historyCount, hz: c.historyHz } }),
   ...(c.interrupt != null && { interrupt: c.interrupt }),
   ...(c.mutedTint != null && { mutedTint: c.mutedTint }),
   ...(c.mutedHue != null && { mutedHue: c.mutedHue }),
@@ -122,7 +120,6 @@ for (const [name, c] of Object.entries(configs)) {
     if (st.metrics) v.push(st.metrics);
     if (st.state) v.setState(st.state);
     if (st.interrupt) v.interrupt();
-    if (st.historyCount) v.setHistoryCount(st.historyCount);
     if (st.muted !== undefined) v.muted = st.muted;
     if (st.reset) v.reset();
     return v.overrides(st.dt);

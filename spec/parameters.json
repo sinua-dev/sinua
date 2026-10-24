@@ -23,29 +23,6 @@
     }
   ],
   "definitions": {
-    "accessories@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "The character's extras: Buzzy's crest, ear chevrons and listening arcs; Hum's tally light; Wisp's sparkles; Chirp's notes and thought dots.",
-      "fallback": 1,
-      "group": "style",
-      "if": null,
-      "key": "accessories",
-      "label": "Accessories",
-      "max": 1,
-      "min": 0,
-      "path": "accessories",
-      "scope": "character",
-      "specPath": "/params/accessories",
-      "step": 1,
-      "tier": "basic",
-      "type": "boolean",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
     "accuracy@halo": {
       "aliases": [],
       "category": "input",
@@ -68,52 +45,6 @@
       "uiMax": 1,
       "uiMin": 0,
       "unit": "fraction"
-    },
-    "amplitude@waveform": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Peak wave height as a fraction of the frame.",
-      "fallback": 0.26,
-      "group": "style",
-      "if": null,
-      "key": "amplitude",
-      "label": "Amplitude",
-      "max": 0.5,
-      "min": 0,
-      "path": "amplitude",
-      "scope": "waveform",
-      "specPath": "/params/amplitude",
-      "step": 0.01,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.45,
-      "uiMin": 0.1,
-      "unit": "fraction"
-    },
-    "arms@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "The character's arms (Beep): a hand to the ear while listening, to the chin while thinking, beats while speaking. Off: no arms.",
-      "fallback": 1,
-      "group": "style",
-      "if": null,
-      "key": "arms",
-      "label": "Arms",
-      "max": 1,
-      "min": 0,
-      "path": "arms",
-      "scope": "character",
-      "specPath": "/params/arms",
-      "step": 1,
-      "tier": "basic",
-      "type": "boolean",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
     },
     "avatarGap@speaker": {
       "aliases": [],
@@ -184,52 +115,6 @@
       "uiMin": 1,
       "unit": "x"
     },
-    "barCount@bar": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Number of level bars.",
-      "fallback": 9,
-      "group": "style",
-      "if": null,
-      "key": "barCount",
-      "label": "Bars",
-      "max": 64,
-      "min": 1,
-      "path": "barCount",
-      "scope": "bar",
-      "specPath": "/params/barCount",
-      "step": 1,
-      "tier": "basic",
-      "type": "integer",
-      "uiMax": 20,
-      "uiMin": 4,
-      "unit": null
-    },
-    "barCount@playback": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "How many bars to draw: 0 = one per envelope value; otherwise the envelope is resampled (keeping peaks).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "barCount",
-      "label": "Bars",
-      "max": 128,
-      "min": 0,
-      "path": "barCount",
-      "scope": "playback",
-      "specPath": "/params/barCount",
-      "step": 1,
-      "tier": "basic",
-      "type": "integer",
-      "uiMax": 96,
-      "uiMin": 0,
-      "unit": null
-    },
     "barCount@spectrum": {
       "aliases": [],
       "category": "appearance",
@@ -272,75 +157,6 @@
       "tier": "advanced",
       "type": "integer",
       "unit": null
-    },
-    "barWidth@bar": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Bar width as a fraction of each slot.",
-      "fallback": 0.55,
-      "group": "style",
-      "if": null,
-      "key": "barWidth",
-      "label": "Bar width",
-      "max": 1,
-      "min": 0.05,
-      "path": "barWidth",
-      "scope": "bar",
-      "specPath": "/params/barWidth",
-      "step": 0.02,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.9,
-      "uiMin": 0.2,
-      "unit": "fraction"
-    },
-    "barWidth@playback": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Bar width as a fraction of each slot.",
-      "fallback": 0.6,
-      "group": "style",
-      "if": null,
-      "key": "barWidth",
-      "label": "Bar width",
-      "max": 1,
-      "min": 0.05,
-      "path": "barWidth",
-      "scope": "playback",
-      "specPath": "/params/barWidth",
-      "step": 0.02,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.9,
-      "uiMin": 0.2,
-      "unit": "fraction"
-    },
-    "barWidth@scroll": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Bar width as a fraction of each slot.",
-      "fallback": 0.6,
-      "group": "style",
-      "if": null,
-      "key": "barWidth",
-      "label": "Bar width",
-      "max": 1,
-      "min": 0.05,
-      "path": "barWidth",
-      "scope": "scroll",
-      "specPath": "/params/barWidth",
-      "step": 0.02,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.9,
-      "uiMin": 0.2,
-      "unit": "fraction"
     },
     "blipCount@radar": {
       "aliases": [],
@@ -388,68 +204,68 @@
       "uiMin": 0,
       "unit": "fraction"
     },
-    "bounceGain@character": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far the voice lifts the body while speaking (design units).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "bounceGain",
-      "label": "Bounce",
-      "max": 8,
-      "min": 0,
-      "path": "bounceGain",
-      "scope": "character",
-      "specPath": "/params/bounceGain",
-      "step": 0.5,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 8,
-      "uiMin": 0,
-      "unit": null
-    },
-    "breath@character": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "Idle breathing bob.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "breath",
-      "label": "Breath",
-      "max": 2,
-      "min": 0,
-      "path": "breath",
-      "scope": "character",
-      "specPath": "/params/breath",
-      "step": 0.05,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 2,
-      "uiMin": 0,
-      "unit": null
-    },
-    "breath@silhouette": {
+    "churn@crystal": {
       "aliases": [],
       "category": "motion",
       "choices": null,
       "deprecated": null,
-      "description": "How much the silhouette breathes (idle).",
-      "fallback": 1,
+      "description": "Restless work, 0 to 1: cells light and fade on their own.",
+      "fallback": 0,
       "group": "style",
       "if": null,
-      "key": "breath",
-      "label": "Breath",
+      "key": "churn",
+      "label": "Churn",
       "max": 1,
       "min": 0,
-      "path": "breath",
-      "scope": "silhouette",
-      "specPath": "/params/breath",
+      "path": "churn",
+      "scope": "crystal",
+      "specPath": "/params/churn",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "churn@dune": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Restless work, 0 to 1: the unlit sand shimmers.",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "churn",
+      "label": "Churn",
+      "max": 1,
+      "min": 0,
+      "path": "churn",
+      "scope": "dune",
+      "specPath": "/params/churn",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "churn@veil": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Restless work, 0 to 1: the sheet keeps moving with no level (thinking, processing).",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "churn",
+      "label": "Churn",
+      "max": 1,
+      "min": 0,
+      "path": "churn",
+      "scope": "veil",
+      "specPath": "/params/churn",
       "step": 0.05,
       "tier": "basic",
       "type": "number",
@@ -575,26 +391,26 @@
       "type": "number",
       "unit": "fraction"
     },
-    "columnCount@matrix": {
+    "columnCount@crystal": {
       "aliases": [],
       "category": "appearance",
       "choices": null,
       "deprecated": null,
-      "description": "LED columns.",
-      "fallback": 12,
+      "description": "Columns of cells, one per band or value.",
+      "fallback": 16,
       "group": "style",
       "if": null,
       "key": "columnCount",
       "label": "Columns",
-      "max": 32,
-      "min": 1,
+      "max": 24,
+      "min": 4,
       "path": "columnCount",
-      "scope": "matrix",
+      "scope": "crystal",
       "specPath": "/params/columnCount",
       "step": 1,
       "tier": "basic",
       "type": "integer",
-      "uiMax": 32,
+      "uiMax": 24,
       "uiMin": 4,
       "unit": null
     },
@@ -638,29 +454,6 @@
       "tier": "basic",
       "type": "boolean",
       "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "curlGain@wisp": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "How tightly the smoke tail curls (thinking curls it most).",
-      "fallback": 0.6,
-      "group": "style",
-      "if": null,
-      "key": "curlGain",
-      "label": "Tail curl",
-      "max": 2,
-      "min": 0,
-      "path": "curlGain",
-      "scope": "wisp",
-      "specPath": "/params/curlGain",
-      "step": 0.05,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 2,
       "uiMin": 0,
       "unit": null
     },
@@ -934,29 +727,6 @@
       "uiMin": 0.008,
       "unit": "fraction"
     },
-    "dotSize@silhouette": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Dot size, relative to the default.",
-      "fallback": 1,
-      "group": "style",
-      "if": null,
-      "key": "dotSize",
-      "label": "Dot size",
-      "max": 4,
-      "min": 0,
-      "path": "dotSize",
-      "scope": "silhouette",
-      "specPath": "/params/dotSize",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 2,
-      "uiMin": 0.4,
-      "unit": "fraction"
-    },
     "dotSize@spectrum": {
       "aliases": [],
       "category": "appearance",
@@ -975,29 +745,6 @@
       "specPath": "/params/dotSize",
       "tier": "advanced",
       "type": "number",
-      "unit": null
-    },
-    "earGain@character": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "How strongly the listening sound arcs show with the user's level. Whirr and Clank: how far into their listening pose they are (Whirr leans in with its antenna lit, Clank tilts its head with its ear lights pulsing).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "earGain",
-      "label": "Ear arcs",
-      "max": 1,
-      "min": 0,
-      "path": "earGain",
-      "scope": "character",
-      "specPath": "/params/earGain",
-      "step": 0.05,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
       "unit": null
     },
     "echoCount@sonar": {
@@ -1043,12 +790,12 @@
       "type": "number",
       "unit": "fraction"
     },
-    "envelope@playback": {
+    "envelope@dune": {
       "aliases": [],
       "category": "input",
       "choices": null,
       "deprecated": null,
-      "description": "The recorded clip's loudness, oldest first, 0 to 1 per value (up to 64; resample longer clips). Without it a fixed sample message is drawn.",
+      "description": "The dune's profile, 0 to 1 per value (a clip's loudness or any series; up to 64). Without it a fixed dune is drawn.",
       "fallback": null,
       "group": "value",
       "if": null,
@@ -1064,149 +811,11 @@
       "min": 0,
       "minItems": 1,
       "path": "envelope",
-      "scope": "playback",
+      "scope": "dune",
       "specPath": "/params/envelope",
       "tier": "advanced",
       "type": "number[]",
       "unit": "fraction"
-    },
-    "eyeAsym@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Makes the left eye shorter (a quizzical look).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "eyeAsym",
-      "label": "Eye asymmetry",
-      "max": 0.6,
-      "min": 0,
-      "path": "eyeAsym",
-      "scope": "character",
-      "specPath": "/params/eyeAsym",
-      "step": 0.01,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 0.6,
-      "uiMin": 0,
-      "unit": null
-    },
-    "eyeH@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Eye height, in design units.",
-      "fallback": 26,
-      "group": "style",
-      "if": null,
-      "key": "eyeH",
-      "label": "Eye height",
-      "max": 40,
-      "min": 8,
-      "path": "eyeH",
-      "scope": "character",
-      "specPath": "/params/eyeH",
-      "step": 0.5,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 40,
-      "uiMin": 8,
-      "unit": null
-    },
-    "eyeR@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Eye corner radius, in design units.",
-      "fallback": 8,
-      "group": "style",
-      "if": null,
-      "key": "eyeR",
-      "label": "Eye roundness",
-      "max": 20,
-      "min": 0,
-      "path": "eyeR",
-      "scope": "character",
-      "specPath": "/params/eyeR",
-      "step": 0.5,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 20,
-      "uiMin": 0,
-      "unit": null
-    },
-    "eyeSmile@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "The happy arc cut from below the eyes.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "eyeSmile",
-      "label": "Eye smile",
-      "max": 1,
-      "min": 0,
-      "path": "eyeSmile",
-      "scope": "character",
-      "specPath": "/params/eyeSmile",
-      "step": 0.01,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "eyeTilt@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Slope of the lid: positive lowers the outer corners (pensive).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "eyeTilt",
-      "label": "Lid slope",
-      "max": 1,
-      "min": -1,
-      "path": "eyeTilt",
-      "scope": "character",
-      "specPath": "/params/eyeTilt",
-      "step": 0.01,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": -1,
-      "unit": null
-    },
-    "eyeW@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Eye width, in the character's 200-unit design box.",
-      "fallback": 20,
-      "group": "style",
-      "if": null,
-      "key": "eyeW",
-      "label": "Eye width",
-      "max": 36,
-      "min": 8,
-      "path": "eyeW",
-      "scope": "character",
-      "specPath": "/params/eyeW",
-      "step": 0.5,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 36,
-      "uiMin": 8,
-      "unit": null
     },
     "faceOn@ribbon": {
       "aliases": [],
@@ -1247,29 +856,6 @@
       "tier": "advanced",
       "type": "boolean",
       "unit": null
-    },
-    "fadeWidth@scroll": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "Width of the fade at the edges, as a fraction of the frame.",
-      "fallback": 0.3,
-      "group": "style",
-      "if": null,
-      "key": "fadeWidth",
-      "label": "Edge fade",
-      "max": 1,
-      "min": 0.01,
-      "path": "fadeWidth",
-      "scope": "scroll",
-      "specPath": "/params/fadeWidth",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.8,
-      "uiMin": 0.05,
-      "unit": "fraction"
     },
     "fill@gauge": {
       "aliases": [],
@@ -1315,29 +901,6 @@
       "type": "number",
       "uiMax": 1,
       "uiMin": -1,
-      "unit": null
-    },
-    "flutterGain@chirp": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "How much the wings flutter with the voice while speaking (radians).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "flutterGain",
-      "label": "Wing flutter",
-      "max": 0.6,
-      "min": 0,
-      "path": "flutterGain",
-      "scope": "chirp",
-      "specPath": "/params/flutterGain",
-      "step": 0.02,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 0.6,
-      "uiMin": 0,
       "unit": null
     },
     "gap@arc": {
@@ -1428,52 +991,6 @@
       "uiMax": 3,
       "uiMin": 0,
       "unit": "x"
-    },
-    "gazeX@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Where the eyes look, sideways, in design units (negative = left).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "gazeX",
-      "label": "Gaze X",
-      "max": 14,
-      "min": -14,
-      "path": "gazeX",
-      "scope": "character",
-      "specPath": "/params/gazeX",
-      "step": 0.5,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 14,
-      "uiMin": -14,
-      "unit": null
-    },
-    "gazeY@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Where the eyes look, up and down, in design units (negative = up).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "gazeY",
-      "label": "Gaze Y",
-      "max": 12,
-      "min": -12,
-      "path": "gazeY",
-      "scope": "character",
-      "specPath": "/params/gazeY",
-      "step": 0.5,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 12,
-      "uiMin": -12,
-      "unit": null
     },
     "ghostA@orbits": {
       "aliases": [],
@@ -1597,29 +1114,6 @@
       "tier": "advanced",
       "type": "number",
       "unit": null
-    },
-    "glint@silhouette": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "Dots that catch the light now and then (idle).",
-      "fallback": 1,
-      "group": "style",
-      "if": null,
-      "key": "glint",
-      "label": "Glints",
-      "max": 1,
-      "min": 0,
-      "path": "glint",
-      "scope": "silhouette",
-      "specPath": "/params/glint",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
     },
     "glowBlend@shared": {
       "aliases": [],
@@ -1976,29 +1470,6 @@
       "uiMin": 0,
       "unit": "fraction"
     },
-    "grain@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Film grain inside the character's bodies (FX Spec 1.13): a fine, still noise of light and dark specks. 0 = none; a recipe's `grain` sets its default. Left out at 20 px; an FX Spec resolved under low power turns it off.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "grain",
-      "label": "Grain",
-      "max": 1,
-      "min": 0,
-      "path": "grain",
-      "scope": "character",
-      "specPath": "/params/grain",
-      "step": 0.01,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.2,
-      "uiMin": 0,
-      "unit": null
-    },
     "haloOpacity@halo": {
       "aliases": [],
       "category": "appearance",
@@ -2088,29 +1559,6 @@
       "uiMin": 0.5,
       "unit": "s"
     },
-    "hologram@silhouette": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "A brighter rim and, now and then, a thin band sliding sideways.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "hologram",
-      "label": "Hologram",
-      "max": 1,
-      "min": 0,
-      "path": "hologram",
-      "scope": "silhouette",
-      "specPath": "/params/hologram",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "hue@arc": {
       "aliases": [],
       "category": "appearance",
@@ -2134,75 +1582,6 @@
       "uiMin": 0,
       "unit": "deg"
     },
-    "hue@bar": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Ink hue in degrees; applies once saturation is above 0.",
-      "fallback": 200,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "bar",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "hue@bean": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Turns the bean's roast in degrees; the cheeks and the aroma stay.",
-      "fallback": 24,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "bean",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "hue@beep": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Turns the robot's steel in degrees; the screen, the orange accents and the antenna light stay.",
-      "fallback": 200,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "beep",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
     "hue@broadcast": {
       "aliases": [],
       "category": "appearance",
@@ -2218,75 +1597,6 @@
       "min": 0,
       "path": "hue",
       "scope": "broadcast",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "hue@buzzy": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Turns the shell's colour (and its line and screen tints) in degrees; the eyes and the amber accents stay.",
-      "fallback": 232,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "buzzy",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "hue@chirp": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Turns the bird's coral body in degrees; the crest, wings, beak and eyes stay.",
-      "fallback": 12,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "chirp",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "hue@cuppa": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Turns the mug's colour in degrees; the coffee, the sleeve and the heart stay.",
-      "fallback": 12,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "cuppa",
       "specPath": "/params/hue",
       "step": 5,
       "tier": "basic",
@@ -2364,29 +1674,6 @@
       "uiMin": 0,
       "unit": "deg"
     },
-    "hue@hum": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Turns the capsule's colour in degrees; the brass, the grille, the eyes and the tally stay.",
-      "fallback": 9,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "hum",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
     "hue@hush": {
       "aliases": [],
       "category": "appearance",
@@ -2404,29 +1691,6 @@
       "scope": "hush",
       "specPath": "/params/hue",
       "step": 1,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "hue@matrix": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Ink hue in degrees; applies once saturation is above 0.",
-      "fallback": 200,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "matrix",
-      "specPath": "/params/hue",
-      "step": 5,
       "tier": "basic",
       "type": "number",
       "uiMax": 360,
@@ -2471,29 +1735,6 @@
       "min": 0,
       "path": "hue",
       "scope": "ping",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "hue@playback": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Ink hue in degrees; applies once saturation is above 0.",
-      "fallback": 200,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "playback",
       "specPath": "/params/hue",
       "step": 5,
       "tier": "basic",
@@ -2548,29 +1789,6 @@
       "uiMin": 0,
       "unit": "deg"
     },
-    "hue@scroll": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Ink hue in degrees; applies once saturation is above 0.",
-      "fallback": 200,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "scroll",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
     "hue@segmented": {
       "aliases": [],
       "category": "appearance",
@@ -2611,29 +1829,6 @@
       "scope": "shimmer",
       "specPath": "/params/hue",
       "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "hue@silhouette": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Hue of the tint.",
-      "fallback": 200,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Tint hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "silhouette",
-      "specPath": "/params/hue",
-      "step": 1,
       "tier": "basic",
       "type": "number",
       "uiMax": 360,
@@ -2701,52 +1896,6 @@
       "min": 0,
       "path": "hue",
       "scope": "spinner",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "hue@waveform": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Ink hue in degrees; applies once saturation is above 0.",
-      "fallback": 200,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "waveform",
-      "specPath": "/params/hue",
-      "step": 5,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 360,
-      "uiMin": 0,
-      "unit": "deg"
-    },
-    "hue@wisp": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Turns the spirit's colour (violet and teal together) in degrees; the sparkles and the eyes stay.",
-      "fallback": 253,
-      "group": "style",
-      "if": null,
-      "key": "hue",
-      "label": "Hue",
-      "max": 360,
-      "min": 0,
-      "path": "hue",
-      "scope": "wisp",
       "specPath": "/params/hue",
       "step": 5,
       "tier": "basic",
@@ -3039,29 +2188,6 @@
       "uiMin": 0.2,
       "unit": "fraction"
     },
-    "inward@silhouette": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "Waves travelling in from the outline, stronger with the mic level (listening).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "inward",
-      "label": "Listening waves",
-      "max": 1,
-      "min": 0,
-      "path": "inward",
-      "scope": "silhouette",
-      "specPath": "/params/inward",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "jumpSpeed@spectrum": {
       "aliases": [],
       "category": "motion",
@@ -3165,97 +2291,28 @@
       "type": "integer",
       "unit": null
     },
-    "layerCount@waveform": {
+    "layerCount@veil": {
       "aliases": [],
       "category": "appearance",
       "choices": null,
       "deprecated": null,
-      "description": "Stacked waveform layers (fainter behind).",
-      "fallback": 3,
+      "description": "Sheets of light, front to back.",
+      "fallback": 9,
       "group": "style",
       "if": null,
       "key": "layerCount",
       "label": "Layers",
-      "max": 6,
-      "min": 1,
+      "max": 12,
+      "min": 3,
       "path": "layerCount",
-      "scope": "waveform",
+      "scope": "veil",
       "specPath": "/params/layerCount",
       "step": 1,
       "tier": "basic",
       "type": "integer",
-      "uiMax": 5,
-      "uiMin": 1,
+      "uiMax": 12,
+      "uiMin": 3,
       "unit": null
-    },
-    "lean@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Leans the whole character toward the viewer (design units).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "lean",
-      "label": "Lean",
-      "max": 8,
-      "min": -8,
-      "path": "lean",
-      "scope": "character",
-      "specPath": "/params/lean",
-      "step": 0.5,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 8,
-      "uiMin": -8,
-      "unit": null
-    },
-    "ledCount@matrix": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "LEDs per column.",
-      "fallback": 8,
-      "group": "style",
-      "if": null,
-      "key": "ledCount",
-      "label": "LEDs",
-      "max": 24,
-      "min": 2,
-      "path": "ledCount",
-      "scope": "matrix",
-      "specPath": "/params/ledCount",
-      "step": 1,
-      "tier": "basic",
-      "type": "integer",
-      "uiMax": 24,
-      "uiMin": 2,
-      "unit": null
-    },
-    "ledSize@matrix": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "LED size as a fraction of its cell.",
-      "fallback": 0.7,
-      "group": "style",
-      "if": null,
-      "key": "ledSize",
-      "label": "LED size",
-      "max": 1,
-      "min": 0.2,
-      "path": "ledSize",
-      "scope": "matrix",
-      "specPath": "/params/ledSize",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0.3,
-      "unit": "fraction"
     },
     "length@shimmer": {
       "aliases": [],
@@ -3300,28 +2357,51 @@
       "uiMin": -0.05,
       "unit": "fraction"
     },
-    "lid@character": {
+    "level@crystal": {
       "aliases": [],
-      "category": "appearance",
+      "category": "input",
       "choices": null,
       "deprecated": null,
-      "description": "How far the top lid comes down (a squint), 0 to 0.9 of the eye.",
+      "description": "One value for the whole crystal, 0 to 1 (a battery, a quota, a goal). Left out, a bound voice's bands fill the columns; with neither it idles low.",
       "fallback": 0,
-      "group": "style",
+      "group": "value",
       "if": null,
-      "key": "lid",
-      "label": "Lid",
-      "max": 0.9,
+      "key": "level",
+      "label": "Level",
+      "max": 1,
       "min": 0,
-      "path": "lid",
-      "scope": "character",
-      "specPath": "/params/lid",
+      "path": "level",
+      "scope": "crystal",
+      "specPath": "/params/level",
       "step": 0.01,
-      "tier": "advanced",
+      "tier": "basic",
       "type": "number",
-      "uiMax": 0.9,
+      "uiMax": 1,
       "uiMin": 0,
-      "unit": null
+      "unit": "fraction"
+    },
+    "level@veil": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "level",
+      "label": "Level",
+      "max": 1,
+      "min": 0,
+      "path": "level",
+      "scope": "veil",
+      "specPath": "/params/level",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
     },
     "lineW@web": {
       "aliases": [],
@@ -3368,29 +2448,6 @@
       "uiMax": 2.5,
       "uiMin": 0.3,
       "unit": null
-    },
-    "lineWidth@waveform": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Stroke width as a fraction of the frame.",
-      "fallback": 0.035,
-      "group": "style",
-      "if": null,
-      "key": "lineWidth",
-      "label": "Line width",
-      "max": 0.2,
-      "min": 0.005,
-      "path": "lineWidth",
-      "scope": "waveform",
-      "specPath": "/params/lineWidth",
-      "step": 0.005,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.08,
-      "uiMin": 0.01,
-      "unit": "fraction"
     },
     "lonDensity@globe": {
       "aliases": [],
@@ -3452,29 +2509,6 @@
       "type": "number",
       "unit": null
     },
-    "look@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "How much the eyes glance around on their own while idle (0 = always at the viewer).",
-      "fallback": 1,
-      "group": "style",
-      "if": null,
-      "key": "look",
-      "label": "Look around",
-      "max": 2,
-      "min": 0,
-      "path": "look",
-      "scope": "character",
-      "specPath": "/params/look",
-      "step": 0.1,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 2,
-      "uiMin": 0,
-      "unit": null
-    },
     "marker@gauge": {
       "aliases": [],
       "category": "appearance",
@@ -3518,213 +2552,6 @@
       "type": "number",
       "unit": null
     },
-    "minHeight@bar": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Height of a silent bar, as a fraction of full height.",
-      "fallback": 0.2,
-      "group": "style",
-      "if": null,
-      "key": "minHeight",
-      "label": "Min height",
-      "max": 1,
-      "min": 0,
-      "path": "minHeight",
-      "scope": "bar",
-      "specPath": "/params/minHeight",
-      "step": 0.02,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.6,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "minHeight@playback": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Height of a silent bar, as a fraction of full height.",
-      "fallback": 0.08,
-      "group": "style",
-      "if": null,
-      "key": "minHeight",
-      "label": "Min height",
-      "max": 1,
-      "min": 0,
-      "path": "minHeight",
-      "scope": "playback",
-      "specPath": "/params/minHeight",
-      "step": 0.02,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.4,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "minHeight@scroll": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Height of a silent bar, as a fraction of full height.",
-      "fallback": 0.08,
-      "group": "style",
-      "if": null,
-      "key": "minHeight",
-      "label": "Min height",
-      "max": 1,
-      "min": 0,
-      "path": "minHeight",
-      "scope": "scroll",
-      "specPath": "/params/minHeight",
-      "step": 0.02,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.4,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "minLevel@matrix": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Level of a silent column.",
-      "fallback": 0.125,
-      "group": "style",
-      "if": null,
-      "key": "minLevel",
-      "label": "Min level",
-      "max": 1,
-      "min": 0,
-      "path": "minLevel",
-      "scope": "matrix",
-      "specPath": "/params/minLevel",
-      "step": 0.025,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 0.5,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "mirror@matrix": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Columns grow out from the middle row instead of rising from the bottom.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "mirror",
-      "label": "Grow from",
-      "max": 1,
-      "min": 0,
-      "path": "mirror",
-      "scope": "matrix",
-      "specPath": "/params/mirror",
-      "step": 1,
-      "tier": "basic",
-      "type": "boolean",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "mouth@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Draw the mouth (Buzzy's voice line, Hum's lit grille, Wisp's opening oval, Chirp's beak); off keeps it at rest (Whirr and Clank: off hides it).",
-      "fallback": 1,
-      "group": "style",
-      "if": null,
-      "key": "mouth",
-      "label": "Mouth",
-      "max": 1,
-      "min": 0,
-      "path": "mouth",
-      "scope": "character",
-      "specPath": "/params/mouth",
-      "step": 1,
-      "tier": "basic",
-      "type": "boolean",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "mouthDots@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Above 0.5 the mouth is three thinking dots. Whirr and Clank: how far into their thinking pose they are (looking up and away, the antenna tip pulsing).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "mouthDots",
-      "label": "Thinking dots",
-      "max": 1,
-      "min": 0,
-      "path": "mouthDots",
-      "scope": "character",
-      "specPath": "/params/mouthDots",
-      "step": 1,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "mouthGain@character": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far the voice line swings with the level (Whirr and Clank: how far the mouth opens).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "mouthGain",
-      "label": "Mouth gain",
-      "max": 2,
-      "min": 0,
-      "path": "mouthGain",
-      "scope": "character",
-      "specPath": "/params/mouthGain",
-      "step": 0.05,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 2,
-      "uiMin": 0,
-      "unit": null
-    },
-    "mouthTalk@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Above 0.5 the mouth is the voice line (speaking). Whirr and Clank: how far into their speaking pose they are (the mouth and the belt or chest light follow the voice).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "mouthTalk",
-      "label": "Talking mouth",
-      "max": 1,
-      "min": 0,
-      "path": "mouthTalk",
-      "scope": "character",
-      "specPath": "/params/mouthTalk",
-      "step": 1,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
     "moveCount@rubik": {
       "aliases": [],
       "category": "motion",
@@ -3744,29 +2571,6 @@
       "tier": "advanced",
       "type": "integer",
       "unit": null
-    },
-    "neuron@silhouette": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "Dots flickering along the eye line (thinking).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "neuron",
-      "label": "Thinking flicker",
-      "max": 1,
-      "min": 0,
-      "path": "neuron",
-      "scope": "silhouette",
-      "specPath": "/params/neuron",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
     },
     "nodeCount@aurora": {
       "aliases": [],
@@ -4454,29 +3258,6 @@
       "uiMin": 0.5,
       "unit": "s"
     },
-    "period@silhouette": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Seconds per breath.",
-      "fallback": 4,
-      "group": "style",
-      "if": null,
-      "key": "period",
-      "label": "Breath period",
-      "max": 30,
-      "min": 0.05,
-      "path": "period",
-      "scope": "silhouette",
-      "specPath": "/params/period",
-      "step": 0.1,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 10,
-      "uiMin": 1,
-      "unit": "s"
-    },
     "period@sonar": {
       "aliases": [],
       "category": "motion",
@@ -4520,52 +3301,6 @@
       "type": "number",
       "unit": "s"
     },
-    "playhead@playback": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Draw a thin line at the playback position.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "playhead",
-      "label": "Playhead",
-      "max": 1,
-      "min": 0,
-      "path": "playhead",
-      "scope": "playback",
-      "specPath": "/params/playhead",
-      "step": 1,
-      "tier": "basic",
-      "type": "boolean",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "pointCount@waveform": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Points along each waveform line.",
-      "fallback": 96,
-      "group": "style",
-      "if": null,
-      "key": "pointCount",
-      "label": "Points",
-      "max": 512,
-      "min": 2,
-      "path": "pointCount",
-      "scope": "waveform",
-      "specPath": "/params/pointCount",
-      "step": 8,
-      "tier": "basic",
-      "type": "integer",
-      "uiMax": 128,
-      "uiMin": 16,
-      "unit": null
-    },
     "progress@arc": {
       "aliases": [],
       "category": "input",
@@ -4581,6 +3316,29 @@
       "min": 0,
       "path": "progress",
       "scope": "arc",
+      "specPath": "/params/progress",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "progress@dune": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How much is done, 0 to 1: a clip's position or a long task's progress. The done part glows. Left out, the plane drifts across on its own.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "progress",
+      "label": "Progress",
+      "max": 1,
+      "min": 0,
+      "path": "progress",
+      "scope": "dune",
       "specPath": "/params/progress",
       "step": 0.01,
       "tier": "basic",
@@ -4671,29 +3429,6 @@
       "tier": "advanced",
       "type": "number[]",
       "unit": null
-    },
-    "progress@playback": {
-      "aliases": [],
-      "category": "input",
-      "choices": null,
-      "deprecated": null,
-      "description": "Playback position, 0 to 1: bars before it are played (full ink), the rest dimmed.",
-      "fallback": 0,
-      "group": "value",
-      "if": null,
-      "key": "progress",
-      "label": "Progress",
-      "max": 1,
-      "min": 0,
-      "path": "progress",
-      "scope": "playback",
-      "specPath": "/params/progress",
-      "step": 0.01,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
     },
     "progress@segmented": {
       "aliases": [],
@@ -5252,29 +3987,6 @@
       "uiMin": 0,
       "unit": null
     },
-    "rim@silhouette": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Strength of the outline and its glow.",
-      "fallback": 0.7,
-      "group": "style",
-      "if": null,
-      "key": "rim",
-      "label": "Outline",
-      "max": 1,
-      "min": 0,
-      "path": "rim",
-      "scope": "silhouette",
-      "specPath": "/params/rim",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "ringCount@nested": {
       "aliases": [],
       "category": "appearance",
@@ -5533,29 +4245,6 @@
       "uiMin": 0,
       "unit": "fraction"
     },
-    "saturation@bar": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far the ink moves from grey toward the hue (0 = the grey ink).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "saturation",
-      "label": "Saturation",
-      "max": 1,
-      "min": 0,
-      "path": "saturation",
-      "scope": "bar",
-      "specPath": "/params/saturation",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "saturation@broadcast": {
       "aliases": [],
       "category": "appearance",
@@ -5671,29 +4360,6 @@
       "uiMin": 0,
       "unit": "fraction"
     },
-    "saturation@matrix": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far the ink moves from grey toward the hue (0 = the grey ink).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "saturation",
-      "label": "Saturation",
-      "max": 1,
-      "min": 0,
-      "path": "saturation",
-      "scope": "matrix",
-      "specPath": "/params/saturation",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "saturation@nested": {
       "aliases": [],
       "category": "appearance",
@@ -5732,29 +4398,6 @@
       "min": 0,
       "path": "saturation",
       "scope": "ping",
-      "specPath": "/params/saturation",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "saturation@playback": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far the ink moves from grey toward the hue (0 = the grey ink).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "saturation",
-      "label": "Saturation",
-      "max": 1,
-      "min": 0,
-      "path": "saturation",
-      "scope": "playback",
       "specPath": "/params/saturation",
       "step": 0.05,
       "tier": "basic",
@@ -5809,29 +4452,6 @@
       "uiMin": 0,
       "unit": "fraction"
     },
-    "saturation@scroll": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far the ink moves from grey toward the hue (0 = the grey ink).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "saturation",
-      "label": "Saturation",
-      "max": 1,
-      "min": 0,
-      "path": "saturation",
-      "scope": "scroll",
-      "specPath": "/params/saturation",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "saturation@segmented": {
       "aliases": [],
       "category": "appearance",
@@ -5870,29 +4490,6 @@
       "min": 0,
       "path": "saturation",
       "scope": "shimmer",
-      "specPath": "/params/saturation",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "saturation@silhouette": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Colour strength of the dots and outline (0 = grey ink).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "saturation",
-      "label": "Tint",
-      "max": 1,
-      "min": 0,
-      "path": "saturation",
-      "scope": "silhouette",
       "specPath": "/params/saturation",
       "step": 0.05,
       "tier": "basic",
@@ -5970,29 +4567,6 @@
       "uiMin": 0,
       "unit": "fraction"
     },
-    "saturation@waveform": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far the ink moves from grey toward the hue (0 = the grey ink).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "saturation",
-      "label": "Saturation",
-      "max": 1,
-      "min": 0,
-      "path": "saturation",
-      "scope": "waveform",
-      "specPath": "/params/saturation",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "scanMul@globe": {
       "aliases": [],
       "category": "motion",
@@ -6015,75 +4589,6 @@
       "uiMax": 8,
       "uiMin": 0.5,
       "unit": "x"
-    },
-    "scanSpeed@silhouette": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Scanline bands per second.",
-      "fallback": 0.3,
-      "group": "style",
-      "if": null,
-      "key": "scanSpeed",
-      "label": "Scanline speed",
-      "max": 4,
-      "min": 0,
-      "path": "scanSpeed",
-      "scope": "silhouette",
-      "specPath": "/params/scanSpeed",
-      "step": 0.05,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1.5,
-      "uiMin": 0,
-      "unit": "Hz"
-    },
-    "scanlines@silhouette": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Bands moving down over the dots.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "scanlines",
-      "label": "Scanlines",
-      "max": 1,
-      "min": 0,
-      "path": "scanlines",
-      "scope": "silhouette",
-      "specPath": "/params/scanlines",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "seed@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Changes when it blinks and glances, so two characters side by side don't move in sync.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "seed",
-      "label": "Seed",
-      "max": 1000000,
-      "min": 0,
-      "path": "seed",
-      "scope": "character",
-      "specPath": "/params/seed",
-      "step": 1,
-      "tier": "basic",
-      "type": "integer",
-      "uiMax": 20,
-      "uiMin": 0,
-      "unit": null
     },
     "seed@radar": {
       "aliases": [],
@@ -6260,29 +4765,6 @@
       "type": "integer",
       "unit": null
     },
-    "shading@character": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Whether a recipe's soft layers draw: `shade` masses (airbrushed shadows, highlights, a blush) and `rim` light (FX Spec 1.13). An FX Spec resolved under low power turns them off.",
-      "fallback": 1,
-      "group": "style",
-      "if": null,
-      "key": "shading",
-      "label": "Soft shading",
-      "max": 1,
-      "min": 0,
-      "path": "shading",
-      "scope": "character",
-      "specPath": "/params/shading",
-      "step": 1,
-      "tier": "basic",
-      "type": "boolean",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
     "shimmer@speaker": {
       "aliases": [],
       "category": "motion",
@@ -6418,29 +4900,6 @@
       "uiMin": 0,
       "unit": "x"
     },
-    "speech@silhouette": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "Waves spreading from the mouth with the voice's level (speaking).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "speech",
-      "label": "Speaking waves",
-      "max": 1,
-      "min": 0,
-      "path": "speech",
-      "scope": "silhouette",
-      "specPath": "/params/speech",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "spin@ribbon": {
       "aliases": [],
       "category": "motion",
@@ -6555,29 +5014,6 @@
       "uiMax": 2,
       "uiMin": 0.8,
       "unit": "x"
-    },
-    "squashGain@character": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "How much the voice squashes the body while speaking.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "squashGain",
-      "label": "Squash",
-      "max": 0.12,
-      "min": 0,
-      "path": "squashGain",
-      "scope": "character",
-      "specPath": "/params/squashGain",
-      "step": 0.005,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 0.12,
-      "uiMin": 0,
-      "unit": null
     },
     "starCount@warp": {
       "aliases": [],
@@ -6803,29 +5239,6 @@
       "uiMin": 0,
       "unit": null
     },
-    "swayGain@hum": {
-      "aliases": [],
-      "category": "energy",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far the capsule sways on its yoke with the voice while speaking (radians).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "swayGain",
-      "label": "Sway",
-      "max": 0.15,
-      "min": 0,
-      "path": "swayGain",
-      "scope": "hum",
-      "specPath": "/params/swayGain",
-      "step": 0.005,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 0.15,
-      "uiMin": 0,
-      "unit": null
-    },
     "sweep@gauge": {
       "aliases": [],
       "category": "appearance",
@@ -6939,29 +5352,6 @@
       "type": "number",
       "uiMax": 1.2,
       "uiMin": 0.3,
-      "unit": null
-    },
-    "tilt@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Tilts the whole character (radians; positive = clockwise).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "tilt",
-      "label": "Tilt",
-      "max": 0.3,
-      "min": -0.3,
-      "path": "tilt",
-      "scope": "character",
-      "specPath": "/params/tilt",
-      "step": 0.01,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 0.3,
-      "uiMin": -0.3,
       "unit": null
     },
     "trackOpacity@arc": {
@@ -7148,168 +5538,6 @@
       "uiMin": 10,
       "unit": "deg"
     },
-    "turn@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "How far the head turns like a solid (0 = flat, 1 = ±35°; the default is ±25°).",
-      "fallback": 0.71,
-      "group": "style",
-      "if": null,
-      "key": "turn",
-      "label": "3D turn",
-      "max": 1,
-      "min": 0,
-      "path": "turn",
-      "scope": "character",
-      "specPath": "/params/turn",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "turnBlink@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Blink once as this state starts (the end of the user's turn).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "turnBlink",
-      "label": "Turn blink",
-      "max": 1,
-      "min": 0,
-      "path": "turnBlink",
-      "scope": "character",
-      "specPath": "/params/turnBlink",
-      "step": 1,
-      "tier": "advanced",
-      "transition": "arrive",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "turnNod@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "How much the head nods with the voice level.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "turnNod",
-      "label": "Nod with the voice",
-      "max": 1,
-      "min": 0,
-      "path": "turnNod",
-      "scope": "character",
-      "specPath": "/params/turnNod",
-      "step": 0.05,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "turnPitch@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Where this state faces, up or down (-1..1 of the turn; positive = up).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "turnPitch",
-      "label": "Turn up/down",
-      "max": 1,
-      "min": -1,
-      "path": "turnPitch",
-      "scope": "character",
-      "specPath": "/params/turnPitch",
-      "step": 0.05,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": -1,
-      "unit": null
-    },
-    "turnWander@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "How much the head looks from corner to corner on its own, holding each look.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "turnWander",
-      "label": "Look corner to corner",
-      "max": 1,
-      "min": 0,
-      "path": "turnWander",
-      "scope": "character",
-      "specPath": "/params/turnWander",
-      "step": 0.05,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": null
-    },
-    "turnYaw@character": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Where this state faces, sideways (-1..1 of the turn; negative = the viewer's left).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "turnYaw",
-      "label": "Turn sideways",
-      "max": 1,
-      "min": -1,
-      "path": "turnYaw",
-      "scope": "character",
-      "specPath": "/params/turnYaw",
-      "step": 0.05,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": -1,
-      "unit": null
-    },
-    "turnYaw@silhouette": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Where the head faces, sideways (-1..1; negative = the viewer's left). The shoulders stay.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "turnYaw",
-      "label": "Turn sideways",
-      "max": 1,
-      "min": -1,
-      "path": "turnYaw",
-      "scope": "silhouette",
-      "specPath": "/params/turnYaw",
-      "step": 0.05,
-      "tier": "advanced",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": -1,
-      "unit": null
-    },
     "turns@braid": {
       "aliases": [],
       "category": "appearance",
@@ -7332,29 +5560,6 @@
       "uiMax": 6,
       "uiMin": 1,
       "unit": null
-    },
-    "unplayedOpacity@playback": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Opacity of the bars not played yet, relative to the played ones.",
-      "fallback": 0.35,
-      "group": "style",
-      "if": null,
-      "key": "unplayedOpacity",
-      "label": "Unplayed",
-      "max": 1,
-      "min": 0,
-      "path": "unplayedOpacity",
-      "scope": "playback",
-      "specPath": "/params/unplayedOpacity",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
     },
     "warpSpeed@warp": {
       "aliases": [],
@@ -7402,29 +5607,6 @@
       "uiMin": 1,
       "unit": null
     },
-    "waveSpeed@silhouette": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Waves per second for the listening, thinking and speaking motion.",
-      "fallback": 0.8,
-      "group": "style",
-      "if": null,
-      "key": "waveSpeed",
-      "label": "Wave speed",
-      "max": 4,
-      "min": 0,
-      "path": "waveSpeed",
-      "scope": "silhouette",
-      "specPath": "/params/waveSpeed",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 2,
-      "uiMin": 0.1,
-      "unit": "Hz"
-    },
     "waveSweep@broadcast": {
       "aliases": [],
       "category": "appearance",
@@ -7444,29 +5626,6 @@
       "tier": "advanced",
       "type": "number",
       "unit": "deg"
-    },
-    "wire@silhouette": {
-      "aliases": [],
-      "category": "appearance",
-      "choices": null,
-      "deprecated": null,
-      "description": "Thin links between neighbouring dots.",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "wire",
-      "label": "Wireframe",
-      "max": 1,
-      "min": 0,
-      "path": "wire",
-      "scope": "silhouette",
-      "specPath": "/params/wire",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
     },
     "wobMul@ribbon": {
       "aliases": [],
@@ -7535,11 +5694,9 @@
       "unit": null
     }
   },
-  "fxSpec": "1.14",
+  "fxSpec": "1.15",
   "internalKeys": [
     "rSizeMul",
-    "historyCount",
-    "historyPhase",
     "audioBandCount",
     "mutedTint",
     "mutedHue",
@@ -7554,9 +5711,7 @@
     "decayDuration",
     "decayCurve",
     "decayScale",
-    "blurScale",
-    "silhouetteId",
-    "silhouetteDots"
+    "blurScale"
   ],
   "materials": [
     {
@@ -9133,172 +7288,6 @@
             64
           ],
           "speed": 1
-        },
-        {
-          "description": "A head and shoulders of evenly spread dots that lives with the voice: waves come in while it listens, flicker at the eyes while it thinks and spread from the mouth while it speaks.",
-          "id": "silhouette",
-          "label": "Silhouette",
-          "mode": "silhouette",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "dotSize@silhouette"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "hologram@silhouette"
-            },
-            {
-              "default": {
-                "20": 200,
-                "32": 200,
-                "64": 200
-              },
-              "ref": "hue@silhouette"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 0.7,
-                "32": 0.7,
-                "64": 0.7
-              },
-              "ref": "rim@silhouette"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "saturation@silhouette"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "scanlines@silhouette"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "wire@silhouette"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "breath@silhouette"
-            },
-            {
-              "default": {
-                "20": 4,
-                "32": 4,
-                "64": 4
-              },
-              "ref": "period@silhouette"
-            },
-            {
-              "default": {
-                "20": 0.8,
-                "32": 0.8,
-                "64": 0.8
-              },
-              "ref": "waveSpeed@silhouette"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "glint@silhouette"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "inward@silhouette"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "neuron@silhouette"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "speech@silhouette"
-            },
-            {
-              "default": {
-                "20": 0.3,
-                "32": 0.3,
-                "64": 0.3
-              },
-              "ref": "rMin@shared"
-            },
-            {
-              "default": {
-                "20": null,
-                "32": null,
-                "64": null
-              },
-              "ref": "rsPow@shared"
-            },
-            {
-              "default": {
-                "20": 0.3,
-                "32": 0.3,
-                "64": 0.3
-              },
-              "ref": "scanSpeed@silhouette"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnYaw@silhouette"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
         }
       ]
     },
@@ -9308,50 +7297,26 @@
       "label": "Signal",
       "patterns": [
         {
-          "description": "Live audio as a row of rounded bars, like an equalizer.",
-          "id": "signaling",
-          "label": "Bars",
-          "mode": "bar",
+          "description": "A sheet of light with depth: layers of glowing points curl one behind the other. It swells with a voice or any 0 to 1 value and keeps moving on its own while something is being worked on.",
+          "id": "veil",
+          "label": "Veil",
+          "mode": "veil",
           "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
             {
               "default": {
                 "20": 9,
                 "32": 9,
                 "64": 9
               },
-              "ref": "barCount@bar"
-            },
-            {
-              "default": {
-                "20": 0.55,
-                "32": 0.55,
-                "64": 0.55
-              },
-              "ref": "barWidth@bar"
-            },
-            {
-              "default": {
-                "20": 200,
-                "32": 200,
-                "64": 200
-              },
-              "ref": "hue@bar"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 0.2,
-                "32": 0.2,
-                "64": 0.2
-              },
-              "ref": "minHeight@bar"
+              "ref": "layerCount@veil"
             },
             {
               "default": {
@@ -9359,7 +7324,15 @@
                 "32": 0,
                 "64": 0
               },
-              "ref": "saturation@bar"
+              "ref": "churn@veil"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "level@veil"
             }
           ],
           "sizes": [
@@ -9367,21 +7340,25 @@
             32,
             64
           ],
-          "speed": 1
+          "speed": 1,
+          "tags": [
+            "voice",
+            "status"
+          ]
         },
         {
-          "description": "Live audio as a continuous oscilloscope wave.",
-          "id": "waveform",
-          "label": "Waveform",
-          "mode": "waveform",
+          "description": "A crystal of light filled from below: each column lights up to its value and the unlit cells stay as dust. A voice's bands, a battery, a quota or a goal.",
+          "id": "crystal",
+          "label": "Crystal",
+          "mode": "crystal",
           "params": [
             {
               "default": {
-                "20": 200,
-                "32": 200,
-                "64": 200
+                "20": 16,
+                "32": 16,
+                "64": 16
               },
-              "ref": "hue@waveform"
+              "ref": "columnCount@crystal"
             },
             {
               "default": {
@@ -9393,27 +7370,11 @@
             },
             {
               "default": {
-                "20": 3,
-                "32": 3,
-                "64": 3
+                "20": 0,
+                "32": 0,
+                "64": 0
               },
-              "ref": "layerCount@waveform"
-            },
-            {
-              "default": {
-                "20": 0.035,
-                "32": 0.035,
-                "64": 0.035
-              },
-              "ref": "lineWidth@waveform"
-            },
-            {
-              "default": {
-                "20": 96,
-                "32": 96,
-                "64": 96
-              },
-              "ref": "pointCount@waveform"
+              "ref": "churn@crystal"
             },
             {
               "default": {
@@ -9421,15 +7382,7 @@
                 "32": 0,
                 "64": 0
               },
-              "ref": "saturation@waveform"
-            },
-            {
-              "default": {
-                "20": 0.26,
-                "32": 0.26,
-                "64": 0.26
-              },
-              "ref": "amplitude@waveform"
+              "ref": "level@crystal"
             }
           ],
           "sizes": [
@@ -9437,179 +7390,19 @@
             32,
             64
           ],
-          "speed": 1
+          "speed": 1,
+          "tags": [
+            "voice",
+            "status"
+          ]
         },
         {
-          "description": "A recording's history: level pills scroll left, like a voice message.",
-          "id": "scrolling",
-          "label": "Scrolling",
-          "mode": "scroll",
-          "params": [
-            {
-              "default": {
-                "20": 0.6,
-                "32": 0.6,
-                "64": 0.6
-              },
-              "ref": "barWidth@scroll"
-            },
-            {
-              "default": {
-                "20": 200,
-                "32": 200,
-                "64": 200
-              },
-              "ref": "hue@scroll"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 0.08,
-                "32": 0.08,
-                "64": 0.08
-              },
-              "ref": "minHeight@scroll"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "saturation@scroll"
-            },
-            {
-              "default": {
-                "20": 0.3,
-                "32": 0.3,
-                "64": 0.3
-              },
-              "ref": "fadeWidth@scroll"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "Levels on an LED dot grid, like a vintage spectrum analyzer.",
-          "id": "metering",
-          "label": "Meter",
-          "mode": "matrix",
-          "params": [
-            {
-              "default": {
-                "20": 12,
-                "32": 12,
-                "64": 12
-              },
-              "ref": "columnCount@matrix"
-            },
-            {
-              "default": {
-                "20": 200,
-                "32": 200,
-                "64": 200
-              },
-              "ref": "hue@matrix"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 8,
-                "32": 8,
-                "64": 8
-              },
-              "ref": "ledCount@matrix"
-            },
-            {
-              "default": {
-                "20": 0.7,
-                "32": 0.7,
-                "64": 0.7
-              },
-              "ref": "ledSize@matrix"
-            },
-            {
-              "default": {
-                "20": 0.125,
-                "32": 0.125,
-                "64": 0.125
-              },
-              "ref": "minLevel@matrix"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mirror@matrix"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "saturation@matrix"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "A recorded voice message: its waveform, with the played part in full ink and the rest dimmed.",
-          "id": "playing",
-          "label": "Playing",
+          "description": "A dune of light: a recording's loudness (or any series) is its profile, the done part glows and a plane of light marks the position. A voice message or a long task's progress.",
+          "id": "dune",
+          "label": "Dune",
           "layout": "box",
-          "mode": "playback",
+          "mode": "dune",
           "params": [
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "barCount@playback"
-            },
-            {
-              "default": {
-                "20": 0.6,
-                "32": 0.6,
-                "64": 0.6
-              },
-              "ref": "barWidth@playback"
-            },
-            {
-              "default": {
-                "20": 200,
-                "32": 200,
-                "64": 200
-              },
-              "ref": "hue@playback"
-            },
             {
               "default": {
                 "20": 1,
@@ -9620,11 +7413,11 @@
             },
             {
               "default": {
-                "20": 0.08,
-                "32": 0.08,
-                "64": 0.08
+                "20": 0,
+                "32": 0,
+                "64": 0
               },
-              "ref": "minHeight@playback"
+              "ref": "churn@dune"
             },
             {
               "default": {
@@ -9632,31 +7425,7 @@
                 "32": 0,
                 "64": 0
               },
-              "ref": "playhead@playback"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "saturation@playback"
-            },
-            {
-              "default": {
-                "20": 0.35,
-                "32": 0.35,
-                "64": 0.35
-              },
-              "ref": "unplayedOpacity@playback"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "progress@playback"
+              "ref": "progress@dune"
             },
             {
               "default": {
@@ -9664,7 +7433,7 @@
                 "32": [],
                 "64": []
               },
-              "ref": "envelope@playback"
+              "ref": "envelope@dune"
             }
           ],
           "sizes": [
@@ -9672,7 +7441,11 @@
             32,
             64
           ],
-          "speed": 1
+          "speed": 1,
+          "tags": [
+            "voice",
+            "status"
+          ]
         }
       ]
     },
@@ -10838,2219 +8611,6 @@
           "speed": 1
         }
       ]
-    },
-    {
-      "component": "SinuaCharacter",
-      "id": "character",
-      "label": "Character",
-      "patterns": [
-        {
-          "description": "A small space-hero assistant with a face screen: shape eyes, a gaze that knows whose turn it is, and a voice line for a mouth.",
-          "id": "buzzy",
-          "label": "Buzzy",
-          "mode": "buzzy",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "accessories@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "grain@character"
-            },
-            {
-              "default": {
-                "20": 232,
-                "32": 232,
-                "64": 232
-              },
-              "ref": "hue@buzzy"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "mouth@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "shading@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "look@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "seed@character"
-            },
-            {
-              "default": {
-                "20": 0.71,
-                "32": 0.71,
-                "64": 0.71
-              },
-              "ref": "turn@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeAsym@character"
-            },
-            {
-              "default": {
-                "20": 26,
-                "32": 26,
-                "64": 26
-              },
-              "ref": "eyeH@character"
-            },
-            {
-              "default": {
-                "20": 8,
-                "32": 8,
-                "64": 8
-              },
-              "ref": "eyeR@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeSmile@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeTilt@character"
-            },
-            {
-              "default": {
-                "20": 20,
-                "32": 20,
-                "64": 20
-              },
-              "ref": "eyeW@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lid@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthDots@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthTalk@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeX@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeY@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lean@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "tilt@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnBlink@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnNod@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnPitch@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnWander@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnYaw@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "bounceGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "breath@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "earGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "squashGain@character"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "A vintage studio microphone that hosts the show: its grille lights with the voice, and a tally light shows when it's listening.",
-          "id": "hum",
-          "label": "Hum",
-          "mode": "hum",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "accessories@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "grain@character"
-            },
-            {
-              "default": {
-                "20": 9,
-                "32": 9,
-                "64": 9
-              },
-              "ref": "hue@hum"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "mouth@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "shading@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "look@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "seed@character"
-            },
-            {
-              "default": {
-                "20": 0.71,
-                "32": 0.71,
-                "64": 0.71
-              },
-              "ref": "turn@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeAsym@character"
-            },
-            {
-              "default": {
-                "20": 26,
-                "32": 26,
-                "64": 26
-              },
-              "ref": "eyeH@character"
-            },
-            {
-              "default": {
-                "20": 8,
-                "32": 8,
-                "64": 8
-              },
-              "ref": "eyeR@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeSmile@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeTilt@character"
-            },
-            {
-              "default": {
-                "20": 20,
-                "32": 20,
-                "64": 20
-              },
-              "ref": "eyeW@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lid@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthDots@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthTalk@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeX@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeY@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lean@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "tilt@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnBlink@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnNod@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnPitch@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnWander@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnYaw@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "bounceGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "breath@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "earGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "squashGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "swayGain@hum"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "A helpful spirit with a curling smoke tail: its sparkles gather in while it listens, orbit while it thinks and stream out with its voice.",
-          "id": "wisp",
-          "label": "Wisp",
-          "mode": "wisp",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "accessories@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "grain@character"
-            },
-            {
-              "default": {
-                "20": 253,
-                "32": 253,
-                "64": 253
-              },
-              "ref": "hue@wisp"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "mouth@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "shading@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "look@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "seed@character"
-            },
-            {
-              "default": {
-                "20": 0.71,
-                "32": 0.71,
-                "64": 0.71
-              },
-              "ref": "turn@character"
-            },
-            {
-              "default": {
-                "20": 0.6,
-                "32": 0.6,
-                "64": 0.6
-              },
-              "ref": "curlGain@wisp"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeAsym@character"
-            },
-            {
-              "default": {
-                "20": 26,
-                "32": 26,
-                "64": 26
-              },
-              "ref": "eyeH@character"
-            },
-            {
-              "default": {
-                "20": 8,
-                "32": 8,
-                "64": 8
-              },
-              "ref": "eyeR@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeSmile@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeTilt@character"
-            },
-            {
-              "default": {
-                "20": 20,
-                "32": 20,
-                "64": 20
-              },
-              "ref": "eyeW@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lid@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthDots@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthTalk@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeX@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeY@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lean@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "tilt@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnBlink@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnNod@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnPitch@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnWander@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnYaw@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "bounceGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "breath@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "earGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "squashGain@character"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "A small songbird: its beak opens with the voice and notes float out, it tilts its head to listen, and its crest droops while it thinks.",
-          "id": "chirp",
-          "label": "Chirp",
-          "mode": "chirp",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "accessories@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "grain@character"
-            },
-            {
-              "default": {
-                "20": 12,
-                "32": 12,
-                "64": 12
-              },
-              "ref": "hue@chirp"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "mouth@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "shading@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "look@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "seed@character"
-            },
-            {
-              "default": {
-                "20": 0.71,
-                "32": 0.71,
-                "64": 0.71
-              },
-              "ref": "turn@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeAsym@character"
-            },
-            {
-              "default": {
-                "20": 26,
-                "32": 26,
-                "64": 26
-              },
-              "ref": "eyeH@character"
-            },
-            {
-              "default": {
-                "20": 8,
-                "32": 8,
-                "64": 8
-              },
-              "ref": "eyeR@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeSmile@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeTilt@character"
-            },
-            {
-              "default": {
-                "20": 20,
-                "32": 20,
-                "64": 20
-              },
-              "ref": "eyeW@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lid@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthDots@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthTalk@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeX@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeY@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lean@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "tilt@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnBlink@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnNod@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnPitch@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnWander@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnYaw@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "bounceGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "breath@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "earGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "flutterGain@chirp"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "squashGain@character"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "A coffee mug on its saucer: its steam rises while it listens, curls while it thinks and thickens with its voice.",
-          "id": "cuppa",
-          "label": "Cuppa",
-          "mode": "cuppa",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "accessories@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "grain@character"
-            },
-            {
-              "default": {
-                "20": 12,
-                "32": 12,
-                "64": 12
-              },
-              "ref": "hue@cuppa"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "mouth@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "shading@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "look@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "seed@character"
-            },
-            {
-              "default": {
-                "20": 0.71,
-                "32": 0.71,
-                "64": 0.71
-              },
-              "ref": "turn@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeAsym@character"
-            },
-            {
-              "default": {
-                "20": 26,
-                "32": 26,
-                "64": 26
-              },
-              "ref": "eyeH@character"
-            },
-            {
-              "default": {
-                "20": 8,
-                "32": 8,
-                "64": 8
-              },
-              "ref": "eyeR@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeSmile@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeTilt@character"
-            },
-            {
-              "default": {
-                "20": 20,
-                "32": 20,
-                "64": 20
-              },
-              "ref": "eyeW@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lid@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthDots@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthTalk@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeX@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeY@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lean@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "tilt@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnBlink@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnNod@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnPitch@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnWander@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnYaw@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "bounceGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "breath@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "earGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "squashGain@character"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "A coffee bean on little feet: aroma sparkles gather while it listens, orbit while it thinks and stream out with its voice.",
-          "id": "bean",
-          "label": "Bean",
-          "mode": "bean",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "accessories@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "grain@character"
-            },
-            {
-              "default": {
-                "20": 24,
-                "32": 24,
-                "64": 24
-              },
-              "ref": "hue@bean"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "mouth@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "shading@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "look@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "seed@character"
-            },
-            {
-              "default": {
-                "20": 0.71,
-                "32": 0.71,
-                "64": 0.71
-              },
-              "ref": "turn@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeAsym@character"
-            },
-            {
-              "default": {
-                "20": 26,
-                "32": 26,
-                "64": 26
-              },
-              "ref": "eyeH@character"
-            },
-            {
-              "default": {
-                "20": 8,
-                "32": 8,
-                "64": 8
-              },
-              "ref": "eyeR@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeSmile@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeTilt@character"
-            },
-            {
-              "default": {
-                "20": 20,
-                "32": 20,
-                "64": 20
-              },
-              "ref": "eyeW@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lid@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthDots@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthTalk@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeX@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeY@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lean@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "tilt@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnBlink@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnNod@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnPitch@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnWander@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnYaw@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "bounceGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "breath@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "earGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "squashGain@character"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "A small tin robot with arms: a hand to the ear to listen, to the chin to think, small beats as it speaks; its antenna light shows when it listens and thinks.",
-          "id": "beep",
-          "label": "Beep",
-          "mode": "beep",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "accessories@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "arms@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "grain@character"
-            },
-            {
-              "default": {
-                "20": 200,
-                "32": 200,
-                "64": 200
-              },
-              "ref": "hue@beep"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "mouth@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "shading@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "look@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "seed@character"
-            },
-            {
-              "default": {
-                "20": 0.71,
-                "32": 0.71,
-                "64": 0.71
-              },
-              "ref": "turn@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeAsym@character"
-            },
-            {
-              "default": {
-                "20": 26,
-                "32": 26,
-                "64": 26
-              },
-              "ref": "eyeH@character"
-            },
-            {
-              "default": {
-                "20": 8,
-                "32": 8,
-                "64": 8
-              },
-              "ref": "eyeR@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeSmile@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeTilt@character"
-            },
-            {
-              "default": {
-                "20": 20,
-                "32": 20,
-                "64": 20
-              },
-              "ref": "eyeW@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lid@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthDots@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthTalk@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeX@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeY@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lean@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "tilt@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnBlink@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnNod@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnPitch@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnWander@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnYaw@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "bounceGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "breath@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "earGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "squashGain@character"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "A floating egg-shaped robot with a screen face: it hovers over its shadow, leans in with its antenna lit to listen, looks up with the tip pulsing to think, and its mouth and belt light follow its voice.",
-          "id": "whirr",
-          "label": "Whirr",
-          "mode": "whirr",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "mouth@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "look@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "seed@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeSmile@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lid@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthDots@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthTalk@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeX@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeY@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "tilt@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnBlink@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "bounceGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "breath@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "earGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthGain@character"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        },
-        {
-          "description": "A standing robot with a screen face and jointed arms: it shifts its weight and waves, tilts its head with its ear lights pulsing to listen, looks up to think, and its mouth and chest light follow its voice.",
-          "id": "clank",
-          "label": "Clank",
-          "mode": "clank",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "mouth@character"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "look@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "seed@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "eyeSmile@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "lid@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthDots@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthTalk@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeX@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "gazeY@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "tilt@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "turnBlink@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "bounceGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "breath@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "earGain@character"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "mouthGain@character"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1
-        }
-      ]
     }
   ],
   "profileVersion": 4,
@@ -13086,7 +8646,7 @@
       "type": "number"
     },
     {
-      "description": "Per-band levels (from the voice pipeline) for bar heights and waveform layers.",
+      "description": "Per-band levels (from the voice pipeline), e.g. the columns of crystal.",
       "items": {
         "engineKeys": "audioBand0..audioBand15 + audioBandCount",
         "maxItems": 16,
@@ -13097,36 +8657,6 @@
       "max": 1,
       "min": 0,
       "path": "audioBand",
-      "runtime": true,
-      "type": "number[]"
-    },
-    {
-      "description": "The scrolling waveform's caller-owned sample buffer.",
-      "items": {
-        "engineKeys": "history0..N + historyCount/historyPhase",
-        "maxItems": 256,
-        "minItems": 2
-      },
-      "key": "history",
-      "label": "History",
-      "max": 1,
-      "min": 0,
-      "path": "history",
-      "runtime": true,
-      "type": "number[]"
-    },
-    {
-      "description": "The meter's per-column peak markers.",
-      "items": {
-        "engineKeys": "peak0..N",
-        "maxItems": 32,
-        "minItems": 1
-      },
-      "key": "peak",
-      "label": "Peaks",
-      "max": 1,
-      "min": 0,
-      "path": "peak",
       "runtime": true,
       "type": "number[]"
     },
@@ -13175,16 +8705,6 @@
       "max": 8,
       "min": 0.125,
       "path": "aspect",
-      "runtime": true,
-      "type": "number"
-    },
-    {
-      "description": "Seconds since the view's lifecycle state last changed; the view sets it (a character blinks at the end of the user's turn).",
-      "key": "stateAge",
-      "label": "State age",
-      "max": 1000000000.0,
-      "min": 0,
-      "path": "stateAge",
       "runtime": true,
       "type": "number"
     }

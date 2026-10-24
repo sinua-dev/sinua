@@ -35,9 +35,6 @@ final class FxHostModel: ObservableObject {
     @Published var announce: Bool?
     @Published var haptics = false
     @Published var rules = true
-    @Published var tap = false
-    @Published var expression: String?
-    @Published var palette: [String: String] = [:]
     @Published var effect: SinuaEffectTrigger?
     /// The app's real activity. SinuaView runs only while `scenePhase == .active`,
     /// and a UIHostingController inside a scene-less UIKit app (React Native's
@@ -63,16 +60,13 @@ struct FxHostContent: View {
                    paused: model.paused, reducedMotion: model.reducedMotion, accessibilityLabel: model.label,
                    maxFps: model.maxFps, lowPower: model.lowPower, onFrame: frame,
                    labels: model.labels, announce: model.announce, haptics: model.haptics, rules: model.rules,
-                   effect: model.effect, tap: model.tap, expression: model.expression,
-                   palette: model.palette)
+                   effect: model.effect)
         } else {
             SinuaView(pattern: model.state, size: model.size, overrides: model.overrides, speed: model.speed,
                    state: model.specState, voice: model.voice, voiceOverrides: model.voiceOverrides,
                    theme: model.theme, paused: model.paused, reducedMotion: model.reducedMotion,
                    accessibilityLabel: model.label, maxFps: model.maxFps, lowPower: model.lowPower, onFrame: frame,
-                   labels: model.labels, announce: model.announce, haptics: model.haptics, effect: model.effect,
-                   tap: model.tap, expression: model.expression,
-                   palette: model.palette)
+                   labels: model.labels, announce: model.announce, haptics: model.haptics, effect: model.effect)
         }
     }
 }
@@ -133,8 +127,7 @@ public final class FxHostView: UIView {
                             specState: String?, inputsJson: String?, voiceLevelInput: String?, crossFade: Double,
                             audioStrength: Double, voice: String, voiceSourceId: String?, theme: String, paused: Bool, reducedMotion: String, maxFps: Double,
                             lowPower: String, label: String?, reportFrames: Bool, labelsJson: String?, announce: String,
-                            haptics: Bool, rules: Bool, effectName: String?, effectKey: Int, tap: Bool,
-                            expression: String?, paletteJson: String?) {
+                            haptics: Bool, rules: Bool, effectName: String?, effectKey: Int) {
         let m = model
         m.spec = (spec?.isEmpty ?? true) ? nil : spec
         m.state = (state?.isEmpty ?? true) ? "working" : state!
@@ -156,10 +149,6 @@ public final class FxHostView: UIView {
         m.announce = announce == "on" ? true : announce == "off" ? false : nil
         m.haptics = haptics
         m.rules = rules
-        m.tap = tap
-        m.expression = (expression?.isEmpty ?? true) ? nil : expression
-        let pal = (paletteJson?.data(using: .utf8)).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
-        m.palette = pal?.compactMapValues { $0 as? String } ?? [:]
         // A new key plays the effect once (a fresh trigger value).
         if effectKey != lastEffectKey {
             lastEffectKey = effectKey

@@ -171,13 +171,11 @@ export function drawPacked(ctx: CanvasRenderingContext2D, p: PackedFrame, dark: 
 // - Fill: an implicitly closed polygon (nonzero winding), solid ink or a
 //   linear/radial gradient whose stop alphas are RELATIVE (final alpha =
 //   stop.a x fill.a); pad beyond the ends; ink mirroring and colorMode apply
-//   per stop exactly as to solid ink. Gradient `kind` 2 (FX Spec 1.13, design
-//   note 22) is an elliptical radial: centre (x0, y0), first radius to
-//   (x1, y1), second radius `r`. `blend` 2 is grain: the shape filled with the
-//   noise tile at `fill.a` (see `grainValue`).
+//   per stop exactly as to solid ink.
 // - EffectRun: elements [start, start+count) of dots (0) / lines (1) /
 //   polylines (2) are composited with Gaussian blur sigma (engine units)
-//   and/or additive blend. Fills carry their own blur/blend.
+//   and/or additive blend. Fills carry their own blur/blend. `blend` 3 on
+//   dots is light: a soft radial glow per dot, added up (see `drawLight`).
 // - Draw order: fills -> polylines -> lines -> dots; effects never reorder.
 // Web specifics (docs/fx-view.md, *Fills and effects*): blur uses the
 // canvas shadow (sigma = shadowBlur / 2 per the HTML spec, device pixels,
@@ -285,54 +283,14 @@ function gradientStyle(ctx: CanvasRenderingContext2D, f: FxFill, g: FxFillGradie
   return grad;
 }
 
-function fillPath(ctx: CanvasRenderingContext2D, f: FxFill, map?: (x: number, y: number) => [number, number]): void {
+function fillPath(ctx: CanvasRenderingContext2D, f: FxFill): void {
   ctx.beginPath();
   for (const ring of [f.points, ...(f.holes ?? [])]) {
     if (ring.length < 3) continue;
-    const at = (i: number) => (map ? map(ring[i].x, ring[i].y) : ([ring[i].x, ring[i].y] as [number, number]));
-    ctx.moveTo(...at(0));
-    for (let i = 1; i < ring.length; i++) ctx.lineTo(...at(i));
+    ctx.moveTo(ring[0].x, ring[0].y);
+    for (let i = 1; i < ring.length; i++) ctx.lineTo(ring[i].x, ring[i].y);
     ctx.closePath();
   }
-}
-
-// Grain (design note 22, `blend` 2): the fill's shape (a body) filled with a
-// still 64-px noise tile at `fill.a`, light and dark specks. The tile is the
-// same integer hash on every platform (`grainValue`; FxPaint.swift/.kt), one
-// tile pixel per CSS px (pt / dp natively) whatever the drawing scale,
-// anchored at the canvas origin.
-let grainTile: HTMLCanvasElement | OffscreenCanvas | null = null;
-/** The grain tile's value at (x, y), 0..1 (< 0.5 dark, >= 0.5 light; alpha = |v - 0.5| * 2). */
-export function grainValue(x: number, y: number): number {
-  let h = (Math.imul(x, 73856093) ^ Math.imul(y, 19349663) ^ 0x9e3779b9) >>> 0;
-  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
-  h = (h ^ (h >>> 16)) >>> 0;
-  return h / 4294967296;
-}
-function grainPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
-  if (typeof ctx.createPattern !== "function") return null;
-  if (!grainTile) {
-    const n = 64;
-    const c =
-      typeof OffscreenCanvas !== "undefined"
-        ? new OffscreenCanvas(n, n)
-        : typeof document !== "undefined"
-          ? Object.assign(document.createElement("canvas"), { width: n, height: n })
-          : null;
-    if (!c) return null;
-    const g = c.getContext("2d") as CanvasRenderingContext2D | null;
-    if (!g || typeof g.createImageData !== "function") return null;
-    const img = g.createImageData(n, n);
-    for (let y = 0; y < n; y++)
-      for (let x = 0; x < n; x++) {
-        const v = grainValue(x, y), i = (y * n + x) * 4, light = v >= 0.5;
-        img.data[i] = img.data[i + 1] = img.data[i + 2] = light ? 255 : 0;
-        img.data[i + 3] = Math.round(Math.abs(v - 0.5) * 2 * 255);
-      }
-    g.putImageData(img, 0, 0);
-    grainTile = c;
-  }
-  return ctx.createPattern(grainTile as CanvasImageSource, "repeat");
 }
 
 /** Fill the current path: even-odd when the fill has holes (the contract), else the default rule. */
@@ -345,23 +303,6 @@ let warnedGradientBlur = false;
 
 function drawFill(ctx: CanvasRenderingContext2D, f: FxFill, mirror: boolean, scale: number): void {
   if (f.points.length < 3) return;
-  if (f.blend === 2) {
-    const pat = grainPattern(ctx);
-    if (!pat) return;
-    // One tile pixel per CSS px, however large the character is drawn: the
-    // context is in engine units (`scale` device px each), so undo that.
-    const dpr = (globalThis as { devicePixelRatio?: number }).devicePixelRatio ?? 1;
-    if (typeof pat.setTransform === "function" && typeof DOMMatrix !== "undefined" && scale > 0) {
-      pat.setTransform(new DOMMatrix().scale(dpr / scale));
-    }
-    ctx.save();
-    ctx.globalAlpha = Math.min(1, Math.max(0, f.a));
-    ctx.fillStyle = pat;
-    fillPath(ctx, f);
-    fillRule(ctx, f);
-    ctx.restore();
-    return;
-  }
   const g = f.gradient && f.gradient.stops.length >= 2 ? f.gradient : null;
   if (!g) {
     withEffect(ctx, scale, f.blur, f.blend, ink(f.white, f.saturation, f.hue, 1, mirror), () => {
@@ -382,24 +323,8 @@ function drawFill(ctx: CanvasRenderingContext2D, f: FxFill, mirror: boolean, sca
     warnedGradientBlur = true;
     console.warn("Sinua: blurred gradient fills need ctx.filter (not in Safari); drawing them sharp.");
   }
-  if (g.kind === 2) {
-    // An ellipse: draw in the gradient's unit-circle space (translate, rotate,
-    // squash), the path mapped back by the inverse, so the circle lands as the ellipse.
-    const ux = g.x1 - g.x0, uy = g.y1 - g.y0, rx = Math.hypot(ux, uy) || 1e-9, k = g.r / rx;
-    const c = ux / rx, s = uy / rx;
-    ctx.translate(g.x0, g.y0);
-    ctx.transform(c, s, -s * k, c * k, 0, 0);
-    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
-    for (const st of g.stops) grad.addColorStop(Math.min(1, Math.max(0, st.offset)), ink(st.white, st.saturation, st.hue, st.a * f.a, mirror));
-    ctx.fillStyle = grad;
-    fillPath(ctx, f, (x, y) => {
-      const dx = x - g.x0, dy = y - g.y0;
-      return [dx * c + dy * s, (-dx * s + dy * c) / (k || 1e-9)];
-    });
-  } else {
-    ctx.fillStyle = gradientStyle(ctx, f, g, mirror);
-    fillPath(ctx, f);
-  }
+  ctx.fillStyle = gradientStyle(ctx, f, g, mirror);
+  fillPath(ctx, f);
   fillRule(ctx, f);
   ctx.restore();
 }
@@ -446,6 +371,10 @@ function drawFrameWithMaterials(ctx: CanvasRenderingContext2D, frame: PaintFrame
   const dotRuns = runsFor(frame.effects, 0, frame.dots.length);
   frame.dots.forEach((d, i) => {
     const e = dotRuns?.[i];
+    if (e?.blend === LIGHT) {
+      drawLight(ctx, d, dark, mirror);
+      return;
+    }
     withEffect(ctx, scale, e?.blur ?? 0, e?.blend ?? 0, ink(d.white, d.saturation, d.hue, 1, mirror), () => {
       ctx.fillStyle = ink(d.white, d.saturation, d.hue, d.a, mirror);
       ctx.beginPath();
@@ -454,6 +383,52 @@ function drawFrameWithMaterials(ctx: CanvasRenderingContext2D, frame: PaintFrame
     });
   });
   ctx.restore();
+}
+
+// ---------------------------------------------------------------- light --
+// `blend` 3 on dots (1.15 light volumes, docs/engine.md *Light*): each dot is a soft
+// radial glow of radius `r` -- a bright core, its colour, then nothing -- and on a dark
+// background the glows add up ("lighter"). A light background can't take added light
+// (it is already white), so there the same glow, its core no brighter than the colour,
+// is laid on normally. One sprite per colour, cached.
+
+const LIGHT = 3;
+const lightSprites = new Map<string, HTMLCanvasElement | OffscreenCanvas>();
+
+function lightSprite(hue: number, sat: number, light: number, dark: boolean): HTMLCanvasElement | OffscreenCanvas | null {
+  const h = Math.round(hue), s = Math.round(sat * 100), l = Math.round(light * 100);
+  const key = `${h}/${s}/${l}/${dark ? 1 : 0}`;
+  const hit = lightSprites.get(key);
+  if (hit) return hit;
+  const size = 32;
+  const c = typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(size, size) : typeof document !== "undefined" ? Object.assign(document.createElement("canvas"), { width: size, height: size }) : null;
+  if (!c) return null;
+  const g = c.getContext("2d") as CanvasRenderingContext2D | null;
+  if (!g) return null;
+  const core = dark ? Math.min(97, l + 30) : Math.max(10, l - 22);
+  const tone = dark ? l : Math.max(10, l - 22);
+  const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  grad.addColorStop(0, `hsla(${h}, ${s}%, ${core}%, 1)`);
+  grad.addColorStop(0.18, `hsla(${h}, ${s}%, ${tone}%, 0.9)`);
+  grad.addColorStop(0.45, `hsla(${h}, ${s}%, ${tone}%, 0.22)`);
+  grad.addColorStop(1, `hsla(${h}, ${s}%, ${tone}%, 0)`);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, size, size);
+  if (lightSprites.size > 512) lightSprites.clear();
+  lightSprites.set(key, c);
+  return c;
+}
+
+function drawLight(ctx: CanvasRenderingContext2D, d: OrbFrame["dots"][number], dark: boolean, mirror: boolean): void {
+  const lightness = mirror ? 1 - d.white : d.white;
+  const spr = lightSprite(d.hue, d.saturation, lightness, dark);
+  if (!spr) return;
+  const prevOp = ctx.globalCompositeOperation, prevA = ctx.globalAlpha;
+  ctx.globalCompositeOperation = dark ? "lighter" : "source-over";
+  ctx.globalAlpha = Math.min(1, Math.max(0, d.a));
+  ctx.drawImage(spr as CanvasImageSource, d.x - d.r, d.y - d.r, d.r * 2, d.r * 2);
+  ctx.globalCompositeOperation = prevOp;
+  ctx.globalAlpha = prevA;
 }
 
 // ------------------------------------------- per-vertex stroke colour --

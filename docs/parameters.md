@@ -97,9 +97,8 @@ binder producing bad results from opts with real interdependencies
 | `quality` | `0..1` | connection-quality pulse + lit segments | `beacon`'s `reconnecting` |
 | `accuracy` | `0..1` | location halo radius | `beacon`'s `locating` |
 | `audioLevel` (+ `audioStrength`, `-1..1`: positive swells outward, negative draws inward — 1.8's listening "inhale") | `0..1` | the radial breathing pulse on any state, including dot-less ring/signal/core frames | `primitives::apply_audio_reactive` — input-agnostic under the hood: a fitness `energy` metric can drive it today by writing to `audioLevel`; a generalized key name is a possible future rename (see the log) |
-| `audioBand0..15` + `audioBandCount` | `0..1` | per-band bar heights / waveform layers | `spectrum`, `bar`, `waveform` |
-| `voiceStateCode` | enum | the synthetic idle/listening/speaking pattern when no audio is supplied | `signal` styles |
-| `history0..N` + `historyCount`/`historyPhase` | `0..1` | the scrolling waveform's caller-owned buffer | `scroll` |
+| `audioBand0..15` + `audioBandCount` | `0..1` | per-band levels | `spectrum`, `crystal` |
+| `voiceStateCode` | enum | the voice lifecycle; the light volumes count a bound voice only while it listens or speaks | `veil`, `crystal`, `dune` |
 | `pointerX`/`pointerY`/`pointerRadius`/`pointerStrength` | engine units | pointer / touch scatter on dots, line endpoints and polyline vertices, so every family responds | `apply_pointer` |
 | `interruptAge` (+ `interruptDuration`/`Strength`/`Tint`/`Hue`) | seconds | the one-shot barge-in flash | `apply_interrupt` |
 | `muted` (+ `mutedTint`/`mutedHue`) | `0..1` | the mute / connection-lost cue | `apply_muted` |
@@ -251,12 +250,9 @@ are the shared radius-scale keys every orb mode reads):
 (`COUNT_KEYS`/`RADIUS_KEYS` in `orbs/profiles.rs`) next to `nodeN`/`nodeR`,
 so the 64/32/20 presets scale them exactly as before.
 
-**Signal** ([`signal.md`](signal.md)): `bar` — `barCount`, `barWidth`,
-`minHeight`; `waveform` — `pointCount`, `lineWidth`, `layerCount`,
-`amplitude`; `scroll` — `historyCount`, `barWidth`, `minHeight`,
-`fadeWidth`; `matrix` — `columnCount`, `ledCount`, `minLevel`, `ledSize`,
-`mirror`, `peak0..N`; all — `hue`, `saturation`, `voiceStateCode`,
-`audioBand*`.
+**Signal** ([`signal.md`](signal.md)): `veil` — `level`, `churn`,
+`layerCount`; `crystal` — `level`, `churn`, `columnCount`; `dune` —
+`progress`, `churn`, `envelope0..63`.
 
 **Ring** ([`ring.md`](ring.md)): `completing` — `progress`, `gap`;
 `loading` — `gap`; `stepping`/`segmented` — `segmentCount`, `progress`,

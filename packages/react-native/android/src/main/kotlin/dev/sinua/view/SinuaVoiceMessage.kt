@@ -20,7 +20,7 @@ import uniffi.core_engine.playbackSeekProgress
 /** At most this many envelope values (`envelope0..envelope63`). */
 const val SINUA_VOICE_MESSAGE_MAX_ENVELOPE = 64
 
-/** The position (0..1) under a point [x] px from the left of a [size] box, on the engine's row of bars. */
+/** The position (0..1) under a point [x] px from the left of a [size] box, on the dune the engine draws. */
 fun sinuaVoiceMessageSeek(size: IntSize, x: Float): Double {
     if (size.width <= 0 || size.height <= 0) return 0.0
     return playbackSeekProgress(size.width.toDouble() / size.height, x.toDouble() / size.height)
@@ -39,7 +39,7 @@ fun sinuaVoiceMessageKeys(
 }
 
 /**
- * A recorded voice message's waveform (signal `playing`) with drag-to-seek: the chat-bubble
+ * A recorded voice message's waveform (signal `dune`) with drag-to-seek: the chat-bubble
  * control.
  *
  * ```kotlin
@@ -49,7 +49,7 @@ fun sinuaVoiceMessageKeys(
  *
  * Sinua decodes no audio: pass the clip's loudness as [envelope] (up to 64 values, 0..1) and
  * the position as [progress]. A drag or a tap reports the position under the finger through
- * [onSeek], on the same row of bars the engine draws. TalkBack: an adjustable progress.
+ * [onSeek], at the spot of the dune the engine draws. TalkBack: an adjustable progress.
  */
 @Composable
 fun SinuaVoiceMessage(
@@ -85,7 +85,7 @@ fun SinuaVoiceMessage(
         }
     }
     SinuaView(
-        pattern = "playing",
+        pattern = "dune",
         modifier = modifier.then(gestures).then(a11y),
         overrides = keys,
         theme = theme,

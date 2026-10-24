@@ -105,8 +105,6 @@ class VoiceGoldenTest {
                 audioStrength = num(c.opt("audioStrength")) ?: 0.18,
                 levelEaseRate = num(c.opt("levelEaseRate")) ?: 7.0,
                 bandEaseRate = num(c.opt("bandEaseRate")) ?: 24.0,
-                historyCount = num(c.opt("historyCount"))?.toInt(),
-                historyHz = num(c.opt("historyHz")) ?: 12.0,
                 interrupt = interrupt,
                 mutedTint = num(c.opt("mutedTint")),
                 mutedHue = num(c.opt("mutedHue")),
@@ -121,7 +119,6 @@ class VoiceGoldenTest {
                 }
                 if (st.has("state")) v.setState(AgentState.fromWire(st.getString("state"))!!)
                 if (st.has("interrupt")) v.interrupt()
-                if (st.has("historyCount")) v.setHistoryCount(st.getInt("historyCount"))
                 if (st.has("muted")) v.muted = st.getBoolean("muted")
                 if (st.has("reset")) v.reset()
                 val got = v.overrides(st.getDouble("dt"))

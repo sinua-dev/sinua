@@ -81,8 +81,6 @@ final class VoiceGoldenTests: XCTestCase {
             if let v = num(c["audioStrength"]) { opts.audioStrength = v }
             if let v = num(c["levelEaseRate"]) { opts.levelEaseRate = v }
             if let v = num(c["bandEaseRate"]) { opts.bandEaseRate = v }
-            if let v = num(c["historyCount"]) { opts.historyCount = Int(v) }
-            if let v = num(c["historyHz"]) { opts.historyHz = v }
             if let v = num(c["mutedTint"]) { opts.mutedTint = v }
             if let v = num(c["mutedHue"]) { opts.mutedHue = v }
             if let i = c["interrupt"] {
@@ -101,7 +99,6 @@ final class VoiceGoldenTests: XCTestCase {
                 }
                 if let s = st["state"] as? String { v.setState(AgentState(rawValue: s)!) }
                 if st["interrupt"] != nil { v.interrupt() }
-                if let h = num(st["historyCount"]) { v.setHistoryCount(Int(h)) }
                 if let m = st["muted"] as? Bool { v.muted = m }
                 if st["reset"] != nil { v.reset() }
                 let got = v.overrides(dt: num(st["dt"])!)

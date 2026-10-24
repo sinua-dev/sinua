@@ -5,8 +5,7 @@
 //
 // The entry (`dist-dev/dev-entry.js`, written by scripts/dev-entry.mjs) re-exports
 // the whole default API too, bound to the same dev wasm, so a tool that imports
-// from here runs ONE engine: catalog packs and recipes it registers are the ones
-// its views draw.
+// from here runs ONE engine, the same one its views draw with.
 import {
   frame_json,
   frame_json_with_overrides,

@@ -9,8 +9,8 @@ const CASES = [
   ["working", {}],
   ["working", { glowStrength: 1 }],
   ["breathing", { glowStrength: 1 }],
-  ["metering", {}],
-  ["scrolling", {}],
+  ["loading", {}],
+  ["veil", {}],
 ];
 const N = Number(process.env.BENCH_N ?? 400);
 

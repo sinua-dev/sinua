@@ -131,7 +131,7 @@ step "packages/core: bundler check"; (cd packages/core/bundler-check && npm ci &
 # its tests are the byte-for-byte lock the native ports are diffed against.
 step "packages/snippets: npm ci";        (cd packages/snippets && npm ci)
 step "packages/snippets: npm run build"; (cd packages/snippets && npm run build)
-# After the build above: a docs sample imports @sinua/snippets (fitPath).
+# After the build above: docs samples may import @sinua/snippets.
 step "docs: snippets resolve and type-check"; node scripts/docs/check-snippets.mjs
 step "packages/snippets: npm test";      (cd packages/snippets && npm test)
 

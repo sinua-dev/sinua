@@ -48,7 +48,7 @@ pub fn cycles(o: &ModeOpts, acc: &str) -> Option<f64> {
 }
 
 /// Builds a `ModeOpts` from literal pairs -- a test convenience today
-/// (only `signal::modes::bar`'s tests use it; `orbs::profiles::opts` is the
+/// (the ring, beacon and core tests use it; `orbs::profiles::opts` is the
 /// same one-liner, used by real preset-building code there too, so it
 /// isn't `cfg(test)`-gated the way this one is).
 #[cfg(test)]
@@ -122,7 +122,7 @@ pub struct Point {
 /// A continuous stroked path through `points`, in order -- the primitive a
 /// smooth curve or a pill-shaped bar needs and `Line` can't provide.
 ///
-/// Why this exists: `signal::modes::waveform` first drew its curve as ~48
+/// Why this exists: the first signal waveform (since removed) drew its curve as ~48
 /// consecutive but *independent* `Line` segments. Every renderer strokes
 /// each `Line` as its own butt-capped path, so at every bend the segments
 /// left a wedge-shaped gap on the outside and a double-painted (darker, at
@@ -500,8 +500,8 @@ pub fn radius_scale(size: f64, pow: f64) -> f64 {
 /// allocation, unlike a `format!`-built key, since the count is small and
 /// fixed. Capped at 16 -- comfortably above any bar count a caller's own
 /// audio analysis would realistically produce (the reference Web Audio
-/// pipeline in the Web Studio defaults to 5). Used by both
-/// `orbs::modes::spectrum` and `signal::modes::bar`.
+/// pipeline in the Web Studio defaults to 5). Used by
+/// `orbs::modes::spectrum` and the light volumes (`volume::bands`).
 pub fn audio_band(o: &HashMap<String, f64>, index: usize) -> Option<f64> {
     let key = match index {
         0 => "audioBand0",
@@ -811,10 +811,10 @@ mod geom_tests {
 /// encoding `audio_band` uses for `audioBandN`, but unbounded: builds the
 /// key with `format!`, so each call allocates one short `String`. That's
 /// deliberate. `audio_band`'s fixed `match` exists to stay allocation-free
-/// in a dense mode's per-dot hot path; a history buffer is read once per
-/// bar (a few dozen to a few hundred times per frame), where that many
-/// tiny allocations are far below anything measurable, and a 16-entry cap
-/// would be a real limit. Used by `signal::modes::scroll` for `historyN`.
+/// in a dense mode's per-dot hot path; an indexed input here is read once
+/// per element (a few dozen times per frame), where that many tiny
+/// allocations are far below anything measurable, and a 16-entry cap would
+/// be a real limit. Used by the ring's `nested` and `segmented`.
 pub fn indexed_opt(o: &HashMap<String, f64>, prefix: &str, index: usize) -> Option<f64> {
     o.get(&format!("{prefix}{index}")).copied()
 }
@@ -951,7 +951,7 @@ pub fn apply_audio_reactive(mut frame: OrbFrame, opts: &HashMap<String, f64>) ->
 
     // Radial "breathing": push every point away from the frame's own
     // centroid (not a hardcoded size/2 -- works for any mode's geometry,
-    // including 2D-flat ones like `orbs::modes::morph` or `signal::modes::bar`)
+    // including 2D-flat ones like `orbs::modes::morph`)
     // proportionally to its current distance from it, so the whole shape
     // visibly swells and settles with volume. A pure radius/alpha scale
     // makes dots fatter in place, which reads as static -- real perceived

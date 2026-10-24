@@ -65,7 +65,7 @@ function assertSameSet(a, b, aName, bName) {
 
 test("materials: the Swift render list matches the Web's", () => {
   const web = webKeys();
-  assert.ok(web.size > 15, `only ${web.size} web cases -- the golden file or frames.mjs changed shape`);
+  assert.ok(web.size > 5, `only ${web.size} web cases -- the golden file or frames.mjs changed shape`);
   assertSameSet(web, swiftKeys(), "the Web list (frames.mjs + golden)", "MaterialsRenderTests.swift");
 });
 

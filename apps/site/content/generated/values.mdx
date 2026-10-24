@@ -3,8 +3,10 @@
 | Component | Prop | Patterns | Type | Range | Description |
 |---|---|---|---|---|---|
 | `SinuaOrb` | `progress` | `progressing` | number | 0–1 fraction | How far the eclipse has advanced, 0 to 1. |
-| `SinuaSignal` | `progress` | `playing` | number | 0–1 fraction | Playback position, 0 to 1: bars before it are played (full ink), the rest dimmed. |
-| `SinuaSignal` | `envelope` | `playing` | number[] (1–64) | 0–1 fraction | The recorded clip's loudness, oldest first, 0 to 1 per value (up to 64; resample longer clips). Without it a fixed sample message is drawn. |
+| `SinuaSignal` | `level` | `veil` | number | 0–1 fraction | How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own. |
+| `SinuaSignal` | `level` | `crystal` | number | 0–1 fraction | One value for the whole crystal, 0 to 1 (a battery, a quota, a goal). Left out, a bound voice's bands fill the columns; with neither it idles low. |
+| `SinuaSignal` | `progress` | `dune` | number | 0–1 fraction | How much is done, 0 to 1: a clip's position or a long task's progress. The done part glows. Left out, the plane drifts across on its own. |
+| `SinuaSignal` | `envelope` | `dune` | number[] (1–64) | 0–1 fraction | The dune's profile, 0 to 1 per value (a clip's loudness or any series; up to 64). Without it a fixed dune is drawn. |
 | `SinuaRing` | `progress` | `completing` | number | 0–1 fraction | How much of the ring is filled, 0 to 1. |
 | `SinuaRing` | `progress` | `tracking` | number[] (1–4, length = `ringCount`) | 0–3 | Per-ring value; past 1 draws extra laps (up to maxLaps). _Also accepted: `progress0`, `progress1`, `progress2`, `progress3`._ |
 | `SinuaRing` | `progress` | `stepping` | number | 0–1 fraction | How many segments are filled, as a fraction 0 to 1. |

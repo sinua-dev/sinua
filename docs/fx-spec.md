@@ -36,7 +36,7 @@ Before FX Spec, a design was a code snippet pasted into four codebases: a typo'd
 |---|---|---|
 | `fxSpec` | yes | `"major.minor"`: `"1.0"`, or `"1.1"` for `states`/`bindings` (see *Versioning*) |
 | `object` | yes | `orb` \| `signal` \| `ring` \| `beacon` \| `core` — must be the state's family |
-| `state` | yes | an engine state (`working`, `metering`, `tracking`, `scanning`, …) |
+| `state` | yes | an engine state (`working`, `veil`, `tracking`, `scanning`, …) |
 | `size` | no | `20` \| `32` \| `64`, default `64` |
 | `speed` | no | multiplier on the preset's tuned speed, default `1`. Not an opt: `frameFromFxSpec` applies `elapsed × presetSpeed × speed` for you, so the classic `t * speed` mistake ([engine.md](engine.md)) can't happen |
 | `color` | no | a color (shorthand for `{ value, mix: 1 }`) or `{ value, mix, lightness, mode }` → the Color system keys ([materials.md](materials.md)) |
@@ -83,9 +83,9 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 
 - Major ≠ 1 → error; this runtime doesn't load it.
 - **The floor is 1.8** (`fx_spec.rs`'s `FLOOR_MINOR`). A `1.0`–`1.7` file is one error at `/fxSpec` (``FX Spec 1.7 isn't supported; this runtime reads 1.8 and later``) and nothing resolves. Those minors were never published; their acceptance was dropped before the first release instead of becoming a promise (docs/release-roadmap.md, decision 0.1). A missing or malformed `fxSpec` is an error too, and the rest of the file is still read as the current minor so its other problems show.
-- The runtime is **1.14** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`; 1.12's `recipe`, `expression`, `palette`; 1.13's `silhouette`) is an error naming the minor it needs, and so is `object: "character"` (1.11) in an older file.
+- The runtime is **1.15** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`) is an error naming the minor it needs, and so is a pattern newer than it (1.15's `veil`, `crystal`, `dune`), at the base's or a `states` entry's `pattern`.
 - A **newer 1.x** file (`1.9`) → unknown keys are **warnings** and the rest renders (graceful degradation).
-- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is seven locks, `spec/fx-spec-1.8-resolved.json` to `-1.14-resolved.json`: 1.8–1.10 over the 13 examples that existed then, 1.11 over those 13 (byte-identical rows) plus `buzzy-assistant`, 1.12 over those 14 (byte-identical rows) plus `coffee-shop`, `custom-character` and `remix-latte`, 1.13 over those (byte-identical rows) plus `rich-bean` and `rich-buzzy`, 1.14 over the same 16 (byte-identical rows: 1.14 adds no key); the 1.0–1.7 locks went with the floor. Each older lock is read by its own `v1_<minor>_examples_resolve_identically`, and `every_older_lock_has_an_identity_test` fails if a lock has none. Until 0.1.0-beta.9 the 1.12 and 1.13 locks had none, and the 1.12 lock had gone stale: the `custom-character` and `remix-latte` examples were edited by the 1.14 cleanup, which changed their `recipe:<id>:<hash>` names. Those names were updated, and nothing else in that lock changed. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
+- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is eight locks, `spec/fx-spec-1.8-resolved.json` to `-1.15-resolved.json`, over the 9 examples left after the 1.15 cleanup (byte-identical rows across minors); the 1.0–1.7 locks went with the floor. The 1.15 cleanup rewrote every lock without the examples it removed (the character ones and `signal-matrix`); no other row changed. Each older lock is read by its own `v1_<minor>_examples_resolve_identically`, and `every_older_lock_has_an_identity_test` fails if a lock has none. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
 - **A key added in a later minor is gated automatically.** `spec/fx-spec-1.8-keys.json`
   freezes every key path a 1.8 file may use (103 today, built from the resolver's own
   tables). A new key (a material, a section key, a binding target, something low power
@@ -94,7 +94,7 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
   one gate in `resolve` then turns it into an error in older files ("`materials.frost`
   needs "fxSpec": "1.9" (this file says 1.8)") and drops it. Removing a frozen key fails
   too: 1.8 files would break.
-- **Minor versions only add, with three exceptions before 1.0.** Each removes something
+- **Minor versions only add, with four exceptions before 1.0.** Each removes something
   outright: a file that uses a removed section fails at every version, and the error says
   what to delete.
   - The `edge` object, in 1.12 (0.1.0-beta.8): "`object: edge` was removed in 0.1.0-beta.8
@@ -109,6 +109,11 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
     fields `style`, `iris` and `sclera`, and the `iris` role.
   - The `concluding` pattern, in 1.14 (0.1.0-beta.9), with the same message, at the base's or
     a `states` entry's `pattern`.
+  - In 1.15 (0.1.0-beta.12): "`<name>` was removed in 0.1.0-beta.12 (FX Spec 1.15); use
+    `<pattern>` instead" for the flat signal patterns (`signaling`, `waveform`, `scrolling` →
+    `veil`; `metering` → `crystal`; `playing` → `dune`), and "…; there is no replacement:
+    delete it from the file" for `object: "character"`, the `silhouette` pattern and the keys
+    `recipe`, `expression`, `palette` and `silhouette` (top level or in a `states` entry).
 
   One value change reaches older files too, under the same 1.14 cleanup: `glowing`'s
   voice-state profile zooms less (`surfaceScale` thinking 3.0 → 1.6, speaking 1.5 → 1.4;
@@ -332,6 +337,21 @@ How state changes animate, per pair. Optional. Without a rule for a pair, a voic
 - **Diagnostics:** a key that isn't `default` or `a->b` is an error; a state name that isn't in `states` is a warning (the entry never applies); an unknown curve or an out-of-range duration is an error.
 - `fxSpecTransition(spec, from, to)` returns `{ duration, curve, authored }` for a pair; the players call it on every state change. `authored` says the file wrote `curve` for this change: a view keeps that curve (carrying the motion's velocity into it); otherwise it uses its own transition clock, which reaches ~95 % of the way in `duration`. The technique (interpolate / morph / cross-fade) isn't in the file: the engine picks it from the pair (see *Caller loop*).
 
+## v1.15: light volumes, and the 0.1.0-beta.12 cleanup
+
+- **New patterns** on `object: "signal"`: `veil`, `crystal` and `dune`, light volumes
+  ([`signal.md`](signal.md)). They need `"fxSpec": "1.15"`; an older file that names one gets an
+  error at that `pattern`. Their inputs are ordinary `params` and bindings: `level` (veil,
+  crystal), `progress` and `envelope` (dune), `churn` (all three).
+- **Removed, an error at every version** (see *Versioning*): the flat signal patterns, the
+  `character` object with `recipe`, `expression` and `palette`, and the orb's `silhouette`
+  pattern and key.
+
+```json
+{ "fxSpec": "1.15", "object": "signal", "pattern": "veil",
+  "states": { "listening": {}, "thinking": {}, "speaking": {} } }
+```
+
 ## v1.14: the 0.1.0-beta.9 cleanup
 
 1.14 adds no key. It is the minor the 0.1.0-beta.9 cleanup ships under, so a file can say
@@ -343,138 +363,20 @@ How state changes animate, per pair. Optional. Without a rule for a pair, a voic
 - **One value change that reaches every version:** `glowing`'s voice-state profile zooms less
   (`surfaceScale` thinking 1.6, speaking 1.4; `profileVersion` 4).
 
-## v1.13: silhouettes
+## v1.13: voice states without `states`
 
-`pattern: "silhouette"` (an `orb`) is a front-facing head and shoulders made of evenly
-spread dots that lives with the voice. One shape stays on screen; the
-voice states only change how it moves, so a state change never adds or drops a dot.
+In a 1.13 file, a voice state (`idle`, `listening`, `thinking`, `speaking`, `initializing`) the
+file has no `states` entry for resolves as an empty entry, so it takes the voice profile: a file
+without `states` still listens, thinks and speaks. A key that isn't a voice state still warns and
+draws the base. 1.8–1.12 files keep the old behaviour (the base design). (1.13 also added the
+orb's `silhouette` and the characters' richer look, palette roles and dark variants; all were
+removed in 1.15.)
 
-```json
-{ "fxSpec": "1.13", "object": "orb", "pattern": "silhouette", "silhouette": "helmet",
-  "params": { "hologram": 1, "scanlines": 0.6, "saturation": 0.5, "hue": 190 } }
-```
+## v1.11 and v1.12: characters (removed in 1.15)
 
-- **`silhouette`** (top level, file-wide): `"human"` (default) or `"helmet"`, or a file's
-  own `{ "path", "eyes": [left x, right x, y], "mouth": [x, y] }`. The path is SVG path
-  data in a 200 × 200 box, with the path's own limits. Start and end it
-  below the shoulders: the bottom stays open and fades. Thinking flickers along the eye
-  line; speaking waves spread from the mouth. A bad shape is an error and the human is drawn.
-- **Dots:** ~1,500 at 64 px, ~380 at 32 px, the outline alone at 20 px, always a prefix of
-  one farthest-point order, so they stay evenly spread at every size. Under low power
-  (`performance.lowPower`) the first 800 are drawn.
-- **Voice keys** (the voice-state profile sets them): `breath` and `glint` (idle),
-  `inward` (listening, with the mic level), `neuron` (thinking), `speech` (speaking, with
-  the agent's level). `waveSpeed`, `period` and `scanSpeed` are rate keys: a transition
-  accumulates them.
-- **Look:** `turnYaw` turns the head (−1..1; the shoulders stay), `rim` the outline and its
-  glow, `hologram` the hologram look (a bright rim, now and then a thin band sliding
-  sideways), `scanlines`, `wire` (links between neighbours), `dotSize`, `saturation`/`hue`.
-- **Cost:** medium (`estimateCost`); the voice-state profile turns the dot glow and the
-  pulse off for it. Glow material on every dot makes it heavy.
-- A 1.12 file that names the pattern or the key gets an error.
-
-## v1.13: the richer look, roles and voice states
-
-- **The richer look**: a recipe may draw soft `shade` masses, `rim` light,
-  elliptical lights and `grain` ([`character-recipe.md`](character-recipe.md), *The richer
-  look*; `spec/examples/rich-bean.fxspec.json`, `rich-buzzy.fxspec.json`). `params` take
-  `grain` (0–1) and `shading` (0/1) for any character. **Under low power** a character that has
-  grain or soft layers gets `grain` 0 and `shading` 0, and `disabledMaterials` lists `grain`
-  and `shading`, whatever the file's `performance` says; other characters resolve as before.
-- **Roles and the dark variant**: `palette` also takes role names
-  (`primary`, `secondary`, `accent`, through the recipe's `roles`) and a `dark` variant. Roles
-  written out < slots written out. The dark variant resolves to `palette.dark.<slot>.*`; the
-  views pass `dark` in a dark theme and the engine picks it. `dark` in a file before 1.13 is an
-  error. See [`character.md`](character.md), *Roles and the dark variant*. (1.13's named
-  palettes, eye styles, `cosmetics` and `wardrobe` were removed in 0.1.0-beta.9: see
-  *Versioning*.)
-- **Voice states without `states`**: in a 1.13 file, a voice state
-  (`idle`, `listening`, `thinking`, `speaking`, `initializing`) the file has no `states` entry
-  for resolves as an empty entry, so it takes the voice profile: a character file without
-  `states` still listens, thinks and speaks. A key that isn't a voice state still warns and
-  draws the base. 1.8–1.12 files keep the old behaviour (the base design).
-- **Recipe limits**: 96 parts (was 48) and 4,096 path points in all.
-- 1.8–1.12 files resolve exactly as before (their locks are unchanged; the 1.13 lock has the
-  same rows for them and adds `rich-bean` and `rich-buzzy`).
-
-## v1.12: character recipes
-
-A brand's own character in **one file**: the new top-level key **`recipe`** carries a
-character recipe, the same format as the built-in ones in `spec/characters/*.json`
-([`character.md`](character.md), *Recipes and parts*). No code, no Sinua release. Every key and
-part field: [`character-recipe.md`](character-recipe.md) and the schema
-`spec/character-recipe-1.schema.json` (`$id` `https://sinua.dev/schema/character-recipe-1.json`,
-which this file's schema refers to); a worked remix: [`character-remix.md`](character-remix.md).
-
-```json
-{ "fxSpec": "1.12", "object": "character", "pattern": "pip",
-  "recipe": { "recipe": 1, "id": "pip", "profile": "chirp", "palette": { … }, "rig": { … }, "parts": [ … ], "burst": { … } },
-  "params": { "seed": 5, "flutterGain": 0.3 }, "states": { "listening": {}, "speaking": {} } }
-```
-(`spec/examples/custom-character.fxspec.json`)
-
-- **`recipe` needs `"fxSpec": "1.12"`** and `object: "character"`. Every `pattern` (the base
-  and each `states` entry) equal to the recipe's `id` draws it; a recipe no pattern names is a
-  warning. The `id` (1–32 of `a–z`, `0–9`, `-`) can't be a built-in character's.
-- **Resolving registers the recipe** under a content key, `recipe:<id>:<hash>`, and the
-  resolved `state` is that key. The views draw it every frame like any other pattern, so
-  platform code doesn't change; the same recipe gives the same key everywhere. The engine
-  keeps the last 32 recipes used.
-- **Errors point into the recipe**: `/recipe/parts/2/segments: expected a whole number from 3 to 128`.
-- **Limits** (a file from outside can't make the engine slow; over a limit is an error, never
-  trimmed): the recipe at most 64 KB; at most 96 parts, a body's inner layers included, and 4,096 path points in all; lists
-  (feathers, bars, stripes, glints, stops) at most 32; `segments` 3–128 (an ellipse's too);
-  counted things (`count`) 1–24; edge steps at least 1; every number within ±1000. A recipe
-  the cost estimate calls `heavy` is a warning.
-- **`expression`** (character only): `"happy"`, `"surprised"`, `"thoughtful"`, `"sad"`,
-  `"sleepy"` or `"none"`, in the base and in `states` entries (`null` in an entry removes it). It
-  resolves to five weights (`expressionHappy` …), so a state change blends one expression into the
-  next. The weights themselves are rejected in `params`, and a typo gets a "did you mean". See
-  [`character.md`](character.md), *Expressions*.
-- **`palette`** (character only): `{ "<slot>": <colour>, … }`, hex or DTCG, in the base and in
-  `states` entries (merged over the base; `null` removes a slot). Slots are the recipe's palette
-  names; a slot's `Light` / `Dark` tones follow it; it lands after `hue`; a dark ground lifts an
-  ink left as drawn, and an ink given too dark gets a warning. Unknown slots get a "did you
-  mean"; `palette.*` keys are rejected in `params`. See [`character.md`](character.md), *Palette*.
-- **Custom shapes**: any shape in a recipe may be an SVG path,
-  `"shape": { "path": "M50 74 L56 22 … Z" }`. It uses the commands `M L H V C S Q T Z`, sits in
-  the 200-unit box, and its later subpaths are holes. There are no arcs. Path limits: 16 KB,
-  512 commands, 512 points, 8 holes. Errors point inside the path:
-  `/recipe/parts/1/shape/path: at 7: …`. See [`character.md`](character.md), *Shapes*.
-- **Voice states**: a recipe gets the shared character language
-  (`voice-state-profile.json`'s `patterns.character`, Buzzy's numbers), or a built-in
-  character's with `"profile": "chirp"`. The file's own `states` override either.
-- **Params**: the character keys (`hue`, `mouth`, `accessories`, `look`, `turn`, `seed`, the
-  rig keys) plus the gains the recipe's own parts read (`flutterGain`, `swayGain`, `curlGain`).
-- 1.8–1.11 files resolve exactly as before (their locks are unchanged, and the 1.12 lock has
-  the same rows for them).
-
-## v1.11: characters
-
-A new object, **`character`**: characters with a face for a voice assistant
-([`character.md`](character.md)). Each character is a pattern: **`buzzy`**, **`hum`**, **`wisp`** and **`chirp`**.
-
-```json
-{ "fxSpec": "1.11", "object": "character", "pattern": "buzzy", "params": { "hue": 190 },
-  "states": { "idle": {}, "listening": { "bindings": { "audioLevel": { "input": "micLevel" } } },
-              "thinking": {}, "speaking": { "bindings": { "audioLevel": { "input": "agentVolume" } } } } }
-```
-(`spec/examples/buzzy-assistant.fxspec.json`)
-
-- **`object: "character"` needs `"fxSpec": "1.11"`**; an older file gets an error at `/object`.
-- **No `color` or `gradient` on a character** (an error that points at `params.hue`): they
-  repaint the whole frame, eyes and screen included. `params.hue` turns the character's own
-  colour; `mouth`, `accessories`, `look` and `seed` are its other options. The rig keys the
-  voice-state profile sets (`gazeX`, `lid`, `eyeSmile`, …) are ordinary `params` too, so a file
-  can tune a state's look.
-- **The voice-state profile** carries each character's state language
-  (`patterns.buzzy`): the generic swell, glow, pulse and particles are off, and the rig
-  values make listening lean in, thinking look away, speaking smile and talk.
-- **`stateAge`** is a new runtime input (rejected in `params`): seconds since the view's
-  lifecycle state changed, which every view sets. A character blinks at the end of the
-  user's turn with it.
-- 1.8–1.10 files resolve exactly as before (their locks are unchanged, and the 1.11 lock
-  has the same rows for them).
+1.11 added the `character` object and 1.12 character recipes (`recipe`), `expression` and
+`palette`. All were removed in 0.1.0-beta.12 (FX Spec 1.15): a file that still uses them gets an
+error at every version.
 
 ## v1.10: calmer voice states
 

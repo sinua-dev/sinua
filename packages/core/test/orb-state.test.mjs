@@ -1,6 +1,6 @@
 // The `OrbState` union (src/index.ts) names every pattern the engine has: a pattern
 // added to the engine but not to the union type-checks as an error for every TS
-// caller (it happened for talking/playing/framing, caught by the Studio's tsc).
+// caller (it happened for talking, caught by the Studio's tsc).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";

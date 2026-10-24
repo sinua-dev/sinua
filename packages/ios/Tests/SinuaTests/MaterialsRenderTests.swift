@@ -19,20 +19,6 @@ final class MaterialsRenderTests: XCTestCase {
             "tracking-64-0.6-gradient3", "tracking",
             ["gradientStrength": 1, "gradientHue": 200, "gradientHue2": 300, "gradientHue3": 40]
         ),
-        // A character is fills only (docs/character.md): celebrate and one everyday frame each.
-        ("buzzy-64-0.6-celebrate", "buzzy", ["effectCode": 3, "effectAge": 0.5]),
-        ("buzzy-64-0.6-muted", "buzzy", ["look": 0, "muted": 1]),
-        ("hum-64-0.6-celebrate", "hum", ["effectCode": 3, "effectAge": 0.5]),
-        ("hum-64-0.6-barge-in", "hum", ["look": 0, "interruptAge": 0.05]),
-        ("wisp-64-0.6-celebrate", "wisp", ["effectCode": 3, "effectAge": 0.5]),
-        ("wisp-64-0.6-barge-in", "wisp", ["look": 0, "interruptAge": 0.05]),
-        ("chirp-64-0.6-celebrate", "chirp", ["effectCode": 3, "effectAge": 0.5]),
-        ("chirp-64-0.6-barge-in", "chirp", ["look": 0, "interruptAge": 0.05]),
-        ("buzzy-64-0.6-turned", "buzzy", ["turnYaw": -0.7, "turnPitch": 0.8, "gazeX": -8, "gazeY": -4, "look": 0]),
-        ("chirp-64-0.6-turned", "chirp", ["turnYaw": -0.7, "turnPitch": 0.8, "gazeX": -8, "gazeY": -4, "look": 0]),
-        ("cuppa-64-0.6-celebrate", "cuppa", ["effectCode": 3, "effectAge": 0.5]),
-        ("bean-64-0.6-turned", "bean", ["turnYaw": -0.7, "turnPitch": 0.8, "gazeX": -8, "gazeY": -4, "look": 0]),
-        ("beep-64-0.6-celebrate", "beep", ["effectCode": 3, "effectAge": 0.5]),
         // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC):
         // per-vertex strokes under a blur / additive run at the composite.
         (
@@ -51,13 +37,6 @@ final class MaterialsRenderTests: XCTestCase {
         ),
     ]
 
-    /// FX Spec rows (1.13, design note 22; frames.mjs SPEC_ROWS): the showcase examples
-    /// resolved at their base design -- elliptical gradients, soft layers, rims, grain.
-    static let specRows: [(key: String, file: String)] = [
-        ("rich-bean-64-0.6-spec", "rich-bean.fxspec.json"),
-        ("rich-buzzy-64-0.6-spec", "rich-buzzy.fxspec.json"),
-    ]
-
     func testRenderMaterialsGoldenCases() throws {
         let golden = try goldenOverrides()
         var frames: [(String, OrbFrame)] = []
@@ -68,18 +47,6 @@ final class MaterialsRenderTests: XCTestCase {
                     c.key,
                     try XCTUnwrap(frameWithOverrides(state: c.state, size: 64, t: 0.6, overrides: overrides), c.key)
                 ))
-        }
-        for row in Self.specRows {
-            let json = try String(contentsOf: specURL("examples/\(row.file)"), encoding: .utf8)
-            let r = resolveFxSpecWith(json: json, state: "idle", inputs: [:])
-            XCTAssertTrue(r.ok, "\(row.file): \(r.diagnostics)")
-            let frame = try XCTUnwrap(
-                frameWithOverrides(state: r.state, size: 64, t: 0.6, overrides: r.overrides), row.key)
-            if row.key.hasPrefix("rich-") {
-                XCTAssertTrue(frame.fills.contains { $0.blend == 2 }, "\(row.key) has grain")
-                XCTAssertTrue(frame.fills.contains { $0.gradient?.kind == 2 }, "\(row.key) has an elliptical gradient")
-            }
-            frames.append((row.key, frame))
         }
         for (key, frame) in frames {
             if !key.contains("gradient3") {
@@ -98,16 +65,6 @@ final class MaterialsRenderTests: XCTestCase {
                 add(a)
             }
         }
-    }
-
-    /// The grain tile's hash (design note 22) matches the vectors every platform checks
-    /// (packages/web/test/materials.test.mjs, GrainVectorsTest.kt).
-    func testGrainHashMatchesTheVectors() {
-        let want: [(Int, Int, Double)] = [
-            (0, 0, 0.573750742), (1, 0, 0.78714704), (0, 1, 0.399833626), (63, 63, 0.680704963), (17, 42, 0.127631493),
-        ]
-        for (x, y, v) in want { XCTAssertEqual(FxPaint.grainValue(x, y), v, accuracy: 1e-9, "\(x),\(y)") }
-        XCTAssertNotNil(FxPaint.grainTile)
     }
 
     /// A file under the repository's `spec/`.

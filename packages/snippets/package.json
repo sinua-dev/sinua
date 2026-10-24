@@ -36,7 +36,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
-    "test": "node --test test/snippets.test.mjs test/fitPath.test.mjs"
+    "test": "node --test test/snippets.test.mjs"
   },
   "devDependencies": {
     "typescript": "^5.7.2",

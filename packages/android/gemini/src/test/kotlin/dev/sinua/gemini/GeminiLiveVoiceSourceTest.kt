@@ -161,8 +161,15 @@ class GeminiLiveVoiceSourceTest {
         val pcm = java.util.Base64.getDecoder().decode(b64)
         assertEquals("512 samples of PCM16", 1024, pcm.size)
         assertTrue("silence goes out", pcm.all { it == 0.toByte() })
+        // As a view mounted mid-session: the late callbacks get the state and the connection at once.
+        val late = mutableListOf<Any>()
+        main.sync {
+            source.onStateChange { late += it }
+            source.onConnectionChange { late += it }
+        }
+        assertEquals(listOf<Any>(AgentState.LISTENING, true), late.toList())
         main.sync { source.disconnect() }
-        assertEquals(listOf(true, false), conn.toList())
+        assertEquals(listOf<Any>(AgentState.LISTENING, true, false, AgentState.IDLE), late.toList())
     }
 
     @Test

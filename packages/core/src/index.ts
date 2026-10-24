@@ -11,8 +11,6 @@ import {
   frame_transition_packed,
   fx_color_to_hsl_json,
   voice_state_profile_json,
-  expression_overrides_json,
-  character_recipe_json,
   pattern_layout_json,
   playback_seek_progress_json,
 } from "../pkg/sinua_core_inline.js";
@@ -25,7 +23,6 @@ import type { AgentState } from "./voice.js";
 import { asPacked, framePacked, frameFromFxSpecPacked, unpackFrame } from "./packed.js";
 // The shared wasm wrappers. They live in their own module so `fxPlayer.ts` can
 // import them without looping back through this barrel (test/no-import-cycles).
-import { resolveFxSpec } from "./engine.js";
 export * from "./engine.js";
 
 // The voice -> overrides DX layer (`VoiceSource`, `AgentState`,
@@ -61,21 +58,16 @@ export type OrbState =
   | "progressing"
   // The "mic muted / connection lost" resting state (`orbs::modes::hush`).
   | "muted"
-  // A head and shoulders of dots that lives with the voice, FX Spec 1.13
-  // (`orbs::modes::silhouette`, design note 32).
-  | "silhouette"
   // Not `orbs` states at all -- `signal`, a genuinely separate family
   // (see `crates/core_engine/src/signal/mod.rs`). Kept in the same
   // `OrbState` union purely so `frame`/`frameWithOverrides` (whose engine
   // signature spans every family) stay one TS type instead of two -- it
   // does not imply these are more orbs.
-  | "signaling"
-  | "waveform"
-  | "scrolling"
-  // ...and a dot-grid LED EQ (`matrix`, audioMotion-analyzer's LED mode).
-  | "metering"
-  // ...and a recorded voice message with its position (`playback`; box layout).
-  | "playing"
+  // 1.15 light volumes (`crates/core_engine/src/volume/`): a sheet of light, a crystal
+  // filled from below, a dune with a position (box layout). Any input, not only a voice.
+  | "veil"
+  | "crystal"
+  | "dune"
   // The `ring` family (`crates/core_engine/src/ring/`): a determinate
   // progress ring, an indeterminate activity spinner, concentric
   // multi-value rings (`progress0..3`, generic -- not Apple's Activity
@@ -101,19 +93,7 @@ export type OrbState =
   // The `core` family (`crates/core_engine/src/core_fx/`): inline
   // "generating..." indicators -- a shimmer sweep and typing dots.
   | "generating"
-  | "typing"
-  // The `character` family (`crates/core_engine/src/character/`): characters
-  // with a face and voice states (FX Spec 1.11).
-  | "buzzy"
-  | "hum"
-  | "wisp"
-  | "chirp"
-  | "cuppa"
-  | "bean"
-  | "beep"
-  // 1.15: characters each built on their own (`character/bots/`).
-  | "whirr"
-  | "clank";
+  | "typing";
 
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;
@@ -166,9 +146,9 @@ export interface Point {
  * why this exists -- the per-segment `Line` seams it replaces): polylines
  * draw *first* (then lines, then dots), each as ONE stroked path with round
  * caps and round joins, no fill, stroke width `w`, ink rule identical to
- * `Dot` (`white` as lightness, HSL via `hue` when `saturation > 0`). Only
- * the `signal` family emits these today (`"signaling"` bars, `"waveform"`
- * traces); every `orbs` state leaves the array empty.
+ * `Dot` (`white` as lightness, HSL via `hue` when `saturation > 0`). The
+ * `ring`, `core` and `beacon` families emit these (arcs, sweeps); every
+ * `orbs` state leaves the array empty.
  */
 export interface Polyline {
   points: Point[];
@@ -220,7 +200,7 @@ export interface OrbFrame {
  */
 export interface Fill {
   points: Point[];
-  /** Inner rings (a character's ring shapes): paint outer + holes as one path with the even-odd rule. Absent when none. */
+  /** Inner rings: paint outer + holes as one path with the even-odd rule. Absent when none. */
   holes?: Point[][];
   white: number;
   a: number;
@@ -401,7 +381,7 @@ export interface FxSpec {
   fxSpec: string;
   name?: string;
   description?: string;
-  object: "orb" | "signal" | "ring" | "beacon" | "core" | "character";
+  object: "orb" | "signal" | "ring" | "beacon" | "core";
   state: string;
   size?: OrbSize;
   speed?: number;
@@ -431,15 +411,7 @@ export interface FxSpec {
     maxFps?: number;
     lowPower?: { maxFps?: number; disable?: ("glow" | "noise" | "pulse" | "gradient")[] };
   };
-  /**
-   * v1.12 (`object: "character"`): a character recipe (the format of
-   * `spec/characters/*.json`). Every `pattern` equal to its `id` draws it.
-   */
-  recipe?: { [key: string]: FxJson };
 }
-
-/** Plain JSON, as an FX Spec's `recipe` holds it. */
-export type FxJson = null | boolean | number | string | FxJson[] | { [key: string]: FxJson };
 
 /** v1.1: one binding -- the app's `input` value mapped onto its target (see `bindReactiveInput`). */
 export interface FxBinding {
@@ -632,7 +604,7 @@ export interface ParameterPattern {
 }
 
 export interface ParameterObject {
-  id: "orb" | "signal" | "ring" | "core" | "beacon" | "character";
+  id: "orb" | "signal" | "ring" | "core" | "beacon";
   label: string;
   component: string;
   patterns: ParameterPattern[];
@@ -702,56 +674,11 @@ export function voiceStateProfile(pattern: OrbState | string, state: VoiceStateN
   return JSON.parse(voice_state_profile_json(pattern, state)) as VoiceStateProfile | null;
 }
 
-/** A character's palette override resolved (design note 19): engine opts and diagnostics. */
-export interface PaletteResult {
-  overrides: Record<string, number>;
-  diagnostics: FxDiagnostic[];
-}
-
-/**
- * `palette` (slot -> hex or DTCG colour) on a character `pattern`, by the FX Spec's own
- * rules: the slots' Light/Dark tones follow, a dark ground lifts its ink. The views use it.
- * For a character drawn from a file's recipe, pass that `recipe` and its id as `pattern`.
- * (Through `resolveFxSpec`: no wasm of its own.)
- */
-export function paletteOverrides(
-  pattern: string,
-  palette: Record<string, unknown>,
-  recipe?: Record<string, unknown>
-): PaletteResult {
-  const doc = { fxSpec: "1.12", object: "character", pattern, palette, ...(recipe ? { recipe } : {}) };
-  const r = resolveFxSpec(JSON.stringify(doc));
-  const overrides: Record<string, number> = {};
-  for (const [k, v] of Object.entries(r.overrides)) if (k.startsWith("palette.")) overrides[k] = v;
-  return { overrides, diagnostics: r.diagnostics.filter((d) => d.path.startsWith("/palette") || d.path.startsWith("/pattern")) };
-}
-
-/**
- * A built-in character's recipe (`spec/characters/<id>.json` as the engine carries it), or
- * null for another id. A copy is the start of a remix: change it and ship it as an FX Spec
- * 1.12 file's `recipe`. Its `palette` names are the slots `palette` takes.
- */
-export function characterRecipe(id: string): Record<string, unknown> | null {
-  const json = character_recipe_json(id);
-  return json ? (JSON.parse(json) as Record<string, unknown>) : null;
-}
-
-/** A character's expressions (FX Spec 1.12, design note 16). */
-export type CharacterExpression = "happy" | "surprised" | "thoughtful" | "sad" | "sleepy";
-
-/**
- * An expression as the engine opts that weigh it (the named one 1, the others 0;
- * `"none"` all 0), or null for an unknown name. The views ease these over a change.
- */
-export function expressionOverrides(name: CharacterExpression | "none" | string): Record<string, number> | null {
-  return JSON.parse(expression_overrides_json(name)) as Record<string, number> | null;
-}
-
 /**
  * How `pattern` lays out in a view's box. `"box"`: engine space follows the
  * box ratio -- pass the box's width / height as the `aspect` input and map
  * engine space (`size * aspect` by `size`) onto the whole box (signal
- * `playing`). `"square"`: a square centred in the box, like every
+ * `dune`). `"square"`: a square centred in the box, like every
  * other pattern (and an unknown one).
  */
 export function patternLayout(pattern: OrbState | string): "box" | "square" {
@@ -759,8 +686,8 @@ export function patternLayout(pattern: OrbState | string): "box" | "square" {
 }
 
 /**
- * Signal `playing`: the playback position (0..1) under a touch, on the same row of
- * bars the pattern draws. `aspect` is the box's width / height; `x` is the touch's
+ * Signal `dune` (a voice message): the playback position (0..1) under a touch, on the
+ * dune the pattern draws. `aspect` is the box's width / height; `x` is the touch's
  * distance from the box's left edge divided by the box's height.
  */
 export function playbackSeekProgress(aspect: number, x: number): number {

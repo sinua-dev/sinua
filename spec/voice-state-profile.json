@@ -78,27 +78,6 @@
     }
   },
   "patterns": {
-    "silhouette": {
-      "$comment": "The silhouette: one head of dots; each state moves it by its own key (breath, glints, waves in, eye-line flicker, waves from the mouth). No dot glow (the outline has its own; glow on ~1,500 dots is heavy) and no pulse (the silhouette breathes itself).",
-      "states": {
-        "initializing": {
-          "speed": 0.8,
-          "overrides": { "breath": 0.5, "glint": 0, "inward": 0, "neuron": 0, "speech": 0, "ink": 0.7, "glowStrength": 0, "pulseStrength": 0 }
-        },
-        "idle": {
-          "overrides": { "breath": 1, "glint": 1, "inward": 0, "neuron": 0, "speech": 0, "ink": 0.8, "glowStrength": 0, "pulseStrength": 0 }
-        },
-        "listening": {
-          "overrides": { "breath": 0.3, "glint": 0, "inward": 1, "neuron": 0, "speech": 0, "glowStrength": 0, "pulseStrength": 0 }
-        },
-        "thinking": {
-          "overrides": { "breath": 0.3, "glint": 0, "inward": 0, "neuron": 1, "speech": 0, "glowStrength": 0, "pulseStrength": 0 }
-        },
-        "speaking": {
-          "overrides": { "breath": 0.2, "glint": 0, "inward": 0, "neuron": 0, "speech": 1, "glowStrength": 0, "pulseStrength": 0 }
-        }
-      }
-    },
     "glowing": {
       "$comment": "Showcase base (aurora): the colour field flowing across the sphere is its own signal, so each state drives the flow speed, not just the tempo.",
       "states": {
@@ -341,861 +320,167 @@
         }
       }
     },
-    "playing": {
-      "$comment": "Voice-message waveform (playback): a recording, not the live conversation. The generic radial swell and particles would distort the bars, so they're off in every state; the app drives it with `progress` and `envelope`.",
+    "veil": {
+      "$comment": "VEIL. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level.",
       "states": {
         "initializing": {
           "overrides": {
-            "audioStrength": 0
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 0.7,
+            "churn": 0.3
           }
         },
         "idle": {
           "overrides": {
-            "audioStrength": 0
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 0.85,
+            "churn": 0
           }
         },
         "listening": {
           "overrides": {
-            "audioStrength": 0
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 0
           }
         },
         "thinking": {
           "overrides": {
-            "audioStrength": 0
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 1
           }
         },
         "speaking": {
           "overrides": {
-            "audioStrength": 0
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 0
           }
         }
       }
     },
-    "buzzy": {
-      "$comment": "Character BUZZY: the generic swell, glow, pulse and particles are off (the character moves itself); the rig values below are the state language -- listening leans in and looks at you with sound arcs at the ears, thinking looks up and away (Andrist & Mutlu's gaze aversion) with a blink at the turn and thinking dots, speaking smiles with the voice line and a little squash. Speed 1 everywhere so blinks and glances stay in real seconds. The head turn: idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
+    "crystal": {
+      "$comment": "CRYSTAL. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level.",
       "states": {
         "initializing": {
-          "speed": 1,
           "overrides": {
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "ink": 0.85,
-            "lid": 0.5,
-            "look": 0,
-            "breath": 0.5
+            "colorMix": 0,
+            "ink": 0.7,
+            "churn": 0.3
           }
         },
         "idle": {
-          "speed": 1,
           "overrides": {
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "ink": 1,
-            "breath": 1,
-            "look": 1,
-            "turnWander": 1
+            "colorMix": 0,
+            "ink": 0.85,
+            "churn": 0
           }
         },
         "listening": {
-          "speed": 1,
           "overrides": {
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
+            "colorMix": 0,
             "ink": 1,
-            "lean": 4,
-            "tilt": -0.05,
-            "eyeW": 22,
-            "eyeH": 30,
-            "eyeR": 9,
-            "gazeY": 2,
-            "earGain": 1,
-            "look": 0,
-            "turnPitch": 0.35
+            "churn": 0
           }
         },
         "thinking": {
-          "speed": 1,
           "overrides": {
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
+            "colorMix": 0,
             "ink": 1,
-            "tilt": 0.07,
-            "eyeH": 24,
-            "eyeR": 7,
-            "lid": 0.28,
-            "eyeTilt": 0.22,
-            "eyeAsym": 0.17,
-            "gazeX": -8,
-            "gazeY": -4,
-            "mouthDots": 1,
-            "turnBlink": 1,
-            "look": 0,
-            "turnYaw": -0.7,
-            "turnPitch": 0.8
+            "churn": 1
           }
         },
         "speaking": {
-          "speed": 1,
           "overrides": {
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
+            "colorMix": 0,
             "ink": 1,
-            "eyeW": 21,
-            "eyeSmile": 0.45,
-            "mouthTalk": 1,
-            "mouthGain": 1,
-            "squashGain": 0.045,
-            "bounceGain": 3,
-            "look": 0.3,
-            "turnNod": 1,
-            "turnWander": 0.25
+            "churn": 0
           }
         }
       }
     },
-    "hum": {
-      "$comment": "Character HUM: the studio microphone. Same state language as buzzy -- listening tips the capsule toward you with the tally red (earGain), thinking tips it back, looks away and scans the grille with the tally blinking amber (mouthDots) and blinks at the turn, speaking lights the grille with the voice and sways it on the yoke. The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
+    "dune": {
+      "$comment": "DUNE. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level.",
       "states": {
         "initializing": {
-          "speed": 1,
           "overrides": {
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "ink": 0.85,
-            "lid": 0.5,
-            "look": 0,
-            "breath": 0.5
+            "colorMix": 0,
+            "ink": 0.7,
+            "churn": 0.3
           }
         },
         "idle": {
-          "speed": 1,
           "overrides": {
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
-            "ink": 1,
-            "breath": 1,
-            "look": 1,
-            "turnWander": 1
-          }
-        },
-        "listening": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "tilt": -0.13,
-            "lean": 3,
-            "eyeW": 22,
-            "eyeH": 30,
-            "eyeR": 9,
-            "gazeY": 2,
-            "earGain": 1,
-            "look": 0,
-            "turnPitch": 0.35
-          }
-        },
-        "thinking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "tilt": 0.1,
-            "eyeH": 24,
-            "eyeR": 7,
-            "lid": 0.28,
-            "eyeTilt": 0.22,
-            "eyeAsym": 0.17,
-            "gazeX": -8,
-            "gazeY": -4,
-            "mouthDots": 1,
-            "turnBlink": 1,
-            "look": 0,
-            "turnYaw": -0.7,
-            "turnPitch": 0.8
-          }
-        },
-        "speaking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "eyeW": 21,
-            "eyeSmile": 0.45,
-            "mouthTalk": 1,
-            "mouthGain": 1,
-            "swayGain": 0.05,
-            "bounceGain": 5,
-            "squashGain": 0.02,
-            "look": 0.3,
-            "turnNod": 1,
-            "turnWander": 0.25
-          }
-        }
-      }
-    },
-    "wisp": {
-      "$comment": "Character WISP: the helpful spirit. Same state language -- listening leans in, eyes wide, sparkles gather (earGain); thinking looks away with a blink at the turn, sparkles orbit its head (mouthDots) and the tail curls tight (curlGain); speaking opens the oval mouth with the voice, swells a little and streams sparkles (mouthTalk). The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
-      "states": {
-        "initializing": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
+            "colorMix": 0,
             "ink": 0.85,
-            "lid": 0.5,
-            "look": 0,
-            "breath": 0.5
-          }
-        },
-        "idle": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "breath": 1,
-            "look": 1,
-            "curlGain": 0.6,
-            "turnWander": 1
+            "churn": 0
           }
         },
         "listening": {
-          "speed": 1,
           "overrides": {
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
+            "colorMix": 0,
             "ink": 1,
-            "tilt": -0.12,
-            "lean": 3,
-            "eyeW": 22,
-            "eyeH": 30,
-            "eyeR": 9,
-            "gazeY": 2,
-            "earGain": 1,
-            "look": 0,
-            "curlGain": 0.35,
-            "turnPitch": 0.35
+            "churn": 0
           }
         },
         "thinking": {
-          "speed": 1,
           "overrides": {
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
+            "colorMix": 0,
             "ink": 1,
-            "eyeH": 24,
-            "eyeR": 7,
-            "lid": 0.28,
-            "eyeTilt": 0.22,
-            "eyeAsym": 0.17,
-            "gazeX": -8,
-            "gazeY": -4,
-            "mouthDots": 1,
-            "turnBlink": 1,
-            "look": 0,
-            "curlGain": 1.4,
-            "turnYaw": -0.7,
-            "turnPitch": 0.8
+            "churn": 1
           }
         },
         "speaking": {
-          "speed": 1,
           "overrides": {
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
+            "colorMix": 0,
             "ink": 1,
-            "eyeW": 21,
-            "eyeSmile": 0.45,
-            "mouthTalk": 1,
-            "mouthGain": 1,
-            "squashGain": 0.07,
-            "bounceGain": 3,
-            "look": 0.3,
-            "curlGain": 0.5,
-            "turnNod": 1,
-            "turnWander": 0.25
-          }
-        }
-      }
-    },
-    "chirp": {
-      "$comment": "Character CHIRP: the songbird. Same state language -- listening is the cartoon bird's head tilt with the crest up (earGain), thinking looks away, blinks at the turn, drops the crest and lights thought dots (mouthDots), speaking opens the beak with the voice, flutters the wings and floats notes (mouthTalk, flutterGain). The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you and a little up, thinking looks up and aside (with the gaze), speaking nods with the voice.",
-      "states": {
-        "initializing": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 0.85,
-            "lid": 0.5,
-            "look": 0,
-            "breath": 0.5
-          }
-        },
-        "idle": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "breath": 1.4,
-            "look": 1,
-            "turnWander": 1
-          }
-        },
-        "listening": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "tilt": -0.2,
-            "eyeW": 22,
-            "eyeH": 30,
-            "eyeR": 9,
-            "gazeY": 2,
-            "earGain": 1,
-            "look": 0,
-            "turnPitch": 0.35
-          }
-        },
-        "thinking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "tilt": 0.08,
-            "eyeH": 24,
-            "eyeR": 7,
-            "lid": 0.28,
-            "eyeTilt": 0.22,
-            "eyeAsym": 0.17,
-            "gazeX": -8,
-            "gazeY": -4,
-            "mouthDots": 1,
-            "turnBlink": 1,
-            "look": 0,
-            "turnYaw": -0.7,
-            "turnPitch": 0.8
-          }
-        },
-        "speaking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "eyeW": 21,
-            "eyeSmile": 0.45,
-            "mouthTalk": 1,
-            "mouthGain": 1,
-            "flutterGain": 0.3,
-            "bounceGain": 4,
-            "look": 0.3,
-            "turnNod": 1,
-            "turnWander": 0.25
-          }
-        }
-      }
-    },
-    "cuppa": {
-      "$comment": "Character CUPPA: the coffee mug. Same state language -- listening tips it toward you a little (a mug is heavy: less than chirp's tilt) and its steam rises higher (earGain), thinking looks away, blinks at the turn and curls the steam (mouthDots), speaking opens the oval mouth with the voice, squashes a little and thickens the steam (mouthTalk). The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you, thinking looks up and aside, speaking nods.",
-      "states": {
-        "initializing": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 0.85,
-            "lid": 0.5,
-            "look": 0,
-            "breath": 0.5
-          }
-        },
-        "idle": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "breath": 1.4,
-            "look": 1,
-            "turnWander": 1
-          }
-        },
-        "listening": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "tilt": -0.05,
-            "eyeW": 22,
-            "eyeH": 30,
-            "eyeR": 9,
-            "gazeY": 2,
-            "earGain": 1,
-            "look": 0,
-            "turnPitch": 0.35
-          }
-        },
-        "thinking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "tilt": 0.02,
-            "eyeH": 24,
-            "eyeR": 7,
-            "lid": 0.28,
-            "eyeTilt": 0.22,
-            "eyeAsym": 0.17,
-            "gazeX": -5,
-            "gazeY": -3,
-            "mouthDots": 1,
-            "turnBlink": 1,
-            "look": 0,
-            "turnYaw": -0.45,
-            "turnPitch": 0.5
-          }
-        },
-        "speaking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "eyeW": 21,
-            "eyeSmile": 0.45,
-            "mouthTalk": 1,
-            "mouthGain": 1,
-            "bounceGain": 2,
-            "look": 0.3,
-            "turnNod": 1,
-            "turnWander": 0.25,
-            "squashGain": 0.04
-          }
-        }
-      }
-    },
-    "bean": {
-      "$comment": "Character BEAN: the coffee bean. Same state language -- listening tilts its head and its aroma sparkles gather in (earGain), thinking looks away, blinks at the turn and the sparkles orbit (mouthDots), speaking opens the oval mouth with the voice, bounces and squashes a little and the sparkles stream out (mouthTalk). The generic swell, glow, pulse and particles are off; speed 1. The head turn: idle looks corner to corner, listening turns to you, thinking looks up and aside, speaking nods.",
-      "states": {
-        "initializing": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 0.85,
-            "lid": 0.5,
-            "look": 0,
-            "breath": 0.5
-          }
-        },
-        "idle": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "breath": 1.4,
-            "look": 1,
-            "turnWander": 1
-          }
-        },
-        "listening": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "tilt": -0.2,
-            "eyeW": 22,
-            "eyeH": 30,
-            "eyeR": 9,
-            "gazeY": 2,
-            "earGain": 1,
-            "look": 0,
-            "turnPitch": 0.35
-          }
-        },
-        "thinking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "tilt": 0.08,
-            "eyeH": 24,
-            "eyeR": 7,
-            "lid": 0.28,
-            "eyeTilt": 0.22,
-            "eyeAsym": 0.17,
-            "gazeX": -8,
-            "gazeY": -4,
-            "mouthDots": 1,
-            "turnBlink": 1,
-            "look": 0,
-            "turnYaw": -0.7,
-            "turnPitch": 0.8
-          }
-        },
-        "speaking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "eyeW": 21,
-            "eyeSmile": 0.45,
-            "mouthTalk": 1,
-            "mouthGain": 1,
-            "bounceGain": 4,
-            "look": 0.3,
-            "turnNod": 1,
-            "turnWander": 0.25,
-            "squashGain": 0.05
-          }
-        }
-      }
-    },
-    "beep": {
-      "$comment": "Character BEEP: the tin robot. Buzzy's state language -- listening leans in and looks at you (a hand to the ear, the antenna light red), thinking looks up and away with a blink at the turn (a hand to the chin, the light amber), speaking smiles and its chest core and arm beats follow the voice. The generic swell, glow, pulse and particles are off; speed 1.",
-      "states": {
-        "initializing": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 0.85,
-            "lid": 0.5,
-            "look": 0,
-            "breath": 0.5
-          }
-        },
-        "idle": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "breath": 1,
-            "look": 1,
-            "turnWander": 1
-          }
-        },
-        "listening": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "lean": 4,
-            "tilt": -0.05,
-            "eyeW": 22,
-            "eyeH": 30,
-            "eyeR": 9,
-            "gazeY": 2,
-            "earGain": 1,
-            "look": 0,
-            "turnPitch": 0.35
-          }
-        },
-        "thinking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "tilt": 0.07,
-            "eyeH": 24,
-            "eyeR": 7,
-            "lid": 0.28,
-            "eyeTilt": 0.22,
-            "eyeAsym": 0.17,
-            "gazeX": -8,
-            "gazeY": -4,
-            "mouthDots": 1,
-            "turnBlink": 1,
-            "look": 0,
-            "turnYaw": -0.7,
-            "turnPitch": 0.8
-          }
-        },
-        "speaking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "eyeW": 21,
-            "eyeSmile": 0.45,
-            "mouthTalk": 1,
-            "mouthGain": 1,
-            "squashGain": 0.045,
-            "bounceGain": 3,
-            "look": 0.3,
-            "turnNod": 1,
-            "turnWander": 0.25
-          }
-        }
-      }
-    },
-    "whirr": {
-      "$comment": "Character WHIRR (1.15): the floating robot. Its own rig reads the character keys: earGain leans in with a head tilt, the eyes wide and the antenna tip lit (listening); mouthDots looks up and away, eyes narrowed, the tip pulsing fast (thinking); mouthTalk opens the mouth and swells the belt and under-glow on the voice (speaking). The generic swell, glow, pulse and particles are off; speed 1.",
-      "states": {
-        "initializing": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 0.85,
-            "lid": 0.5,
-            "look": 0,
-            "breath": 0.5
-          }
-        },
-        "idle": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "breath": 1,
-            "look": 1
-          }
-        },
-        "listening": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "earGain": 1,
-            "gazeY": 2,
-            "look": 0
-          }
-        },
-        "thinking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "mouthDots": 1,
-            "lid": 0.28,
-            "turnBlink": 1,
-            "look": 0
-          }
-        },
-        "speaking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "mouthTalk": 1,
-            "mouthGain": 1,
-            "eyeSmile": 0.45,
-            "look": 0.3
-          }
-        }
-      }
-    },
-    "clank": {
-      "$comment": "Character CLANK (1.15): the standing robot. Its own rig reads the character keys: earGain tilts the head in and pulses the ear lights (listening); mouthDots looks up and away with the head lifted and the antenna tip pulsing fast (thinking); mouthTalk opens the mouth, swells the chest light and nods on the voice (speaking). The generic swell, glow, pulse and particles are off; speed 1.",
-      "states": {
-        "initializing": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 0.85,
-            "lid": 0.5,
-            "look": 0,
-            "breath": 0.5
-          }
-        },
-        "idle": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "breath": 1,
-            "look": 1
-          }
-        },
-        "listening": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "earGain": 1,
-            "gazeY": 2,
-            "look": 0
-          }
-        },
-        "thinking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "mouthDots": 1,
-            "lid": 0.28,
-            "turnBlink": 1,
-            "look": 0
-          }
-        },
-        "speaking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "mouthTalk": 1,
-            "mouthGain": 1,
-            "eyeSmile": 0.45,
-            "look": 0.3
-          }
-        }
-      }
-    },
-    "character": {
-      "$comment": "A character from a recipe in the file (FX Spec 1.12): the language the four built-in characters share, with BUZZY's numbers -- listening leans in and looks at you, thinking looks up and away with a blink at the turn and the thinking dots, speaking smiles with the voice, a little squash and a nod. A recipe takes a built-in character's profile instead with `\"profile\": \"chirp\"` (its own gains, like flutterGain, come with it); the file's `states` override either.",
-      "states": {
-        "initializing": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 0.85,
-            "lid": 0.5,
-            "look": 0,
-            "breath": 0.5
-          }
-        },
-        "idle": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "breath": 1,
-            "look": 1,
-            "turnWander": 1
-          }
-        },
-        "listening": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "lean": 4,
-            "tilt": -0.05,
-            "eyeW": 22,
-            "eyeH": 30,
-            "eyeR": 9,
-            "gazeY": 2,
-            "earGain": 1,
-            "look": 0,
-            "turnPitch": 0.35
-          }
-        },
-        "thinking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "tilt": 0.07,
-            "eyeH": 24,
-            "eyeR": 7,
-            "lid": 0.28,
-            "eyeTilt": 0.22,
-            "eyeAsym": 0.17,
-            "gazeX": -8,
-            "gazeY": -4,
-            "mouthDots": 1,
-            "turnBlink": 1,
-            "look": 0,
-            "turnYaw": -0.7,
-            "turnPitch": 0.8
-          }
-        },
-        "speaking": {
-          "speed": 1,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "ink": 1,
-            "eyeW": 21,
-            "eyeSmile": 0.45,
-            "mouthTalk": 1,
-            "mouthGain": 1,
-            "squashGain": 0.045,
-            "bounceGain": 3,
-            "look": 0.3,
-            "turnNod": 1,
-            "turnWander": 0.25
+            "churn": 0
           }
         }
       }
@@ -1207,11 +492,6 @@
       "status": "fixed",
       "was": "aurora cycles its own hue, so the states drifted pink/blue",
       "now": "the showcase pins the colour; states differ by texture and energy (29/10 - 86/75 - 47/31 - 126/139)"
-    },
-    "silhouette": {
-      "status": "fixed",
-      "was": "new in 1.13: the generic glow and pulse would make ~1,500 dots heavy and breathe twice",
-      "now": "a tuned entry: one key per state, no dot glow, no pulse"
     },
     "muted": {
       "status": "fixed",
@@ -1241,16 +521,6 @@
     "shaping": {
       "status": "open",
       "issue": "morph changes between circle, square and triangle by design, which cuts against 'one shape stays on screen'. Fine as a standalone pattern, wrong as a voice base."
-    },
-    "signal-family": {
-      "status": "by-design",
-      "patterns": [
-        "signaling",
-        "waveform",
-        "scrolling",
-        "metering"
-      ],
-      "note": "they already carry voice states through `voiceStateCode` and the audio bands, so the profile only lends them ink, glow and tempo; their own behaviour is left alone."
     },
     "value-driven-rings": {
       "status": "fixed",

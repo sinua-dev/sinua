@@ -40,11 +40,11 @@ test("every non-deprecated catalog param of every pattern becomes a prop", () =>
 });
 
 test("per-object path conflicts merge into one prop with per-pattern ranges", () => {
-  const dotSize = prop("orb", "dotSize");
+  const dotSize = prop("beacon", "dotSize");
   assert.equal(dotSize.type, "number");
-  assert.equal(dotSize.ranges.silhouette.max, 4);
-  assert.equal(dotSize.ranges.speaking.max, 6);
-  assert.equal(dotSize.max, 6);
+  assert.equal(dotSize.ranges.scanning.max, 0.08);
+  assert.equal(dotSize.ranges.notifying.max, 0.4);
+  assert.equal(dotSize.max, 0.4);
   const progress = prop("ring", "progress");
   assert.equal(progress.type, "number|number[]");
   assert.deepEqual(progress.listPatterns, ["tracking"]);

@@ -1,4 +1,4 @@
-// `<SinuaVoiceMessage/>`: a recorded voice message's waveform (signal `playing`) with
+// `<SinuaVoiceMessage/>`: a recorded voice message's waveform (signal `dune`) with
 // drag-to-seek -- the chat-bubble control.
 //
 //   import { SinuaVoiceMessage } from "@sinua/web/react";
@@ -7,7 +7,7 @@
 //
 // Sinua decodes no audio: pass the clip's loudness as `envelope` (up to 64 values, 0..1)
 // and the position as `progress`. A drag or a tap reports the position under the finger
-// through `onSeek`, on the same row of bars the engine draws (`playbackSeekProgress`).
+// through `onSeek`, at the spot of the dune the engine draws (`playbackSeekProgress`).
 // Keyboard: it's a slider (arrow keys move 5 %, Home / End jump).
 import { useMemo, useRef, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import { playbackSeekProgress } from "@sinua/core";
@@ -77,7 +77,7 @@ export function SinuaVoiceMessage({ envelope, progress, onSeek, label = "Voice m
       onPointerCancel={() => (dragging.current = false)}
       style={{ position: "relative", width: "100%", height: 40, touchAction: "pan-y", cursor: onSeek ? "pointer" : undefined, ...style }}
     >
-      <SinuaView {...view} pattern="playing" overrides={keys} label="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
+      <SinuaView {...view} pattern="dune" overrides={keys} label="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
     </div>
   );
 }

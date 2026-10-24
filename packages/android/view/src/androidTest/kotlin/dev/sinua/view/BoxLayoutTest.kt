@@ -53,33 +53,17 @@ class BoxLayoutTest {
     }
 
     @Test fun theEngineSaysWhichPatternsFillTheBox() {
-        assertEquals("box", patternLayout("playing"))
+        assertEquals("box", patternLayout("dune"))
         assertEquals("square", patternLayout("breathing"))
     }
 
     @Test fun aBoxLayoutModelDrawsAtTheBoxRatio() {
-        val bar = FxModel(FxInput.State("playing", 64u, mapOf("progress" to 0.4), 1.0), null, null)
-        assertTrue(bar.boxLayout)
-        val wide = bar.frame(1_000_000L, running = false, reduced = true, aspect = 4.0)!!.frame
-        val maxX = wide.polylines.flatMap { it.points }.maxOf { it.x }
-        assertTrue("aspect 4: the bars run to x ~ 256, got $maxX", maxX > 240 && maxX <= 256)
+        val dune = FxModel(FxInput.State("dune", 64u, mapOf("progress" to 0.4), 1.0), null, null)
+        assertTrue(dune.boxLayout)
+        val wide = dune.frame(1_000_000L, running = false, reduced = true, aspect = 4.0)!!.frame
+        val maxX = wide.dots.maxOf { it.x }
+        assertTrue("aspect 4: the dune runs to x ~ 256, got $maxX", maxX > 224 && maxX <= 256)
         val ring = FxModel(FxInput.State("completing", 64u, mapOf("progress" to 1.0), 1.0), null, null)
         assertFalse(ring.boxLayout)
-    }
-
-    /** A palette's dark variant (design note 23): a dark view tells the engine `dark`. */
-    @Test fun aDarkViewPicksThePalettesDarkVariant() {
-        val themed =
-            """{ "fxSpec": "1.13", "object": "character", "pattern": "cuppa",
-            "palette": { "secondary": "#D4EDF7", "dark": { "secondary": "#72ADCA" } } }"""
-        fun frameOf(json: String, dark: Boolean): String {
-            val m = FxModel(FxInput.Spec(json), null, null)
-            m.dark = dark
-            return m.frame(1_000_000L, running = false, reduced = true)!!.frame.toString()
-        }
-        assertTrue("the dark variant", frameOf(themed, false) != frameOf(themed, true))
-        // A character without a dark variant draws the same in both themes.
-        val plain = """{ "fxSpec": "1.13", "object": "character", "pattern": "cuppa" }"""
-        assertEquals(frameOf(plain, false), frameOf(plain, true))
     }
 }

@@ -34,7 +34,7 @@ void voice.connect();
 
 createRoot(document.getElementById("react")).render(
   <>
-    <SinuaView state="signaling" style={{ width: 160, height: 160 }} />
-    <figcaption>{"<SinuaView state=\"signaling\" />"}</figcaption>
+    <SinuaView pattern="veil" style={{ width: 160, height: 160 }} />
+    <figcaption>{"<SinuaView pattern=\"veil\" />"}</figcaption>
   </>
 );

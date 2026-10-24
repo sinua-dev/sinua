@@ -29,7 +29,6 @@ test("VoiceOverrides reproduces the recorded override maps", () => {
       ...(c.audioStrength != null && { audioStrength: c.audioStrength }),
       ...(c.levelEaseRate != null && { levelEaseRate: inf(c.levelEaseRate) }),
       ...(c.bandEaseRate != null && { bandEaseRate: inf(c.bandEaseRate) }),
-      ...(c.historyCount != null && { history: { count: c.historyCount, hz: c.historyHz } }),
       ...(c.interrupt != null && { interrupt: c.interrupt }),
       ...(c.mutedTint != null && { mutedTint: c.mutedTint }),
       ...(c.mutedHue != null && { mutedHue: c.mutedHue }),
@@ -38,7 +37,6 @@ test("VoiceOverrides reproduces the recorded override maps", () => {
       if (st.metrics) v.push(st.metrics);
       if (st.state) v.setState(st.state);
       if (st.interrupt) v.interrupt();
-      if (st.historyCount) v.setHistoryCount(st.historyCount);
       if (st.muted !== undefined) v.muted = st.muted;
       if (st.reset) v.reset();
       assert.deepEqual(v.overrides(st.dt), expected[name][i], `${name} step ${i}`);

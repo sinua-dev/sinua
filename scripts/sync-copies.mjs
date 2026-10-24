@@ -6,7 +6,7 @@
 // The Studio runs its own (scripts/studio/sync-copies.mjs in sinua-studio) for its copies.
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -14,8 +14,6 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const COPIES = [
   // The five framework examples import one spec (apps/examples/web-component/*/).
   ["spec/examples/voice-assistant.fxspec.json", ["apps/examples/web-component/spec.json"]],
-  // The FX Spec reference page's live demo of a custom character (apps/site).
-  ["spec/examples/custom-character.fxspec.json", ["apps/site/snippets/spec/custom-character.fxspec.json"]],
 ];
 
 const write = process.argv.includes("--write");
@@ -34,7 +32,10 @@ for (const [source, copies] of COPIES) {
 
 // A new copy nobody listed: any tracked JSON outside spec/ with a spec file's exact bytes.
 const sha = (b) => createHash("sha1").update(b).digest("hex");
-const files = execFileSync("git", ["ls-files", "*.json"], { cwd: root, encoding: "utf8" }).split("\n").filter(Boolean);
+// (A file deleted in the working tree is still tracked until it is committed: skip it.)
+const files = execFileSync("git", ["ls-files", "*.json"], { cwd: root, encoding: "utf8" })
+  .split("\n")
+  .filter((f) => f && existsSync(join(root, f)));
 const specs = new Map(files.filter((f) => f.startsWith("spec/")).map((f) => [sha(read(f)), f]));
 const listed = new Set(COPIES.flatMap(([, c]) => c));
 for (const f of files) {

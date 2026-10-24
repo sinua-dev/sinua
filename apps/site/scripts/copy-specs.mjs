@@ -21,7 +21,6 @@ cpSync(site("snippets/spec/"), site("public/spec/"), { recursive: true });
 
 fresh("public/schema/");
 cpSync(repo("spec/fx-spec-1.schema.json"), site("public/schema/fx-spec-1.json"));
-cpSync(repo("spec/character-recipe-1.schema.json"), site("public/schema/character-recipe-1.json"));
 
 fresh("public/examples/");
 cpSync(repo("spec/examples/"), site("public/examples/"), { recursive: true });

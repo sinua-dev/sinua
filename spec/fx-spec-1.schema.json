@@ -453,6 +453,7 @@
         "enum": [
           "progress",
           "level",
+          "quality",
           "audioLevel",
           "glowStrength",
           "noiseStrength",

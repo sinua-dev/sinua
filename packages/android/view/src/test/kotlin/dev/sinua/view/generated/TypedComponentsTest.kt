@@ -15,6 +15,11 @@ class TypedComponentsTest {
         assertEquals(mapOf("particles" to 4.0, "noiseStrength" to 0.5), o)
         assertEquals(emptyMap<String, Double>(), SinuaSignalProps(SinuaSignalPattern.VEIL).toOverrides())
         assertEquals(emptyMap<String, Double>(), SinuaSignalProps(SinuaSignalPattern.DUNE).toOverrides())
+        for (p in listOf(SinuaSignalPattern.COMET, SinuaSignalPattern.FLOW, SinuaSignalPattern.COHESION, SinuaSignalPattern.SCAN)) {
+            assertEquals(emptyMap<String, Double>(), SinuaSignalProps(p).toOverrides())
+        }
+        assertEquals(mapOf("quality" to 0.4), SinuaSignalProps(SinuaSignalPattern.COHESION, quality = 0.4).toOverrides())
+        assertEquals(mapOf("blips" to 5.0), SinuaSignalProps(SinuaSignalPattern.SCAN, blips = 5).toOverrides())
     }
 
     @Test

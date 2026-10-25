@@ -106,6 +106,10 @@ fn render(
         "veil" => signal::modes::veil::frame_veil(size as f64, t, opts),
         "crystal" => signal::modes::crystal::frame_crystal(size as f64, t, opts),
         "dune" => signal::modes::dune::frame_dune(size as f64, t, opts),
+        "comet" => signal::modes::comet::frame_comet(size as f64, t, opts),
+        "flow" => signal::modes::flow::frame_flow(size as f64, t, opts),
+        "cohesion" => signal::modes::cohesion::frame_cohesion(size as f64, t, opts),
+        "scan" => signal::modes::scan::frame_scan(size as f64, t, opts),
         // The `ring` family -- the third sibling, see `ring/mod.rs`.
         // The `beacon` family -- the fourth sibling, see `beacon/mod.rs`.
         _ => return None,

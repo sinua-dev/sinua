@@ -25,7 +25,7 @@ pub struct ReactiveTarget {
 /// reactive.ts -- keep the three in sync (the vectors test checks TS).
 const AUDIO_STRENGTH_DEFAULT: f64 = 0.18;
 
-pub const REACTIVE_TARGETS: [ReactiveTarget; 9] = [
+pub const REACTIVE_TARGETS: [ReactiveTarget; 10] = [
     ReactiveTarget {
         name: "progress",
         range: (0.0, 1.0),
@@ -34,6 +34,12 @@ pub const REACTIVE_TARGETS: [ReactiveTarget; 9] = [
     },
     ReactiveTarget {
         name: "level",
+        range: (0.0, 1.0),
+        default_output: (0.0, 1.0),
+        companions: &[],
+    },
+    ReactiveTarget {
+        name: "quality",
         range: (0.0, 1.0),
         default_output: (0.0, 1.0),
         companions: &[],

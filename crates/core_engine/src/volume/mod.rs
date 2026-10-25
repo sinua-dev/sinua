@@ -43,11 +43,13 @@ impl Camera {
     }
 }
 
-/// A colour of light: a hue on the shape's ramp (0 = teal, 1 = blue), or white.
+/// A colour of light: a hue on the shape's ramp (0 = teal, 1 = blue), white, or amber.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Tone {
     Ramp(f64),
     White,
+    /// Amber: a shape that is losing its grip (a connection's quality falling).
+    Warm,
 }
 
 impl Tone {
@@ -64,6 +66,8 @@ impl Tone {
                 )
             }
             Tone::White => (224.0, 1.0, 0.9),
+            // (255, 170, 96)
+            Tone::Warm => (28.0, 1.0, 0.69),
         }
     }
 }
@@ -162,7 +166,9 @@ pub const LIGHT: u8 = 3;
 
 /// The light-volume patterns' modes: their dots already glow, so the generic glow halos
 /// and the audio swell stay out (`lib.rs` `post`).
-pub const MODES: &[&str] = &["veil", "crystal", "dune"];
+pub const MODES: &[&str] = &[
+    "veil", "crystal", "dune", "comet", "flow", "cohesion", "scan",
+];
 
 /// View px per engine unit: the view draws the frame `viewPx` px across (it sets the key;
 /// engines run at 20 / 32 / 64 and views scale), else 1.
@@ -232,13 +238,15 @@ pub fn noise(x: f64, y: f64, z: f64) -> f64 {
     l(near, far, zf) * 2.0 - 1.0
 }
 
-// The point sets for the volumes still to come (the status shapes); today only
-// their tests call them.
-#[allow(dead_code)]
+/// A repeatable 0..1 from three integers: where a scattered point sits, so a shape needs no
+/// random state.
+pub fn hash3(x: i64, y: i64, z: i64) -> f64 {
+    h3(x, y, z)
+}
+
 const GOLDEN: f64 = 2.399_963_229_728_653; // π (3 − √5)
 
 /// `n` points evenly over the unit sphere.
-#[allow(dead_code)]
 pub fn sphere(n: usize) -> Vec<(f64, f64, f64)> {
     (0..n)
         .map(|i| {
@@ -251,7 +259,6 @@ pub fn sphere(n: usize) -> Vec<(f64, f64, f64)> {
 }
 
 /// `n` points evenly over the unit disc.
-#[allow(dead_code)]
 pub fn disc(n: usize) -> Vec<(f64, f64)> {
     (0..n)
         .map(|i| {
@@ -564,13 +571,18 @@ mod dump {
         let states = ["idle", "listening", "thinking", "speaking"];
         // (pattern, the use it shows, its value inputs)
         #[allow(clippy::type_complexity)]
-        let silent: [(&str, &str, Vec<(&str, f64)>); 6] = [
+        let silent: [(&str, &str, Vec<(&str, f64)>); 11] = [
             ("veil", "processing", vec![("churn", 0.6)]),
             ("veil", "value-0.8", vec![("level", 0.8)]),
             ("crystal", "battery-35", vec![("level", 0.35)]),
             ("crystal", "quota-80", vec![("level", 0.8)]),
             ("dune", "task-30", vec![("progress", 0.3)]),
             ("dune", "task-75", vec![("progress", 0.75)]),
+            ("comet", "value-0.8", vec![("level", 0.8)]),
+            ("flow", "value-0.8", vec![("level", 0.8)]),
+            ("cohesion", "quality-0.6", vec![("quality", 0.6)]),
+            ("cohesion", "quality-0.25", vec![("quality", 0.25)]),
+            ("scan", "blips-12", vec![("blips", 12.0)]),
         ];
         for mode in super::MODES {
             for size in [48u32, 128, 512] {

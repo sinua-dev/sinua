@@ -146,7 +146,7 @@ class SinuaGoldenTests {
             val patterns = objects.getJSONObject(i).getJSONArray("patterns")
             (0 until patterns.length()).map { patterns.getJSONObject(it).getString("id") }
         }
-        assertTrue("only ${states.size} patterns read -- the asset or the loader moved", states.size >= 20)
+        assertTrue("only ${states.size} patterns read -- the asset or the loader moved", states.size >= 24)
         for (state in states) assertNotNull("$state should resolve", frame(state, 64u, 1.0))
         // The control: the check can fail, so the loop above is not vacuous.
         assertNull(frame("not-a-real-state", 64u, 0.0))

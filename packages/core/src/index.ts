@@ -63,10 +63,15 @@ export type OrbState =
   // (whose engine signature spans both) stay one TS type instead of two --
   // it does not imply these are more orbs.
   // 1.15 light volumes (`crates/core_engine/src/volume/`): a sheet of light, a crystal
-  // filled from below, a dune with a position (box layout). Any input, not only a voice.
+  // filled from below, a dune with a position (box layout), a comet, a flow, a cohesion
+  // sphere with a quality and a scan with blips. Any input, not only a voice.
   | "veil"
   | "crystal"
   | "dune"
+  | "comet"
+  | "flow"
+  | "cohesion"
+  | "scan"
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;
 

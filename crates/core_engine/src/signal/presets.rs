@@ -8,7 +8,9 @@ use crate::primitives::ModeOpts;
 // Reserved for a future uniffi-bindgen/enum-export pass, same as
 // `orbs::presets::STATES`.
 #[allow(dead_code)]
-pub const STATES: &[&str] = &["veil", "crystal", "dune"];
+pub const STATES: &[&str] = &[
+    "veil", "crystal", "dune", "comet", "flow", "cohesion", "scan",
+];
 
 fn state_to_mode(state: &str) -> Option<&'static str> {
     match state {
@@ -16,6 +18,10 @@ fn state_to_mode(state: &str) -> Option<&'static str> {
         "veil" => Some("veil"),
         "crystal" => Some("crystal"),
         "dune" => Some("dune"),
+        "comet" => Some("comet"),
+        "flow" => Some("flow"),
+        "cohesion" => Some("cohesion"),
+        "scan" => Some("scan"),
         _ => None,
     }
 }

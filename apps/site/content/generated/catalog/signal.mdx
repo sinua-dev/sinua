@@ -7,6 +7,10 @@ The signal component is `SinuaSignal`. Pick a look with `pattern`; each pattern 
 | Veil (`veil`) | `veil` | 1× | `level` |
 | Crystal (`crystal`) | `crystal` | 1× | `level` |
 | Dune (`dune`) | `dune` | 1× | `progress`, `envelope` |
+| Comet (`comet`) | `comet` | 1× | `level` |
+| Flow (`flow`) | `flow` | 1× | `level` |
+| Cohesion (`cohesion`) | `cohesion` | 1× | `level`, `quality` |
+| Scan (`scan`) | `scan` | 1× | `blips`, `level` |
 
 ### Veil [#veil]
 
@@ -48,3 +52,45 @@ The signal component is `SinuaSignal`. Pick a look with `pattern`; each pattern 
 | `envelope` | Inputs | number[] (1–64) | 0–1 fraction | [] | The dune's profile, 0 to 1 per value (a clip's loudness or any series; up to 64). Without it a fixed dune is drawn. |
 
 </details>
+
+### Comet [#comet]
+
+`pattern: "comet"` · mode `comet` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: a longer, brighter tail (thinking, processing). Its pace is the view's speed. |
+| `level` | Inputs | number | 0–1 fraction | 0 | How brightly and how long the stream burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps circling. |
+
+### Flow [#flow]
+
+`pattern: "flow"` · mode `flow` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: a stronger second front and a shimmer across the slab (thinking, processing). Its pace is the view's speed. |
+| `level` | Inputs | number | 0–1 fraction | 0 | How strongly the fronts light the slab, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps sweeping. |
+
+### Cohesion [#cohesion]
+
+`pattern: "cohesion"` · mode `cohesion` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: a tremor through every point and a brighter sphere (trying again). |
+| `level` | Inputs | number | 0–1 fraction | 0 | How brightly the sphere burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low. |
+| `quality` | Inputs | number | 0–1 fraction | 1 | How whole the sphere is, 0 to 1: as it falls the points let go one by one and warm to amber; 1 (the default) is whole. |
+
+### Scan [#scan]
+
+`pattern: "scan"` · mode `scan` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: a longer trail behind the beam (still searching). Its pace is the view's speed. |
+| `blips` | Inputs | integer | 0–12 | 7 | How many points the scan has found, 0 to 12: each flashes white as the beam reaches it and burns down. |
+| `level` | Inputs | number | 0–1 fraction | 0 | How brightly the beam burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low. |

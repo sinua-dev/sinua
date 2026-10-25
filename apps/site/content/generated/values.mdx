@@ -7,5 +7,11 @@
 | `SinuaSignal` | `level` | `crystal` | number | 0–1 fraction | One value for the whole crystal, 0 to 1 (a battery, a quota, a goal). Left out, a bound voice's bands fill the columns; with neither it idles low. |
 | `SinuaSignal` | `progress` | `dune` | number | 0–1 fraction | How much is done, 0 to 1: a clip's position or a long task's progress. The done part glows. Left out, the plane drifts across on its own. |
 | `SinuaSignal` | `envelope` | `dune` | number[] (1–64) | 0–1 fraction | The dune's profile, 0 to 1 per value (a clip's loudness or any series; up to 64). Without it a fixed dune is drawn. |
+| `SinuaSignal` | `level` | `comet` | number | 0–1 fraction | How brightly and how long the stream burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps circling. |
+| `SinuaSignal` | `level` | `flow` | number | 0–1 fraction | How strongly the fronts light the slab, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps sweeping. |
+| `SinuaSignal` | `level` | `cohesion` | number | 0–1 fraction | How brightly the sphere burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low. |
+| `SinuaSignal` | `quality` | `cohesion` | number | 0–1 fraction | How whole the sphere is, 0 to 1: as it falls the points let go one by one and warm to amber; 1 (the default) is whole. |
+| `SinuaSignal` | `blips` | `scan` | integer | 0–12 | How many points the scan has found, 0 to 12: each flashes white as the beam reaches it and burns down. |
+| `SinuaSignal` | `level` | `scan` | number | 0–1 fraction | How brightly the beam burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low. |
 | every object | `audioLevel` | every pattern | number | 0–1 | The live voice level 0 to 1; drives the radial breathing pulse on any pattern. |
 | every object | `muted` | every pattern | number | 0–1 | The mute / connection-lost cue, 0 to 1. |

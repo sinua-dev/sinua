@@ -112,6 +112,75 @@
       "type": "integer",
       "unit": null
     },
+    "blips@scan": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How many points the scan has found, 0 to 12: each flashes white as the beam reaches it and burns down.",
+      "fallback": 7,
+      "group": "value",
+      "if": null,
+      "key": "blips",
+      "label": "Found points",
+      "max": 12,
+      "min": 0,
+      "path": "blips",
+      "scope": "scan",
+      "specPath": "/params/blips",
+      "step": 1,
+      "tier": "basic",
+      "type": "integer",
+      "uiMax": 12,
+      "uiMin": 0,
+      "unit": null
+    },
+    "churn@cohesion": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Restless work, 0 to 1: a tremor through every point and a brighter sphere (trying again).",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "churn",
+      "label": "Churn",
+      "max": 1,
+      "min": 0,
+      "path": "churn",
+      "scope": "cohesion",
+      "specPath": "/params/churn",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "churn@comet": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Restless work, 0 to 1: a longer, brighter tail (thinking, processing). Its pace is the view's speed.",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "churn",
+      "label": "Churn",
+      "max": 1,
+      "min": 0,
+      "path": "churn",
+      "scope": "comet",
+      "specPath": "/params/churn",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "churn@crystal": {
       "aliases": [],
       "category": "motion",
@@ -150,6 +219,52 @@
       "min": 0,
       "path": "churn",
       "scope": "dune",
+      "specPath": "/params/churn",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "churn@flow": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Restless work, 0 to 1: a stronger second front and a shimmer across the slab (thinking, processing). Its pace is the view's speed.",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "churn",
+      "label": "Churn",
+      "max": 1,
+      "min": 0,
+      "path": "churn",
+      "scope": "flow",
+      "specPath": "/params/churn",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "churn@scan": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Restless work, 0 to 1: a longer trail behind the beam (still searching). Its pace is the view's speed.",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "churn",
+      "label": "Churn",
+      "max": 1,
+      "min": 0,
+      "path": "churn",
+      "scope": "scan",
       "specPath": "/params/churn",
       "step": 0.05,
       "tier": "basic",
@@ -1429,6 +1544,52 @@
       "uiMin": 3,
       "unit": null
     },
+    "level@cohesion": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How brightly the sphere burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "level",
+      "label": "Level",
+      "max": 1,
+      "min": 0,
+      "path": "level",
+      "scope": "cohesion",
+      "specPath": "/params/level",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "level@comet": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How brightly and how long the stream burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps circling.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "level",
+      "label": "Level",
+      "max": 1,
+      "min": 0,
+      "path": "level",
+      "scope": "comet",
+      "specPath": "/params/level",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "level@crystal": {
       "aliases": [],
       "category": "input",
@@ -1444,6 +1605,52 @@
       "min": 0,
       "path": "level",
       "scope": "crystal",
+      "specPath": "/params/level",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "level@flow": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How strongly the fronts light the slab, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps sweeping.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "level",
+      "label": "Level",
+      "max": 1,
+      "min": 0,
+      "path": "level",
+      "scope": "flow",
+      "specPath": "/params/level",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "level@scan": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How brightly the beam burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "level",
+      "label": "Level",
+      "max": 1,
+      "min": 0,
+      "path": "level",
+      "scope": "scan",
       "specPath": "/params/level",
       "step": 0.01,
       "tier": "basic",
@@ -2337,6 +2544,29 @@
       "scope": "shared",
       "specPath": "/materials/pulse/strength",
       "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "quality@cohesion": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How whole the sphere is, 0 to 1: as it falls the points let go one by one and warm to amber; 1 (the default) is whole.",
+      "fallback": 1,
+      "group": "value",
+      "if": null,
+      "key": "quality",
+      "label": "Quality",
+      "max": 1,
+      "min": 0,
+      "path": "quality",
+      "scope": "cohesion",
+      "specPath": "/params/quality",
+      "step": 0.01,
       "tier": "basic",
       "type": "number",
       "uiMax": 1,
@@ -5015,6 +5245,189 @@
           "tags": [
             "voice",
             "status"
+          ]
+        },
+        {
+          "description": "A stream of light orbiting a faint core, its tail breathing with the noise. Waiting with no end in sight: it burns brighter with a voice or any 0 to 1 value, longer while work goes on.",
+          "id": "comet",
+          "label": "Comet",
+          "mode": "comet",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "churn@comet"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "level@comet"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1,
+          "tags": [
+            "status",
+            "voice"
+          ]
+        },
+        {
+          "description": "A front of light sweeping through a slab of points, a fainter one trailing it. Something is being made: it lights with a voice or any 0 to 1 value and shimmers while work goes on.",
+          "id": "flow",
+          "label": "Flow",
+          "mode": "flow",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "churn@flow"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "level@flow"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1,
+          "tags": [
+            "status",
+            "voice"
+          ]
+        },
+        {
+          "description": "A sphere of light held together by quality: as it falls the points let go one by one, drift apart and warm to amber; as it recovers they gather back. A connection, a sync, a signal.",
+          "id": "cohesion",
+          "label": "Cohesion",
+          "mode": "cohesion",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "churn@cohesion"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "level@cohesion"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "quality@cohesion"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1,
+          "tags": [
+            "status"
+          ]
+        },
+        {
+          "description": "A tilted disc of light and a beam sweeping it: the beam lights what it passes and found points flash white and burn down. Looking for something.",
+          "id": "scan",
+          "label": "Scan",
+          "mode": "scan",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "churn@scan"
+            },
+            {
+              "default": {
+                "20": 7,
+                "32": 7,
+                "64": 7
+              },
+              "ref": "blips@scan"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "level@scan"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1,
+          "tags": [
+            "status",
+            "voice"
           ]
         }
       ]

@@ -83,7 +83,7 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 
 - Major ≠ 1 → error; this runtime doesn't load it.
 - **The floor is 1.8** (`fx_spec.rs`'s `FLOOR_MINOR`). A `1.0`–`1.7` file is one error at `/fxSpec` (``FX Spec 1.7 isn't supported; this runtime reads 1.8 and later``) and nothing resolves. Those minors were never published; their acceptance was dropped before the first release instead of becoming a promise (docs/release-roadmap.md, decision 0.1). A missing or malformed `fxSpec` is an error too, and the rest of the file is still read as the current minor so its other problems show.
-- The runtime is **1.15** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`) is an error naming the minor it needs, and so is a pattern newer than it (1.15's `veil`, `crystal`, `dune`), at the base's or a `states` entry's `pattern`.
+- The runtime is **1.15** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`) is an error naming the minor it needs, and so is a pattern newer than it (1.15's `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`, `scan`), at the base's or a `states` entry's `pattern`.
 - A **newer 1.x** file (`1.9`) → unknown keys are **warnings** and the rest renders (graceful degradation).
 - Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is eight locks, `spec/fx-spec-1.8-resolved.json` to `-1.15-resolved.json`, over the 3 examples left after the 1.15 cleanup (`voice-assistant`, `voice-assistant-glowing`, `orb-brand-fixed`; byte-identical rows across minors); the 1.0–1.7 locks went with the floor. The 1.15 cleanup rewrote every lock without the examples it removed (the character ones, `signal-matrix` and the six that used the ring, core and beacon objects); no other row changed. Each older lock is read by its own `v1_<minor>_examples_resolve_identically`, and `every_older_lock_has_an_identity_test` fails if a lock has none. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
 - **A key added in a later minor is gated automatically.** `spec/fx-spec-1.8-keys.json`
@@ -119,7 +119,7 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
     there is no replacement: delete it from the file". A removed pattern named on its own says
     the same; for `completing`, `tracking` and `measuring` it says "its job is covered by
     `crystal` (`level`) or `dune` (`progress`)". Gone with them: the binding targets
-    `progress0..3`, `quality` and `accuracy`, and the array params `progress` (1–4 values) and
+    `progress0..3` and `accuracy` (and the old `quality` target; `cohesion` brings a new `quality` back), and the array params `progress` (1–4 values) and
     `segment` (1–24 values).
 
   One value change reaches older files too, under the same 1.14 cleanup: `glowing`'s
@@ -201,7 +201,7 @@ The sections from here on record what each minor added. Since the 1.8 floor thei
 
 ### `bindings`
 - **Keyed by target**, so each target is bound once and a state can override or delete (`null`) one: `"audioLevel": { "input": "micLevel", "inputRange": [0, 1], "outputRange": [0.1, 1], "curve": "easeOut" }`.
-- **Targets come only from the curated Reactive-Inputs contract** ([parameters.md](parameters.md#reactive-inputs-the-public-binding-contract)): `progress`, `level` (`veil`, `crystal`), `audioLevel`, `glowStrength`, `noiseStrength`, `gradientStrength`, `pulseStrength`, `colorMix`, `muted`. Anything else is an error with a hint. Raw opts can't be bound from a spec.
+- **Targets come only from the curated Reactive-Inputs contract** ([parameters.md](parameters.md#reactive-inputs-the-public-binding-contract)): `progress`, `level` (`veil`, `crystal`, `comet`, `flow`, `cohesion`, `scan`), `quality` (`cohesion`), `audioLevel`, `glowStrength`, `noiseStrength`, `gradientStrength`, `pulseStrength`, `colorMix`, `muted`. Anything else is an error with a hint. Raw opts can't be bound from a spec.
 - **Input names are the app's own** (`micLevel`, `steps`, `heartRate`); the engine never interprets them.
 - **Mapping:** the same contract as `bindReactiveInput`, following Motion's `interpolate()`:
   - multi-stop `inputRange`/`outputRange` (field names as in RN's `Animated.interpolate`), ascending or descending;
@@ -346,15 +346,19 @@ How state changes animate, per pair. Optional. Without a rule for a pair, a voic
 
 ## v1.15: light volumes, and the 0.1.0-beta.12 cleanup
 
-- **New patterns** on `object: "signal"`: `veil`, `crystal` and `dune`, light volumes
-  ([`signal.md`](signal.md)). They need `"fxSpec": "1.15"`; an older file that names one gets an
-  error at that `pattern`. Their inputs are ordinary `params` and bindings: `level` (veil,
-  crystal), `progress` and `envelope` (dune), `churn` (all three).
+- **New patterns** on `object: "signal"`: `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`
+  and `scan`, light volumes ([`signal.md`](signal.md)). They need `"fxSpec": "1.15"`; an older
+  file that names one gets an error at that `pattern`. Their inputs are ordinary `params` and
+  bindings: `level` (veil, crystal, comet, flow, cohesion, scan), `quality` (cohesion), `blips`
+  (scan), `progress` and `envelope` (dune), `churn` (all seven). `comet`, `flow`, `cohesion` and
+  `scan` are new patterns, not aliases of the removed ones; the old names are still rejected.
 - **Removed, an error at every version** (see *Versioning*): the flat signal patterns, the
   `character` object with `recipe`, `expression` and `palette`, the orb's `silhouette`
   pattern and key, and the objects `ring`, `core` and `beacon` with all their patterns.
-- **Reactive targets** are now `progress`, `level`, `audioLevel`, `glowStrength`,
-  `noiseStrength`, `gradientStrength`, `pulseStrength`, `colorMix` and `muted`; `level` is new.
+- **Reactive targets** are now ten: `progress`, `level`, `quality`, `audioLevel`,
+  `glowStrength`, `noiseStrength`, `gradientStrength`, `pulseStrength`, `colorMix` and `muted`;
+  `level` and `quality` are new (`quality` is read by `cohesion`; bound on another pattern it
+  warns that the pattern doesn't read it). `accuracy` stays gone.
 
 ```json
 { "fxSpec": "1.15", "object": "signal", "pattern": "veil",

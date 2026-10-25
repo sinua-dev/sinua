@@ -111,11 +111,21 @@ test("level is a plain 0..1 target: default output is its range, no companions",
   assert.deepEqual(Object.keys(bindReactiveInput({ value: 0.2, target: "level" })), ["level"]);
   assert.deepEqual(REACTIVE_TARGETS.level.range, [0, 1]);
   // The removed targets are plain unknown names now.
-  for (const gone of ["progress0", "progress3", "quality", "accuracy"]) {
+  for (const gone of ["progress0", "progress3", "accuracy"]) {
     assert.throws(() => bindReactiveInput({ value: 0.5, target: gone }), /unknown target/);
   }
   const bound = frameWithOverrides("crystal", 64, 0, bindReactiveInput({ value: 0.4, target: "level" }));
   assert.deepEqual(bound, frameWithOverrides("crystal", 64, 0, { level: 0.4 }));
+});
+
+test("quality is a plain 0..1 target: default output is its range, no companions", () => {
+  close(bindReactiveInput({ value: 0.5, target: "quality" }).quality, 0.5);
+  assert.equal(bindReactiveInput({ value: 9, target: "quality" }).quality, 1);
+  assert.equal(bindReactiveInput({ value: -3, target: "quality" }).quality, 0);
+  assert.deepEqual(Object.keys(bindReactiveInput({ value: 0.2, target: "quality" })), ["quality"]);
+  assert.deepEqual(REACTIVE_TARGETS.quality.range, [0, 1]);
+  const bound = frameWithOverrides("cohesion", 64, 0, bindReactiveInput({ value: 0.4, target: "quality" }));
+  assert.deepEqual(bound, frameWithOverrides("cohesion", 64, 0, { quality: 0.4 }));
 });
 
 test("end to end through the wasm engine", () => {

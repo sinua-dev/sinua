@@ -598,14 +598,14 @@ test("two views on one raw source both follow it, each with its own tracker, and
   signal.destroy();
 });
 
-test("a source connected before mount: the view picks up its state, and veil/crystal/dune draw the four states apart", async (t) => {
+test("a source connected before mount: the view picks up its state, and all seven light volumes draw the four states apart", async (t) => {
   const { SimulatedVoiceSource } = await import("@sinua/core/dev");
   globalThis.OffscreenCanvas = class {
     constructor(w, h) { this.width = w; this.height = h; }
     getContext() { return { createRadialGradient: () => ({ addColorStop() {} }), fillRect() {} }; }
   };
   t.after(() => delete globalThis.OffscreenCanvas);
-  for (const pattern of ["veil", "crystal", "dune"]) {
+  for (const pattern of ["veil", "crystal", "dune", "comet", "flow", "cohesion", "scan"]) {
     const drawn = new Map();
     for (const state of ["idle", "listening", "thinking", "speaking"]) {
       const { step } = env();

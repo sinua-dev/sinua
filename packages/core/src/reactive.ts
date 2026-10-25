@@ -24,6 +24,7 @@
 export type ReactiveTarget =
   | "progress"
   | "level"
+  | "quality"
   | "audioLevel"
   | "glowStrength"
   | "noiseStrength"
@@ -82,7 +83,8 @@ const AUDIO_STRENGTH_DEFAULT = 0.18;
 
 export const REACTIVE_TARGETS: Readonly<Record<ReactiveTarget, ReactiveTargetInfo>> = {
   progress: { range: [0, 1], readBy: "dune position, orb `progressing`" },
-  level: { range: [0, 1], readBy: "veil / crystal level" },
+  level: { range: [0, 1], readBy: "level of the light volumes (veil, crystal, comet, flow, cohesion, scan)" },
+  quality: { range: [0, 1], readBy: "cohesion quality (how whole the sphere is)" },
   audioLevel: {
     range: [0, 1],
     companions: { audioStrength: AUDIO_STRENGTH_DEFAULT },

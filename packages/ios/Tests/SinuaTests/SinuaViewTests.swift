@@ -40,7 +40,7 @@ final class SinuaViewTests: XCTestCase {
         let states = try Self.catalogPatterns()
         // A floor, not a count: it only guards a loader that read too little.
         XCTAssertGreaterThanOrEqual(
-            states.count, 20, "only \(states.count) patterns read -- the file or the loader moved")
+            states.count, 24, "only \(states.count) patterns read -- the file or the loader moved")
         var compared = 0
         var light = 0
         for s in states {
@@ -52,7 +52,8 @@ final class SinuaViewTests: XCTestCase {
             // has no light blend. They are signal patterns; their paint is held by the light
             // painter's own tests and renders.
             if frame.effects.contains(where: { $0.blend == 3 }) {
-                XCTAssertTrue(["veil", "crystal", "dune"].contains(s), "\(s) draws light but isn't a light volume")
+                let volumes = ["veil", "crystal", "dune", "comet", "flow", "cohesion", "scan"]
+                XCTAssertTrue(volumes.contains(s), "\(s) draws light but isn't a light volume")
                 light += 1
                 continue
             }
@@ -69,7 +70,7 @@ final class SinuaViewTests: XCTestCase {
         }
         // The denominator, exactly: two themes for every pattern that exists.
         XCTAssertEqual(compared, (states.count - light) * 2, "one bitmap pair per pattern")
-        XCTAssertEqual(light, 3, "veil, crystal and dune")
+        XCTAssertEqual(light, 7, "veil, crystal, dune, comet, flow, cohesion and scan")
         print("FxPaint parity: \(compared) bitmaps identical across \(states.count) patterns")
     }
 

@@ -36,7 +36,11 @@ export type OrbState =
   | "muted"
   | "veil"
   | "crystal"
-  | "dune";
+  | "dune"
+  | "comet"
+  | "flow"
+  | "cohesion"
+  | "scan";
 
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;

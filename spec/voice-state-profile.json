@@ -421,6 +421,229 @@
           }
         }
       }
+    },
+    "comet": {
+      "$comment": "COMET. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level. The pace is the view's `speed`: thinking circles faster.",
+      "states": {
+        "initializing": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 0.7,
+            "churn": 0.3
+          }
+        },
+        "idle": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 0.85,
+            "churn": 0
+          }
+        },
+        "listening": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 0
+          }
+        },
+        "thinking": {
+          "speed": 1.5,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 1
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 0
+          }
+        }
+      }
+    },
+    "flow": {
+      "$comment": "FLOW. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level. The pace is the view's `speed`: thinking sweeps faster.",
+      "states": {
+        "initializing": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 0.7,
+            "churn": 0.3
+          }
+        },
+        "idle": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 0.85,
+            "churn": 0
+          }
+        },
+        "listening": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 0
+          }
+        },
+        "thinking": {
+          "speed": 1.35,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 1
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 0
+          }
+        }
+      }
+    },
+    "cohesion": {
+      "$comment": "COHESION. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level.",
+      "states": {
+        "initializing": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 0.7,
+            "churn": 0.3
+          }
+        },
+        "idle": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 0.85,
+            "churn": 0
+          }
+        },
+        "listening": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 0
+          }
+        },
+        "thinking": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 1
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 0
+          }
+        }
+      }
+    },
+    "scan": {
+      "$comment": "SCAN. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level. The pace is the view's `speed`: thinking sweeps faster.",
+      "states": {
+        "initializing": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 0.7,
+            "churn": 0.3
+          }
+        },
+        "idle": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 0.85,
+            "churn": 0
+          }
+        },
+        "listening": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 0
+          }
+        },
+        "thinking": {
+          "speed": 1.6,
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 1
+          }
+        },
+        "speaking": {
+          "overrides": {
+            "audioStrength": 0,
+            "glowStrength": 0,
+            "pulseStrength": 0,
+            "colorMix": 0,
+            "ink": 1,
+            "churn": 0
+          }
+        }
+      }
     }
   },
   "exceptions": {

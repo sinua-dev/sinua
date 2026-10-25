@@ -45,6 +45,7 @@ final class TypedComponentsTests: XCTestCase {
             SinuaOrb(pattern: .working, orbitParticles: 4, noise: .init(strength: 0.5)).overrides(),
             ["particles": 4, "noiseStrength": 0.5])
         XCTAssertEqual(SinuaSignal(pattern: .veil).overrides(), [:])
+        XCTAssertEqual(SinuaSignal(pattern: .cohesion, quality: 0.7).overrides(), ["quality": 0.7])
     }
 
     func testEveryEnginePatternHasACase() {

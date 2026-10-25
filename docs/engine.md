@@ -365,7 +365,7 @@ Fills (closed polygons with linear or radial gradients), holes (even-odd inner r
 - The FFI record and the packed transport are unchanged (`blend` was already carried). A painter from before 1.15 draws such dots as plain dots.
 - Under low power the engine emits `blend` 1 (plain additive dots) instead.
 - Light adds up, so the order inside the run doesn't matter.
-- Used by the light-volume patterns (`crates/core_engine/src/volume/`; [`signal.md`](signal.md), *Light volumes*).
+- Used by the light-volume patterns (`crates/core_engine/src/volume/`; [`signal.md`](signal.md), *Light volumes*). `volume::Tone::Warm` (amber) and `volume::hash3` (a repeatable scatter with no random state) came with `cohesion`, `flow` and `scan`.
 
 ### Materials: glow / noise / gradient
 

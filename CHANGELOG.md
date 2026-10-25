@@ -27,8 +27,34 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   one gets an error at that `pattern`. Every older minor still resolves as before (its lock lost
   only the examples removed below). The objects `ring`, `core` and `beacon` and their patterns
   are rejected at every version (see *Removed*).
-- **Reactive target `level`** (`veil`, `crystal`): the 0..1 value the volume shows, bindable like
-  `progress`.
+- **Reactive target `level`** (`veil`, `crystal`, and the four below): the 0..1 value the volume
+  shows, bindable like `progress`.
+- **Four more light volumes: `comet`, `flow`, `cohesion` and `scan`** (`signal`, every platform,
+  FX Spec 1.15). Seven signal patterns now, 24 in all (orb 17). They are new patterns, not
+  replacements or aliases of the removed ones (the old names are still rejected), though they cover
+  similar jobs: the loading, generating, reconnecting and scanning ideas return as light shapes.
+  They follow the other volumes' light rules (`blend` 3, `ink` fades them, reduced motion holds
+  them still, a small view draws fewer points). No input is tied to the voice: each lives on its
+  own, a bound voice feeds `level`, and thinking runs at its own speed.
+  - `comet`: waiting with no end in sight. 260 points orbit a faint core; the head leads and the
+    tail breathes. Keys `level` (brightness and tail length), `churn` (a longer, brighter tail).
+  - `flow`: something is being made. About 800 points in a slab light as a front sweeps over them,
+    with a fainter second front behind. Keys `level`, `churn` (a stronger second front).
+  - `cohesion`: how well something holds. A sphere of about 450 points that lets go point by point
+    (and warms to amber) as `quality` falls, and gathers again as it rises. Keys `quality`, `level`,
+    `churn` (a tremor: trying again).
+  - `scan`: looking for something. A beam sweeps a tilted disc of about 900 points; found points
+    flash white and burn down. Keys `blips` (integer 0..12, default 7), `level`, `churn` (a longer
+    trail: still searching).
+- **Reactive target `quality`** (`cohesion`), bindable (`bindings.quality`, FX Spec 1.15). Bound on
+  a pattern that doesn't read it, it warns. This is a new target; the ring and beacon `quality`
+  stays removed, and `accuracy` stays gone.
+- **Golden vectors 6.0.0 to 6.1.0**, additions only: 52 digests (the four patterns at every size
+  and time, plus `comet` `level` 0.8, `flow` `churn` 1, `cohesion` `quality` 0.4 and `scan`
+  `blips` 12) and 12 `resolved` entries, nothing changed; 15 frozen states. The FX Spec locks are
+  unchanged.
+- Size of the four volumes (release variant, bytes: web `inline.js` / Android arm64 `.so` / iOS
+  device `.a`): 289,872 / 1,370,152 / 3,534,072 (the four volumes add 6,380 / 16,752 / 19,584).
 
 ### Changed
 
@@ -41,9 +67,9 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 - **`SinuaVoiceButton`'s ring draws orb patterns** (every platform): connecting is the orb
   `connecting`, listening the orb `listening`, muted the listening orb slowed to 0.15x speed.
   The props are unchanged.
-- **Reactive targets** are now `progress`, `level`, `audioLevel`, `glowStrength`, `noiseStrength`,
+- **Reactive targets** are now ten: `progress`, `level`, `quality`, `audioLevel`, `glowStrength`, `noiseStrength`,
   `gradientStrength`, `pulseStrength`, `colorMix` and `muted`. `progress0..3` (and the
-  `progress[0..3]` catalog paths), `quality` and `accuracy` are gone with the ring and beacon
+  `progress[0..3]` catalog paths) and `accuracy` are gone with the ring and beacon
   patterns that read them. The frozen FX Spec 1.8 key list shrinks from 103 to 97 paths on
   purpose (pre-1.0); the only array parameter left is `envelope` (`dune`).
 - **Packed transport (web fast path):** v1 is unchanged. v2 is emitted only for a frame that has

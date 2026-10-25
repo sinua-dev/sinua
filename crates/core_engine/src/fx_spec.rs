@@ -498,6 +498,10 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
         "veil" => &["churn", "layerCount", "level"],
         "crystal" => &["churn", "columnCount", "level"],
         "dune" => &["churn", "progress"],
+        "comet" => &["churn", "level"],
+        "flow" => &["churn", "level"],
+        "cohesion" => &["churn", "level", "quality"],
+        "scan" => &["blips", "churn", "level"],
         _ => &[],
     }
 }
@@ -762,7 +766,15 @@ const REMOVED_1_15_PATTERNS: [(&str, Instead); 19] = [
 const REMOVED_1_15_OBJECTS: [&str; 4] = ["character", "ring", "core", "beacon"];
 
 /// Patterns added after the 1.8 floor, with the minor that added them.
-const PATTERN_SINCE: [(&str, u64); 3] = [("veil", 15), ("crystal", 15), ("dune", 15)];
+const PATTERN_SINCE: [(&str, u64); 7] = [
+    ("veil", 15),
+    ("crystal", 15),
+    ("dune", 15),
+    ("comet", 15),
+    ("flow", 15),
+    ("cohesion", 15),
+    ("scan", 15),
+];
 
 /// The error for a removed material (or other removed feature) at `path`.
 fn removed_material(path: &str, name: &str, diag: &mut Diag) {
@@ -859,6 +871,7 @@ const SINCE: &[(&str, u64)] = &[
     ("accessibility.states", 9),
     ("accessibility.announce", 9),
     ("bindings:level", 15),
+    ("bindings:quality", 15),
 ];
 
 /// A `transitions` entry's keys (1.9).
@@ -1466,7 +1479,8 @@ fn resolve_block(
                 };
                 match crate::reactive::compile(target, inr.as_deref(), outr.as_deref(), &curves) {
                     Ok(m) => {
-                        let mode_specific = matches!(target.as_str(), "level" | "progress");
+                        let mode_specific =
+                            matches!(target.as_str(), "level" | "progress" | "quality");
                         if mode_specific
                             && !mode.is_empty()
                             && !mode_params(&mode).contains(&target.as_str())
@@ -2306,6 +2320,10 @@ mod tests {
             ("veil", include_str!("signal/modes/veil.rs")),
             ("crystal", include_str!("signal/modes/crystal.rs")),
             ("dune", include_str!("signal/modes/dune.rs")),
+            ("comet", include_str!("signal/modes/comet.rs")),
+            ("flow", include_str!("signal/modes/flow.rs")),
+            ("cohesion", include_str!("signal/modes/cohesion.rs")),
+            ("scan", include_str!("signal/modes/scan.rs")),
             // Characters are recipes (design note 11): the reader, the rig, the
             // turn and the part files each one uses; the keys a recipe names
             // itself (`"gain": "flutterGain"`) are checked below.
@@ -3105,10 +3123,12 @@ mod tests {
         // A mode-specific target the mode doesn't read: warning.
         let r = spec(r##"{ "level": { "input": "x" } }"##);
         assert!(r.ok && warnings(&r)[0].message.contains("doesn't read `level`"));
-        // A target that is gone (the ring and beacon ones) is not bindable.
         let r = spec(r##"{ "quality": { "input": "x" } }"##);
+        assert!(r.ok && warnings(&r)[0].message.contains("doesn't read `quality`"));
+        // A target that is gone (the ring and beacon ones) is not bindable.
+        let r = spec(r##"{ "accuracy": { "input": "x" } }"##);
         assert!(errors(&r).iter().any(
-            |d| d.path == "/bindings/quality" && d.message.contains("isn't a bindable target")
+            |d| d.path == "/bindings/accuracy" && d.message.contains("isn't a bindable target")
         ));
         // Bound and static at once: warning, binding wins.
         let r = resolve_with(

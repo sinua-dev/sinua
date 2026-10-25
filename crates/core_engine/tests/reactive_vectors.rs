@@ -27,6 +27,7 @@ fn host(target: &str) -> (&'static str, &'static str) {
     match target {
         "progress" => ("signal", "dune"),
         "level" => ("signal", "veil"),
+        "quality" => ("signal", "cohesion"),
         _ => ("orb", "working"),
     }
 }

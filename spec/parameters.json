@@ -23,6 +23,29 @@
     }
   ],
   "definitions": {
+    "accuracy@halo": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How tight the cloud is, 0 to 1: 1 (the default) is on the core, 0 is wide.",
+      "fallback": 1,
+      "group": "value",
+      "if": null,
+      "key": "accuracy",
+      "label": "Accuracy",
+      "max": 1,
+      "min": 0,
+      "path": "accuracy",
+      "scope": "halo",
+      "specPath": "/params/accuracy",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "bandMul@ribbon": {
       "aliases": [],
       "category": "appearance",
@@ -135,6 +158,29 @@
       "uiMin": 0,
       "unit": null
     },
+    "churn@broadcast": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Restless work, 0 to 1: a second train of fronts fades in with no level (waiting on a reply).",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "churn",
+      "label": "Churn",
+      "max": 1,
+      "min": 0,
+      "path": "churn",
+      "scope": "broadcast",
+      "specPath": "/params/churn",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "churn@cohesion": {
       "aliases": [],
       "category": "motion",
@@ -173,6 +219,29 @@
       "min": 0,
       "path": "churn",
       "scope": "comet",
+      "specPath": "/params/churn",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "churn@constellation": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Restless work, 0 to 1: the clouds shimmer (thinking, processing).",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "churn",
+      "label": "Churn",
+      "max": 1,
+      "min": 0,
+      "path": "churn",
+      "scope": "constellation",
       "specPath": "/params/churn",
       "step": 0.05,
       "tier": "basic",
@@ -242,6 +311,52 @@
       "min": 0,
       "path": "churn",
       "scope": "flow",
+      "specPath": "/params/churn",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "churn@halo": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Restless work, 0 to 1: the cloud trembles (thinking, processing).",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "churn",
+      "label": "Churn",
+      "max": 1,
+      "min": 0,
+      "path": "churn",
+      "scope": "halo",
+      "specPath": "/params/churn",
+      "step": 0.05,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "churn@ripple": {
+      "aliases": [],
+      "category": "motion",
+      "choices": null,
+      "deprecated": null,
+      "description": "Restless work, 0 to 1: a second train of shells fades in between the first (thinking, processing).",
+      "fallback": 0,
+      "group": "style",
+      "if": null,
+      "key": "churn",
+      "label": "Churn",
+      "max": 1,
+      "min": 0,
+      "path": "churn",
+      "scope": "ripple",
       "specPath": "/params/churn",
       "step": 0.05,
       "tier": "basic",
@@ -1544,6 +1659,29 @@
       "uiMin": 3,
       "unit": null
     },
+    "level@broadcast": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How strongly the fronts burn and how often they leave, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither a slow swell stands in.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "level",
+      "label": "Level",
+      "max": 1,
+      "min": 0,
+      "path": "level",
+      "scope": "broadcast",
+      "specPath": "/params/level",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "level@cohesion": {
       "aliases": [],
       "category": "input",
@@ -1590,6 +1728,29 @@
       "uiMin": 0,
       "unit": "fraction"
     },
+    "level@constellation": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How brightly the clouds burn, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither they burn at a quiet default.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "level",
+      "label": "Level",
+      "max": 1,
+      "min": 0,
+      "path": "level",
+      "scope": "constellation",
+      "specPath": "/params/level",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
     "level@crystal": {
       "aliases": [],
       "category": "input",
@@ -1628,6 +1789,52 @@
       "min": 0,
       "path": "level",
       "scope": "flow",
+      "specPath": "/params/level",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "level@halo": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How brightly the core burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it burns at a quiet default.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "level",
+      "label": "Level",
+      "max": 1,
+      "min": 0,
+      "path": "level",
+      "scope": "halo",
+      "specPath": "/params/level",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
+    },
+    "level@ripple": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How brightly the shells burn, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither they burn at a quiet default.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "level",
+      "label": "Level",
+      "max": 1,
+      "min": 0,
+      "path": "level",
+      "scope": "ripple",
       "specPath": "/params/level",
       "step": 0.01,
       "tier": "basic",
@@ -2358,6 +2565,29 @@
       "tier": "advanced",
       "type": "number",
       "unit": "s"
+    },
+    "progress@constellation": {
+      "aliases": [],
+      "category": "input",
+      "choices": null,
+      "deprecated": null,
+      "description": "How far through all the steps, 0 to 1: each step takes an equal share. Left out, the first step is done and the next one gathers and loosens on its own.",
+      "fallback": 0,
+      "group": "value",
+      "if": null,
+      "key": "progress",
+      "label": "Progress",
+      "max": 1,
+      "min": 0,
+      "path": "progress",
+      "scope": "constellation",
+      "specPath": "/params/progress",
+      "step": 0.01,
+      "tier": "basic",
+      "type": "number",
+      "uiMax": 1,
+      "uiMin": 0,
+      "unit": "fraction"
     },
     "progress@dune": {
       "aliases": [],
@@ -3267,6 +3497,29 @@
       "type": "integer",
       "uiMax": 300,
       "uiMin": 20,
+      "unit": null
+    },
+    "steps@constellation": {
+      "aliases": [],
+      "category": "appearance",
+      "choices": null,
+      "deprecated": null,
+      "description": "How many clouds of light, 2 to 8.",
+      "fallback": 5,
+      "group": "style",
+      "if": null,
+      "key": "steps",
+      "label": "Steps",
+      "max": 8,
+      "min": 2,
+      "path": "steps",
+      "scope": "constellation",
+      "specPath": "/params/steps",
+      "step": 1,
+      "tier": "basic",
+      "type": "integer",
+      "uiMax": 8,
+      "uiMin": 2,
       "unit": null
     },
     "strandN@braid": {
@@ -5428,6 +5681,196 @@
           "tags": [
             "status",
             "voice"
+          ]
+        },
+        {
+          "description": "Steps as clouds of light on a ring: done steps are tight and bright, the current one gathers out of dust, the ones to come hang loose. A task in stages; it follows a progress value, or sways on its own.",
+          "id": "constellation",
+          "label": "Constellation",
+          "mode": "constellation",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 5,
+                "32": 5,
+                "64": 5
+              },
+              "ref": "steps@constellation"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "churn@constellation"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "level@constellation"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "progress@constellation"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1,
+          "tags": [
+            "status"
+          ]
+        },
+        {
+          "description": "Shells of light spreading from a warm core, crinkled by the noise and fading as they grow. Something happened, look here: a notification or an event.",
+          "id": "ripple",
+          "label": "Ripple",
+          "mode": "ripple",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "churn@ripple"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "level@ripple"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1,
+          "tags": [
+            "status",
+            "voice"
+          ]
+        },
+        {
+          "description": "Two fans of light opening left and right of a white core, a front after a front. Louder, they burn brighter and a second train of fronts fades in. Sending or speaking out.",
+          "id": "broadcast",
+          "label": "Broadcast",
+          "mode": "broadcast",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "churn@broadcast"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "level@broadcast"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1,
+          "tags": [
+            "status",
+            "voice"
+          ]
+        },
+        {
+          "description": "A bright core and a cloud of light around it that tightens onto the core as accuracy rises, with a shell travelling out from the core. How sure a position is.",
+          "id": "halo",
+          "label": "Halo",
+          "mode": "halo",
+          "params": [
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "ink@shared"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "churn@halo"
+            },
+            {
+              "default": {
+                "20": 1,
+                "32": 1,
+                "64": 1
+              },
+              "ref": "accuracy@halo"
+            },
+            {
+              "default": {
+                "20": 0,
+                "32": 0,
+                "64": 0
+              },
+              "ref": "level@halo"
+            }
+          ],
+          "sizes": [
+            20,
+            32,
+            64
+          ],
+          "speed": 1,
+          "tags": [
+            "status"
           ]
         }
       ]

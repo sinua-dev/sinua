@@ -110,6 +110,10 @@ fn render(
         "flow" => signal::modes::flow::frame_flow(size as f64, t, opts),
         "cohesion" => signal::modes::cohesion::frame_cohesion(size as f64, t, opts),
         "scan" => signal::modes::scan::frame_scan(size as f64, t, opts),
+        "constellation" => signal::modes::constellation::frame_constellation(size as f64, t, opts),
+        "ripple" => signal::modes::ripple::frame_ripple(size as f64, t, opts),
+        "broadcast" => signal::modes::broadcast::frame_broadcast(size as f64, t, opts),
+        "halo" => signal::modes::halo::frame_halo(size as f64, t, opts),
         // The `ring` family -- the third sibling, see `ring/mod.rs`.
         // The `beacon` family -- the fourth sibling, see `beacon/mod.rs`.
         _ => return None,

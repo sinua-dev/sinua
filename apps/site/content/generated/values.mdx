@@ -13,5 +13,11 @@
 | `SinuaSignal` | `quality` | `cohesion` | number | 0–1 fraction | How whole the sphere is, 0 to 1: as it falls the points let go one by one and warm to amber; 1 (the default) is whole. |
 | `SinuaSignal` | `blips` | `scan` | integer | 0–12 | How many points the scan has found, 0 to 12: each flashes white as the beam reaches it and burns down. |
 | `SinuaSignal` | `level` | `scan` | number | 0–1 fraction | How brightly the beam burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low. |
+| `SinuaSignal` | `level` | `constellation` | number | 0–1 fraction | How brightly the clouds burn, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither they burn at a quiet default. |
+| `SinuaSignal` | `progress` | `constellation` | number | 0–1 fraction | How far through all the steps, 0 to 1: each step takes an equal share. Left out, the first step is done and the next one gathers and loosens on its own. |
+| `SinuaSignal` | `level` | `ripple` | number | 0–1 fraction | How brightly the shells burn, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither they burn at a quiet default. |
+| `SinuaSignal` | `level` | `broadcast` | number | 0–1 fraction | How strongly the fronts burn and how often they leave, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither a slow swell stands in. |
+| `SinuaSignal` | `accuracy` | `halo` | number | 0–1 fraction | How tight the cloud is, 0 to 1: 1 (the default) is on the core, 0 is wide. |
+| `SinuaSignal` | `level` | `halo` | number | 0–1 fraction | How brightly the core burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it burns at a quiet default. |
 | every object | `audioLevel` | every pattern | number | 0–1 | The live voice level 0 to 1; drives the radial breathing pulse on any pattern. |
 | every object | `muted` | every pattern | number | 0–1 | The mute / connection-lost cue, 0 to 1. |

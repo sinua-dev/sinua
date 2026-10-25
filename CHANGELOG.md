@@ -48,12 +48,44 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
     trail: still searching).
 - **Reactive target `quality`** (`cohesion`), bindable (`bindings.quality`, FX Spec 1.15). Bound on
   a pattern that doesn't read it, it warns. This is a new target; the ring and beacon `quality`
-  stays removed, and `accuracy` stays gone.
+  stays removed.
 - **Golden vectors 6.0.0 to 6.1.0**, additions only: 52 digests (the four patterns at every size
   and time, plus `comet` `level` 0.8, `flow` `churn` 1, `cohesion` `quality` 0.4 and `scan`
   `blips` 12) and 12 `resolved` entries, nothing changed; 15 frozen states. The FX Spec locks are
   unchanged.
-- Size of the four volumes (release variant, bytes: web `inline.js` / Android arm64 `.so` / iOS
+- **Four more light volumes: `constellation`, `ripple`, `broadcast` and `halo`** (`signal`, every
+  platform, FX Spec 1.15). Eleven signal patterns now, 28 in all (orb 17). They are new patterns,
+  not replacements or aliases of the removed ones (the old names are still rejected), though they
+  cover similar jobs to the removed stepping, ping, broadcasting and locating patterns. Same light
+  rules (`blend` 3, `ink` fades them, reduced motion holds them still, a small view draws fewer
+  points). No input is tied to the voice: each lives on its own, a bound voice feeds `level`, and
+  the pace is the view's `speed`. Thinking runs at its own speed on `halo` (1.35x); the others keep the view's speed, so a
+  state change never reshuffles which shells or fronts are alive.
+  - `constellation`: a task in stages. `steps` (integer 2..8, default 5) clouds of about 110 points
+    on a ring seen from above; done steps are tight and bright, the current one gathers out of dust,
+    the ones to come hang loose and dim. Keys `progress` (0..1 over all steps, an equal share each;
+    with none the first step is done and the next gathers and loosens on its own), `steps`, `level` (brightness), `churn` (the
+    clouds shimmer).
+  - `ripple`: something happened, look here. Crinkled shells of light (up to about 300 points each,
+    warm amber) spread from a warm core and fade as they grow; a shell leaves about every 1.6 s on a
+    jittered beat. Keys `level` (brightness), `churn` (a second train of shells fades in).
+  - `broadcast`: sending, speaking out. Two fans of light open left and right of a small white core,
+    a front after a front (life 1.6 s). Louder fronts burn brighter and a second train fades in; quiet ones are
+    few and faint. Every live front shares the current level. Keys `level`, `churn` (a steady
+    stream with no level: waiting on a reply).
+  - `halo`: how sure a position is. A small bright core and a cloud of about 700 points that
+    tightens onto it as `accuracy` rises; a thin shell travels from core to edge every 1.4 s. Keys
+    `accuracy`, `level` (brightness), `churn` (the cloud trembles and brightens).
+- **Reactive target `accuracy`** (`halo`), 0..1, default 1, bindable (`bindings.accuracy`, FX Spec
+  1.15). Bound on a pattern that doesn't read it, it warns. `progress` is now also read by
+  `constellation`.
+- **Golden vectors 6.1.0 to 6.2.0**, additions only: 52 digests (the four patterns at every size
+  and time, plus `constellation` `progress` 0.5 with `steps` 5, `ripple` `churn` 1, `broadcast`
+  `level` 0.8 and `halo` `accuracy` 0.4) and 12 `resolved` entries, nothing changed; 19 frozen
+  states. The FX Spec locks are unchanged. Native old-painter parity skips the light volumes (11 now).
+- Size of the four volumes added in S3 (release variant, bytes: web `inline.js` / Android arm64
+  `.so` / iOS device `.a`): 295,172 / 1,393,472 / 3,560,104 (the S3 four add 5,300 / 23,320 / 26,032).
+- Size of the S2 four volumes (release variant, bytes: web `inline.js` / Android arm64 `.so` / iOS
   device `.a`): 289,872 / 1,370,152 / 3,534,072 (the four volumes add 6,380 / 16,752 / 19,584).
 
 ### Changed
@@ -67,10 +99,10 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 - **`SinuaVoiceButton`'s ring draws orb patterns** (every platform): connecting is the orb
   `connecting`, listening the orb `listening`, muted the listening orb slowed to 0.15x speed.
   The props are unchanged.
-- **Reactive targets** are now ten: `progress`, `level`, `quality`, `audioLevel`, `glowStrength`, `noiseStrength`,
+- **Reactive targets** are now eleven: `progress`, `level`, `quality`, `accuracy`, `audioLevel`, `glowStrength`, `noiseStrength`,
   `gradientStrength`, `pulseStrength`, `colorMix` and `muted`. `progress0..3` (and the
-  `progress[0..3]` catalog paths) and `accuracy` are gone with the ring and beacon
-  patterns that read them. The frozen FX Spec 1.8 key list shrinks from 103 to 97 paths on
+  `progress[0..3]` catalog paths) are gone with the ring and beacon
+  patterns that read them; `quality` and `accuracy` return as new targets for `cohesion` and `halo`. The frozen FX Spec 1.8 key list shrinks from 103 to 97 paths on
   purpose (pre-1.0); the only array parameter left is `envelope` (`dune`).
 - **Packed transport (web fast path):** v1 is unchanged. v2 is emitted only for a frame that has
   effect runs and now has an 8-word header,

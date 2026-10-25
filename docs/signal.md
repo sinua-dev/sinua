@@ -11,11 +11,11 @@ value: a voice's level, a meter, a clip's progress. `crates/core_engine/src/sign
 `lib.rs`'s `resolve_any` tries each family's `resolve_preset` in turn, so one public
 `frame`/`frame_with_overrides`/`resolved_opts` surface covers every family.
 
-Since FX Spec 1.15 (0.1.0-beta.12) the family is the seven light volumes below. The flat patterns it had before
+Since FX Spec 1.15 (0.1.0-beta.12) the family is the eleven light volumes below. The flat patterns it had before
 (`signaling`, `waveform`, `scrolling`, `metering`, `playing`) were removed; a file that still names one gets an
 error that names its replacement.
 
-## Light volumes: `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`, `scan`
+## Light volumes: `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`, `scan`, `constellation`, `ripple`, `broadcast`, `halo`
 
 Each is hundreds of points of light in 3D (`crates/core_engine/src/volume/`), seen through a perspective camera.
 A point is lit by its depth and drawn as a soft glow; on a dark background the glows add up ([`engine.md`](engine.md),
@@ -30,13 +30,17 @@ A point is lit by its depth and drawn as a soft glow; on a dark background the g
 | `flow` | `flow` | `modes/flow.rs` | About 800 scattered points in a slab; a front sweeps across with a noisy pace and a fainter second front follows 1.6 s behind; points light as it passes | `level` sets how strongly the fronts light it | something is being made; `churn` strengthens the second front and adds a shimmer |
 | `cohesion` | `cohesion` | `modes/cohesion.rs` | A sphere of about 450 points that loses its place point by point as `quality` falls: each point lets go at its own threshold, drifts apart and warms to amber; it re-gathers when `quality` rises | `level` sets the brightness | how well something holds (a connection, a match); `churn` adds a tremor and a brighter sphere: trying again |
 | `scan` | `scan` | `modes/scan.rs` | A tilted disc of about 900 points and a beam sweeping it; the beam lights what it passes, found points flash white and burn down over about 2.2 s | `level` sets the beam's brightness | looking for something; `blips` is how many are found, `churn` lengthens the trail: still searching |
+| `constellation` | `constellation` | `modes/constellation.rs` | `steps` clouds of about 110 points on a ring seen from above: done steps are tight and bright, the current one gathers out of dust, the ones to come hang loose and dim | `level` sets the brightness | a task in stages; `progress` runs over all steps (an equal share each), with none the first step is done and the next gathers and loosens on its own; `churn` makes the clouds shimmer |
+| `ripple` | `ripple` | `modes/ripple.rs` | Crinkled shells of warm amber light (up to about 300 points each) spreading from a warm core and fading as they grow; a shell leaves about every 1.6 s on a hash-jittered beat | `level` sets the brightness | something happened, look here; `churn` fades in a second train of shells |
+| `broadcast` | `broadcast` | `modes/broadcast.rs` | Two fans of light opening left and right of a small white core, a front after a front (life 1.6 s) | louder fronts burn brighter and a second train fades in; quiet they are few and faint (every live front shares the current level) | sending, speaking out; `churn` fades in a second train: waiting on a reply |
+| `halo` | `halo` | `modes/halo.rs` | A small bright core and a cloud of about 700 points that tightens onto it as `accuracy` rises; a thin shell travels from core to edge every 1.4 s | `level` sets the brightness | how sure a position is; `churn` makes the cloud tremble and brighten |
 
 - **The inputs are generic, not tied to the voice.** A shape reads them in this order:
   1. its own value (`level` or `progress`), from the app or an FX Spec binding;
   2. else the bound voice's `audioLevel` and bands, which count only while it listens or speaks;
   3. else its own noise field, so it lives with no input.
-- **The four newer volumes** (`comet`, `flow`, `cohesion`, `scan`, since FX Spec 1.15) are new patterns. They cover jobs
-  the removed loading, generating, reconnecting and scanning patterns did, but they are not aliases of them.
+- **The eight newer volumes** (`comet`, `flow`, `cohesion`, `scan`, `constellation`, `ripple`, `broadcast`, `halo`, since FX Spec 1.15) are new patterns. They cover jobs
+  the removed loading, generating, reconnecting, scanning, stepping, ping, broadcasting and locating patterns did, but they are not aliases of them.
   Their own inputs:
 
   | Pattern | Key | Range | Default | What it does |
@@ -51,13 +55,24 @@ A point is lit by its depth and drawn as a soft glow; on a dark background the g
   | `scan` | `blips` | integer 0..12 | 7 | how many found points flash |
   | `scan` | `level` | 0..1 | a bound voice's level, else low | the beam's brightness |
   | `scan` | `churn` | 0..1 | 0 | a longer trail |
+  | `constellation` | `progress` | 0..1 | none: the first step is done and the next gathers and loosens on its own | position over all steps, an equal share each; also a binding target |
+  | `constellation` | `steps` | integer 2..8 | 5 | how many clouds |
+  | `constellation` | `level` | 0..1 | a bound voice's level, else low | brightness |
+  | `constellation` | `churn` | 0..1 | 0 | the clouds shimmer |
+  | `ripple` | `level` | 0..1 | a bound voice's level, else low | brightness |
+  | `ripple` | `churn` | 0..1 | 0 | a second train of shells fades in |
+  | `broadcast` | `level` | 0..1 | a bound voice's level, else low | how often fronts leave and how bright they burn |
+  | `broadcast` | `churn` | 0..1 | 0 | a second train of fronts with no level |
+  | `halo` | `accuracy` | 0..1 | 1 | how tightly the cloud gathers on the core; also a binding target (`bindings.accuracy`) |
+  | `halo` | `level` | 0..1 | a bound voice's level, else low | brightness |
+  | `halo` | `churn` | 0..1 | 0 | the cloud trembles and brightens |
 
   None of the inputs is tied to the voice; each pattern lives on its own with no input. Their pace is the view's
   `speed` (phase-continuous).
 - **Tags, not locks.** The catalog tags each one `voice` and `status`; any input fits any shape.
 - **Voice states** come from the profile:
   - `churn` 1 while thinking;
-  - thinking gets its own speed on the four newer volumes: `comet` 1.5x, `flow` 1.35x, `scan` 1.6x;
+  - thinking gets its own speed on the newer volumes: `comet` 1.5x, `flow` 1.35x, `scan` 1.6x, `halo` 1.35x (`constellation`, `ripple` and `broadcast` keep the view's speed: their phase is absolute in time, so a speed change would show different shells);
   - the generic swell, glow, pulse and colour mix are off, since a light volume draws its own light.
 - **Point budget:** about 150 points at 48 px, 420 at 128 px and 1,000 from 256 px. A small view drops depth
   first, then resolution.

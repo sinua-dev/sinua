@@ -454,6 +454,7 @@
           "progress",
           "level",
           "quality",
+          "accuracy",
           "audioLevel",
           "glowStrength",
           "noiseStrength",

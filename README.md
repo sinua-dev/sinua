@@ -6,7 +6,7 @@ assistants — a listening orb, a voice or a status drawn as light — and the
 four platforms are proven identical by testing them against the same frozen
 vectors, not by reading the code side by side.
 
-**2 objects, 20 patterns:** orb (17), signal (7: `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`, `scan`).
+**2 objects, 28 patterns:** orb (17), signal (11: `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`, `scan`, `constellation`, `ripple`, `broadcast`, `halo`).
 A design is either a few typed props or an **FX Spec** file (`.fxspec.json`,
 currently 1.15) that every platform resolves the same way.
 

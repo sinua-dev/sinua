@@ -18,7 +18,7 @@ test("parameterCatalog() equals spec/parameters.json without the descriptions", 
   const c = parameterCatalog();
   assert.deepEqual(c, file);
   assert.deepEqual(c.objects.map((o) => [o.id, o.component, o.patterns.length]), [
-    ["orb", "SinuaOrb", 17], ["signal", "SinuaSignal", 7],
+    ["orb", "SinuaOrb", 17], ["signal", "SinuaSignal", 11],
   ]);
   for (const o of c.objects) for (const p of o.patterns) for (const r of p.params) assert.ok(c.definitions[r.ref], `${p.id}: ${r.ref}`);
   assert.equal(c.definitions["glowStrength@shared"].path, "glow.strength");

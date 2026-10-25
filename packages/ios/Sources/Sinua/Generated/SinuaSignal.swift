@@ -16,6 +16,10 @@ public struct SinuaSignal: View {
         case flow = "flow"
         case cohesion = "cohesion"
         case scan = "scan"
+        case constellation = "constellation"
+        case ripple = "ripple"
+        case broadcast = "broadcast"
+        case halo = "halo"
     }
 
     public var pattern: Pattern
@@ -24,6 +28,8 @@ public struct SinuaSignal: View {
     /// built-in voice-state behaviour for this pattern, under your own parameters; with a
     /// `spec` it picks that file's `states` entry. With a `voice`, it defaults to the source's state.
     public var state: String?
+    /// How tight the cloud is, 0 to 1: 1 (the default) is on the core, 0 is wide. Range 0...1 (fraction). Patterns: halo.
+    public var accuracy: Double?
     /// How many points the scan has found, 0 to 12: each flashes white as the beam reaches it and burns down. Range 0...12. Patterns: scan.
     public var blips: Int?
     /// Restless work, 0 to 1: the sheet keeps moving with no level (thinking, processing). Range 0...1 (fraction).
@@ -36,12 +42,14 @@ public struct SinuaSignal: View {
     public var ink: Double?
     /// Sheets of light, front to back. Range 3...12. Patterns: veil.
     public var layerCount: Int?
-    /// How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own. Range 0...1 (fraction). Patterns: veil, crystal, comet, flow, cohesion, scan.
+    /// How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own. Range 0...1 (fraction). Patterns: veil, crystal, comet, flow, cohesion, scan, constellation, ripple, broadcast, halo.
     public var level: Double?
-    /// How much is done, 0 to 1: a clip's position or a long task's progress. The done part glows. Left out, the plane drifts across on its own. Range 0...1 (fraction). Patterns: dune.
+    /// How much is done, 0 to 1: a clip's position or a long task's progress. The done part glows. Left out, the plane drifts across on its own. Range 0...1 (fraction). Patterns: dune, constellation.
     public var progress: Double?
     /// How whole the sphere is, 0 to 1: as it falls the points let go one by one and warm to amber; 1 (the default) is whole. Range 0...1 (fraction). Patterns: cohesion.
     public var quality: Double?
+    /// How many clouds of light, 2 to 8. Range 2...8. Patterns: constellation.
+    public var steps: Int?
     public var color: SinuaColor?
     public var glow: SinuaGlow?
     public var gradient: SinuaGradient?
@@ -76,6 +84,7 @@ public struct SinuaSignal: View {
         size: SinuaSize = .s64,
         state: String? = nil,
         inputs: [String: Double] = [:],
+        accuracy: Double? = nil,
         blips: Int? = nil,
         churn: Double? = nil,
         columnCount: Int? = nil,
@@ -85,6 +94,7 @@ public struct SinuaSignal: View {
         level: Double? = nil,
         progress: Double? = nil,
         quality: Double? = nil,
+        steps: Int? = nil,
         color: SinuaColor? = nil,
         glow: SinuaGlow? = nil,
         gradient: SinuaGradient? = nil,
@@ -109,6 +119,7 @@ public struct SinuaSignal: View {
         self.size = size
         self.state = state
         self.inputs = inputs
+        self.accuracy = accuracy
         self.blips = blips
         self.churn = churn
         self.columnCount = columnCount
@@ -118,6 +129,7 @@ public struct SinuaSignal: View {
         self.level = level
         self.progress = progress
         self.quality = quality
+        self.steps = steps
         self.color = color
         self.glow = glow
         self.gradient = gradient
@@ -177,6 +189,7 @@ public struct SinuaSignal: View {
     /// The engine overrides these props produce (unset props keep the pattern's values).
     public func overrides() -> [String: Double] {
         var o: [String: Double] = [:]
+        if let v = accuracy { o["accuracy"] = v }
         if let v = blips { o["blips"] = Double(v) }
         if let v = churn { o["churn"] = v }
         if let v = columnCount { o["columnCount"] = Double(v) }
@@ -186,6 +199,7 @@ public struct SinuaSignal: View {
         if let v = level { o["level"] = v }
         if let v = progress { o["progress"] = v }
         if let v = quality { o["quality"] = v }
+        if let v = steps { o["steps"] = Double(v) }
         color?.write(into: &o)
         glow?.write(into: &o)
         gradient?.write(into: &o)

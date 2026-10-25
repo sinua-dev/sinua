@@ -46,6 +46,8 @@ final class TypedComponentsTests: XCTestCase {
             ["particles": 4, "noiseStrength": 0.5])
         XCTAssertEqual(SinuaSignal(pattern: .veil).overrides(), [:])
         XCTAssertEqual(SinuaSignal(pattern: .cohesion, quality: 0.7).overrides(), ["quality": 0.7])
+        XCTAssertEqual(SinuaSignal(pattern: .halo, accuracy: 0.7).overrides(), ["accuracy": 0.7])
+        XCTAssertEqual(SinuaSignal(pattern: .constellation, steps: 6).overrides(), ["steps": 6])
     }
 
     func testEveryEnginePatternHasACase() {

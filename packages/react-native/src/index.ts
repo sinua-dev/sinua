@@ -40,7 +40,11 @@ export type OrbState =
   | "comet"
   | "flow"
   | "cohesion"
-  | "scan";
+  | "scan"
+  | "constellation"
+  | "ripple"
+  | "broadcast"
+  | "halo";
 
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;

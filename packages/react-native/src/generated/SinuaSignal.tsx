@@ -50,4 +50,4 @@ export function SinuaSignal(props: SinuaSignalProps) {
   return <SinuaView {...(options as Options)} pattern={pattern} size={size} state={state} inputs={inputs} overrides={overrides} />;
 }
 
-const PARAM_KEYS = ["ink","layerCount","churn","level","columnCount","progress","envelope","quality","blips","glow","noise","pulse","gradient","color"];
+const PARAM_KEYS = ["ink","layerCount","churn","level","columnCount","progress","envelope","quality","blips","steps","accuracy","glow","noise","pulse","gradient","color"];

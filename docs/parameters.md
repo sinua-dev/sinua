@@ -92,12 +92,13 @@ binder producing bad results from opts with real interdependencies
 
 | Target key | Range | Drives | Read by |
 |---|---|---|---|
-| `progress` | `0..1` | `dune`'s done part and plane of light / eclipse phase | `dune`, orb `progressing` |
-| `level` | `0..1` | how full the volume is (a battery, a quota, a goal, or a swell) | `veil`, `crystal`, `comet`, `flow`, `cohesion`, `scan` |
+| `progress` | `0..1` | `dune`'s done part and plane of light / eclipse phase | `dune`, `constellation`, orb `progressing` |
+| `level` | `0..1` | how full the volume is (a battery, a quota, a goal, or a swell) | `veil`, `crystal`, `comet`, `flow`, `cohesion`, `scan`, `constellation`, `ripple`, `broadcast`, `halo` |
 | `quality` | `0..1` | how whole it holds (1 = whole, 0 = fallen apart) | `cohesion` |
+| `accuracy` | `0..1` | how tightly the position's cloud gathers on its core (1 = sure, 0 = loose) | `halo` |
 | `audioLevel` (+ `audioStrength`, `-1..1`: positive swells outward, negative draws inward — 1.8's listening "inhale") | `0..1` | the radial breathing pulse on any state, including dot-less frames | `primitives::apply_audio_reactive` — input-agnostic under the hood: a fitness `energy` metric can drive it today by writing to `audioLevel`; a generalized key name is a possible future rename (see the log) |
 | `audioBand0..15` + `audioBandCount` | `0..1` | per-band levels | `spectrum`, `crystal` |
-| `voiceStateCode` | enum | the voice lifecycle; the light volumes count a bound voice only while it listens or speaks | `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`, `scan` |
+| `voiceStateCode` | enum | the voice lifecycle; the light volumes count a bound voice only while it listens or speaks | `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`, `scan`, `constellation`, `ripple`, `broadcast`, `halo` |
 | `pointerX`/`pointerY`/`pointerRadius`/`pointerStrength` | engine units | pointer / touch scatter on dots, line endpoints and polyline vertices, so every family responds | `apply_pointer` |
 | `interruptAge` (+ `interruptDuration`/`Strength`/`Tint`/`Hue`) | seconds | the one-shot barge-in flash | `apply_interrupt` |
 | `muted` (+ `mutedTint`/`mutedHue`) | `0..1` | the mute / connection-lost cue | `apply_muted` |
@@ -251,7 +252,10 @@ so the 64/32/20 presets scale them exactly as before.
 `layerCount`; `crystal` — `level`, `churn`, `columnCount`; `dune` —
 `progress`, `churn`, `envelope0..63`; `comet` — `level`, `churn`;
 `flow` — `level`, `churn`; `cohesion` — `quality`, `level`, `churn`;
-`scan` — `blips` (0..12), `level`, `churn`.
+`scan` — `blips` (0..12), `level`, `churn`;
+`constellation` — `progress`, `steps` (2..8), `level`, `churn`;
+`ripple` — `level`, `churn`; `broadcast` — `level`, `churn`;
+`halo` — `accuracy`, `level`, `churn`.
 
 **Materials** ([`materials.md`](materials.md)): `glowStrength`,
 `glowRadius`, `glowLayers`, `glowTint`, `glowHue`; `noiseStrength`,

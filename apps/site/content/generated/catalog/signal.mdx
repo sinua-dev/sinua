@@ -11,6 +11,10 @@ The signal component is `SinuaSignal`. Pick a look with `pattern`; each pattern 
 | Flow (`flow`) | `flow` | 1× | `level` |
 | Cohesion (`cohesion`) | `cohesion` | 1× | `level`, `quality` |
 | Scan (`scan`) | `scan` | 1× | `blips`, `level` |
+| Constellation (`constellation`) | `constellation` | 1× | `level`, `progress` |
+| Ripple (`ripple`) | `ripple` | 1× | `level` |
+| Broadcast (`broadcast`) | `broadcast` | 1× | `level` |
+| Halo (`halo`) | `halo` | 1× | `accuracy`, `level` |
 
 ### Veil [#veil]
 
@@ -94,3 +98,46 @@ The signal component is `SinuaSignal`. Pick a look with `pattern`; each pattern 
 | `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: a longer trail behind the beam (still searching). Its pace is the view's speed. |
 | `blips` | Inputs | integer | 0–12 | 7 | How many points the scan has found, 0 to 12: each flashes white as the beam reaches it and burns down. |
 | `level` | Inputs | number | 0–1 fraction | 0 | How brightly the beam burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low. |
+
+### Constellation [#constellation]
+
+`pattern: "constellation"` · mode `constellation` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `steps` | Appearance | integer | 2–8 | 5 | How many clouds of light, 2 to 8. |
+| `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: the clouds shimmer (thinking, processing). |
+| `level` | Inputs | number | 0–1 fraction | 0 | How brightly the clouds burn, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither they burn at a quiet default. |
+| `progress` | Inputs | number | 0–1 fraction | 0 | How far through all the steps, 0 to 1: each step takes an equal share. Left out, the first step is done and the next one gathers and loosens on its own. |
+
+### Ripple [#ripple]
+
+`pattern: "ripple"` · mode `ripple` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: a second train of shells fades in between the first (thinking, processing). |
+| `level` | Inputs | number | 0–1 fraction | 0 | How brightly the shells burn, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither they burn at a quiet default. |
+
+### Broadcast [#broadcast]
+
+`pattern: "broadcast"` · mode `broadcast` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: a second train of fronts fades in with no level (waiting on a reply). |
+| `level` | Inputs | number | 0–1 fraction | 0 | How strongly the fronts burn and how often they leave, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither a slow swell stands in. |
+
+### Halo [#halo]
+
+`pattern: "halo"` · mode `halo` · speed 1× · sizes 20, 32, 64
+
+| Prop | Category | Type | Range | Default | Description |
+|---|---|---|---|---|---|
+| `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
+| `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: the cloud trembles (thinking, processing). |
+| `accuracy` | Inputs | number | 0–1 fraction | 1 | How tight the cloud is, 0 to 1: 1 (the default) is on the core, 0 is wide. |
+| `level` | Inputs | number | 0–1 fraction | 0 | How brightly the core burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it burns at a quiet default. |

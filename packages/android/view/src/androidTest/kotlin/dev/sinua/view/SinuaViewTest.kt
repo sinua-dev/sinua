@@ -82,7 +82,7 @@ class SinuaViewTest {
     @Test
     fun fxPaintIsPixelIdenticalToTheStudioPainter() {
         // A floor, not a count: it only guards a loader that read too little.
-        assertTrue("only ${states.size} patterns read -- the asset or the loader moved", states.size >= 24)
+        assertTrue("only ${states.size} patterns read -- the asset or the loader moved", states.size >= 28)
         var compared = 0
         val lit = mutableSetOf<String>()
         for (s in states) {

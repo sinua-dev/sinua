@@ -297,7 +297,11 @@ export type SinuaSignalPattern =
   | "comet"
   | "flow"
   | "cohesion"
-  | "scan";
+  | "scan"
+  | "constellation"
+  | "ripple"
+  | "broadcast"
+  | "halo";
 
 /** Signal parameters; unset ones keep the pattern's values. */
 export interface SinuaSignalParams {
@@ -307,11 +311,11 @@ export interface SinuaSignalParams {
   layerCount?: number;
   /** Restless work, 0 to 1: the sheet keeps moving with no level (thinking, processing). Range 0...1 (fraction). */
   churn?: number;
-  /** How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own. Range 0...1 (fraction). Patterns: veil, crystal, comet, flow, cohesion, scan. */
+  /** How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own. Range 0...1 (fraction). Patterns: veil, crystal, comet, flow, cohesion, scan, constellation, ripple, broadcast, halo. */
   level?: number;
   /** Columns of cells, one per band or value. Range 4...24. Patterns: crystal. */
   columnCount?: number;
-  /** How much is done, 0 to 1: a clip's position or a long task's progress. The done part glows. Left out, the plane drifts across on its own. Range 0...1 (fraction). Patterns: dune. */
+  /** How much is done, 0 to 1: a clip's position or a long task's progress. The done part glows. Left out, the plane drifts across on its own. Range 0...1 (fraction). Patterns: dune, constellation. */
   progress?: number;
   /** The dune's profile, 0 to 1 per value (a clip's loudness or any series; up to 64). Without it a fixed dune is drawn. Range 0...1 (fraction). Up to 64 values. Patterns: dune. */
   envelope?: number[];
@@ -319,6 +323,10 @@ export interface SinuaSignalParams {
   quality?: number;
   /** How many points the scan has found, 0 to 12: each flashes white as the beam reaches it and burns down. Range 0...12. Patterns: scan. */
   blips?: number;
+  /** How many clouds of light, 2 to 8. Range 2...8. Patterns: constellation. */
+  steps?: number;
+  /** How tight the cloud is, 0 to 1: 1 (the default) is on the core, 0 is wide. Range 0...1 (fraction). Patterns: halo. */
+  accuracy?: number;
   glow?: SinuaGlow;
   noise?: SinuaNoise;
   pulse?: SinuaPulse;
@@ -326,7 +334,7 @@ export interface SinuaSignalParams {
   color?: SinuaColor;
 }
 
-const SIGNAL_TABLE: Table = {"ink":{"key":"ink"},"layerCount":{"key":"layerCount"},"churn":{"key":"churn"},"level":{"key":"level"},"columnCount":{"key":"columnCount"},"progress":{"key":"progress"},"envelope":{"key":"envelope","keys":["envelope0","envelope1","envelope2","envelope3","envelope4","envelope5","envelope6","envelope7","envelope8","envelope9","envelope10","envelope11","envelope12","envelope13","envelope14","envelope15","envelope16","envelope17","envelope18","envelope19","envelope20","envelope21","envelope22","envelope23","envelope24","envelope25","envelope26","envelope27","envelope28","envelope29","envelope30","envelope31","envelope32","envelope33","envelope34","envelope35","envelope36","envelope37","envelope38","envelope39","envelope40","envelope41","envelope42","envelope43","envelope44","envelope45","envelope46","envelope47","envelope48","envelope49","envelope50","envelope51","envelope52","envelope53","envelope54","envelope55","envelope56","envelope57","envelope58","envelope59","envelope60","envelope61","envelope62","envelope63"]},"quality":{"key":"quality"},"blips":{"key":"blips"}};
+const SIGNAL_TABLE: Table = {"ink":{"key":"ink"},"layerCount":{"key":"layerCount"},"churn":{"key":"churn"},"level":{"key":"level"},"columnCount":{"key":"columnCount"},"progress":{"key":"progress"},"envelope":{"key":"envelope","keys":["envelope0","envelope1","envelope2","envelope3","envelope4","envelope5","envelope6","envelope7","envelope8","envelope9","envelope10","envelope11","envelope12","envelope13","envelope14","envelope15","envelope16","envelope17","envelope18","envelope19","envelope20","envelope21","envelope22","envelope23","envelope24","envelope25","envelope26","envelope27","envelope28","envelope29","envelope30","envelope31","envelope32","envelope33","envelope34","envelope35","envelope36","envelope37","envelope38","envelope39","envelope40","envelope41","envelope42","envelope43","envelope44","envelope45","envelope46","envelope47","envelope48","envelope49","envelope50","envelope51","envelope52","envelope53","envelope54","envelope55","envelope56","envelope57","envelope58","envelope59","envelope60","envelope61","envelope62","envelope63"]},"quality":{"key":"quality"},"blips":{"key":"blips"},"steps":{"key":"steps"},"accuracy":{"key":"accuracy"}};
 
 /** The engine overrides a SinuaSignal hands to SinuaView. */
 export function sinuaSignalOverrides(pattern: SinuaSignalPattern, params: SinuaSignalParams): Record<string, number> {

@@ -9,7 +9,17 @@ use crate::primitives::ModeOpts;
 // `orbs::presets::STATES`.
 #[allow(dead_code)]
 pub const STATES: &[&str] = &[
-    "veil", "crystal", "dune", "comet", "flow", "cohesion", "scan",
+    "veil",
+    "crystal",
+    "dune",
+    "comet",
+    "flow",
+    "cohesion",
+    "scan",
+    "constellation",
+    "ripple",
+    "broadcast",
+    "halo",
 ];
 
 fn state_to_mode(state: &str) -> Option<&'static str> {
@@ -22,6 +32,10 @@ fn state_to_mode(state: &str) -> Option<&'static str> {
         "flow" => Some("flow"),
         "cohesion" => Some("cohesion"),
         "scan" => Some("scan"),
+        "constellation" => Some("constellation"),
+        "ripple" => Some("ripple"),
+        "broadcast" => Some("broadcast"),
+        "halo" => Some("halo"),
         _ => None,
     }
 }

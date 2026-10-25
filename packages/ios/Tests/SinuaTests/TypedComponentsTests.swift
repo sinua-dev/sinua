@@ -38,18 +38,9 @@ final class TypedComponentsTests: XCTestCase {
 
     func testOverridesMapPropsToEngineKeys() {
         XCTAssertEqual(
-            SinuaRing(pattern: .completing, progress: 0.4, strokeWidth: 0.1).overrides(),
-            ["progress": 0.4, "strokeWidth": 0.1])
-        XCTAssertEqual(
-            SinuaRing(pattern: .tracking, progress: [0.2, 0.5], ringCount: 2).overrides(),
-            ["progress0": 0.2, "progress1": 0.5, "ringCount": 2])
-        XCTAssertEqual(SinuaRing(pattern: .tracking, progress: 0.7).overrides(), ["progress0": 0.7])
-        XCTAssertEqual(SinuaRing(pattern: .completing, progress: [0.3, 0.9]).overrides(), ["progress": 0.3])
-        XCTAssertEqual(SinuaRing(pattern: .measuring, fill: true, marker: false).overrides(), ["fill": 1, "marker": 0])
-        XCTAssertEqual(SinuaRing(pattern: .stepping, segment: [1, 0.5]).overrides(), ["segment0": 1, "segment1": 0.5])
-        XCTAssertEqual(
-            SinuaRing(pattern: .loading, glow: .init(blend: .additive, strength: 0.6)).overrides(),
+            SinuaOrb(pattern: .listening, glow: .init(blend: .additive, strength: 0.6)).overrides(),
             ["glowStrength": 0.6, "glowBlend": 1])
+        XCTAssertEqual(SinuaSignal(pattern: .dune, progress: 0.4).overrides(), ["progress": 0.4])
         XCTAssertEqual(
             SinuaOrb(pattern: .working, orbitParticles: 4, noise: .init(strength: 0.5)).overrides(),
             ["particles": 4, "noiseStrength": 0.5])
@@ -59,31 +50,29 @@ final class TypedComponentsTests: XCTestCase {
     func testEveryEnginePatternHasACase() {
         let cases =
             SinuaOrb.Pattern.allCases.map(\.rawValue) + SinuaSignal.Pattern.allCases.map(\.rawValue)
-            + SinuaRing.Pattern.allCases.map(\.rawValue) + SinuaCore.Pattern.allCases.map(\.rawValue)
-            + SinuaBeacon.Pattern.allCases.map(\.rawValue)
         XCTAssertEqual(Set(cases).count, cases.count)
         for p in cases { XCTAssertNotNil(frame(state: p, size: 64, t: 1), p) }
     }
 
     func testDrawsExactlyWhatSinuaViewDraws() throws {
-        let typed = try pixels(SinuaRing(pattern: .tracking, progress: [0.2, 0.9], ringCount: 2, paused: true))
+        let typed = try pixels(SinuaSignal(pattern: .dune, progress: 0.2, paused: true))
         let plain = try pixels(
             SinuaView(
-                pattern: "tracking", overrides: ["progress0": 0.2, "progress1": 0.9, "ringCount": 2], paused: true))
+                pattern: "dune", overrides: ["progress": 0.2], paused: true))
         XCTAssertGreaterThan(inked(typed), 50)
         XCTAssertEqual(typed, plain)
-        let other = try pixels(SinuaRing(pattern: .tracking, progress: [0.9, 0.2], ringCount: 2, paused: true))
+        let other = try pixels(SinuaSignal(pattern: .dune, progress: 0.9, paused: true))
         XCTAssertNotEqual(typed, other, "the props reach the engine")
     }
 
     func testSpecForAnotherObjectDrawsNothingAndReportsIt() throws {
         let orbSpec = #"{"fxSpec":"1.8","object":"orb","pattern":"glowing"}"#
-        let ring = SinuaRing(spec: orbSpec, onError: { _ in })
-        XCTAssertEqual(ring.specError, SinuaSpecError(expected: "ring", found: "orb"))
+        let signal = SinuaSignal(spec: orbSpec, onError: { _ in })
+        XCTAssertEqual(signal.specError, SinuaSpecError(expected: "signal", found: "orb"))
         XCTAssertEqual(inked(try pixels(Color.clear)), 0, "control: the readback itself")
-        XCTAssertEqual(inked(try pixels(ring)), 0)
+        XCTAssertEqual(inked(try pixels(signal)), 0)
         XCTAssertNil(SinuaOrb(spec: orbSpec).specError)
-        XCTAssertNil(SinuaRing(spec: "not json").specError, "unreadable specs are SinuaView's to report")
+        XCTAssertNil(SinuaSignal(spec: "not json").specError, "unreadable specs are SinuaView's to report")
     }
 
     func testSpecPathPlaysTheSpec() throws {
@@ -97,9 +86,7 @@ final class TypedComponentsTests: XCTestCase {
             switch object {
             case "orb": AnyView(SinuaOrb(spec: json, paused: true))
             case "signal": AnyView(SinuaSignal(spec: json, paused: true))
-            case "ring": AnyView(SinuaRing(spec: json, paused: true))
-            case "core": AnyView(SinuaCore(spec: json, paused: true))
-            default: AnyView(SinuaBeacon(spec: json, paused: true))
+            default: AnyView(EmptyView())
             }
         XCTAssertEqual(try pixels(view), try pixels(SinuaView(spec: json, paused: true)))
     }
@@ -125,8 +112,8 @@ final class TypedComponentsTests: XCTestCase {
     func testTypedComponentsPassAccessibilityAndEffects() throws {
         let trigger = SinuaEffectTrigger(.success)
         let labels = ["listening": "Coach is listening"]
-        let ring = SinuaRing(
-            pattern: .completing, progress: 0.4, paused: true, labels: labels, announce: false, haptics: true,
+        let ring = SinuaOrb(
+            pattern: .listening, paused: true, labels: labels, announce: false, haptics: true,
             effect: trigger)
         XCTAssertEqual(ring.labels, labels)
         XCTAssertEqual(ring.announce, false)
@@ -134,12 +121,12 @@ final class TypedComponentsTests: XCTestCase {
         XCTAssertEqual(ring.effect, trigger)
         // Drawn the same as SinuaView with the same words (an effect runs on its own clock, so
         // two renders of a playing effect aren't pixel-comparable; it's checked as a value above).
-        let quiet = SinuaRing(pattern: .completing, progress: 0.4, paused: true, labels: labels, announce: false)
+        let quiet = SinuaOrb(pattern: .listening, paused: true, labels: labels, announce: false)
         XCTAssertEqual(
             try pixels(quiet),
             try pixels(
                 SinuaView(
-                    pattern: "completing", overrides: quiet.overrides(), paused: true, labels: labels, announce: false)
+                    pattern: "listening", overrides: quiet.overrides(), paused: true, labels: labels, announce: false)
             ))
     }
 }

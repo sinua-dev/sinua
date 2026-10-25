@@ -26,8 +26,8 @@ renamed — not because a rename would break anything (the golden vectors
 test rendered output, not key strings) but because that fidelity is the
 point of a port. `webflow` (`drifting`) is `web`'s deliberate twin and
 shares its opts space and Studio knobs, so it keeps `web`'s names too.
-Everything else — the eight other additive orb modes, `signal`, `ring`,
-`beacon`, `core`, the post-processes and the materials — uses the
+Everything else — the eight other additive orb modes, `signal`,
+the post-processes and the materials — uses the
 vocabulary below.
 
 ## Vocabulary rules
@@ -43,7 +43,7 @@ vocabulary below.
 | a rate | `*Speed` | `surfaceSpeed`, `warpSpeed`, `jumpSpeed`, `hueSpeed`, `noiseSpeed` |
 | a fade-out | `decay` / `*Width` for a spatial fade | `decay` (warp trail), `fadeWidth` (scroll's left edge) |
 | color | `hue` (degrees), `saturation` (`0..1`); `white` is the engine's ink value, not an opt | every family |
-| a reactive input | the plain noun, no prefix | `progress`, `quality`, `accuracy`, `audioLevel` |
+| a reactive input | the plain noun, no prefix | `progress`, `level`, `audioLevel` |
 
 Booleans are `0`/`1` (`once`, `muted`). Indexed inputs are `prefixN`
 (`audioBand0..15`, `history0..N`).
@@ -64,7 +64,7 @@ versioned by `profileVersion` in this catalog.
   `period`, `*Speed`, `amplitude`, `*Amplitude` (positional), `delay`,
   `holdDuration`, `yaw`.
 - **Energy** — how strongly it "lives": intensity, pulse, decay.
-  `pulseAmplitude`, `echoCount`/`echoSpacing`, `ringCount` (ping ripples),
+  `pulseAmplitude`, `echoCount`/`echoSpacing`, `ringCount` (sonar rings),
   `decay`, `fadeWidth`, `signals`; and the generic post-process envelopes
   `pulse*` (`apply_pulse`) and `decay*` (`apply_decay`) — see
   [`engine.md`](engine.md#pulse-and-decay-shared-energystate-envelopes).
@@ -92,11 +92,9 @@ binder producing bad results from opts with real interdependencies
 
 | Target key | Range | Drives | Read by |
 |---|---|---|---|
-| `progress` | `0..1` | arc sweep / segments filled / gauge value / eclipse phase | `ring`'s `completing`/`stepping`/`measuring`, orb `progressing` |
-| `progress0..3` | `0..3` | per-ring value, past 1 = extra laps. A binding's default output is `0..1` (one lap = the goal); laps need an explicit output such as `[0, 1, 3]` | `ring`'s `tracking` |
-| `quality` | `0..1` | connection-quality pulse + lit segments | `beacon`'s `reconnecting` |
-| `accuracy` | `0..1` | location halo radius | `beacon`'s `locating` |
-| `audioLevel` (+ `audioStrength`, `-1..1`: positive swells outward, negative draws inward — 1.8's listening "inhale") | `0..1` | the radial breathing pulse on any state, including dot-less ring/signal/core frames | `primitives::apply_audio_reactive` — input-agnostic under the hood: a fitness `energy` metric can drive it today by writing to `audioLevel`; a generalized key name is a possible future rename (see the log) |
+| `progress` | `0..1` | `dune`'s done part and plane of light / eclipse phase | `dune`, orb `progressing` |
+| `level` | `0..1` | how full the volume is (a battery, a quota, a goal, or a swell) | `veil`, `crystal` |
+| `audioLevel` (+ `audioStrength`, `-1..1`: positive swells outward, negative draws inward — 1.8's listening "inhale") | `0..1` | the radial breathing pulse on any state, including dot-less frames | `primitives::apply_audio_reactive` — input-agnostic under the hood: a fitness `energy` metric can drive it today by writing to `audioLevel`; a generalized key name is a possible future rename (see the log) |
 | `audioBand0..15` + `audioBandCount` | `0..1` | per-band levels | `spectrum`, `crystal` |
 | `voiceStateCode` | enum | the voice lifecycle; the light volumes count a bound voice only while it listens or speaks | `veil`, `crystal`, `dune` |
 | `pointerX`/`pointerY`/`pointerRadius`/`pointerStrength` | engine units | pointer / touch scatter on dots, line endpoints and polyline vertices, so every family responds | `apply_pointer` |
@@ -106,7 +104,6 @@ binder producing bad results from opts with real interdependencies
 | `decayAge` (+ `decayDuration`/`Curve`/`Scale`) | seconds | a one-shot fade-out after an event | `apply_decay` |
 | `glowStrength`, `noiseStrength`, `gradientStrength` | `0..1` | the three materials' master amounts | [`materials.md`](materials.md) |
 | `colorMix` | `0..1` | how far the frame moves to the picked colour | `apply_color` |
-| `once` | `0/1` | play a one-shot ripple once after the caller restarts `t` | `beacon`'s `notifying` |
 
 These reactive/cue keys were deliberately **not** renamed in the retrofit:
 they are the contract shared with the voice adapters (`VoiceOverrides`),
@@ -115,13 +112,13 @@ the native Studios' live overrides and every sample snippet.
 ### Binding a value: `bindReactiveInput` (`packages/core`)
 
 `packages/core/src/reactive.ts` turns *any* app value into one of the
-**level** targets above, already in range and with its companions:
+reactive targets above, already in range and with its companions:
 
 ```ts
 import { bindReactiveInput, ReactiveBinding, frameWithOverrides } from "@sinua/core";
 
-// Steps -> ring progress (10k fills it), eased out.
-frameWithOverrides("completing", 64, t,
+// Steps -> dune's progress (10k fills it), eased out.
+frameWithOverrides("dune", 64, t,
   bindReactiveInput({ value: steps, target: "progress", input: [0, 10_000], curve: "easeOut" }));
 
 // Heart rate -> the breathing swell on any state; emits audioStrength too.
@@ -131,8 +128,7 @@ frameWithOverrides("working", 64, t, { ...knobs, ...hr.overrides(dt) });  // per
 ```
 
 - **Targets** (`REACTIVE_TARGETS`, each with its legal range, companions
-  and what reads it): `progress`, `progress0..3` (0..3, `tracking`'s
-  rings), `quality`, `accuracy`, `audioLevel`
+  and what reads it): `progress`, `level`, `audioLevel`
   (+ `audioStrength` 0.18), `glowStrength`, `noiseStrength`,
   `gradientStrength`, `pulseStrength`, `colorMix`, `muted`.
 - **Mapping** follows Motion's `interpolate()`: multi-stop `input`/`output`
@@ -163,7 +159,7 @@ frameWithOverrides("working", 64, t, { ...knobs, ...hr.overrides(dt) });  // per
 
 ## Parameter catalog (the source of truth, 2026-09-19)
 
-Every tunable of every object and pattern lives in one machine-readable catalog. Rust owns it (`crates/core_engine/src/catalog.rs`), and the curated words and ranges sit in `catalog_source.json` next to it. Typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaCore`, `SinuaBeacon`, `<sinua-orb>`), the Studios and the docs' parameter tables are generated from it. The key tables below are a readable overview; **the catalog wins where they differ.**
+Every tunable of every object and pattern lives in one machine-readable catalog. Rust owns it (`crates/core_engine/src/catalog.rs`), and the curated words and ranges sit in `catalog_source.json` next to it. Typed components (`SinuaOrb`, `SinuaSignal`, `<sinua-orb>`), the Studios and the docs' parameter tables are generated from it. The key tables below are a readable overview; **the catalog wins where they differ.**
 
 | | Web (`@sinua/core/dev`) | Swift / Kotlin (UniFFI; development builds only, not in the published artefacts) |
 |---|---|---|
@@ -179,7 +175,7 @@ too), which keeps ~10 KB (gzip) out of every app. The descriptions are in `spec/
 (codegen reads that file, so an IDE shows them on hover) and on sinua.dev.
 
 **Shape** (`catalogVersion` 1):
-- **`objects[]`:** `{ id, label, component, patterns[] }`. A **pattern** is the visual (`breathing`, `tracking`, …). The app lifecycle key (`listening`, …) is a **state** (FX Spec `states`).
+- **`objects[]`:** `{ id, label, component, patterns[] }`. A **pattern** is the visual (`breathing`, `crystal`, …). The app lifecycle key (`listening`, …) is a **state** (FX Spec `states`).
 - **`patterns[]`:** `{ id, label, mode, speed, sizes, params: [{ ref, default: { "20", "32", "64" } }] }`.
   - Defaults come from the engine's resolved preset per size, else the definition's `fallback`; they're never hand-typed.
 - **`definitions`:** keyed `<key>@<scope>`, where scope is the engine mode or `shared`. The same key can mean different things per mode, e.g. `period` or `nodeCount`. Fields:
@@ -190,7 +186,7 @@ too), which keeps ~10 KB (gzip) out of every app. The descriptions are in `spec/
   | `path` | the one name FX Spec bindings, typed props and docs use: `glow.strength`, `color.mix`, `lanes` |
   | `label`, `description` | one line, docs-ready (`description` only in `spec/parameters.json`, not the runtime catalog) |
   | `category` | appearance / motion / energy / material / input |
-  | `group` | **value** = app data that becomes a direct prop (progress, quality, accuracy, level, once); **style** = the look |
+  | `group` | **value** = app data that becomes a direct prop (progress, level); **style** = the look |
   | `type` | number / integer / boolean / choice / `number[]` |
   | `min`, `max` | the **valid** range, enforced by `checkOverrides` |
   | `uiMin`, `uiMax`, `step` | the Studio slider range |
@@ -201,7 +197,7 @@ too), which keeps ~10 KB (gzip) out of every app. The descriptions are in `spec/
   | `aliases`, `deprecated` | older names: the live binding API (`bindReactiveInput`, `reactiveTargetKey`) still accepts them; in an FX Spec file they are errors that name the path (the 1.8 floor) |
 
 - **`materials[]`** (glow, noise, pulse, gradient, colour), **`runtimeInputs[]`** (audio level and bands, history, peaks, pointer, interrupt, decay: fed by the SDK) and **`internalKeys`** (derived keys such as `rSizeMul`, accepted but not documented as tunables).
-- **Arrays:** tracking's per-ring values are one definition `progress@nested` of type `number[]` (the engine keys `progress0..3`); stepping's `segment@segmented` (`segment0..23`).
+- **Arrays:** `dune`'s `envelope` is the one definition of type `number[]` (the engine keys `envelope0..63`).
 
 **Where it comes from:**
 - The curated half was seeded from the three Studios' knob registries: labels, UI ranges, groups and material choices (190 Studio knobs, the `basic` tier).
@@ -254,26 +250,6 @@ so the 64/32/20 presets scale them exactly as before.
 `layerCount`; `crystal` — `level`, `churn`, `columnCount`; `dune` —
 `progress`, `churn`, `envelope0..63`.
 
-**Ring** ([`ring.md`](ring.md)): `completing` — `progress`, `gap`;
-`loading` — `gap`; `stepping`/`segmented` — `segmentCount`, `progress`,
-`segment0..N`, `gap` (visible gap between segments); `measuring`/`gauge` —
-`progress`, `sweep`, `fill`, `marker`; `tracking`/`nested` — `ringCount`, `progress0..3`,
-`spacing`, `maxLaps`, `hueStep`; all — `strokeWidth`, `trackOpacity`,
-`hue`, `saturation`.
-
-**Beacon** ([`beacon.md`](beacon.md)): `ping` — `period`, `ringCount`,
-`ringWidth`, `ringReach`, `dotSize`, `once`; `pulse` — `period`,
-`quality`, `dotSize`, `segmentGap`, `segmentRadius`, `segmentWidth`;
-`halo` — `period`, `accuracy`, `dotSize`, `haloOpacity`, `ringWidth`;
-`radar` — `period`, `ringCount`, `dotSize`, `trailLength`, `blipCount`,
-`seed`; `broadcast` — `waveCount`, `sides`, `waveSweep`, `period`,
-`cumulative`, `reversing`, `inactiveOpacity`, `level`, `dotSize`,
-`strokeWidth`.
-
-**Core** ([`core.md`](core.md)): `shimmer` — `period`, `length`,
-`thickness`, `highlightLength`, `trackOpacity`; `dots` — `dotCount`,
-`period`, `delay`, `dotSize`, `spacing`, `bounceAmplitude`.
-
 **Materials** ([`materials.md`](materials.md)): `glowStrength`,
 `glowRadius`, `glowLayers`, `glowTint`, `glowHue`; `noiseStrength`,
 `noiseAmplitude`, `noiseScale`, `noiseSpeed`, `noiseSeed`;
@@ -308,12 +284,8 @@ forward with a "renamed" warning, and reports any other unknown key.
 | eclipse | `nodeN`, `nodeR` | `nodeCount`, `nodeSize` |
 | hush | `nodeN`, `nodeR`, `pulseAmp`, `pulsePeriod` | `nodeCount`, `nodeSize`, `pulseAmplitude`, `period` |
 | signal | `barWidthFrac`, `minHeightFrac`, `fadeFrac`, `lineWidthFrac`, `amplitudeFrac`, `layers` | `barWidth`, `minHeight`, `fadeWidth`, `lineWidth`, `amplitude`, `layerCount` |
-| ring | `strokeFrac`, `trackAlpha`, `gapFrac` | `strokeWidth`, `trackOpacity`, `gap` |
-| beacon | `dotFrac`, `rings`, `ringStrokeFrac`, `ringMaxFrac`, `haloAlpha`, `segGapDeg`, `segRadiusFrac`, `segStrokeFrac` | `dotSize`, `ringCount`, `ringWidth`, `ringReach`, `haloOpacity`, `segmentGap`, `segmentRadius`, `segmentWidth` |
-| core | `lengthFrac`, `thicknessFrac`, `highlightFrac`, `trackAlpha`, `dots`, `dotFrac`, `spacingFrac`, `bounceFrac` | `length`, `thickness`, `highlightLength`, `trackOpacity`, `dotCount`, `dotSize`, `spacing`, `bounceAmplitude` |
 | materials | `noiseAmp` | `noiseAmplitude` |
 
-Two renames also removed real collisions: aurora's `noiseScale` no longer
-shares a name with the noise *material*'s `noiseScale`, and beacon's
-`rings` no longer shares one with the ported count pair `rings`/`lonDensity`
-that the size presets scale.
+One rename also removed a real collision: aurora's `noiseScale` no longer
+shares a name with the noise *material*'s `noiseScale`. (The ring, beacon and
+core families' rows left this map with the families in 0.1.0-beta.12.)

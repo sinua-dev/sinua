@@ -4,6 +4,3 @@
 export * from "./SinuaParams";
 export { SinuaOrb, type SinuaOrbProps } from "./SinuaOrb";
 export { SinuaSignal, type SinuaSignalProps } from "./SinuaSignal";
-export { SinuaRing, type SinuaRingProps } from "./SinuaRing";
-export { SinuaCore, type SinuaCoreProps } from "./SinuaCore";
-export { SinuaBeacon, type SinuaBeaconProps } from "./SinuaBeacon";

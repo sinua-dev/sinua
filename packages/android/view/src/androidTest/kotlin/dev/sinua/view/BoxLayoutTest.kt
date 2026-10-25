@@ -63,7 +63,7 @@ class BoxLayoutTest {
         val wide = dune.frame(1_000_000L, running = false, reduced = true, aspect = 4.0)!!.frame
         val maxX = wide.dots.maxOf { it.x }
         assertTrue("aspect 4: the dune runs to x ~ 256, got $maxX", maxX > 224 && maxX <= 256)
-        val ring = FxModel(FxInput.State("completing", 64u, mapOf("progress" to 1.0), 1.0), null, null)
-        assertFalse(ring.boxLayout)
+        val orb = FxModel(FxInput.State("listening", 64u, emptyMap(), 1.0), null, null)
+        assertFalse(orb.boxLayout)
     }
 }

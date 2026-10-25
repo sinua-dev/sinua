@@ -2,7 +2,7 @@
 // same convenience `VoiceOverrides` (./voice.ts) gives the audio pipeline,
 // generalized to the bind targets `docs/parameters.md` promises to keep
 // supporting (its *Reactive Inputs: the public binding contract*). A step
-// count driving a ring's `progress`, a heart rate driving the breathing
+// count driving a dune's `progress`, a heart rate driving the breathing
 // swell, a download driving a glow -- without knowing each key's legal
 // range or its hidden companions (`audioLevel` does nothing without
 // `audioStrength`).
@@ -23,12 +23,7 @@
 /** The keys a developer can bind to -- the curated contract, nothing else. */
 export type ReactiveTarget =
   | "progress"
-  | "progress0"
-  | "progress1"
-  | "progress2"
-  | "progress3"
-  | "quality"
-  | "accuracy"
+  | "level"
   | "audioLevel"
   | "glowStrength"
   | "noiseStrength"
@@ -43,10 +38,6 @@ export type ReactiveTarget =
  * `ReactiveTarget` is; the overrides produced still use the engine keys.
  */
 export type ReactiveTargetPath =
-  | "progress[0]"
-  | "progress[1]"
-  | "progress[2]"
-  | "progress[3]"
   | "glow.strength"
   | "noise.strength"
   | "gradient.strength"
@@ -54,10 +45,6 @@ export type ReactiveTargetPath =
   | "color.mix";
 
 export const REACTIVE_TARGET_PATHS: Readonly<Record<ReactiveTargetPath, ReactiveTarget>> = {
-  "progress[0]": "progress0",
-  "progress[1]": "progress1",
-  "progress[2]": "progress2",
-  "progress[3]": "progress3",
   "glow.strength": "glowStrength",
   "noise.strength": "noiseStrength",
   "gradient.strength": "gradientStrength",
@@ -73,11 +60,7 @@ export function reactiveTargetKey(target: ReactiveTarget | ReactiveTargetPath): 
 export interface ReactiveTargetInfo {
   /** The engine's legal range for this key; every output is clamped to it. */
   range: readonly [number, number];
-  /**
-   * What an omitted `output` maps onto, when it differs from `range`:
-   * `progress0..3` allow extra laps (range 0..3) but default to one lap =
-   * the goal; pass a multi-stop `output` to show laps.
-   */
+  /** What an omitted `output` maps onto, when it differs from `range`. */
   defaultOutput?: readonly [number, number];
   /**
    * Keys the target needs alongside it to have any effect, with their
@@ -98,16 +81,8 @@ export interface ReactiveTargetInfo {
 const AUDIO_STRENGTH_DEFAULT = 0.18;
 
 export const REACTIVE_TARGETS: Readonly<Record<ReactiveTarget, ReactiveTargetInfo>> = {
-  progress: { range: [0, 1], readBy: "ring `completing` arc sweep / `stepping` / `measuring`, orb `progressing`" },
-  // Per-ring values of ring `tracking` (outermost = 0). Past 1 draws another
-  // lap, up to the mode's `maxLaps` (default 3) -- hence the [0, 3] range;
-  // the default output is still one lap (the goal), laps are opt-in.
-  progress0: { range: [0, 3], defaultOutput: [0, 1], readBy: "ring `tracking` ring 0 (outermost); >1 = extra laps" },
-  progress1: { range: [0, 3], defaultOutput: [0, 1], readBy: "ring `tracking` ring 1; >1 = extra laps" },
-  progress2: { range: [0, 3], defaultOutput: [0, 1], readBy: "ring `tracking` ring 2; >1 = extra laps" },
-  progress3: { range: [0, 3], defaultOutput: [0, 1], readBy: "ring `tracking` ring 3 (innermost of 4); >1 = extra laps" },
-  quality: { range: [0, 1], readBy: "beacon `reconnecting` pulse + lit segments" },
-  accuracy: { range: [0, 1], readBy: "beacon `locating` halo radius" },
+  progress: { range: [0, 1], readBy: "dune position, orb `progressing`" },
+  level: { range: [0, 1], readBy: "veil / crystal level" },
   audioLevel: {
     range: [0, 1],
     companions: { audioStrength: AUDIO_STRENGTH_DEFAULT },
@@ -148,9 +123,9 @@ export type ReactiveOverrides = Record<string, number>;
  * Pure and stateless: one value -> `{ ...companions, [target]: mapped }`.
  *
  * ```ts
- * // 10k steps fills the ring, eased out so the last few thousand feel slower.
- * frameWithOverrides("completing", 64, t,
- *   bindReactiveInput({ value: steps, target: "progress", input: [0, 10_000], curve: "easeOut" }));
+ * // 10k steps fills the crystal, eased out so the last few thousand feel slower.
+ * frameWithOverrides("crystal", 64, t,
+ *   bindReactiveInput({ value: steps, target: "level", input: [0, 10_000], curve: "easeOut" }));
  * ```
  */
 export function bindReactiveInput(spec: ReactiveBindingSpec & { value: number }): ReactiveOverrides {

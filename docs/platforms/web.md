@@ -70,7 +70,7 @@ that uses the dev functions should import everything from it (or alias
 
 ### Frame transport: packed `Float64Array` (2026-09-18)
 
-`frame`, `frameWithOverrides` and `frameFromFxSpec` cross the wasm boundary as **one packed `Float64Array`**. wasm-bindgen copies it out of linear memory once, and it is unpacked into the same `OrbFrame` objects as before. The old path, `serde_json` → string → `JSON.parse`, was measured at 10–25× the frame's own compute. The public API didn't change, and the output is **bit-identical**: it's f64 throughout, and `test/packed.test.mjs` checks all 214 golden cases plus every FX Spec example. The JSON bridges `frameViaJson` / `frameWithOverridesViaJson` / `frameFromFxSpecViaJson` are in `@sinua/core/dev`, for the parity tests and benchmarks; `frameTransition` and `frameTransitionWithOverrides` are packed too.
+`frame`, `frameWithOverrides` and `frameFromFxSpec` cross the wasm boundary as **one packed `Float64Array`**. wasm-bindgen copies it out of linear memory once, and it is unpacked into the same `OrbFrame` objects as before. The old path, `serde_json` → string → `JSON.parse`, was measured at 10–25× the frame's own compute. The public API didn't change, and the output is **bit-identical**: it's f64 throughout, and `test/packed.test.mjs` checks every golden case plus every FX Spec example. The JSON bridges `frameViaJson` / `frameWithOverridesViaJson` / `frameFromFxSpecViaJson` are in `@sinua/core/dev`, for the parity tests and benchmarks; `frameTransition` and `frameTransitionWithOverrides` are packed too.
 
 Layout v1 (`crates/core_engine/src/transport.rs`, `src/packed.ts`):
 
@@ -82,26 +82,15 @@ Layout v1 (`crates/core_engine/src/transport.rs`, `src/packed.ts`):
 | polylines | `nPolylines × 6` | `white a w saturation hue pointCount` |
 | points | `nPoints × 2` | `x y` (each polyline's points, back to back) |
 
-**Layout v2** (materials phase 1) is emitted **only** for frames with fills or effect runs; every other frame is still v1, byte for byte:
-- The header grows to 11: `[2, colorMode, nDots, nLines, nPolylines, nPoints, found, nFills, nFillPoints, nStops, nEffects]`.
+**Layout v2** (materials phase 1) is emitted **only** for frames with effect runs; every other frame is still v1, byte for byte:
+- The header grows to 8: `[2, colorMode, nDots, nLines, nPolylines, nPoints, found, nEffects]`.
 - v1's sections are unchanged.
-- Then fills × 14 `white a saturation hue blur blend pointCount gradKind (-1 none / 0 linear / 1 radial) x0 y0 x1 y1 r stopCount`, fill points × 2, stops × 5 `offset white a saturation hue`, and effects × 5 `target start count blur blend`.
-- `asPacked` / `unpackFrame` / `readPacked` read both versions. `readPacked`'s `fill(data, at, pointsAt, stopsAt)` visitor runs first, because fills paint under everything.
+- Then effects × 5 `target start count blur blend`.
+- `asPacked` / `unpackFrame` / `readPacked` read both versions.
 
-**Layout v3** (materials phase 2) is emitted **only** when some fill has holes; otherwise v2 or v1 as above:
-- The header grows to 12 (v2's 11 + `nHoleRings`).
-- Fills are × 15 (v2's 14 + `holeRingCount`).
-- After the fill points come a hole-ring table (`nHoleRings` point counts), then the hole points × 2. Stops and effects follow as in v2.
-- `readPacked`'s `fill` visitor gets `holes: { ringsAt, pointsAt }` for such fills.
+Versions 3 and 4 (fill holes, per-vertex stroke colour) and v2's fill sections were removed in 0.1.0-beta.12 together with the fills and `Polyline.hues` they carried; the only reader of the packed layout is `@sinua/core`, which ships with the writer.
 
-**Layout v4** (per-vertex stroke colour, 2026-09-19) is emitted **only** when some polyline has `hues`; otherwise v3, v2 or v1 as above:
-- It is v3 exactly, with every section present even if empty.
-- The header grows to 13 (v3's 12 + `nPolyHues`).
-- After the effects come a table of `nPolylines` hue counts (0, or that polyline's pointCount), then the hues back to back.
-- `unpackFrame` sets `polyline.hues`, and `readPacked`'s `polyline(data, styleAt, pointsAt, count, huesAt?)` visitor gets `huesAt` for such strokes.
-- Paint rule: [`engine.md`](../engine.md#per-vertex-stroke-colour-2026-09-19).
-
-A painter can skip objects entirely: `readPacked(packed, { polyline, line, dot })` hands each primitive's offset into `packed.data` in paint-contract order.
+A painter can skip objects entirely: `readPacked(packed, { polyline, line, dot })` hands each primitive's offset into `packed.data` in paint-contract order (polylines, lines, dots).
 
 A zero-copy `Float64Array::view` into wasm memory was rejected. It's `unsafe`, and the js-sys docs say it's invalidated by "any future calls to `Box::new` (or malloc of any form)"; it would save a ~33 KB copy that doesn't show up in the numbers.
 
@@ -115,7 +104,7 @@ A zero-copy `Float64Array::view` into wasm memory was rejected. It's `unsafe`, a
 | `metering` | 96 | 0.16 | 0.010 | 0.13 | 0.009 |
 | `scrolling` | 40 | 0.09 | 0.012 | 0.08 | 0.011 |
 
-(`metering` and `scrolling` were removed in 0.1.0-beta.12; `bench/transport.mjs` now runs `loading` and `veil` in their place.)
+(`metering` and `scrolling` were removed in 0.1.0-beta.12.)
 
 That is 7–18× less time per frame. Chrome rounds `performance.now()` to 0.1 ms without cross-origin isolation, so the Chrome figures are batch averages. Painting is now the dominant Web cost, and that is `@sinua/web`'s side.
 

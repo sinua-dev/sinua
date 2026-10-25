@@ -6,7 +6,7 @@ import Foundation
 ///
 /// ```swift
 /// @State var effect: SinuaEffectTrigger?
-/// SinuaView(pattern: "tracking", effect: effect)
+/// SinuaView(pattern: "dune", effect: effect)
 /// effect = SinuaEffectTrigger(.celebrate)
 /// ```
 public struct SinuaEffectTrigger: Equatable, Sendable {

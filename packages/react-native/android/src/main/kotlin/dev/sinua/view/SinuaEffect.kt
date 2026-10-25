@@ -20,7 +20,7 @@ enum class SinuaEffect(val wire: String) {
  *
  * ```kotlin
  * var effect by remember { mutableStateOf<SinuaEffectTrigger?>(null) }
- * SinuaView(pattern = "tracking", effect = effect)
+ * SinuaView(pattern = "speaking", effect = effect)
  * effect = SinuaEffectTrigger(SinuaEffect.CELEBRATE)
  * ```
  */

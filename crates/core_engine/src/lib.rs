@@ -13,20 +13,17 @@
 //! (nothing to port against), same tradeoff as `orbs`' own additive modes.
 
 pub mod a11y;
-mod beacon;
 mod catalog;
 /// For the test that writes spec/parameters.json (the catalog with its words).
 #[doc(hidden)]
 pub use catalog::catalog_json_from_source;
 mod conversation;
-mod core_fx;
 mod cost;
 pub mod effects;
 mod fx_spec;
 mod orbs;
 mod primitives;
 pub mod reactive;
-mod ring;
 mod rules;
 mod signal;
 mod transition;
@@ -41,9 +38,7 @@ use std::collections::HashMap;
 pub use cost::FxCost;
 pub use fx_spec::{FxDiagnostic, FxHsl, FxSpecResolved};
 pub use orbs::presets::{resolve_preset, Resolved};
-pub use primitives::{
-    ColorMode, Dot, EffectRun, Fill, FillGradient, GradientStop, Line, OrbFrame, Point, Polyline,
-};
+pub use primitives::{ColorMode, Dot, EffectRun, Line, OrbFrame, Point, Polyline};
 pub use voice_state::{VoiceStateProfile, VOICE_STATES};
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -112,21 +107,7 @@ fn render(
         "crystal" => signal::modes::crystal::frame_crystal(size as f64, t, opts),
         "dune" => signal::modes::dune::frame_dune(size as f64, t, opts),
         // The `ring` family -- the third sibling, see `ring/mod.rs`.
-        "arc" => ring::modes::arc::frame_arc(size as f64, t, opts),
-        "spinner" => ring::modes::spinner::frame_spinner(size as f64, t, opts),
-        "nested" => ring::modes::nested::frame_nested(size as f64, t, opts),
-        "segmented" => ring::modes::segmented::frame_segmented(size as f64, t, opts),
-        "gauge" => ring::modes::gauge::frame_gauge(size as f64, t, opts),
-        "speaker" => ring::modes::speaker::frame_speaker(size as f64, t, opts),
         // The `beacon` family -- the fourth sibling, see `beacon/mod.rs`.
-        "ping" => beacon::modes::ping::frame_ping(size as f64, t, opts),
-        "pulse" => beacon::modes::pulse::frame_pulse(size as f64, t, opts),
-        "halo" => beacon::modes::halo::frame_halo(size as f64, t, opts),
-        "radar" => beacon::modes::radar::frame_radar(size as f64, t, opts),
-        "broadcast" => beacon::modes::broadcast::frame_broadcast(size as f64, t, opts),
-        // The `core` family (module `core_fx`, see its header for the name).
-        "shimmer" => core_fx::modes::shimmer::frame_shimmer(size as f64, t, opts),
-        "dots" => core_fx::modes::dots::frame_dots(size as f64, t, opts),
         _ => return None,
     };
     Some(post(frame, mode, size, wall, opts))
@@ -219,26 +200,7 @@ fn resolve_any(state: &str, size: u32) -> Option<AnyResolved> {
             opts: r.opts,
         });
     }
-    if let Some(r) = ring::presets::resolve_preset(state, size) {
-        return Some(AnyResolved {
-            mode: r.mode,
-            speed: r.speed,
-            opts: r.opts,
-        });
-    }
-    if let Some(r) = beacon::presets::resolve_preset(state, size) {
-        return Some(AnyResolved {
-            mode: r.mode,
-            speed: r.speed,
-            opts: r.opts,
-        });
-    }
-    let r = core_fx::presets::resolve_preset(state, size)?;
-    Some(AnyResolved {
-        mode: r.mode,
-        speed: r.speed,
-        opts: r.opts,
-    })
+    None
 }
 
 /// Resolve a `(state, size)` pair -- from any family, see `resolve_any` --
@@ -1042,14 +1004,7 @@ mod wasm {
 /// that matters: `catalog_parameter_names_match_the_presets` compares the names.
 #[cfg(test)]
 pub(crate) fn all_states() -> Vec<&'static str> {
-    [
-        crate::orbs::presets::STATES,
-        crate::signal::presets::STATES,
-        crate::ring::presets::STATES,
-        crate::beacon::presets::STATES,
-        crate::core_fx::presets::STATES,
-    ]
-    .concat()
+    [crate::orbs::presets::STATES, crate::signal::presets::STATES].concat()
 }
 
 #[cfg(test)]

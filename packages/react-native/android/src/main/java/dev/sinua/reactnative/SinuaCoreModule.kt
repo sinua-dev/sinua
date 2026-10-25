@@ -121,67 +121,6 @@ class SinuaCoreModule(reactContext: ReactApplicationContext) :
         map.putArray("lines", linesArray(frame.lines))
         map.putArray("polylines", polylinesArray(frame.polylines))
         map.putString("colorMode", if (frame.colorMode == ColorMode.FIXED) "fixed" else "ink")
-        // Materials phase 1: present only when non-empty, like the wasm JSON.
-        if (frame.fills.isNotEmpty()) {
-            val fills = Arguments.createArray()
-            frame.fills.forEach { f ->
-                val m = Arguments.createMap()
-                val pts = Arguments.createArray()
-                f.points.forEach { p ->
-                    val q = Arguments.createMap()
-                    q.putDouble("x", p.x)
-                    q.putDouble("y", p.y)
-                    pts.pushMap(q)
-                }
-                m.putArray("points", pts)
-                if (f.holes.isNotEmpty()) {
-                    val holes = Arguments.createArray()
-                    f.holes.forEach { ring ->
-                        val r = Arguments.createArray()
-                        ring.forEach { p ->
-                            val q = Arguments.createMap()
-                            q.putDouble("x", p.x)
-                            q.putDouble("y", p.y)
-                            r.pushMap(q)
-                        }
-                        holes.pushArray(r)
-                    }
-                    m.putArray("holes", holes)
-                }
-                m.putDouble("white", f.white)
-                m.putDouble("a", f.a)
-                m.putDouble("saturation", f.saturation)
-                m.putDouble("hue", f.hue)
-                m.putDouble("blur", f.blur)
-                m.putInt("blend", f.blend.toInt())
-                val g = f.gradient
-                if (g == null) {
-                    m.putNull("gradient")
-                } else {
-                    val gm = Arguments.createMap()
-                    gm.putInt("kind", g.kind.toInt())
-                    gm.putDouble("x0", g.x0)
-                    gm.putDouble("y0", g.y0)
-                    gm.putDouble("x1", g.x1)
-                    gm.putDouble("y1", g.y1)
-                    gm.putDouble("r", g.r)
-                    val stops = Arguments.createArray()
-                    g.stops.forEach { st ->
-                        val sm = Arguments.createMap()
-                        sm.putDouble("offset", st.offset)
-                        sm.putDouble("white", st.white)
-                        sm.putDouble("a", st.a)
-                        sm.putDouble("saturation", st.saturation)
-                        sm.putDouble("hue", st.hue)
-                        stops.pushMap(sm)
-                    }
-                    gm.putArray("stops", stops)
-                    m.putMap("gradient", gm)
-                }
-                fills.pushMap(m)
-            }
-            map.putArray("fills", fills)
-        }
         if (frame.effects.isNotEmpty()) {
             val effects = Arguments.createArray()
             frame.effects.forEach { e ->

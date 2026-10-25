@@ -32,7 +32,7 @@ fun oldInk(white: Double, alpha: Double, dark: Boolean, saturation: Double = 0.0
 /**
  * Paint contract (spec/orbs-spec.json, plus `Polyline`'s doc comment in
  * crates/core_engine/src/primitives.rs): polylines draw first, then lines,
- * then dots; plain fills; ink mirrors on dark themes. Shared by the live
+ * then dots; ink mirrors on dark themes. Shared by the live
  * [OrbCanvas] composable, the state thumbnails and [ImageExport]'s PNG
  * rasterizer via Compose's `CanvasDrawScope`, so none can drift from the
  * others -- the same role `drawFrame.ts` plays for the Web canvas + PNG

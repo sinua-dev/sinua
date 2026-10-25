@@ -40,31 +40,15 @@ final class SinuaViewTests: XCTestCase {
         let states = try Self.catalogPatterns()
         // A floor, not a count: it only guards a loader that read too little.
         XCTAssertGreaterThanOrEqual(
-            states.count, 33, "only \(states.count) patterns read -- the file or the loader moved")
+            states.count, 20, "only \(states.count) patterns read -- the file or the loader moved")
         var compared = 0
-        var perVertex = 0
-        var filled = 0
         var light = 0
         for s in states {
             guard let frame = frame(state: s, size: 64, t: 1.7) else {
                 XCTFail("\(s) is in spec/parameters.json but does not render through CoreEngine")
                 continue
             }
-            // OldOrbPaint is the 2026-09-18 painter, from before per-vertex stroke colour
-            // (golden 1.6.0, `Polyline.hues`): it can't draw a frame that uses it (no pattern
-            // does by default since SinuaEdge went). That paint rule is checked across
-            // platforms by MaterialsRenderTests instead.
-            if frame.polylines.contains(where: { !$0.hues.isEmpty }) {
-                perVertex += 1
-                continue
-            }
-            // Nor fills (materials phase 1): no pattern draws them by default.
-            // MaterialsRenderTests holds fills across platforms.
-            if !frame.fills.isEmpty {
-                filled += 1
-                continue
-            }
-            // Nor the light volumes' soft glows (`EffectRun.blend` 3, 1.15): the old painter
+            // The light volumes' soft glows (`EffectRun.blend` 3, 1.15): the old painter
             // has no light blend. They are signal patterns; their paint is held by the light
             // painter's own tests and renders.
             if frame.effects.contains(where: { $0.blend == 3 }) {
@@ -84,10 +68,8 @@ final class SinuaViewTests: XCTestCase {
             }
         }
         // The denominator, exactly: two themes for every pattern that exists.
-        XCTAssertEqual(compared, (states.count - perVertex - filled - light) * 2, "one bitmap pair per pattern")
+        XCTAssertEqual(compared, (states.count - light) * 2, "one bitmap pair per pattern")
         XCTAssertEqual(light, 3, "veil, crystal and dune")
-        XCTAssertEqual(perVertex, 0, "no pattern draws per-vertex colour by default")
-        XCTAssertEqual(filled, 0, "no pattern draws fills by default")
         print("FxPaint parity: \(compared) bitmaps identical across \(states.count) patterns")
     }
 
@@ -106,7 +88,7 @@ final class SinuaViewTests: XCTestCase {
             XCTAssertEqual(FxStatePlayer.render(spec: json, state: nil, elapsed: 1.3, inputs: [:], extra: [:]), want, f)
             checked += 1
         }
-        XCTAssertGreaterThan(checked, 3)
+        XCTAssertGreaterThanOrEqual(checked, 3)
     }
 
     /// A pattern change cross-fades by the weights of the transition clock (design note 31),

@@ -118,42 +118,9 @@ final class SinuaGoldenTests: XCTestCase {
                     XCTAssertEqual(q.x, pts[j * 2], accuracy: tol, "\(key): polyline[\(i)].pt[\(j)].x")
                     XCTAssertEqual(q.y, pts[j * 2 + 1], accuracy: tol, "\(key): polyline[\(i)].pt[\(j)].y")
                 }
-                // spec 1.6.0: per-vertex hues, absent = none.
-                let hues = nums(g["hues"])
-                XCTAssertEqual(p.hues.count, hues.count, "\(key): polyline[\(i)] hue count")
-                for (j, (h, gh)) in zip(p.hues, hues).enumerated() {
-                    XCTAssertEqual(h, gh, accuracy: tol, "\(key): polyline[\(i)].hues[\(j)]")
-                }
             }
 
-            // spec 1.2.0: fills and effect runs, only on cases that carry them.
-            let gfills = c["fills"] as? [[String: Any]] ?? []
-            XCTAssertEqual(f.fills.count, gfills.count, "\(key): fill count")
-            for (i, (x, g)) in zip(f.fills, gfills).enumerated() {
-                let cmp = { (label: String, got: [Double], exp: [Double]) in
-                    XCTAssertEqual(got.count, exp.count, "\(key): fill[\(i)].\(label) length")
-                    for (k, (u, v)) in zip(got, exp).enumerated() {
-                        XCTAssertEqual(u, v, accuracy: tol, "\(key): fill[\(i)].\(label)[\(k)]")
-                    }
-                }
-                cmp("style", [x.white, x.a, x.saturation, x.hue, x.blur, Double(x.blend)], nums(g["style"]))
-                cmp("points", x.points.flatMap { [$0.x, $0.y] }, nums(g["points"]))
-                // spec 1.3.0: holes (absent = none).
-                let gh = g["holes"] as? [Any] ?? []
-                XCTAssertEqual(x.holes.count, gh.count, "\(key): fill[\(i)] hole count")
-                for (h, (ring, gring)) in zip(x.holes, gh).enumerated() {
-                    cmp("holes[\(h)]", ring.flatMap { [$0.x, $0.y] }, nums(gring))
-                }
-                let gg = g["gradient"] as? [String: Any]
-                XCTAssertEqual(x.gradient == nil, gg == nil, "\(key): fill[\(i)] gradient")
-                if let xg = x.gradient, let gg {
-                    XCTAssertEqual(Int(xg.kind), gg["kind"] as? Int, "\(key): fill[\(i)] kind")
-                    cmp("gradient.geom", [xg.x0, xg.y0, xg.x1, xg.y1, xg.r], nums(gg["geom"]))
-                    cmp(
-                        "gradient.stops", xg.stops.flatMap { [$0.offset, $0.white, $0.a, $0.saturation, $0.hue] },
-                        nums(gg["stops"]))
-                }
-            }
+            // Effect runs, only on cases that carry them.
             let eff = f.effects.flatMap {
                 [Double($0.target), Double($0.start), Double($0.count), $0.blur, Double($0.blend)]
             }
@@ -166,7 +133,7 @@ final class SinuaGoldenTests: XCTestCase {
     }
 
     /// Every pattern in `spec/parameters.json` resolves through the FFI. This was
-    /// a hand-written list of the 25 non-ported states; the catalog is pinned to the engine's presets by `catalog.rs`, so
+    /// a hand-written list of states; the catalog is pinned to the engine's presets by `catalog.rs`, so
     /// reading it here means a new pattern is checked without anyone listing it.
     func testEveryCatalogPatternResolves() throws {
         let url = URL(fileURLWithPath: #filePath)
@@ -185,7 +152,7 @@ final class SinuaGoldenTests: XCTestCase {
             ($0["patterns"] as? [[String: Any]] ?? []).compactMap { $0["id"] as? String }
         }
         XCTAssertGreaterThanOrEqual(
-            states.count, 33, "only \(states.count) patterns read -- the file or the loader moved")
+            states.count, 20, "only \(states.count) patterns read -- the file or the loader moved")
         for state in states {
             XCTAssertNotNil(CoreEngine.frame(state: state, size: 64, t: 1.0), "\(state) should resolve")
         }

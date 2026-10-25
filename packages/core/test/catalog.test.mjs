@@ -18,11 +18,11 @@ test("parameterCatalog() equals spec/parameters.json without the descriptions", 
   const c = parameterCatalog();
   assert.deepEqual(c, file);
   assert.deepEqual(c.objects.map((o) => [o.id, o.component, o.patterns.length]), [
-    ["orb", "SinuaOrb", 17], ["signal", "SinuaSignal", 3], ["ring", "SinuaRing", 6], ["core", "SinuaCore", 2], ["beacon", "SinuaBeacon", 5],
+    ["orb", "SinuaOrb", 17], ["signal", "SinuaSignal", 3],
   ]);
   for (const o of c.objects) for (const p of o.patterns) for (const r of p.params) assert.ok(c.definitions[r.ref], `${p.id}: ${r.ref}`);
   assert.equal(c.definitions["glowStrength@shared"].path, "glow.strength");
-  assert.equal(c.definitions["progress@nested"].type, "number[]");
+  assert.equal(c.definitions["envelope@dune"].type, "number[]");
 });
 
 test("checkOverrides: warnings, did-you-mean, ranges, renames; the frame is unchanged", () => {
@@ -31,7 +31,7 @@ test("checkOverrides: warnings, did-you-mean, ranges, renames; the frame is unch
   assert.match(checkOverrides("connecting", 64, { lineWidth: 1 })[0].message, /did you mean `lineW`/);
   // The taxonomy retrofit's old names are plain unknown keys since the FX Spec 1.8 floor.
   assert.match(checkOverrides("glowing", 64, { nodeN: 90 })[0].message, /unknown key `nodeN`/);
-  assert.deepEqual(checkOverrides("tracking", 64, { progress1: 2, glowStrength: 0.4, audioLevel: 0.2 }), []);
+  assert.deepEqual(checkOverrides("progressing", 64, { progress: 0.4, glowStrength: 0.4, audioLevel: 0.2 }), []);
   assert.deepEqual(frameWithOverrides("breathing", 64, 1, { lanse: 6 }), frameWithOverrides("breathing", 64, 1, {}));
 });
 
@@ -39,7 +39,7 @@ test("binders accept the catalog paths (FX Spec 1.7 names)", async () => {
   const { bindReactiveInput, reactiveTargetKey } = await import("../dist/index.js");
   assert.equal(reactiveTargetKey("glow.strength"), "glowStrength");
   assert.deepEqual(
-    bindReactiveInput({ value: 0.5, target: "progress[1]" }),
-    bindReactiveInput({ value: 0.5, target: "progress1" }),
+    bindReactiveInput({ value: 0.5, target: "glow.strength" }),
+    bindReactiveInput({ value: 0.5, target: "glowStrength" }),
   );
 });

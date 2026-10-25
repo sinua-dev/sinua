@@ -82,27 +82,14 @@ class SinuaViewTest {
     @Test
     fun fxPaintIsPixelIdenticalToTheStudioPainter() {
         // A floor, not a count: it only guards a loader that read too little.
-        assertTrue("only ${states.size} patterns read -- the asset or the loader moved", states.size >= 31)
+        assertTrue("only ${states.size} patterns read -- the asset or the loader moved", states.size >= 20)
         var compared = 0
-        var perVertex = 0
-        var filled = 0
         val lit = mutableSetOf<String>()
         for (s in states) {
             val f: OrbFrame = frame(s, 64u, 1.7)
                 ?: throw AssertionError("$s is in spec/parameters.json but does not render through core_engine")
-            // The old painter is from before per-vertex stroke colour (golden 1.6.0,
-            // `Polyline.hues`) and can't draw a frame that uses it (no pattern does by default
-            // since SinuaEdge went). The materials cases check that paint rule instead.
-            if (f.polylines.any { it.hues.isNotEmpty() }) {
-                perVertex++
-                continue
-            }
-            // Nor fills or effect runs (materials): a light volume draws its dots as light
-            // (blend 3). The materials cases hold those across platforms.
-            if (f.fills.isNotEmpty()) {
-                filled++
-                continue
-            }
+            // Effect runs (blur, blend, light) are not in the old painter: a light volume draws
+            // its dots as light (blend 3). The materials cases hold those across platforms.
             if (f.effects.isNotEmpty()) {
                 lit += s
                 continue
@@ -117,9 +104,7 @@ class SinuaViewTest {
             }
         }
         // The denominator, exactly: two themes x two alphas for every pattern.
-        assertEquals("four rasters per pattern", (states.size - perVertex - filled - lit.size) * 4, compared)
-        assertEquals("no pattern draws per-vertex colour by default", 0, perVertex)
-        assertEquals("no pattern draws fills by default", 0, filled)
+        assertEquals("four rasters per pattern", (states.size - lit.size) * 4, compared)
         assertTrue("only light volumes draw effect runs by default: $lit", signalPatterns.containsAll(lit))
         println("FxPaint parity: $compared rasters identical across ${states.size} patterns")
     }
@@ -319,73 +304,20 @@ class SinuaViewTest {
     }
 
     /**
-     * Renders families' materials golden cases at 256 px, light and dark, and
+     * Renders the materials golden case at 256 px, light and dark, and
      * prints each PNG base64 to logcat (tag FxMaterials) -- the test APK's own
      * files are removed with it; the cross-platform comparison runs outside.
      */
     @Test
     fun renderMaterialsGoldenCases() {
         val cases = listOf(
-            Triple("generating-64-0.6-highlight-fill", "generating", mapOf("highlightFill" to 1.0)),
-            Triple("scanning-64-0.6-trail-fill", "scanning", mapOf("trailFill" to 1.0)),
             Triple("glowing-64-0.6-glow-blur", "glowing", mapOf("glowMode" to 1.0, "glowStrength" to 1.0)),
-            Triple(
-                "tracking-64-0.6-glow-blur-additive",
-                "tracking",
-                mapOf(
-                    "glowBlend" to 1.0,
-                    "glowMode" to 1.0,
-                    "glowStrength" to 0.8,
-                ),
-            ),
-            // Per-vertex stroke colour (golden 1.6.0, Polyline.hues): the one-layer paint rule.
-            Triple(
-                "tracking-64-0.6-gradient3",
-                "tracking",
-                mapOf(
-                    "gradientStrength" to 1.0,
-                    "gradientHue" to 200.0,
-                    "gradientHue2" to 300.0,
-                    "gradientHue3" to 40.0,
-                ),
-            ),
-            // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC).
-            Triple(
-                "x-completing-64-0.6-gradient-glowblur",
-                "completing",
-                mapOf(
-                    "gradientStrength" to 1.0,
-                    "gradientHue" to 200.0,
-                    "gradientHue2" to 300.0,
-                    "gradientHue3" to 40.0,
-                    "glowStrength" to 0.8,
-                    "glowMode" to 1.0,
-                ),
-            ),
-            Triple(
-                "x-completing-64-0.6-gradient-glowblur-additive",
-                "completing",
-                mapOf(
-                    "gradientStrength" to 1.0,
-                    "gradientHue" to 200.0,
-                    "gradientHue2" to 300.0,
-                    "gradientHue3" to 40.0,
-                    "glowStrength" to 0.8,
-                    "glowMode" to 1.0,
-                    "glowBlend" to 1.0,
-                ),
-            ),
         )
         val frames = cases.map { (key, state, overrides) ->
             key to uniffi.core_engine.frameWithOverrides(state, 64u, 0.6, overrides)!!
         }
         for ((key, f) in frames) {
-            if (!key.contains("gradient3")) {
-                assertTrue(
-                    "$key has materials",
-                    f.fills.isNotEmpty() || f.effects.isNotEmpty(),
-                )
-            }
+            assertTrue("$key has materials", f.effects.isNotEmpty())
             for (dark in listOf(false, true)) {
                 val img = ImageBitmap(256, 256)
                 val scope = CanvasDrawScope()

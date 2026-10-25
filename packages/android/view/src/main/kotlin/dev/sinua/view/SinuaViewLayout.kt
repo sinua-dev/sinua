@@ -38,7 +38,7 @@ class SinuaViewLayout @JvmOverloads constructor(context: Context, attrs: Attribu
     /** FX Spec JSON; non-null = the spec path. */
     var spec: String? by mutableStateOf(null)
 
-    /** Pattern name ("speaking", "tracking", ...); used when [spec] is null. */
+    /** Pattern name ("speaking", "listening", ...); used when [spec] is null. */
     var pattern: String by mutableStateOf("glowing")
     var size: UInt by mutableStateOf(64u)
     var overrides: Map<String, Double> by mutableStateOf(emptyMap())

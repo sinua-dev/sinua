@@ -3,7 +3,7 @@
   "spec": [
     { "title": "Unknown key in params (with a suggestion)", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "working", "params": { "orbitn": 3 } } },
     { "title": "Unknown pattern", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathin" } },
-    { "title": "Pattern from another object", "spec": { "fxSpec": "1.8", "object": "ring", "pattern": "breathing" } },
+    { "title": "Pattern from another object", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "dune" } },
     { "title": "Value out of range", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "materials": { "glow": { "strength": 2 } } } },
     { "title": "Runtime input in params", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "speaking", "params": { "audioLevel": 0.5 } } },
     { "title": "Section-owned key in params", "spec": { "fxSpec": "1.8", "object": "orb", "pattern": "breathing", "params": { "glowStrength": 0.5 } } },

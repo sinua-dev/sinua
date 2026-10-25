@@ -18,7 +18,21 @@ import {
 
 const read = (f) => readFileSync(fileURLToPath(new URL(`../../../spec/examples/${f}`, import.meta.url)), "utf8");
 const voice = read("voice-assistant.fxspec.json");
-const fit = read("fitness-rings.fxspec.json");
+// Daily goals on a progressing orb: steps drive progress, water the colour mix, heart rate the glow.
+const fit = JSON.stringify({
+  fxSpec: "1.8",
+  name: "Daily goals",
+  object: "orb",
+  pattern: "progressing",
+  size: 64,
+  color: { value: "#30A46C", mix: 0.6 },
+  materials: { glow: { radius: 3 } },
+  bindings: {
+    progress: { input: "steps", inputRange: [0, 10000], curve: ["easeOut"] },
+    "color.mix": { input: "waterMl", inputRange: [0, 2500] },
+    "glow.strength": { input: "heartRate", inputRange: [60, 100, 160], outputRange: [0, 0.2, 0.8], curve: ["linear", "easeIn"] },
+  },
+});
 const glowing = read("voice-assistant-glowing.fxspec.json");
 
 /** A state of a spec as a transition side (effective speed), the way the player builds it. */
@@ -136,9 +150,9 @@ test("inputs: first value as-is, later ones eased; unlisted inputs raw", () => {
   assert.equal(p.inputs.heartRate, 60 + 100 * 0.5);
   assert.equal(p.inputs.steps, 8000);
   assert.deepEqual(f.frame, frameFromFxSpec(fit, 0.1, { inputs: { heartRate: 110, steps: 8000 } }));
-  assert.deepEqual(f.resolved.inactiveBindings.sort(), ["progress1", "progress2"]);
+  assert.deepEqual(f.resolved.inactiveBindings.sort(), ["colorMix"]);
   p.clearInput("steps");
-  assert.ok(p.frame(0.2, 0.016).resolved.inactiveBindings.includes("progress0"));
+  assert.ok(p.frame(0.2, 0.016).resolved.inactiveBindings.includes("progress"));
 });
 
 test("extra runtime overrides are spread last", () => {

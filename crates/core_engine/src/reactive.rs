@@ -16,10 +16,7 @@ pub struct ReactiveTarget {
     pub name: &'static str,
     /// The engine's legal range: every output is clamped to it.
     pub range: (f64, f64),
-    /// What an omitted `outputRange` maps onto. Equal to `range` except for
-    /// `progress0..3`, whose range allows extra laps (up to 3) but whose
-    /// natural default is one lap = the goal -- extra laps are opted into
-    /// with an explicit multi-stop output.
+    /// What an omitted `outputRange` maps onto (today always `range`).
     pub default_output: (f64, f64),
     pub companions: &'static [(&'static str, f64)],
 }
@@ -28,7 +25,7 @@ pub struct ReactiveTarget {
 /// reactive.ts -- keep the three in sync (the vectors test checks TS).
 const AUDIO_STRENGTH_DEFAULT: f64 = 0.18;
 
-pub const REACTIVE_TARGETS: [ReactiveTarget; 14] = [
+pub const REACTIVE_TARGETS: [ReactiveTarget; 9] = [
     ReactiveTarget {
         name: "progress",
         range: (0.0, 1.0),
@@ -36,37 +33,7 @@ pub const REACTIVE_TARGETS: [ReactiveTarget; 14] = [
         companions: &[],
     },
     ReactiveTarget {
-        name: "progress0",
-        range: (0.0, 3.0),
-        default_output: (0.0, 1.0),
-        companions: &[],
-    },
-    ReactiveTarget {
-        name: "progress1",
-        range: (0.0, 3.0),
-        default_output: (0.0, 1.0),
-        companions: &[],
-    },
-    ReactiveTarget {
-        name: "progress2",
-        range: (0.0, 3.0),
-        default_output: (0.0, 1.0),
-        companions: &[],
-    },
-    ReactiveTarget {
-        name: "progress3",
-        range: (0.0, 3.0),
-        default_output: (0.0, 1.0),
-        companions: &[],
-    },
-    ReactiveTarget {
-        name: "quality",
-        range: (0.0, 1.0),
-        default_output: (0.0, 1.0),
-        companions: &[],
-    },
-    ReactiveTarget {
-        name: "accuracy",
+        name: "level",
         range: (0.0, 1.0),
         default_output: (0.0, 1.0),
         companions: &[],
@@ -263,19 +230,15 @@ mod tests {
         assert_eq!(a.map(f64::NAN), 0.0);
         let d = m("glowStrength", &[100.0, 0.0], None, &[]);
         assert_eq!(d.map(25.0), 0.75);
-        let o = m("progress0", &[0.0, 1.0], Some(&[0.0, 5.0]), &[]);
-        assert_eq!(o.map(1.0), 3.0, "clamped to the target's range");
-        // Per-ring progress defaults to one lap = the goal; laps are explicit.
-        let goal = m("progress0", &[0.0, 10_000.0], None, &[]);
-        assert_eq!(goal.map(10_000.0), 1.0);
-        assert_eq!(goal.map(30_000.0), 1.0);
-        let laps = m(
-            "progress0",
+        let o = m("level", &[0.0, 1.0], Some(&[0.0, 5.0]), &[]);
+        assert_eq!(o.map(1.0), 1.0, "clamped to the target's range");
+        let multi = m(
+            "level",
             &[0.0, 10_000.0, 30_000.0],
-            Some(&[0.0, 1.0, 3.0]),
+            Some(&[0.0, 0.5, 1.0]),
             &[],
         );
-        assert_eq!(laps.map(20_000.0), 2.0);
+        assert_eq!(multi.map(20_000.0), 0.75);
     }
 
     #[test]

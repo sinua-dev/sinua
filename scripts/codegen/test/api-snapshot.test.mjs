@@ -73,12 +73,12 @@ test("red proof: renaming a public parameter in the catalog fails on every outpu
 test("formatting, comments and default values don't change the contract", () => {
   const cases = [
     [
-      `${S}SinuaRing.swift`,
+      `${S}SinuaOrb.swift`,
       ["    public var hue: Double?", "    /* moved */\n    public   var   hue :Double?"],
       ["size: SinuaSize = .s64,", "size: SinuaSize = .s32 ,"],
     ],
-    [`${K}SinuaRing.kt`, ["    val gap: Double? = null,", "    val gap:Double?=0.5 , // note"]],
-    [`${W}SinuaParams.ts`, ["export interface SinuaRingParams {", "export interface SinuaRingParams   {\n  // a comment\n"]],
+    [`${K}SinuaOrb.kt`, ["    val spin: Double? = null,", "    val spin:Double?=0.5 , // note"]],
+    [`${W}SinuaParams.ts`, ["export interface SinuaOrbParams {", "export interface SinuaOrbParams   {\n  // a comment\n"]],
   ];
   for (const [path, ...pairs] of cases) {
     const original = files.get(path);
@@ -87,37 +87,37 @@ test("formatting, comments and default values don't change the contract", () => 
 });
 
 test("a type change is a contract change", () => {
-  const path = `${K}SinuaRing.kt`;
+  const path = `${K}SinuaOrb.kt`;
   const d = diffContracts({ [path]: contractOf(path, files.get(path)) }, {
-    [path]: contractOf(path, edit(files.get(path), ["    val gap: Double? = null,", "    val gap: Float? = null,"])),
+    [path]: contractOf(path, edit(files.get(path), ["    val spin: Double? = null,", "    val spin: Float? = null,"])),
   });
-  assert.ok(d.some((x) => x.added.some((m) => m.includes("val gap:Float?"))), "Double? -> Float? is reported");
+  assert.ok(d.some((x) => x.added.some((m) => m.includes("val spin:Float?"))), "Double? -> Float? is reported");
 });
 
 test("a file the extractor finds nothing in is an error, not an empty snapshot", () => {
-  assert.throws(() => contractOf(`${S}SinuaRing.swift`, "// Generated\nimport SwiftUI\n"), /no public declarations found in .*SinuaRing\.swift/);
+  assert.throws(() => contractOf(`${S}SinuaOrb.swift`, "// Generated\nimport SwiftUI\n"), /no public declarations found in .*SinuaOrb\.swift/);
 });
 
 test("order is part of the contract where calls are positional, and not where it isn't", () => {
-  const kt = `${K}SinuaRing.kt`;
+  const kt = `${K}SinuaOrb.kt`;
   const swapped = edit(
     files.get(kt),
-    ["    val gap: Double? = null,", "    val __SWAP__: Double? = null,"],
-    ["    val hue: Double? = null,", "    val gap: Double? = null,"],
+    ["    val spin: Double? = null,", "    val __SWAP__: Double? = null,"],
+    ["    val hue: Double? = null,", "    val spin: Double? = null,"],
     ["    val __SWAP__: Double? = null,", "    val hue: Double? = null,"],
   );
   assert.notDeepEqual(contractOf(kt, swapped), contractOf(kt, files.get(kt)), "swapping two data-class params changes it");
 
   const ts = `${W}SinuaParams.ts`;
   const src = files.get(ts);
-  const start = src.indexOf("export interface SinuaRingParams");
+  const start = src.indexOf("export interface SinuaOrbParams");
   const end = src.indexOf("\n}\n", start);
   const block = src.slice(start, end);
   const lines = block.split("\n");
-  const gap = lines.findIndex((l) => l.trim() === "gap?: number;");
+  const spin = lines.findIndex((l) => l.trim() === "spin?: number;");
   const hue = lines.findIndex((l) => l.trim() === "hue?: number;");
-  assert.ok(gap > 0 && hue > 0, "both members found in SinuaRingParams");
-  [lines[gap], lines[hue]] = [lines[hue], lines[gap]];
+  assert.ok(spin > 0 && hue > 0, "both members found in SinuaOrbParams");
+  [lines[spin], lines[hue]] = [lines[hue], lines[spin]];
   const reordered = src.slice(0, start) + lines.join("\n") + src.slice(end);
   assert.notEqual(reordered, src);
   assert.deepEqual(contractOf(ts, reordered), contractOf(ts, src), "interface member order is not API");

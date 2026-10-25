@@ -2,13 +2,13 @@
 
 > **Materials vs effects** (the naming split, 2026-09-19):
 > - A **material** is a frame → frame transform the *engine* computes. It produces or modifies primitives. The materials are colour, gradient, glow (both stacked copies and blur halos), noise and pulse. (Liquid, particles and holographic were removed in 0.1.0-beta.9; a file that uses one is rejected.) They are configured in the FX Spec `materials` section and cost engine time.
-> - An **effect** is a *paint-contract instruction* the renderer executes: `blur` and `blend`, on `Fill`s and `EffectRun`s (see [`engine.md`](engine.md#paint-contract-fills-and-effects-materials-phase-1-2026-09-18)). Effects are not a spec section; they are reached through a material's options (`glow.mode: "blur"`). They cost paint time, which is what `blurLoad` estimates.
+> - An **effect** is a *paint-contract instruction* the renderer executes: `blur` and `blend`, on `EffectRun`s (see [`engine.md`](engine.md#paint-contract-effects-materials-phase-1-2026-09-18)). Effects are not a spec section; they are reached through a material's options (`glow.mode: "blur"`). They cost paint time, which is what `blurLoad` estimates.
 >
 > Studio labels and docs follow this split.
 
 Three **family-agnostic post-processes** in
 `crates/core_engine/src/primitives.rs` — `apply_glow`, `apply_noise`,
-`apply_gradient` — that any object (Orb, Signal, Ring, Beacon, Core) can
+`apply_gradient` — that any object (Orb or Signal) can
 wear, in any state, by setting opts. They are not modes, not states and
 not a family. The product's parameter plan
 (sections 10–13) frames Glow/Noise/Gradient as *materials/behaviors*
@@ -49,7 +49,7 @@ Callers pass the mode's clock, `t = elapsed × presetSpeed × specSpeed`. `rende
 - `pulsePeriod`
 - `noiseSpeed`
 
-A 2 s pulse is 2 s on a 1× ring and on a 3.24× `breathing`. A spec's own `speed` (the user's "whole object slower/faster" knob) still scales all of them together with the geometry.
+A 2 s pulse is 2 s on a 1× state and on a 3.24× `breathing`. A spec's own `speed` (the user's "whole object slower/faster" knob) still scales all of them together with the geometry.
 
 Deliberately **not** on either clock:
 - **Interrupt and decay** don't read `t`. `interruptAge` and `decayAge` are seconds on the *caller's* clock since a one-shot event, and a caller measures them against its own timestamp.
@@ -59,7 +59,7 @@ Measured in motion (default knobs, `pulsePeriod 2`):
 
 | state | preset speed | pulse period (real) | noise field drift |
 |---|---|---|---|
-| tracking | 1× | 2.00 s | — (no dots) |
+| veil | 1× | 2.00 s | — |
 | speaking | 1× | — | 1.20 px/s |
 | working | 1.885× | — | 1.09 px/s |
 | breathing | 3.24× | 2.00 s | 1.18 px/s |
@@ -129,17 +129,16 @@ is dark ink at low alpha (a soft bleed); a dark theme mirrors it into a
 light glow, same as everything else.
 
 Known limits (both visible in the verification sheet): a very large,
-very translucent dot — `beacon`'s accuracy halo — shows its four layers as
-concentric rings rather than a smooth glow, the same stepped-alpha limit
-`shimmer` works around with nine layers; and copies of a polyline all
+very translucent dot shows its four layers as
+concentric rings rather than a smooth glow, the stepped-alpha limit; and copies of a polyline all
 share its geometry, so a glow on a wide bar reads as a soft outline, not
 a bloom. The stepped look is a *paint-time* limitation, not an engine one:
 a real blur is a renderer concern (Canvas 2D `ctx.filter = "blur(Npx)"`,
 CSS `filter: blur()`, SVG `<feGaussianBlur>`, Core Graphics / Compose
 blur effects), so a consumer can smooth these halos without the engine
 knowing — flagged to `studio-ui-ux` as an optional paint-layer option;
-not a new Rust primitive. Shading *within* one stroke still needs a
-per-vertex-color primitive (not scheduled).
+not a new Rust primitive. Shading *within* one stroke is not supported
+(per-vertex stroke colour was removed in 0.1.0-beta.12).
 
 ### Real-blur mode (materials phase 1, 2026-09-18)
 
@@ -147,8 +146,7 @@ per-vertex-color primitive (not scheduled).
 - each halo is enlarged to the middle of the stacked profile (`1 + (glowRadius − 1)/2`), at alpha `0.6 × strength × a`;
 - the halos come first, as one block per list, and each block gets an `EffectRun`;
 - the run's σ is the list's median size (dot radius or stroke width) × `(glowRadius − 1)/2`, so it scales with the object;
-- `glowBlend` = 1 (`blend: "additive"`) composites the halos additively, which is a dark-theme look (see the paint contract in [`engine.md`](engine.md#paint-contract-fills-and-effects-materials-phase-1-2026-09-18));
-- fills are not glowed.
+- `glowBlend` = 1 (`blend: "additive"`) composites the halos additively, which is a dark-theme look (see the paint contract in [`engine.md`](engine.md#paint-contract-effects-materials-phase-1-2026-09-18));
 
 Compared with stacked mode:
 - About half the elements (`working`: 1032 vs 2028), but with blur work instead. `estimateCost` reports it as `blurLoad`.
@@ -163,7 +161,7 @@ A bug was fixed along the way: `apply_glow` used to rebuild the frame with `colo
 Every dot, line endpoint and polyline vertex is displaced by a smooth,
 time-varying field from the engine's real gradient noise (`perlin3`, the
 Perlin 2002 structure added for `aurora`) — so a rigid lattice (`globe`, a
-segmented ring, an `arc`) breathes like something alive with no mode knowing.
+lattice, a rigid ring of dots) breathes like something alive with no mode knowing.
 The recipe is Nature of Code's noise walker: sample the field from
 **different regions of noise space per axis** (the book starts `x` at `0`
 and `y` at `10,000` "so that x and y appear to act independently of each
@@ -197,8 +195,7 @@ slow swell.
 
 "A real gradient" for a dot/stroke renderer is not a fill — it is
 **per-element color interpolation across the frame**: a grey `globe`
-becomes blue-to-magenta left to right, a `ring` arc shades along its
-sweep. The coordinate contract is CSS Images Level 3's `linear-gradient()`
+becomes blue-to-magenta left to right, a polyline takes one colour from the ramp. The coordinate contract is CSS Images Level 3's `linear-gradient()`
 verbatim, so a designer's mental model transfers: "0deg points upward, and
 positive angles represent clockwise rotation, so 90deg point toward the
 right"; the gradient line passes through the center of the box, and its
@@ -214,15 +211,9 @@ Per element, `saturation → lerp(sat, gradientSaturation, strength)`; hue
 snaps to the ramp when the element was achromatic (its old hue was
 meaningless) and eases toward it via `lerp_hue` otherwise. `white` is
 kept — it is the lightness in every renderer's HSL branch, so a mode's
-depth shading survives the recolor. **A `Polyline` is coloured per
-vertex (2026-09-19):** each vertex samples the ramp at its own position
-into `Polyline.hues`, so a stroke shades along its length and
-`tracking`'s rings ramp around their sweep. `hue` stays the mean-vertex
-sample, which is the fallback for renderers without per-vertex paint (paint
-rule: [`engine.md`](engine.md#per-vertex-stroke-colour-2026-09-19)). A stroke
-whose vertices all land on one hue carries no `hues`. Before this, a
-polyline had one colour per path, so concentric rings all took the centre's
-hue and the gradient only tinted them. `Line` has carried
+depth shading survives the recolor. **A `Polyline` takes one colour** (a hue per
+stroke; shading along one stroke, `Polyline.hues`, was removed in 0.1.0-beta.12 because no
+pattern drew it any more). `Line` has carried
 `saturation`/`hue` since the Color system pass (2026-09-18) and samples
 the ramp at its midpoint.
 

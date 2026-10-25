@@ -2,12 +2,11 @@
 
 One visual-effects engine, written once in Rust and drawn identically on Web,
 iOS, Android and React Native. It renders animated visuals for voice agents and
-assistants — a listening orb, a voice drawn as light, a progress ring, a status
-beacon — and the
+assistants — a listening orb, a voice or a status drawn as light — and the
 four platforms are proven identical by testing them against the same frozen
 vectors, not by reading the code side by side.
 
-**5 objects, 33 patterns:** orb (17), signal (3), ring (6), core (2), beacon (5).
+**2 objects, 20 patterns:** orb (17), signal (3).
 A design is either a few typed props or an **FX Spec** file (`.fxspec.json`,
 currently 1.15) that every platform resolves the same way.
 

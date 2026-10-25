@@ -16,9 +16,9 @@ Before FX Spec, a design was a code snippet pasted into four codebases: a typo'd
 {
   "$schema": "../fx-spec-1.schema.json",
   "fxSpec": "1.0",
-  "name": "Glowing radar",
-  "object": "beacon",
-  "state": "scanning",
+  "name": "Glowing crystal",
+  "object": "signal",
+  "state": "crystal",
   "size": 64,
   "speed": 1,
   "color": { "value": "#33cc66", "mix": 0.8, "lightness": 0, "mode": "ink" },
@@ -28,15 +28,15 @@ Before FX Spec, a design was a code snippet pasted into four codebases: a typo'd
     "noise": { "strength": 0.3, "amplitude": 0.04, "scale": 2, "speed": 0.4, "seed": 0 },
     "pulse": { "strength": 0.5, "period": 1.2, "opacity": 0.5, "scale": 0.1, "phase": 0 }
   },
-  "params": { "blipCount": 4 }
+  "params": { "columnCount": 12 }
 }
 ```
 
 | Key | Required | Meaning |
 |---|---|---|
 | `fxSpec` | yes | `"major.minor"`: `"1.0"`, or `"1.1"` for `states`/`bindings` (see *Versioning*) |
-| `object` | yes | `orb` \| `signal` \| `ring` \| `beacon` \| `core` — must be the state's family |
-| `state` | yes | an engine state (`working`, `veil`, `tracking`, `scanning`, …) |
+| `object` | yes | `orb` \| `signal` — must be the state's family |
+| `state` | yes | an engine state (`working`, `veil`, `crystal`, …) |
 | `size` | no | `20` \| `32` \| `64`, default `64` |
 | `speed` | no | multiplier on the preset's tuned speed, default `1`. Not an opt: `frameFromFxSpec` applies `elapsed × presetSpeed × speed` for you, so the classic `t * speed` mistake ([engine.md](engine.md)) can't happen |
 | `color` | no | a color (shorthand for `{ value, mix: 1 }`) or `{ value, mix, lightness, mode }` → the Color system keys ([materials.md](materials.md)) |
@@ -64,7 +64,7 @@ Diagnostics are `{ severity: "error" | "warning", path, message }`. `path` is a 
 - **Unknown keys are always reported**, with a "did you mean" hint (edit distance ≤ 2): ``unknown key `orbitn` -- did you mean `orbitN`?``.
 - **`object` / `state` / `size`**: an unknown state, a state from another family, or a size other than 20/32/64 are errors.
 - **`params` allowlist**: the keys the state's mode actually reads, plus the resolved preset's own opts (so the ported orb modes' upstream names work), plus the shared `rMin`/`rsPow`.
-  - Indexed design values (`progress0..3` on `tracking`, `segment0..` on `stepping`) are allowed.
+  - Array values are allowed where a pattern takes a list: `envelope` on `dune` (up to 64 values).
   - A unit test re-scans every mode source for `get(o, "…")` so the table can't drift.
 - **Runtime inputs are rejected with a reason**: `pointer*`, `audio*`, `voiceStateCode`, `history*`, `interrupt*`, `muted`/`mutedT*`, `decay*` (the fade event; `warp`'s own `decay` opt is fine), `peakN`. These are live data, not design. The bindable ones (`audioLevel`, `muted`, …) go under `bindings` (1.1), and the message says so.
 - **Section-owned keys in `params` are errors** that point at the section: `colorHue` → `/color`, `glowStrength` → `/materials/glow`, and so on.
@@ -85,16 +85,16 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
 - **The floor is 1.8** (`fx_spec.rs`'s `FLOOR_MINOR`). A `1.0`–`1.7` file is one error at `/fxSpec` (``FX Spec 1.7 isn't supported; this runtime reads 1.8 and later``) and nothing resolves. Those minors were never published; their acceptance was dropped before the first release instead of becoming a promise (docs/release-roadmap.md, decision 0.1). A missing or malformed `fxSpec` is an error too, and the rest of the file is still read as the current minor so its other problems show.
 - The runtime is **1.15** (`RUNTIME_MINOR`). A file claiming this runtime's minor → unknown keys are **errors**. A key newer than the file's minor (1.9's `transitions`, `rules`, `accessibility`) is an error naming the minor it needs, and so is a pattern newer than it (1.15's `veil`, `crystal`, `dune`), at the base's or a `states` entry's `pattern`.
 - A **newer 1.x** file (`1.9`) → unknown keys are **warnings** and the rest renders (graceful degradation).
-- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is eight locks, `spec/fx-spec-1.8-resolved.json` to `-1.15-resolved.json`, over the 9 examples left after the 1.15 cleanup (byte-identical rows across minors); the 1.0–1.7 locks went with the floor. The 1.15 cleanup rewrote every lock without the examples it removed (the character ones and `signal-matrix`); no other row changed. Each older lock is read by its own `v1_<minor>_examples_resolve_identically`, and `every_older_lock_has_an_identity_test` fails if a lock has none. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
+- Every supported minor resolves **identically** under a newer runtime: one identity lock per minor (`spec/fx-spec-1.<minor>-resolved.json`) freezes that runtime's output for every example, and a test holds every later runtime to it. Today that is eight locks, `spec/fx-spec-1.8-resolved.json` to `-1.15-resolved.json`, over the 3 examples left after the 1.15 cleanup (`voice-assistant`, `voice-assistant-glowing`, `orb-brand-fixed`; byte-identical rows across minors); the 1.0–1.7 locks went with the floor. The 1.15 cleanup rewrote every lock without the examples it removed (the character ones, `signal-matrix` and the six that used the ring, core and beacon objects); no other row changed. Each older lock is read by its own `v1_<minor>_examples_resolve_identically`, and `every_older_lock_has_an_identity_test` fails if a lock has none. Capture one with `FX_SPEC_LOCK_WRITE=1 cargo test -p core_engine --test fx_spec_lock -- --ignored`, once that minor is stable and before anything using it is published. A missing lock for the current minor fails `the_current_runtimes_lock_is_present_and_still_matches`; a genuine mid-bump window is declared by setting `BUMP_IN_PROGRESS_TO` in `crates/core_engine/tests/fx_spec_lock.rs`, so it is a visible edit rather than an inference from an absent file.
 - **A key added in a later minor is gated automatically.** `spec/fx-spec-1.8-keys.json`
-  freezes every key path a 1.8 file may use (103 today, built from the resolver's own
-  tables). A new key (a material, a section key, a binding target, something low power
+  freezes every key path a 1.8 file may use (97 today, built from the resolver's own
+  tables; the six binding targets of the removed ring and beacon patterns left the list on purpose in 0.1.0-beta.12, pre-1.0). A new key (a material, a section key, a binding target, something low power
   can shed) must get a row in `fx_spec.rs`'s `SINCE` with the minor that adds it.
   `every_key_is_a_1_8_key_or_has_a_since_minor` fails by name until it does, and the
   one gate in `resolve` then turns it into an error in older files ("`materials.frost`
   needs "fxSpec": "1.9" (this file says 1.8)") and drops it. Removing a frozen key fails
   too: 1.8 files would break.
-- **Minor versions only add, with four exceptions before 1.0.** Each removes something
+- **Minor versions only add, with exceptions before 1.0 (1.12, 1.14 and 1.15).** Each removes something
   outright: a file that uses a removed section fails at every version, and the error says
   what to delete.
   - The `edge` object, in 1.12 (0.1.0-beta.8): "`object: edge` was removed in 0.1.0-beta.8
@@ -114,6 +114,13 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
     `veil`; `metering` → `crystal`; `playing` → `dune`), and "…; there is no replacement:
     delete it from the file" for `object: "character"`, the `silhouette` pattern and the keys
     `recipe`, `expression`, `palette` and `silhouette` (top level or in a `states` entry).
+  - Also in 1.15 (0.1.0-beta.12, R2): the objects `ring`, `core` and `beacon` with all their
+    patterns, in every version: "`object: ring` was removed in 0.1.0-beta.12 (FX Spec 1.15);
+    there is no replacement: delete it from the file". A removed pattern named on its own says
+    the same; for `completing`, `tracking` and `measuring` it says "its job is covered by
+    `crystal` (`level`) or `dune` (`progress`)". Gone with them: the binding targets
+    `progress0..3`, `quality` and `accuracy`, and the array params `progress` (1–4 values) and
+    `segment` (1–24 values).
 
   One value change reaches older files too, under the same 1.14 cleanup: `glowing`'s
   voice-state profile zooms less (`surfaceScale` thinking 3.0 → 1.6, speaking 1.5 → 1.4;
@@ -158,7 +165,7 @@ const frame = frameFromFxSpec(specJson, performance.now() / 1000);  // speed alr
   - `packages/core/test/fx-color-parity.test.mjs` checks the **Studio's own `kit/color.ts`** (imported directly; Node strips the types) and the wasm build against the same file. That test is what keeps "Studio pick = spec render" true.
 - **Platform parity:** wasm (`fx-spec.test.mjs`), iOS (`FxSpecTests.swift`, reads `spec/examples` via `#filePath`) and Android (`FxSpecTests.kt`, via the androidTest `spec/` assets) each render every example and compare against `frameWithOverrides`.
   - For state-map files, the wasm, iOS and Android tests render **every `states` key** with the same fixed inputs map.
-  - The RN example app runs one spec round trip through the bridge (`runFxSpecCheck`), plus a lifecycle call (state, binding, inactive binding; keyed `talking`, outside the voice-state profile). Its inlined spec is kept equal to `spec/examples/beacon-radar-glow.fxspec.json` by `sinua-checkpoints.test.mjs`.
+  - The RN example app runs one spec round trip through the bridge (`runFxSpecCheck`), plus a lifecycle call (state, binding, inactive binding; keyed outside the voice-state profile). Its inlined spec is kept equal to one of `spec/examples/` by `sinua-checkpoints.test.mjs`.
 - **Lifecycle states and bindings (Rust):**
   - The 1.8 identity lock (`v1_8_examples_resolve_identically`).
   - Merge semantics (`null` deletes, arrays replace, entry beats base) and fallback; a `null` keeps the voice-state profile out.
@@ -190,22 +197,22 @@ The sections from here on record what each minor added. Since the 1.8 floor thei
 - **The top level is the base design**, and each entry is merged over it with **RFC 7396 JSON Merge Patch**: objects merge, `null` deletes, arrays (`gradient.stops`, ranges) replace whole. `"materials": { "glow": null }` turns the shared glow off in one state; an empty entry is the base under a name.
 - An entry may set `state`, `speed`, `color`, `gradient`, `materials`, `params` and `bindings`. `object` and `size` are file-wide (an error in an entry). An entry's `state` must belong to the file's `object`.
 - **Fallback.** With no state passed, the base design renders silently. A key that isn't in `states` also renders the base, with a warning at `/states`. It is never an error, the same way Figma's variable modes fall back to the collection's default mode. A file without `states` ignores a requested state.
-- **Validation paths** are the entry's own (`/states/speaking/params/…`). Inherited keys were already checked on the base. An inherited `param` that the entry's mode doesn't read is simply not applied in that state (e.g. `tracking`'s `ringCount` under a `completing` entry). Params meant for one mode belong in that state's entry.
+- **Validation paths** are the entry's own (`/states/speaking/params/…`). Inherited keys were already checked on the base. An inherited `param` that the entry's mode doesn't read is simply not applied in that state (e.g. `crystal`'s `columnCount` under a `veil` entry). Params meant for one mode belong in that state's entry.
 
 ### `bindings`
 - **Keyed by target**, so each target is bound once and a state can override or delete (`null`) one: `"audioLevel": { "input": "micLevel", "inputRange": [0, 1], "outputRange": [0.1, 1], "curve": "easeOut" }`.
-- **Targets come only from the curated Reactive-Inputs contract** ([parameters.md](parameters.md#reactive-inputs-the-public-binding-contract)): `progress`, `progress0..3`, `quality`, `accuracy`, `audioLevel`, `glowStrength`, `noiseStrength`, `gradientStrength`, `pulseStrength`, `colorMix`, `muted`. Anything else is an error with a hint. Raw opts can't be bound from a spec.
+- **Targets come only from the curated Reactive-Inputs contract** ([parameters.md](parameters.md#reactive-inputs-the-public-binding-contract)): `progress`, `level` (`veil`, `crystal`), `audioLevel`, `glowStrength`, `noiseStrength`, `gradientStrength`, `pulseStrength`, `colorMix`, `muted`. Anything else is an error with a hint. Raw opts can't be bound from a spec.
 - **Input names are the app's own** (`micLevel`, `steps`, `heartRate`); the engine never interprets them.
 - **Mapping:** the same contract as `bindReactiveInput`, following Motion's `interpolate()`:
   - multi-stop `inputRange`/`outputRange` (field names as in RN's `Animated.interpolate`), ascending or descending;
   - one CSS keyword curve for all segments or one per segment (`linear`, `ease`, `easeIn`, `easeOut`, `easeInOut`);
-  - an omitted `outputRange` is the target's range, except `progress0..3`: their range is 0..3 (extra laps), but they **default to `[0, 1]`, one lap = the goal**. Laps are opt-in with a multi-stop output, e.g. `"inputRange": [0, 10000, 30000], "outputRange": [0, 1, 3]` (the fitness example's steps ring);
+  - an omitted `outputRange` is the target's range;
   - always clamped to the target's range; NaN maps to the minimum.
   - Companions ride along: `audioLevel` brings `audioStrength` 0.18 unless the block sets it.
   - It runs in Rust (`core_engine::reactive`), with `spec/reactive-vectors.json` holding it equal to `reactive.ts`.
 - **Missing input → inactive.** The target keeps its static or engine value and is listed in `inactiveBindings`; nothing is guessed.
 - Warnings:
-  - a mode-specific target the state's mode doesn't read (e.g. `quality` on a ring);
+  - a mode-specific target the state's mode doesn't read (e.g. `level` on a `dune`);
   - a target also set statically in the same block (while its input is present, the binding wins). One exemption: a `colorMix` binding next to a bare `color.value` or `color.mix: 0` doesn't warn. That colour is only what the binding mixes toward, and the Studios export exactly this pattern. An explicit non-zero `color.mix` does warn.
 - Runtime keys that are bindable (`audioLevel`, `muted`) are rejected in `params` with a pointer to `bindings.<key>`.
 
@@ -245,7 +252,7 @@ What the engine gives a view so every change stays continuous, however long the 
 ```json
 "performance": { "maxFps": 30, "lowPower": { "maxFps": 15, "disable": ["glow", "noise"] } }
 ```
-(`spec/examples/status-beacon-power.fxspec.json`)
+(the `performance` block of an example file)
 
 - **File-wide.** Top level only; inside a `states` entry it's an error. The block needs `"fxSpec": "1.2"`; in a 1.0 or 1.1 file it's an error and isn't honoured. 1.0 and 1.1 files resolve identically: `spec/fx-spec-1.1-resolved.json` froze the 1.1 runtime's output for every example and state before 1.2 landed, next to the 1.0 lock.
 - **`maxFps`** (1..120) is the cap the **host** should pace its render loop to. The engine never paces frames.
@@ -268,10 +275,10 @@ What the engine gives a view so every change stays continuous, however long the 
 - **`materials.glow.blend`**: `"normal"` or `"additive"`. Additive is a dark-theme look.
   - Both map to `glowMode` / `glowBlend`.
 - **`performance.lowPower.disable`** also accepts **`"blur"`**. Under low power it sets `blurScale` 0: every blur σ goes to 0, and glow's blur mode falls back to the stacked copies.
-- New mode params (plain `params`, checked by the params table): **`highlightFill`** (shimmer: a real gradient band) and **`trailFill`** (radar: a filled wedge).
+- 1.3 also added the mode params `highlightFill` (shimmer) and `trailFill` (radar); both went with the core and beacon families in 0.1.0-beta.12.
 - **Gating:** glow `mode`/`blend` and shedding `"blur"` need `"fxSpec": "1.3"`; in an older file they're errors and aren't honoured. 1.0/1.1/1.2 files resolve identically: `spec/fx-spec-1.2-resolved.json` froze all 8 older examples × every state × both power states before 1.3 landed.
-- **Examples:** `shimmer-gradient.fxspec.json` and `radar-wedge-blur.fxspec.json` (wedge + additive blur glow; low power sheds blur and caps at 20 fps).
-- Paint semantics: [engine.md](engine.md#paint-contract-fills-and-effects-materials-phase-1-2026-09-18).
+- The 1.3 examples (`shimmer-gradient`, `radar-wedge-blur`) are gone with those families.
+- Paint semantics: [engine.md](engine.md#paint-contract-effects-materials-phase-1-2026-09-18).
 
 ## v1.4–v1.6: liquid, particles, holographic (removed in 0.1.0-beta.9)
 
@@ -297,10 +304,10 @@ One name everywhere: a spec, a typed component prop and the docs all use the [pa
 |---|---|
 | `"state"` (the visual, top level and inside `states.*`) | `"pattern"`. The lifecycle key stays the `states` map key, and FxView's `specState` becomes `state` |
 | binding target `glowStrength` / `noiseStrength` / `gradientStrength` / `pulseStrength` / `colorMix` | `glow.strength` / `noise.strength` / `gradient.strength` / `pulse.strength` / `color.mix` |
-| binding target `progress0` … `progress3` | `progress[0]` … `progress[3]` |
-| params `progress0..3` / `segment0..23` | `"progress": [..]` (tracking, 1–4 values) / `"segment": [..]` (stepping, 1–24 values) |
+| binding target `progress0` … `progress3` (gone in 0.1.0-beta.12 with the ring patterns) | `progress[0]` … `progress[3]` |
+| params `progress0..3` / `segment0..23` (gone in 0.1.0-beta.12 with the ring patterns) | `"progress": [..]` / `"segment": [..]` |
 
-Unchanged: `audioLevel`, `muted`, `quality`, `accuracy`, `progress`, free input names, `inputRange` / `outputRange` / `curve`, `null` deletes, and the LiveKit `AgentState` keys.
+Unchanged: `audioLevel`, `muted`, `progress`, free input names, `inputRange` / `outputRange` / `curve`, `null` deletes, and the LiveKit `AgentState` keys.
 
 **At the time** this was a minor, not 2.0: the old names stayed as aliases (with a deprecation warning in a 1.7 file), and the identity locks proved every older file resolved byte-identically. **Since the 1.8 floor the old names are errors that name the new one** (see *Old names are errors* above), because nothing had been published that would need them.
 
@@ -344,8 +351,10 @@ How state changes animate, per pair. Optional. Without a rule for a pair, a voic
   error at that `pattern`. Their inputs are ordinary `params` and bindings: `level` (veil,
   crystal), `progress` and `envelope` (dune), `churn` (all three).
 - **Removed, an error at every version** (see *Versioning*): the flat signal patterns, the
-  `character` object with `recipe`, `expression` and `palette`, and the orb's `silhouette`
-  pattern and key.
+  `character` object with `recipe`, `expression` and `palette`, the orb's `silhouette`
+  pattern and key, and the objects `ring`, `core` and `beacon` with all their patterns.
+- **Reactive targets** are now `progress`, `level`, `audioLevel`, `glowStrength`,
+  `noiseStrength`, `gradientStrength`, `pulseStrength`, `colorMix` and `muted`; `level` is new.
 
 ```json
 { "fxSpec": "1.15", "object": "signal", "pattern": "veil",
@@ -419,7 +428,7 @@ pattern, with built-in words for the voice states.
 
 ## v1.8: `ink` and the voice-state direction
 
-**`ink`** (top level, and per `states` entry): how present the whole visual is, `0..1`, default `1`. It multiplies the alpha of every dot, line, polyline and fill *after* glow, so a faded visual fades as one thing, halos included. It changes no geometry and no ink value -- opacity only -- which is what keeps it mode-agnostic.
+**`ink`** (top level, and per `states` entry): how present the whole visual is, `0..1`, default `1`. It multiplies the alpha of every dot, line and polyline *after* glow, so a faded visual fades as one thing, halos included. It changes no geometry and no ink value -- opacity only -- which is what keeps it mode-agnostic.
 
 ```jsonc
 { "fxSpec": "1.8", "object": "orb", "pattern": "glowing", "ink": 1,

@@ -18,7 +18,7 @@ export const EVENTS = [
   { id: "error", react: "onError", wc: "fxerror", payload: "FxDiagnostic[] | Error" },
 ];
 
-/** "progress0..progress3" -> ["progress0", ..., "progress3"] */
+/** "envelope0..envelope63" -> ["envelope0", ..., "envelope63"] */
 function expandEngineKeys(spec) {
   const m = /^([A-Za-z]+)(\d+)\.\.\1(\d+)$/.exec(spec ?? "");
   if (!m) throw new Error(`codegen: can't expand engineKeys "${spec}"`);
@@ -94,7 +94,7 @@ function buildProp(path, uses, catalog, sizesByPattern) {
     attribute: !type.includes("[]"),
     arrayAttrFormat: type.includes("[]") ? "csv" : null,
     patterns: uses.map((u) => u.pattern),
-    // For "number|number[]": the patterns that take the list (ring `tracking`); the others take `key`.
+    // For "number|number[]": the patterns that take the list; the others take `key`.
     listPatterns: type === "number|number[]" ? uses.filter((u) => catalog.definitions[u.ref].type === "number[]").map((u) => u.pattern) : null,
     ranges,
     default: first.fallback ?? null,

@@ -12,8 +12,8 @@ import { NativeModules } from "react-native";
 
 /**
  * Mirrors `packages/core`'s `OrbState` exactly: `orbs::presets::STATES`
- * (the 9 ported states plus the 8 additive ones) and `signal::presets::
- * STATES` -- the same native binary serves every family through one
+ * (the 9 ported states plus the 8 additive ones) and the `signal` light
+ * volumes -- the same native binary serves both objects through one
  * `frame` entry point, so the union is the same on every platform.
  */
 export type OrbState =
@@ -36,19 +36,7 @@ export type OrbState =
   | "muted"
   | "veil"
   | "crystal"
-  | "dune"
-  | "completing"
-  | "loading"
-  | "tracking"
-  | "stepping"
-  | "measuring"
-  | "notifying"
-  | "reconnecting"
-  | "locating"
-  | "scanning"
-  | "broadcasting"
-  | "generating"
-  | "typing";
+  | "dune";
 
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;
@@ -90,7 +78,7 @@ export interface Point {
 /**
  * Mirrors `primitives::Polyline`: one continuous stroked path (round caps,
  * round joins, no fill) -- see `packages/core`'s `Polyline` for the paint
- * contract. Only the `signal` family emits these.
+ * contract. Only the success / error one-shot effects emit these.
  */
 export interface Polyline {
   points: Point[];
@@ -116,37 +104,13 @@ export interface OrbFrame {
   polylines: Polyline[];
   /** Paint mode for the whole frame -- see `ColorMode`. */
   colorMode: ColorMode;
-  /** Filled shapes (materials phase 1), drawn first; absent when none. Same shape as `packages/core`. */
-  fills?: Fill[];
   /** Paint effects on element ranges (real-blur glow); absent when none. */
   effects?: EffectRun[];
 }
 
-/** Mirrors `primitives::Fill` -- see docs/engine.md, *Paint contract*. */
-export interface Fill {
-  points: { x: number; y: number }[];
-  /** Inner rings: paint outer + holes as one even-odd path. Absent when none. */
-  holes?: { x: number; y: number }[][];
-  white: number;
-  a: number;
-  saturation: number;
-  hue: number;
-  gradient: {
-    kind: 0 | 1;
-    x0: number;
-    y0: number;
-    x1: number;
-    y1: number;
-    r: number;
-    stops: { offset: number; white: number; a: number; saturation: number; hue: number }[];
-  } | null;
-  blur: number;
-  blend: 0 | 1;
-}
-
-/** Elements [start, start+count) of list `target` (0 dots, 1 lines, 2 polylines) get blur (sigma) / blend. */
+/** Elements [start, start+count) of list `target` (0 dots, 1 lines) get blur (sigma) / blend. */
 export interface EffectRun {
-  target: 0 | 1 | 2;
+  target: 0 | 1;
   start: number;
   count: number;
   blur: number;
@@ -226,7 +190,7 @@ export function frameWithOverrides(
 /** An FX Spec document (v1) -- see `spec/fx-spec-1.schema.json`. */
 export interface FxSpec {
   fxSpec: string;
-  object: "orb" | "signal" | "ring" | "beacon" | "core";
+  object: "orb" | "signal";
   state: string;
   size?: OrbSize;
   speed?: number;

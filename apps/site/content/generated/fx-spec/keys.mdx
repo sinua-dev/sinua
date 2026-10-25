@@ -16,7 +16,7 @@
 | `color` |  | A color (shorthand for \{ value, mix: 1 \}) or the full section. |
 | `gradient` | object | see gradient |
 | `materials` | object |  |
-| `params` | object | Per-state engine opts (docs/parameters.md). Runtime inputs (pointer*, audio*, history*, interrupt*, muted*, voiceStateCode, peakN) and section-owned keys (color*, gradient*, glow*, noise*, pulse*) are rejected here. FX Spec 1.7: `progress` / `segment` may be arrays. |
+| `params` | object | Per-state engine opts (docs/parameters.md). Runtime inputs (pointer*, audio*, interrupt*, muted*, voiceStateCode) and section-owned keys (color*, gradient*, glow*, noise*, pulse*) are rejected here. FX Spec 1.7: `envelope` may be an array. |
 | `bindings` | object | see bindings |
 | `states` | object | Lifecycle key -&gt; design entry, merged over the top-level design (RFC 7396: objects merge, null deletes, arrays replace). Keys are free-form; LiveKit's AgentState names (initializing, idle, listening, thinking, speaking) are the convention. A state not listed renders the top-level design. |
 | `performance` | object | see performance |
@@ -43,12 +43,12 @@
 |---|---|---|
 | `input` | string | The app's input name (e.g. micLevel, steps, heartRate); the engine never interprets it. Missing at runtime = binding inactive. |
 | `inputRange` | array |  |
-| `outputRange` | array | Default: the target's range, except the per-ring `progress[0]`…`progress[3]`, which default to [0, 1] (the goal = one lap); for extra laps (up to 3) pass a multi-stop outputRange, e.g. [0, 1, 3]. |
+| `outputRange` | array | Default: the target's range. |
 | `curve` |  |  |
 
-Bindable targets: `progress`, `quality`, `accuracy`, `audioLevel`, `muted`, `progress[0]`, `progress[1]`, `progress[2]`, `progress[3]`, `glow.strength`, `noise.strength`, `gradient.strength`, `pulse.strength`, `color.mix`.
+Bindable targets: `progress`, `level`, `audioLevel`, `muted`, `glow.strength`, `noise.strength`, `gradient.strength`, `pulse.strength`, `color.mix`.
 
-Deprecated aliases (FX Spec 1.6 and earlier; still accepted, with a warning in a 1.7 file): `state` → `pattern`, `progress0` → `progress[0]`, `progress1` → `progress[1]`, `progress2` → `progress[2]`, `progress3` → `progress[3]`, `glowStrength` → `glow.strength`, `noiseStrength` → `noise.strength`, `gradientStrength` → `gradient.strength`, `pulseStrength` → `pulse.strength`, `colorMix` → `color.mix`. See the [rename map](/docs/reference/migration#what-was-renamed).
+Deprecated aliases (FX Spec 1.6 and earlier; still accepted, with a warning in a 1.7 file): `state` → `pattern`, `glowStrength` → `glow.strength`, `noiseStrength` → `noise.strength`, `gradientStrength` → `gradient.strength`, `pulseStrength` → `pulse.strength`, `colorMix` → `color.mix`. See the [rename map](/docs/reference/migration#what-was-renamed).
 
 ### `color`
 

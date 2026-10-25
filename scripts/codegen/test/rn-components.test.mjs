@@ -11,7 +11,7 @@
 //
 // What is worth pinning is the only logic the components add over the mapping:
 // the spec-mismatch branch, and the PARAM_KEYS list. Every assertion runs across
-// all five components, because a generator regression lands on one object at a
+// both components, because a generator regression lands on one object at a
 // time.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -66,7 +66,7 @@ const interfaceKeys = (text, typeName) => {
 };
 
 test("each component guards its own catalog object", () => {
-  // A SinuaOrb asking sinuaSpecError for "ring" is exactly the copy/paste
+  // A SinuaOrb asking sinuaSpecError for "signal" is exactly the copy/paste
   // mistake a per-object generator can make, and nothing else would catch it.
   for (const m of models) {
     assert.equal(guardedObject(componentText(m)), m.object, `${m.typeName} guards the wrong object`);

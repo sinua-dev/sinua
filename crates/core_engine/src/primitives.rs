@@ -47,13 +47,42 @@ pub fn cycles(o: &ModeOpts, acc: &str) -> Option<f64> {
     o.get(acc).copied()
 }
 
-/// Builds a `ModeOpts` from literal pairs -- a test convenience today
-/// (the ring, beacon and core tests use it; `orbs::profiles::opts` is the
-/// same one-liner, used by real preset-building code there too, so it
-/// isn't `cfg(test)`-gated the way this one is).
+/// A test helper: the arc starting at `start_deg` and sweeping `sweep_deg` clockwise
+/// from 12 o'clock as one polyline (a vertex at most every ~4 degrees, both ends
+/// included; a zero sweep is two coincident points).
 #[cfg(test)]
-pub fn opts(pairs: &[(&str, f64)]) -> ModeOpts {
-    pairs.iter().map(|(k, v)| (k.to_string(), *v)).collect()
+#[allow(clippy::too_many_arguments)]
+pub fn arc_polyline(
+    cx: f64,
+    cy: f64,
+    r: f64,
+    start_deg: f64,
+    sweep_deg: f64,
+    w: f64,
+    white: f64,
+    a: f64,
+    saturation: f64,
+    hue: f64,
+) -> Polyline {
+    let sweep = sweep_deg.max(0.0);
+    let segments = ((sweep / 4.0).ceil() as usize).max(1);
+    let points = (0..=segments)
+        .map(|i| {
+            let rad = (start_deg + sweep * (i as f64 / segments as f64)).to_radians();
+            Point {
+                x: cx + r * rad.sin(),
+                y: cy - r * rad.cos(),
+            }
+        })
+        .collect();
+    Polyline {
+        points,
+        white,
+        a,
+        w,
+        saturation,
+        hue,
+    }
 }
 
 // Record derive is per-target, same reasoning as the Cargo.toml split:
@@ -148,18 +177,6 @@ pub struct Point {
 /// under round caps on every target renderer -- `bar` relies on this for
 /// its shortest pills.
 ///
-/// Per-vertex hue (2026-09-19): when `hues` is non-empty, draw each segment
-/// `i-1 -> i` as a round-capped stroke of width `w` with a linear gradient
-/// from `ink(white, saturation, hues[i-1])` to `ink(.., hues[i])` at alpha
-/// 1 (a zero-length segment: a round dot of diameter `w` in vertex `i`'s
-/// colour), all segments into ONE offscreen/transparency layer, then
-/// composite that layer once at `a` -- with the element's effect run
-/// (blur, blend) applied at that composite. Inside the opaque layer the
-/// round caps overlap without double-painting, so the stroke keeps the
-/// single-path, no-seam look this primitive exists for. Between vertices
-/// the renderer's own gradient interpolation (sRGB) is used: vertices are
-/// dense, and RGB interpolation handles a 359 -> 1 hue wrap by itself. A
-/// renderer without per-vertex support paints `hue`, exactly as before.
 #[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 #[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -172,18 +189,8 @@ pub struct Polyline {
     pub w: f64,
     /// Same semantics as `Dot.saturation` -- `0` = grayscale ink.
     pub saturation: f64,
-    /// Same semantics as `Dot.hue`. With `hues`, this stays the whole
-    /// stroke's single-hue sample (the vertex mean) -- the fallback a
-    /// renderer without per-vertex support paints.
+    /// Same semantics as `Dot.hue`.
     pub hue: f64,
-    /// Per-vertex hue (degrees), one per `points` entry, or empty = the
-    /// single `hue` for the whole stroke (every mode emits empty). Set by
-    /// `apply_gradient` only when the vertex hues differ, so a
-    /// ring's track sweeps along its length instead of taking one colour.
-    /// `white`, `a`, `w`, `saturation` stay uniform. Paint contract: see
-    /// the per-vertex paragraph above. Omitted from JSON when empty.
-    #[cfg_attr(target_arch = "wasm32", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub hues: Vec<f64>,
 }
 
 /// How a renderer resolves an element's lightness against its theme -- the
@@ -232,77 +239,14 @@ pub struct OrbFrame {
     /// `Ink` unless `apply_color`'s `colorMode` asked for `Fixed`.
     #[cfg_attr(target_arch = "wasm32", serde(rename = "colorMode"))]
     pub color_mode: ColorMode,
-    /// Filled shapes (materials phase 1), drawn *first* -- under polylines,
-    /// lines and dots. Empty for every mode unless an opt asks for fills;
-    /// omitted from JSON when empty so existing frames serialize unchanged.
-    #[cfg_attr(target_arch = "wasm32", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub fills: Vec<Fill>,
-    /// Paint effects on ranges of `dots` / `lines` / `polylines` (today:
-    /// real-blur glow halos). Omitted from JSON when empty.
+    /// Paint effects on ranges of `dots` / `lines` (glow halos, the light
+    /// volumes' soft glows). Omitted from JSON when empty.
     #[cfg_attr(target_arch = "wasm32", serde(skip_serializing_if = "Vec::is_empty"))]
     pub effects: Vec<EffectRun>,
 }
 
-/// A closed, filled polygon (the engine tessellates arcs into points, the
-/// same way polylines are built). Paint contract (docs/engine.md):
-/// - ink is `white`/`a`/`saturation`/`hue` exactly like a `Dot` -- mirrored
-///   on dark themes unless the frame's `color_mode` is `Fixed`;
-/// - with a `gradient`, the stops replace the solid ink and each stop's
-///   final alpha is `stop.a * fill.a` (so pulse/decay/mute/cross-fades only
-///   ever scale `a`); the solid ink stays as a fallback;
-/// - `blur` is a Gaussian sigma in engine units (0 = none), `blend` 0 =
-///   normal, 1 = additive (Canvas `lighter`, SwiftUI `plusLighter`, Compose
-///   `BlendMode.Plus`).
-#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
-#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct Fill {
-    pub points: Vec<Point>,
-    /// Inner rings (liquid's bands have them): painted with the *even-odd*
-    /// rule together with `points` as one path. Omitted from JSON when
-    /// empty -- every fill before materials phase 2 has none.
-    #[cfg_attr(target_arch = "wasm32", serde(skip_serializing_if = "Vec::is_empty"))]
-    pub holes: Vec<Vec<Point>>,
-    pub white: f64,
-    pub a: f64,
-    pub saturation: f64,
-    pub hue: f64,
-    pub gradient: Option<FillGradient>,
-    pub blur: f64,
-    pub blend: u8,
-}
-
-/// `kind` 0 = linear from (x0, y0) to (x1, y1); 1 = radial, centre (x0, y0),
-/// radius 0 to `r`. Pad beyond the ends. No conic: SwiftUI's
-/// `GraphicsContext` conic shading is iOS 18+ and SVG has none.
-#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
-#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct FillGradient {
-    pub kind: u8,
-    pub x0: f64,
-    pub y0: f64,
-    pub x1: f64,
-    pub y1: f64,
-    pub r: f64,
-    /// 2-3 stops, sorted by `offset` in 0..1.
-    pub stops: Vec<GradientStop>,
-}
-
-#[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
-#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct GradientStop {
-    pub offset: f64,
-    pub white: f64,
-    /// Relative: the painted alpha is `stop.a * fill.a`.
-    pub a: f64,
-    pub saturation: f64,
-    pub hue: f64,
-}
-
 /// Elements `[start, start + count)` of one list (`target` 0 = dots, 1 =
-/// lines, 2 = polylines) composited with a Gaussian `blur` (sigma, engine
+/// lines) composited with a Gaussian `blur` (sigma, engine
 /// units) and `blend` (0 normal, 1 additive). Never changes draw order.
 #[cfg_attr(not(target_arch = "wasm32"), derive(uniffi::Record))]
 #[cfg_attr(target_arch = "wasm32", derive(serde::Serialize))]
@@ -317,84 +261,9 @@ pub struct EffectRun {
 
 impl Polyline {
     /// Recolours the stroke through an ink rule `f(saturation, hue) ->
-    /// (saturation, hue)`: the single `hue` (and `saturation`) as before,
-    /// and every per-vertex hue with the same pre-change saturation -- the
-    /// `Polyline` counterpart of `Fill::map_ink`. Drops `hues` once they
-    /// have all collapsed to one value (e.g. an interrupt flash snapping
-    /// every vertex to its hue), so nothing pays for a layer it can't use.
+    /// (saturation, hue)`.
     pub fn map_hue(&mut self, f: impl Fn(f64, f64) -> (f64, f64)) {
-        let sat = self.saturation;
-        for h in self.hues.iter_mut() {
-            *h = f(sat, *h).1;
-        }
-        let (s, h) = f(sat, self.hue);
-        self.saturation = s;
-        self.hue = h;
-        self.drop_uniform_hues();
-    }
-
-    /// Sets per-vertex hues from `hue_at(index, point)`, keeping them only
-    /// when they differ -- a stroke whose vertices all get one hue stays a
-    /// plain single-hue stroke (no per-vertex paint cost).
-    fn set_hues(&mut self, hue_at: impl Fn(usize, &Point) -> f64) {
-        self.hues = self
-            .points
-            .iter()
-            .enumerate()
-            .map(|(i, q)| hue_at(i, q))
-            .collect();
-        self.drop_uniform_hues();
-    }
-
-    fn drop_uniform_hues(&mut self) {
-        if let Some(&h0) = self.hues.first() {
-            if self.hues.iter().all(|&h| h == h0) {
-                self.hues.clear();
-            }
-        }
-    }
-}
-
-impl Fill {
-    /// Moves every point of the shape -- and its gradient's geometry, so the
-    /// ramp stays attached -- through `f`. The post-processes use this to
-    /// treat a fill like a polyline's vertices.
-    pub fn map_points(&mut self, mut f: impl FnMut(f64, f64) -> (f64, f64)) {
-        for p in self.points.iter_mut() {
-            (p.x, p.y) = f(p.x, p.y);
-        }
-        for ring in self.holes.iter_mut() {
-            for p in ring.iter_mut() {
-                (p.x, p.y) = f(p.x, p.y);
-            }
-        }
-        if let Some(g) = self.gradient.as_mut() {
-            (g.x0, g.y0) = f(g.x0, g.y0);
-            (g.x1, g.y1) = f(g.x1, g.y1);
-        }
-    }
-
-    /// The vertex mean (for gradient sampling and centroids).
-    pub fn centroid(&self) -> Option<(f64, f64)> {
-        if self.points.is_empty() {
-            return None;
-        }
-        let n = self.points.len() as f64;
-        let (x, y) = self
-            .points
-            .iter()
-            .fold((0.0, 0.0), |(ax, ay), q| (ax + q.x, ay + q.y));
-        Some((x / n, y / n))
-    }
-
-    /// Applies an ink/colour transform to the solid ink and every stop.
-    pub fn map_ink(&mut self, mut f: impl FnMut(f64, f64, f64) -> (f64, f64, f64)) {
-        (self.white, self.saturation, self.hue) = f(self.white, self.saturation, self.hue);
-        if let Some(g) = self.gradient.as_mut() {
-            for st in g.stops.iter_mut() {
-                (st.white, st.saturation, st.hue) = f(st.white, st.saturation, st.hue);
-            }
-        }
+        (self.saturation, self.hue) = f(self.saturation, self.hue);
     }
 }
 
@@ -482,7 +351,6 @@ pub fn finalize_frame(dots: Vec<Dot>, lines: Vec<Line>, r_min: f64) -> OrbFrame 
         // Attached separately via `OrbFrame::with_polylines` by the modes
         // that emit them (`signal` only, today).
         polylines: Vec::new(),
-        fills: Vec::new(),
         effects: Vec::new(),
     }
 }
@@ -523,58 +391,6 @@ pub fn audio_band(o: &HashMap<String, f64>, index: usize) -> Option<f64> {
         _ => return None,
     };
     o.get(key).copied()
-}
-
-/// The point on a ring of radius `r` at `deg` degrees **clockwise from 12
-/// o'clock** (canvas y grows downward, so "up" is `cy - r`) -- Material's
-/// `270f` start angle in canvas terms. Shared by `ring` and `beacon`.
-pub fn ring_point(cx: f64, cy: f64, r: f64, deg: f64) -> Point {
-    let a = deg.to_radians();
-    Point {
-        x: cx + r * a.sin(),
-        y: cy - r * a.cos(),
-    }
-}
-
-/// Samples the arc starting at `start_deg` and sweeping `sweep_deg`
-/// clockwise into one polyline, with a vertex at most every ~4 degrees and
-/// always at both ends. A zero sweep yields two coincident points, which
-/// the paint contract renders as a round dot of diameter `w` (Material's
-/// "0% progress" look, for free). A 360 sweep is a closed circle. Lived in
-/// `ring::geom` first; moved here once `beacon` needed it too, so the
-/// second family to draw arcs doesn't import from the first (the same
-/// "don't make an earlier family a false hub" reasoning as this file's
-/// own extraction from `orbs::core`).
-#[allow(clippy::too_many_arguments)]
-pub fn arc_polyline(
-    cx: f64,
-    cy: f64,
-    r: f64,
-    start_deg: f64,
-    sweep_deg: f64,
-    w: f64,
-    white: f64,
-    a: f64,
-    saturation: f64,
-    hue: f64,
-) -> Polyline {
-    const STEP_DEG: f64 = 4.0;
-    let sweep = sweep_deg.max(0.0);
-    let segments = ((sweep / STEP_DEG).ceil() as usize).max(1);
-    let mut points = Vec::with_capacity(segments + 1);
-    for i in 0..=segments {
-        let deg = start_deg + sweep * (i as f64 / segments as f64);
-        points.push(ring_point(cx, cy, r, deg));
-    }
-    Polyline {
-        points,
-        white,
-        a,
-        w,
-        saturation,
-        hue,
-        hues: Vec::new(),
-    }
 }
 
 /// CSS `cubic-bezier(x1, y1, x2, y2)` easing: solves `x(s) = u` for the
@@ -619,13 +435,6 @@ pub fn cubic_bezier(x1: f64, y1: f64, x2: f64, y2: f64, u: f64) -> f64 {
         s = (lo + hi) * 0.5;
     }
     bez(y1, y2, s)
-}
-
-/// Material's standard easing, `cubic-bezier(0.4, 0, 0.2, 1)` -- the curve
-/// both the MDC Web spinner (`$timing-function`) and Compose M3
-/// (`EasingStandardCubicBezier`) use.
-pub fn standard_ease(u: f64) -> f64 {
-    cubic_bezier(0.4, 0.0, 0.2, 1.0, u)
 }
 
 /// One period of Tailwind's `animate-pulse` as a `0..1` depth: `0` at both
@@ -695,13 +504,6 @@ fn frame_centroid(frame: &OrbFrame) -> Option<(f64, f64)> {
             n += 1;
         }
     }
-    for f in &frame.fills {
-        for pt in &f.points {
-            sx += pt.x;
-            sy += pt.y;
-            n += 1;
-        }
-    }
     if n == 0 {
         None
     } else {
@@ -734,89 +536,9 @@ fn scale_frame(frame: &mut OrbFrame, (cx, cy): (f64, f64), pos: f64, size: f64, 
         p.w *= size;
         p.a = (p.a * alpha).clamp(0.0, 1.0);
     }
-    for f in frame.fills.iter_mut() {
-        f.map_points(|x, y| (cx + (x - cx) * pos, cy + (y - cy) * pos));
-        if let Some(g) = f.gradient.as_mut() {
-            g.r *= pos;
-        }
-        f.blur *= size;
-        f.a = (f.a * alpha).clamp(0.0, 1.0);
-    }
     for e in frame.effects.iter_mut() {
         e.blur *= size;
     }
-}
-
-#[cfg(test)]
-mod geom_tests {
-    use super::*;
-
-    #[test]
-    fn ring_point_walks_clockwise_from_twelve() {
-        let top = ring_point(10.0, 10.0, 5.0, 0.0);
-        let right = ring_point(10.0, 10.0, 5.0, 90.0);
-        let bottom = ring_point(10.0, 10.0, 5.0, 180.0);
-        assert!(
-            (top.x - 10.0).abs() < 1e-9 && (top.y - 5.0).abs() < 1e-9,
-            "0 deg is straight up"
-        );
-        assert!(
-            (right.x - 15.0).abs() < 1e-9 && (right.y - 10.0).abs() < 1e-9,
-            "90 deg is 3 o'clock"
-        );
-        assert!((bottom.y - 15.0).abs() < 1e-9, "180 deg is straight down");
-    }
-
-    #[test]
-    fn arc_polyline_hits_both_ends_and_collapses_to_a_dot_at_zero_sweep() {
-        let p = arc_polyline(10.0, 10.0, 5.0, 30.0, 90.0, 1.0, 0.1, 1.0, 0.0, 0.0);
-        let first = &p.points[0];
-        let last = p.points.last().unwrap();
-        let want_first = ring_point(10.0, 10.0, 5.0, 30.0);
-        let want_last = ring_point(10.0, 10.0, 5.0, 120.0);
-        assert!((first.x - want_first.x).abs() < 1e-9 && (first.y - want_first.y).abs() < 1e-9);
-        assert!((last.x - want_last.x).abs() < 1e-9 && (last.y - want_last.y).abs() < 1e-9);
-        assert!(p.points.len() >= 23, "a 90 deg arc at ~4 deg steps");
-        let dot = arc_polyline(10.0, 10.0, 5.0, 30.0, 0.0, 1.0, 0.1, 1.0, 0.0, 0.0);
-        assert_eq!(dot.points.len(), 2);
-        assert_eq!(dot.points[0], dot.points[1]);
-        let circle = arc_polyline(10.0, 10.0, 5.0, 0.0, 360.0, 1.0, 0.1, 1.0, 0.0, 0.0);
-        let (a, b) = (&circle.points[0], circle.points.last().unwrap());
-        assert!(
-            (a.x - b.x).abs() < 1e-9 && (a.y - b.y).abs() < 1e-9,
-            "a 360 sweep closes"
-        );
-    }
-
-    #[test]
-    fn standard_ease_is_a_monotone_curve_through_the_corners() {
-        assert!(standard_ease(0.0).abs() < 1e-9);
-        assert!((standard_ease(1.0) - 1.0).abs() < 1e-9);
-        let mut prev = 0.0;
-        for i in 1..=20 {
-            let v = standard_ease(i as f64 / 20.0);
-            assert!(v >= prev - 1e-9, "must not decrease");
-            prev = v;
-        }
-        assert!(
-            standard_ease(0.25) < 0.25 && standard_ease(0.75) > 0.75,
-            "ease-in-out"
-        );
-        // Tailwind's ping curve is a pure ease-out: fast start, slow end.
-        assert!(cubic_bezier(0.0, 0.0, 0.2, 1.0, 0.25) > 0.25);
-    }
-}
-
-/// General indexed-key lookup (`prefix0`, `prefix1`, ...) -- the same
-/// encoding `audio_band` uses for `audioBandN`, but unbounded: builds the
-/// key with `format!`, so each call allocates one short `String`. That's
-/// deliberate. `audio_band`'s fixed `match` exists to stay allocation-free
-/// in a dense mode's per-dot hot path; an indexed input here is read once
-/// per element (a few dozen times per frame), where that many tiny
-/// allocations are far below anything measurable, and a 16-entry cap would
-/// be a real limit. Used by the ring's `nested` and `segmented`.
-pub fn indexed_opt(o: &HashMap<String, f64>, prefix: &str, index: usize) -> Option<f64> {
-    o.get(&format!("{prefix}{index}")).copied()
 }
 
 /// Mode-agnostic post-process: if `pointerStrength` is present and above
@@ -900,12 +622,6 @@ pub fn apply_pointer(mut frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFra
         }
     }
     // Fills move like polylines (shape and gradient together).
-    for f in frame.fills.iter_mut() {
-        f.map_points(|x, y| {
-            let (x, y, _) = push(x, y);
-            (x, y)
-        });
-    }
     frame
 }
 
@@ -1010,13 +726,6 @@ pub fn apply_audio_reactive(mut frame: OrbFrame, opts: &HashMap<String, f64>) ->
         p.w *= 1.0 + level * gain * 0.5;
         p.a = (p.a * (1.0 + level * gain * 0.6)).min(1.0);
     }
-    for f in frame.fills.iter_mut() {
-        f.map_points(|x, y| (cx + (x - cx) * expand, cy + (y - cy) * expand));
-        if let Some(g) = f.gradient.as_mut() {
-            g.r *= expand;
-        }
-        f.a = (f.a * (1.0 + level * gain * 0.6)).min(1.0);
-    }
     frame
 }
 
@@ -1049,9 +758,6 @@ pub fn apply_ink(mut frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame {
     }
     for p in frame.polylines.iter_mut() {
         p.a *= ink;
-    }
-    for f in frame.fills.iter_mut() {
-        f.a *= ink;
     }
     frame
 }
@@ -1133,13 +839,6 @@ pub fn apply_muted(mut frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame
         p.w *= deflate;
         p.white = ink(p.white);
         p.map_hue(color);
-    }
-    for f in frame.fills.iter_mut() {
-        f.a *= dim;
-        f.map_ink(|w, sat, hue| {
-            let (s, h) = color(sat, hue);
-            (ink(w), s, h)
-        });
     }
     frame
 }
@@ -1267,14 +966,6 @@ pub fn apply_interrupt(mut frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbF
         p.a = (p.a * brighten).min(1.0);
         p.white = ink(p.white);
         p.map_hue(color);
-    }
-    for f in frame.fills.iter_mut() {
-        f.map_points(|x, y| (cx + (x - cx) * kick, cy + (y - cy) * kick));
-        f.a = (f.a * brighten).min(1.0);
-        f.map_ink(|w, sat, hue| {
-            let (s, h) = color(sat, hue);
-            (ink(w), s, h)
-        });
     }
     frame
 }
@@ -1453,7 +1144,6 @@ pub fn apply_glow(frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame {
         return glow_blurred(frame, opts, strength, blur_scale);
     }
     let color_mode = frame.color_mode;
-    let fills = frame.fills.clone();
     let effects = frame.effects.clone();
     let radius = opts.get("glowRadius").copied().unwrap_or(2.5).max(1.05);
     let layers = opts
@@ -1537,11 +1227,6 @@ pub fn apply_glow(frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame {
                 w: p.w * s,
                 saturation,
                 hue,
-                hues: if tint > 0.0 {
-                    Vec::new()
-                } else {
-                    p.hues.clone()
-                },
             });
         }
         polylines.push(p);
@@ -1554,7 +1239,6 @@ pub fn apply_glow(frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame {
         dots,
         lines,
         polylines,
-        fills,
         effects,
     }
 }
@@ -1573,7 +1257,8 @@ fn median(mut v: Vec<f64>) -> f64 {
 /// telling the painter to blur that block (sigma from the list's median
 /// size, so it scales with the object) and, with `glowBlend` 1, to add it.
 /// Halos sit under every original; in stacked mode each element's copies
-/// are interleaved with it instead. Fills are not glowed.
+/// are interleaved with it instead. Polylines are not glowed in this mode: only the
+/// one-shot effects draw them, and they draw after the glow.
 fn glow_blurred(
     mut frame: OrbFrame,
     opts: &HashMap<String, f64>,
@@ -1657,55 +1342,18 @@ fn glow_blurred(
         frame.lines = halos;
     }
 
-    let mut halos: Vec<Polyline> = Vec::new();
-    for p in &frame.polylines {
-        let a = faint(p.a * peak);
-        if a > 0.0 {
-            let (saturation, hue) = color(p.saturation, p.hue);
-            halos.push(Polyline {
-                w: p.w * grow,
-                a,
-                saturation,
-                hue,
-                points: p.points.clone(),
-                white: p.white,
-                // A tint replaces the hue, so the halo is one colour;
-                // untinted, it follows the stroke's per-vertex sweep.
-                hues: if tint > 0.0 {
-                    Vec::new()
-                } else {
-                    p.hues.clone()
-                },
-            });
-        }
-    }
-    if !halos.is_empty() {
-        let sigma = median(frame.polylines.iter().map(|p| p.w).collect()) * spread;
-        frame.effects.push(EffectRun {
-            target: 2,
-            start: 0,
-            count: halos.len() as u32,
-            blur: sigma,
-            blend,
-        });
-        halos.append(&mut frame.polylines);
-        frame.polylines = halos;
-    }
     frame
 }
 
 /// The last post-process: `blurScale` (default 1; FX Spec low power sets 0)
-/// scales every blur sigma, and 0 strips blur -- fills draw sharp, effect
-/// runs with nothing left to do are dropped. Glow's blur mode already fell
+/// scales every blur sigma, and 0 strips blur -- effect runs with nothing left
+/// to do are dropped. Glow's blur mode already fell
 /// back to stacked copies at 0, in `apply_glow`.
 pub fn apply_blur_scale(mut frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame {
     let k = match opts.get("blurScale") {
         Some(k) if *k != 1.0 => k.max(0.0),
         _ => return frame,
     };
-    for f in frame.fills.iter_mut() {
-        f.blur *= k;
-    }
     for e in frame.effects.iter_mut() {
         e.blur *= k;
     }
@@ -1780,12 +1428,6 @@ pub fn apply_noise(
             pt.x += dx;
             pt.y += dy;
         }
-    }
-    for f in frame.fills.iter_mut() {
-        f.map_points(|x, y| {
-            let (dx, dy) = shift(x, y);
-            (x + dx, y + dy)
-        });
     }
     frame
 }
@@ -1872,9 +1514,6 @@ pub fn apply_color(mut frame: OrbFrame, opts: &HashMap<String, f64>) -> OrbFrame
     }
     for p in frame.polylines.iter_mut() {
         (p.white, p.saturation, p.hue) = recolor(p.white, p.saturation, p.hue);
-    }
-    for f in frame.fills.iter_mut() {
-        f.map_ink(recolor);
     }
     frame
 }
@@ -1979,27 +1618,10 @@ pub fn apply_gradient(mut frame: OrbFrame, size: f64, opts: &HashMap<String, f64
             .points
             .iter()
             .fold((0.0, 0.0), |(ax, ay), q| (ax + q.x, ay + q.y));
-        // Per vertex (Q1, 2026-09-19): each vertex samples the ramp at its
-        // own position, easing from its own previous hue; `hue` stays the
-        // vertex-mean sample as the single-hue fallback.
-        let sat = p.saturation;
-        let prev = p.hues.clone();
-        let base = p.hue;
-        p.set_hues(|i, q| color(sat, prev.get(i).copied().unwrap_or(base), u_at(q.x, q.y)).1);
-        let (s, h) = color(sat, base, u_at(mx / n, my / n));
+        // A polyline has one colour: the ramp sampled at its vertex mean.
+        let (s, h) = color(p.saturation, p.hue, u_at(mx / n, my / n));
         p.saturation = s;
         p.hue = h;
-    }
-    // A fill samples the ramp at its vertex mean, for its ink and its stops.
-    for f in frame.fills.iter_mut() {
-        let Some((mx, my)) = f.centroid() else {
-            continue;
-        };
-        let u = u_at(mx, my);
-        f.map_ink(|w, sat, hue| {
-            let (s, h) = color(sat, hue, u);
-            (w, s, h)
-        });
     }
     // A line has one colour, so it samples the ramp at its midpoint.
     for l in frame.lines.iter_mut() {
@@ -2063,11 +1685,9 @@ mod glow_tests {
             w: 2.0,
             saturation: 0.5,
             hue: 200.0,
-            hues: Vec::new(),
         }];
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots,
             lines,
@@ -2145,7 +1765,6 @@ mod glow_tests {
         // A nearly invisible dot doesn't get four invisible halos.
         let faint = OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![Dot {
                 a: 0.05,
@@ -2170,7 +1789,6 @@ mod noise_material_tests {
     fn sample() -> OrbFrame {
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: (0..20)
                 .map(|i| Dot {
@@ -2286,7 +1904,6 @@ mod gradient_tests {
     fn frame(dots: Vec<Dot>) -> OrbFrame {
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots,
             ..Default::default()
@@ -2383,7 +2000,6 @@ mod gradient_tests {
         ]);
         let f = OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![],
             lines: vec![Line {
@@ -2429,7 +2045,6 @@ mod pulse_tests {
     fn dots_and_a_polyline() -> OrbFrame {
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![
                 Dot {
@@ -2545,7 +2160,6 @@ mod decay_tests {
     fn frame() -> OrbFrame {
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![
                 Dot {
@@ -2662,7 +2276,6 @@ mod interrupt_tests {
     fn two_dots_and_a_polyline() -> OrbFrame {
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![
                 Dot {
@@ -2793,7 +2406,6 @@ mod muted_tests {
     fn sample_frame() -> OrbFrame {
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![Dot {
                 x: 5.0,
@@ -2823,7 +2435,6 @@ mod muted_tests {
                 w: 2.0,
                 saturation: 0.6,
                 hue: 200.0,
-                hues: Vec::new(),
             }],
         }
     }
@@ -2893,7 +2504,6 @@ mod audio_reactive_tests {
     fn frame_with_one_dot() -> OrbFrame {
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![Dot {
                 x: 10.0,
@@ -2910,7 +2520,6 @@ mod audio_reactive_tests {
     fn frame_with_two_dots() -> OrbFrame {
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![
                 Dot {
@@ -2965,7 +2574,6 @@ mod audio_reactive_tests {
         let ring = arc_polyline(32.0, 32.0, 20.0, 0.0, 360.0, 4.0, 0.15, 0.5, 0.0, 0.0);
         let frame = || OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![],
             lines: vec![],
@@ -3019,7 +2627,6 @@ mod audio_reactive_tests {
         let ring = arc_polyline(32.0, 32.0, 20.0, 0.0, 360.0, 4.0, 0.15, 0.5, 0.0, 0.0);
         let frame = OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![],
             lines: vec![],
@@ -3040,7 +2647,6 @@ mod audio_reactive_tests {
         // exactly as before the polyline path existed.
         let frame = OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: frame_with_two_dots().dots,
             lines: vec![],
@@ -3182,7 +2788,6 @@ mod pointer_tests {
     fn frame_with_two_dots() -> OrbFrame {
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![
                 Dot {
@@ -3213,7 +2818,6 @@ mod pointer_tests {
         let arc = arc_polyline(32.0, 32.0, 20.0, 0.0, 180.0, 4.0, 0.15, 0.95, 0.0, 0.0);
         let frame = OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![],
             lines: vec![],
@@ -3248,7 +2852,6 @@ mod pointer_tests {
     fn a_line_endpoint_on_a_dot_stays_attached() {
         let frame = OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![Dot {
                 x: 12.0,
@@ -3289,7 +2892,6 @@ mod pointer_tests {
         let arc = arc_polyline(32.0, 32.0, 20.0, 0.0, 90.0, 4.0, 0.15, 0.95, 0.0, 0.0);
         let frame = OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![],
             lines: vec![],
@@ -3586,7 +3188,6 @@ mod color_tests {
     fn mixed() -> OrbFrame {
         OrbFrame {
             color_mode: ColorMode::Ink,
-            fills: Vec::new(),
             effects: Vec::new(),
             dots: vec![
                 Dot {
@@ -3798,125 +3399,5 @@ mod color_tests {
             muted.lines[0].saturation < 0.8,
             "a grey mute desaturates lines too"
         );
-    }
-}
-
-#[cfg(test)]
-mod per_vertex_hue_tests {
-    use super::*;
-
-    fn opts(pairs: &[(&str, f64)]) -> HashMap<String, f64> {
-        pairs.iter().map(|(k, v)| (k.to_string(), *v)).collect()
-    }
-
-    /// A 24-vertex ring (a track) plus one zero-length stroke (a head).
-    fn ring_frame() -> OrbFrame {
-        let points: Vec<Point> = (0..24)
-            .map(|k| {
-                let a = k as f64 / 24.0 * std::f64::consts::TAU;
-                Point {
-                    x: 32.0 + 20.0 * a.cos(),
-                    y: 32.0 + 20.0 * a.sin(),
-                }
-            })
-            .collect();
-        OrbFrame {
-            polylines: vec![
-                Polyline {
-                    points,
-                    white: 0.4,
-                    a: 0.5,
-                    w: 3.0,
-                    ..Default::default()
-                },
-                Polyline {
-                    points: vec![Point { x: 32.0, y: 12.0 }; 2],
-                    white: 0.3,
-                    a: 1.0,
-                    w: 4.0,
-                    ..Default::default()
-                },
-            ],
-            ..Default::default()
-        }
-    }
-
-    /// A dot at the vertex's position: the gradient colours it by position alone,
-    /// so it's an independent oracle for the vertex hue.
-    fn dot_at(q: &Point) -> Dot {
-        Dot {
-            x: q.x,
-            y: q.y,
-            r: 1.0,
-            white: 0.4,
-            a: 1.0,
-            ..Default::default()
-        }
-    }
-
-    fn check_vertices_match_dots(apply: impl Fn(OrbFrame) -> OrbFrame) {
-        let mut f = ring_frame();
-        let track = f.polylines[0].points.clone();
-        f.dots = track.iter().map(dot_at).collect();
-        let out = apply(f);
-        let p = &out.polylines[0];
-        assert_eq!(p.hues.len(), p.points.len());
-        for (h, d) in p.hues.iter().zip(&out.dots) {
-            assert!((h - d.hue).abs() < 1e-9, "vertex {h} vs dot {}", d.hue);
-        }
-        // The zero-length head: every vertex has one hue, so no `hues`.
-        assert!(out.polylines[1].hues.is_empty());
-    }
-
-    #[test]
-    fn the_gradient_colours_each_vertex_at_its_own_position() {
-        check_vertices_match_dots(|f| apply_gradient(f, 64.0, &opts(&[("gradientStrength", 1.0)])));
-    }
-
-    #[test]
-    fn single_hue_stays_the_vertex_mean_sample() {
-        // `hue` must be what it was before per-vertex hues existed: the
-        // colour at the vertex mean -- here a dot at the ring's centre.
-        let mut f = ring_frame();
-        f.polylines.truncate(1);
-        f.dots = vec![dot_at(&Point { x: 32.0, y: 32.0 })];
-        let out = apply_gradient(f, 64.0, &opts(&[("gradientStrength", 1.0)]));
-        let mean = out.polylines[0]
-            .points
-            .iter()
-            .fold((0.0, 0.0), |a, q| (a.0 + q.x, a.1 + q.y));
-        assert!((mean.0 / 24.0 - 32.0).abs() < 1e-9 && (mean.1 / 24.0 - 32.0).abs() < 1e-9);
-        assert!((out.polylines[0].hue - out.dots[0].hue).abs() < 1e-9);
-    }
-
-    #[test]
-    fn muted_interrupt_and_glow_carry_or_drop_the_hues() {
-        let holo = || apply_gradient(ring_frame(), 64.0, &opts(&[("gradientStrength", 1.0)]));
-        let n = holo().polylines[0].points.len();
-        // Muted keeps the sweep (its colour rule is applied per vertex).
-        let m = apply_muted(holo(), &opts(&[("muted", 1.0)]));
-        assert!(m.polylines[0].hues.is_empty() || m.polylines[0].hues.len() == n);
-        // An interrupt flash at its peak snaps every vertex to its hue.
-        let i = apply_interrupt(
-            holo(),
-            &opts(&[("interruptAge", 0.0), ("interruptTint", 1.0)]),
-        );
-        let p = &i.polylines[0];
-        assert!(p.hues.is_empty() || p.hues.iter().all(|&h| (h - p.hue).abs() < 1e-9));
-        // Glow halos: tinted = one hue (no `hues`), untinted = the sweep.
-        let tinted = apply_glow(holo(), &opts(&[("glowStrength", 1.0), ("glowTint", 1.0)]));
-        let plain = apply_glow(holo(), &opts(&[("glowStrength", 1.0)]));
-        let halo_hues = |f: &OrbFrame| {
-            f.polylines
-                .iter()
-                .filter(|p| p.points.len() == n)
-                .map(|p| p.hues.len())
-                .collect::<Vec<_>>()
-        };
-        let t = halo_hues(&tinted);
-        assert!(t[..t.len() - 1].iter().all(|&k| k == 0) && t[t.len() - 1] == n);
-        assert!(halo_hues(&plain).iter().all(|&k| k == n));
-        let blurred = apply_glow(holo(), &opts(&[("glowStrength", 1.0), ("glowMode", 1.0)]));
-        assert!(halo_hues(&blurred).iter().all(|&k| k == n));
     }
 }

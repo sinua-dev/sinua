@@ -22,12 +22,12 @@ test("linear two-stop mapping, clamped at both ends", () => {
 });
 
 test("descending input maps in input order", () => {
-  // Latency in ms -> connection quality: 0 ms is perfect, 500 ms is lost.
-  const m = reactiveMapper({ target: "quality", input: [500, 0] });
-  close(m(0).quality, 1);
-  close(m(500).quality, 0);
-  close(m(125).quality, 0.75);
-  assert.equal(m(9999).quality, 0);
+  // Latency in ms -> a veil's level: 0 ms is full, 500 ms is empty.
+  const m = reactiveMapper({ target: "level", input: [500, 0] });
+  close(m(0).level, 1);
+  close(m(500).level, 0);
+  close(m(125).level, 0.75);
+  assert.equal(m(9999).level, 0);
 });
 
 test("multi-stop with one curve per segment", () => {
@@ -58,7 +58,7 @@ test("named curves: endpoints exact, easeIn below / easeOut above linear", () =>
 test("output is clamped to the target's legal range; NaN maps to its min", () => {
   close(bindReactiveInput({ value: 1, target: "progress", output: [0, 3] }).progress, 1);
   close(bindReactiveInput({ value: 0.1, target: "progress", output: [-2, 3] }).progress, 0);
-  assert.equal(bindReactiveInput({ value: NaN, target: "accuracy" }).accuracy, 0);
+  assert.equal(bindReactiveInput({ value: NaN, target: "level" }).level, 0);
 });
 
 test("audioLevel carries its audioStrength companion, and a later spread wins", () => {
@@ -104,26 +104,23 @@ test("ReactiveBinding: no easing by default, first push taken as-is, then eased"
   close(stall.overrides(10).progress, 0.4, 1e-12); // dt clamped to 0.1 -> k = 0.4
 });
 
-test("tracking's per-ring targets: default output = one lap (the goal), laps opt-in up to 3", () => {
-  // Default output is [0, 1]: the goal fills one lap, overshoot clamps at the goal.
-  close(bindReactiveInput({ value: 0.5, target: "progress2" }).progress2, 0.5);
-  assert.equal(bindReactiveInput({ value: 9, target: "progress2" }).progress2, 1);
-  assert.equal(bindReactiveInput({ value: 10_000, target: "progress0", input: [0, 10_000] }).progress0, 1);
-  // Laps are explicit: a multi-stop output past 1, clamped to the 0..3 range.
-  const laps = { target: "progress0", input: [0, 10_000, 30_000], output: [0, 1, 3] };
-  assert.equal(bindReactiveInput({ ...laps, value: 20_000 }).progress0, 2);
-  assert.equal(bindReactiveInput({ value: 1, target: "progress2", output: [0, 9] }).progress2, 3);
-  close(bindReactiveInput({ value: 0.5, target: "progress1", output: [0, 1] }).progress1, 0.5);
-  assert.deepEqual(REACTIVE_TARGETS.progress0.range, [0, 3]);
-  // A bound 1.25 laps draws the same frame as the raw key: full lap + halo + top arc.
-  const bound = frameWithOverrides("tracking", 64, 0, bindReactiveInput({ value: 1.25, target: "progress0", input: [0, 3], output: [0, 3] }));
-  assert.deepEqual(bound, frameWithOverrides("tracking", 64, 0, { progress0: 1.25 }));
-  assert.ok(bound.polylines.some((p) => p.white > 0.99), "the lap's separation halo is there");
+test("level is a plain 0..1 target: default output is its range, no companions", () => {
+  close(bindReactiveInput({ value: 0.5, target: "level" }).level, 0.5);
+  assert.equal(bindReactiveInput({ value: 9, target: "level" }).level, 1);
+  assert.equal(bindReactiveInput({ value: 10_000, target: "level", input: [0, 10_000] }).level, 1);
+  assert.deepEqual(Object.keys(bindReactiveInput({ value: 0.2, target: "level" })), ["level"]);
+  assert.deepEqual(REACTIVE_TARGETS.level.range, [0, 1]);
+  // The removed targets are plain unknown names now.
+  for (const gone of ["progress0", "progress3", "quality", "accuracy"]) {
+    assert.throws(() => bindReactiveInput({ value: 0.5, target: gone }), /unknown target/);
+  }
+  const bound = frameWithOverrides("crystal", 64, 0, bindReactiveInput({ value: 0.4, target: "level" }));
+  assert.deepEqual(bound, frameWithOverrides("crystal", 64, 0, { level: 0.4 }));
 });
 
 test("end to end through the wasm engine", () => {
-  const bound = frameWithOverrides("completing", 64, 0, bindReactiveInput({ value: 5000, target: "progress", input: [0, 10000] }));
-  const direct = frameWithOverrides("completing", 64, 0, { progress: 0.5 });
+  const bound = frameWithOverrides("dune", 64, 0, bindReactiveInput({ value: 5000, target: "progress", input: [0, 10000] }));
+  const direct = frameWithOverrides("dune", 64, 0, { progress: 0.5 });
   assert.deepEqual(bound, direct);
 
   const still = frameWithOverrides("working", 64, 1.2, {});

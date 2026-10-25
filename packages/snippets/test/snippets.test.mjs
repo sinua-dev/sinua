@@ -89,9 +89,9 @@ test("engine overrides become the component's named props", () => {
 });
 
 test("indexed engine keys collapse into one list prop", () => {
-  const d = toTypedProps("ring", "tracking", { progress0: 0.2, progress1: 0.5, ringCount: 2 }, catalog);
-  assert.deepEqual(d.props.progress, [0.2, 0.5]);
-  assert.equal(d.props.ringCount, 2);
+  const d = toTypedProps("signal", "dune", { envelope0: 0.2, envelope1: 0.5, progress: 0.4 }, catalog);
+  assert.deepEqual(d.props.envelope, [0.2, 0.5]);
+  assert.equal(d.props.progress, 0.4);
 });
 
 test("a key the catalog has no prop for is reported, not invented", () => {

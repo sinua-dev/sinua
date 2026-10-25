@@ -40,24 +40,20 @@ test("every non-deprecated catalog param of every pattern becomes a prop", () =>
 });
 
 test("per-object path conflicts merge into one prop with per-pattern ranges", () => {
-  const dotSize = prop("beacon", "dotSize");
-  assert.equal(dotSize.type, "number");
-  assert.equal(dotSize.ranges.scanning.max, 0.08);
-  assert.equal(dotSize.ranges.notifying.max, 0.4);
-  assert.equal(dotSize.max, 0.4);
-  const progress = prop("ring", "progress");
-  assert.equal(progress.type, "number|number[]");
-  assert.deepEqual(progress.listPatterns, ["tracking"]);
-  assert.deepEqual(progress.engineKeys, ["progress0", "progress1", "progress2", "progress3"]);
-  assert.equal(progress.maxItems, 4);
-  for (const path of ["dotSize", "ringCount"]) assert.ok(prop("beacon", path), path);
+  const lineW = prop("orb", "lineW");
+  assert.equal(lineW.type, "number");
+  assert.deepEqual(Object.keys(lineW.ranges).sort(), ["connecting", "drifting"]);
+  assert.equal(lineW.ranges.connecting.max, 4);
+  assert.equal(lineW.max, Math.max(...Object.values(lineW.ranges).map((r) => r.max)));
+  for (const path of ["lineW", "ringCount"]) assert.ok(prop("orb", path), path);
 });
 
 test("number[] needs bounds; missing ones throw", () => {
-  const seg = prop("ring", "segment");
-  assert.deepEqual([seg.type, seg.minItems, seg.maxItems, seg.engineKeys.length], ["number[]", 1, 24, 24]);
+  const env = prop("signal", "envelope");
+  assert.deepEqual([env.type, env.minItems, env.maxItems, env.engineKeys.length], ["number[]", 1, 64, 64]);
+  assert.deepEqual(env.engineKeys.slice(0, 2), ["envelope0", "envelope1"]);
   const broken = structuredClone(catalog);
-  delete broken.definitions["segment@segmented"].maxItems;
+  delete broken.definitions["envelope@dune"].maxItems;
   assert.throws(() => buildModels(broken, naming), /minItems\/maxItems/);
 });
 
@@ -79,8 +75,8 @@ test("no flat prop shares a name with a material group (orb orbitParticles stays
 test("defaults per pattern and size, attributes, events", () => {
   const glow = prop("orb", "glow.strength");
   for (const pat of byObject.orb.patterns) assert.deepEqual(Object.keys(glow.defaultByPattern[pat.id]), pat.sizes.map(String));
-  assert.equal(prop("ring", "segment").attribute, false);
-  assert.equal(prop("ring", "strokeWidth").attr, "stroke-width");
+  assert.equal(prop("signal", "envelope").attribute, false);
+  assert.equal(prop("orb", "latRings").attr, "lat-rings");
   assert.equal(prop("orb", "glow.strength").attr, "glow-strength");
   assert.deepEqual(models[0].events.map((e) => e.id), ["frame", "error"]);
 });
@@ -99,7 +95,7 @@ test("the prefix lives only in config: another prefix renames every type and tag
   const alt = { typePrefix: "Acme", tagPrefix: "acme-" };
   const { files } = render(ROOT, { naming: alt, outputs });
   const all = [...files.entries()];
-  assert.ok(all.some(([p]) => p.endsWith("AcmeRing.swift")));
+  assert.ok(all.some(([p]) => p.endsWith("AcmeSignal.swift")));
   for (const [path, text] of all) {
     // Module/package names (SinuaView, SinuaVoice, dev.sinua) are not the brand prefix.
     const leftovers = text.replace(/Sinua(View|Voice)/g, "").match(/Devin|devin-/g);
@@ -120,14 +116,14 @@ test("--check flags a stale file and an orphaned generated file", () => {
   const cfg = { naming, outputs };
   assert.equal(run({ root: tmp, cfg, log: () => {} }), true);
   assert.equal(run({ root: tmp, cfg, check: true, log: () => {} }), true);
-  const ring = join(tmp, outputs.swift, "SinuaRing.swift");
-  writeFileSync(ring, readFileSync(ring, "utf8") + "\n// edit");
+  const sig = join(tmp, outputs.swift, "SinuaSignal.swift");
+  writeFileSync(sig, readFileSync(sig, "utf8") + "\n// edit");
   const lines = [];
   assert.equal(run({ root: tmp, cfg, check: true, log: (l) => lines.push(l) }), false);
-  assert.match(lines.join("\n"), /stale: .*SinuaRing\.swift/);
+  assert.match(lines.join("\n"), /stale: .*SinuaSignal\.swift/);
   run({ root: tmp, cfg, log: () => {} });
   const orphan = join(tmp, outputs.kotlin, "SinuaOld.kt");
-  writeFileSync(orphan, readFileSync(join(tmp, outputs.kotlin, "SinuaRing.kt"), "utf8"));
+  writeFileSync(orphan, readFileSync(join(tmp, outputs.kotlin, "SinuaSignal.kt"), "utf8"));
   const hand = join(tmp, outputs.kotlin, "HandWritten.kt");
   writeFileSync(hand, "// mine\n");
   assert.equal(run({ root: tmp, cfg, check: true, log: () => {} }), false);

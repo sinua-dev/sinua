@@ -25,7 +25,10 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   [`docs/signal.md`](docs/signal.md), *Light volumes*.
 - **FX Spec 1.15.** `veil`, `crystal` and `dune` need `"fxSpec": "1.15"`; an older file that names
   one gets an error at that `pattern`. Every older minor still resolves as before (its lock lost
-  only the examples removed below).
+  only the examples removed below). The objects `ring`, `core` and `beacon` and their patterns
+  are rejected at every version (see *Removed*).
+- **Reactive target `level`** (`veil`, `crystal`): the 0..1 value the volume shows, bindable like
+  `progress`.
 
 ### Changed
 
@@ -34,6 +37,24 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   plane of light at the position. The props are the same (`envelope`, `progress`, `onSeek`), and
   `playbackSeekProgress(aspect, x)` keeps its name; it now maps a touch through dune's own drawn
   line.
+
+- **`SinuaVoiceButton`'s ring draws orb patterns** (every platform): connecting is the orb
+  `connecting`, listening the orb `listening`, muted the listening orb slowed to 0.15x speed.
+  The props are unchanged.
+- **Reactive targets** are now `progress`, `level`, `audioLevel`, `glowStrength`, `noiseStrength`,
+  `gradientStrength`, `pulseStrength`, `colorMix` and `muted`. `progress0..3` (and the
+  `progress[0..3]` catalog paths), `quality` and `accuracy` are gone with the ring and beacon
+  patterns that read them. The frozen FX Spec 1.8 key list shrinks from 103 to 97 paths on
+  purpose (pre-1.0); the only array parameter left is `envelope` (`dune`).
+- **Packed transport (web fast path):** v1 is unchanged. v2 is emitted only for a frame that has
+  effect runs and now has an 8-word header,
+  `[2, colorMode, nDots, nLines, nPolylines, nPoints, found, nEffects]`, then v1's sections, then
+  `nEffects x 5` words. v3 and v4 are gone; their only reader is `@sinua/core`, which ships with
+  the engine.
+- **Golden vectors 5.0.0 to 6.0.0:** 169 digests removed (ring 81, beacon 63, core 25), 141
+  remain, nothing changed. The FX Spec locks 1.8 to 1.15 lost the six examples that used removed
+  objects and keep three (`voice-assistant`, `voice-assistant-glowing`, `orb-brand-fixed`); every
+  remaining row is byte-identical. The bench has 8 cases (was 10).
 
 ### Removed
 
@@ -51,6 +72,31 @@ where there is one.
   `hop` effect), `stateAge`, and the engine functions `paletteOverrides`, `expressionOverrides`
   and `characterRecipe`. There is no replacement.
 - **The orb's `silhouette` pattern** and the FX Spec `silhouette` key. There is no replacement.
+- **The `ring` family**: `completing`, `loading`, `tracking`, `stepping`, `measuring` and
+  `talking`, the modes `arc`, `spinner`, `nested`, `segmented`, `gauge` and `speaker`, and
+  `SinuaRing` / `<sinua-ring>` on every platform. For a level or a progress, use `crystal` (with
+  `level`) or `dune` (with `progress`), which cover what `completing`, `tracking` and `measuring`
+  did. `loading`, `stepping` and `talking` have no replacement.
+- **The `core` family**: `generating` and `typing`, the modes `shimmer` and `dots`, and
+  `SinuaCore` / `<sinua-core>` (the React Native `SinuaCore` pod keeps its name). There is no
+  replacement.
+- **The `beacon` family**: `notifying`, `reconnecting`, `locating`, `scanning` and `broadcasting`,
+  the modes `ping`, `pulse`, `halo`, `radar` and `broadcast`, and `SinuaBeacon` /
+  `<sinua-beacon>`. There is no replacement.
+- **`SinuaAvatar`** on every platform (it drew the ring `talking`). There is no replacement.
+- **FX Spec:** `object: ring`, `core` and `beacon`, and the patterns above, are errors at every
+  FX Spec version. `completing`, `tracking` and `measuring` say their job is covered by `crystal`
+  (`level`) or `dune` (`progress`); the others say there is no replacement.
+- **Fills, holes, per-vertex stroke colour and polyline glow halos** from the paint contract
+  (`Fill`, `FillGradient`, `GradientStop`, `Polyline.hues`, `EffectRun` target 2, `FxCost.fills`):
+  no pattern emits them any more. Plain polylines, lines, dots and effect runs for dots and lines
+  (including the light blend 3) stay.
+
+Size (release variant, bytes: web `inline.js` / Android arm64 `.so` / iOS device `.a`; measured on
+scratch builds against a base of 310,652 / 1,465,808 / 3,641,928): the ring family saved
+9,772 / 39,168 / 44,680, core 2,740 / 14,736 / 17,576, beacon 8,064 / 37,848 / 41,384, and the
+dead paint and transport code 6,028 / 20,480 / 24,280 (engine side only; the painters' JS, Swift
+and Kotlin come on top). Release-variant totals for the whole R2 tree: web inline.js 310,652 → 283,492 B, Android arm64 .so 1,465,808 → 1,353,400 B, iOS device .a 3,641,928 → 3,514,488 B.
 
 ### Fixed
 

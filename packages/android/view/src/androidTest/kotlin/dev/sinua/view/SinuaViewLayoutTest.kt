@@ -97,7 +97,7 @@ class SinuaViewLayoutTest {
         until { frames.get() > 10 }
         scenario.onActivity {
             stateView.spec = null
-            stateView.pattern = "tracking" // back to the pattern path
+            stateView.pattern = "speaking" // back to the pattern path
         }
         val before = frames.get()
         until { frames.get() > before + 10 }

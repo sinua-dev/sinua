@@ -46,7 +46,7 @@ export interface SinuaViewOptions {
    * at runtime either way.
    */
   spec?: FxSpec | string | object;
-  /** Plain input: a pattern name, e.g. `"speaking"` or `"tracking"` (see `OrbState`). */
+  /** Plain input: a pattern name, e.g. `"speaking"` or `"dune"` (see `OrbState`). */
   pattern?: OrbState | string;
   /**
    * The spec's lifecycle state (FX Spec 1.7 naming): the `states` key to render.

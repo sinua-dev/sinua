@@ -20,16 +20,13 @@ use crate::primitives::OrbFrame;
 #[cfg_attr(target_arch = "wasm32", serde(rename_all = "camelCase"))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct FxCost {
-    /// dots + lines + polylines + fills: draw calls a canvas-style renderer
-    /// issues (plus `n - 1` for each per-vertex-hue polyline's segments).
+    /// dots + lines + polylines: draw calls a canvas-style renderer issues.
     pub elements: u32,
     pub dots: u32,
     pub lines: u32,
     pub polylines: u32,
     /// Total polyline vertices.
     pub points: u32,
-    /// Filled shapes (materials phase 1).
-    pub fills: u32,
     /// Sum of primitive areas / canvas area (1.0 = the canvas covered once).
     pub coverage: f64,
     /// `"light"`, `"medium"` or `"heavy"`.
@@ -72,19 +69,6 @@ pub fn class_of(elements: u32, coverage: f64, blur_load: f64) -> &'static str {
     }
 }
 
-fn shoelace(pts: &[crate::primitives::Point]) -> f64 {
-    let n = pts.len();
-    if n < 3 {
-        return 0.0;
-    }
-    let mut s = 0.0;
-    for i in 0..n {
-        let (a, b) = (&pts[i], &pts[(i + 1) % n]);
-        s += a.x * b.y - b.x * a.y;
-    }
-    (s * 0.5).abs()
-}
-
 /// (bbox w + 6 sigma) x (bbox h + 6 sigma) x sigma.
 fn blurred(w: f64, h: f64, sigma: f64) -> f64 {
     if sigma <= 0.0 {
@@ -110,29 +94,8 @@ pub fn frame_cost(f: &OrbFrame, size: u32) -> FxCost {
             area += seg(w[0].x, w[0].y, w[1].x, w[1].y) * p.w;
         }
     }
-    for x in &f.fills {
-        area += shoelace(&x.points);
-        for ring in &x.holes {
-            area -= shoelace(ring);
-        }
-    }
-    // Blur: fills carry their own sigma; effect runs blur ranges of a list.
-    let bbox = |pts: &mut dyn Iterator<Item = (f64, f64)>| {
-        let (mut x0, mut y0, mut x1, mut y1) = (f64::MAX, f64::MAX, f64::MIN, f64::MIN);
-        for (x, y) in pts {
-            (x0, y0, x1, y1) = (x0.min(x), y0.min(y), x1.max(x), y1.max(y));
-        }
-        if x1 < x0 {
-            (0.0, 0.0)
-        } else {
-            (x1 - x0, y1 - y0)
-        }
-    };
+    // Blur: effect runs blur ranges of a list.
     let mut blur = 0.0;
-    for x in &f.fills {
-        let (w, h) = bbox(&mut x.points.iter().map(|p| (p.x, p.y)));
-        blur += blurred(w, h, x.blur);
-    }
     for e in &f.effects {
         let range = e.start as usize..(e.start + e.count) as usize;
         match e.target {
@@ -147,27 +110,12 @@ pub fn frame_cost(f: &OrbFrame, size: u32) -> FxCost {
                     blurred_add(&mut blur, w, h, e.blur);
                 }
             }
-            _ => {
-                for p in f.polylines.get(range).unwrap_or(&[]) {
-                    let (w, h) = bbox(&mut p.points.iter().map(|q| (q.x, q.y)));
-                    blurred_add(&mut blur, w + p.w, h + p.w, e.blur);
-                }
-            }
+            _ => {}
         }
     }
     let canvas = size as f64 * size as f64;
     let blur_load = blur / canvas;
-    // A per-vertex-hue polyline paints one gradient stroke per segment into
-    // a layer, then composites the layer: (n - 1) strokes + 1 composite
-    // where a plain polyline is 1 stroke -- n - 1 extra draw calls.
-    let per_vertex: usize = f
-        .polylines
-        .iter()
-        .filter(|p| !p.hues.is_empty())
-        .map(|p| p.points.len().saturating_sub(1))
-        .sum();
-    let elements =
-        (f.dots.len() + f.lines.len() + f.polylines.len() + f.fills.len() + per_vertex) as u32;
+    let elements = (f.dots.len() + f.lines.len() + f.polylines.len()) as u32;
     let coverage = area / canvas;
     FxCost {
         elements,
@@ -179,7 +127,6 @@ pub fn frame_cost(f: &OrbFrame, size: u32) -> FxCost {
         class: class_of(elements, coverage, blur_load).to_string(),
         base_elements: elements,
         base_coverage: coverage,
-        fills: f.fills.len() as u32,
         blur_load,
     }
 }
@@ -213,7 +160,6 @@ pub fn sampled(size: u32, mut render: impl FnMut(f64) -> Option<OrbFrame>) -> Op
                     class: class_of(elements, coverage, blur_load).to_string(),
                     base_elements: w.base_elements.max(c.base_elements),
                     base_coverage: w.base_coverage.max(c.base_coverage),
-                    fills: w.fills.max(c.fills),
                     blur_load,
                 }
             }
@@ -300,8 +246,6 @@ mod tests {
         assert_eq!(class("working", true), "heavy");
         assert_eq!(class("breathing", true), "heavy");
         assert_eq!(class("glowing", true), "medium");
-        assert_eq!(class("tracking", true), "medium", "overdraw, not count");
-        assert_eq!(class("scanning", true), "light");
         // Stable across time: the estimate is the max over fixed samples.
         let a = estimate("working", 64, &glow).unwrap();
         assert_eq!(a, estimate("working", 64, &glow).unwrap());
@@ -318,7 +262,9 @@ mod tests {
             (plain.elements, plain.coverage)
         );
         // Spec cost: low power sheds glow + noise, and the estimate shows it.
-        let spec = include_str!("../../../spec/examples/status-beacon-power.fxspec.json");
+        let spec = r#"{ "fxSpec": "1.15", "object": "orb", "pattern": "working",
+            "materials": { "glow": { "strength": 1 } },
+            "performance": { "lowPower": { "disable": ["glow"] } } }"#;
         let hi = estimate_spec(spec, None, &none, false).unwrap();
         let lo = estimate_spec(spec, None, &none, true).unwrap();
         assert!(lo.elements < hi.elements);
@@ -335,22 +281,10 @@ mod tests {
         let wb = estimate("working", 64, &blur_glow).unwrap();
         assert!(wb.elements < a.elements && wb.blur_load > 0.0 && a.blur_load == 0.0);
         assert_eq!(wb.class, "medium", "1032 elements; stacked glow was heavy");
-        assert_eq!(estimate("tracking", 64, &blur_glow).unwrap().class, "heavy");
         // Low power (blurScale 0) sheds the blur: glow falls back to stacked.
         let mut shed = blur_glow.clone();
         shed.insert("blurScale".to_string(), 0.0);
         assert_eq!(estimate("working", 64, &shed).unwrap().elements, a.elements);
-        // Fills count: shimmer's fill mode is two fills, no polylines.
-        let sh = estimate(
-            "generating",
-            64,
-            &HashMap::from([("highlightFill".to_string(), 1.0)]),
-        )
-        .unwrap();
-        assert_eq!((sh.fills, sh.polylines, sh.elements), (2, 0, 2));
-        assert!(sh.coverage > 0.0);
-        let sc = estimate("loading", 64, &HashMap::new()).unwrap();
-        assert!(sc.polylines > 0 && sc.points > sc.polylines);
     }
 
     /// How the thresholds were chosen:

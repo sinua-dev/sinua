@@ -780,7 +780,7 @@ test("a square pattern in the same wide box is still a centred square", () => {
   const c = canvas();
   c.el.clientWidth = 400;
   c.el.clientHeight = 100;
-  const fx = mount(c.el, { pattern: "completing", overrides: { progress: 0.5 } });
+  const fx = mount(c.el, { pattern: "progressing", overrides: { progress: 0.5 } });
   step(2);
   assert.deepEqual(c.calls.find((k) => k[0] === "translate"), ["translate", 150, 0]);
   assert.ok(pathExtent(c.calls).maxX <= 64);
@@ -850,7 +850,7 @@ test("a view that shrinks below the small size picks up the 30 fps default", () 
 
 test("trigger plays an effect for its duration, speaks its words, then the view is as before", async (t) => {
   const { c, step, advance, said } = a11yEnv(t);
-  const fx = mount(c.el, { pattern: "completing", label: "Goal", labels: { "effect:celebrate": "Hedef tamam" } });
+  const fx = mount(c.el, { pattern: "progressing", label: "Goal", labels: { "effect:celebrate": "Hedef tamam" } });
   const strokes = () => c.calls.filter((x) => x[0] === "lineTo").length;
   step(1);
   const before = strokes();
@@ -873,7 +873,7 @@ test("trigger plays an effect for its duration, speaks its words, then the view 
 test("under reduced motion an effect still draws (its reduced variant) and then stops", async (t) => {
   const { c, step, advance } = a11yEnv(t);
   globalThis.window.matchMedia = (q) => ({ matches: q.includes("reduce"), addEventListener() {}, removeEventListener() {} });
-  const fx = mount(c.el, { pattern: "completing", reducedMotion: "always" });
+  const fx = mount(c.el, { pattern: "progressing", reducedMotion: "always" });
   const strokes = () => c.calls.filter((x) => x[0] === "lineTo").length;
   const before = strokes();
   fx.trigger("success");
@@ -887,7 +887,7 @@ test("under reduced motion an effect still draws (its reduced variant) and then 
 
 test("viewLayout: box for the box-layout patterns (plain or spec), square otherwise", () => {
   assert.equal(viewLayout({ pattern: "dune" }), "box");
-  assert.equal(viewLayout({ pattern: "completing" }), "square");
+  assert.equal(viewLayout({ pattern: "progressing" }), "square");
   assert.equal(viewLayout({ spec: { fxSpec: "1.15", object: "signal", pattern: "dune" } }), "box");
   assert.equal(viewLayout({ spec: specText }), "square");
   assert.equal(viewLayout({ pattern: "no-such-pattern" }), "square", "invalid input is square");

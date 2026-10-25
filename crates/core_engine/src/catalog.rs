@@ -47,11 +47,7 @@ fn source() -> &'static Value {
 
 /// Indexed engine keys a pattern accepts as one array definition:
 /// (mode, array key, engine key prefix, max length).
-const ARRAYS: [(&str, &str, &str, usize); 3] = [
-    ("nested", "progress", "progress", 4),
-    ("segmented", "segment", "segment", 24),
-    ("dune", "envelope", "envelope", 64),
-];
+const ARRAYS: [(&str, &str, &str, usize); 1] = [("dune", "envelope", "envelope", 64)];
 
 fn internal_keys() -> Vec<&'static str> {
     source()["internalKeys"]
@@ -475,7 +471,7 @@ mod tests {
     fn layout_is_box_only_where_the_catalog_says_so() {
         assert_eq!(layout_of("dune"), "box");
         assert_eq!(layout_of("breathing"), "square");
-        assert_eq!(layout_of("talking"), "square");
+        assert_eq!(layout_of("veil"), "square");
         assert_eq!(layout_of("no-such-pattern"), "square");
     }
 
@@ -683,9 +679,9 @@ mod tests {
                 }
             }
         }
-        // 289 on 2026-10-19 (after the 1.15 removals); fewer means the loop lost patterns.
+        // 169 on 2026-10-25 (after the ring, core and beacon removal); fewer means the loop lost patterns.
         assert!(
-            checked >= 289,
+            checked >= 169,
             "checked only {checked} parameter placements"
         );
     }
@@ -799,24 +795,10 @@ mod tests {
                 "size {z}"
             );
         }
-        // Array definition: tracking's per-ring values.
-        let tracking = &cat["objects"][2]["patterns"][2];
-        assert_eq!(tracking["id"], "tracking");
-        assert!(tracking["params"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|p| p["ref"] == "progress@nested" && p["default"]["64"].is_array()));
         // Array definitions carry hard length bounds for codegen (Rev 2).
-        for (id, max, from) in [
-            ("progress@nested", 4, "ringCount"),
-            ("segment@segmented", 24, "segmentCount"),
-        ] {
-            let d = &cat["definitions"][id];
-            assert_eq!(d["minItems"], 1, "{id}");
-            assert_eq!(d["maxItems"], max, "{id}");
-            assert_eq!(d["lengthFrom"], from, "{id}");
-        }
+        let d = &cat["definitions"]["envelope@dune"];
+        assert_eq!(d["minItems"], 1);
+        assert_eq!(d["maxItems"], 64);
     }
 
     #[test]
@@ -851,21 +833,19 @@ mod tests {
         );
         // Clean inputs: known keys, materials, live inputs, array entries.
         assert!(check_overrides(
-            "tracking",
+            "dune",
             64,
             &o(&[
-                ("progress2", 1.5),
+                ("envelope2", 0.5),
                 ("glowStrength", 0.5),
                 ("audioLevel", 0.3),
-                ("hueStep", 10.0)
+                ("progress", 0.4)
             ])
         )
         .is_empty());
-        assert!(
-            check_overrides("tracking", 64, &o(&[("progress2", 4.0)]))[0]
-                .message
-                .contains("outside 0..3")
-        );
+        assert!(check_overrides("dune", 64, &o(&[("envelope2", 4.0)]))[0]
+            .message
+            .contains("outside 0..1"));
         // Warnings don't change the frame.
         let with = crate::frame_with_overrides("breathing".into(), 64, 1.0, o(&[("lanse", 6.0)]));
         let without = crate::frame_with_overrides("breathing".into(), 64, 1.0, o(&[]));

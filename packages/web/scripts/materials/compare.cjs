@@ -54,9 +54,7 @@ const AA_EXCEPTIONS = {};
 // passes on mean <= its own limit instead of 2; p99 stays <= 24. Only for a render measured to
 // move with the *environment* (browser/OS build, Android GPU backend) rather than our paint.
 // Additions are deliberate, each with the measurement that justified it.
-const ENV_EXCEPTIONS = {
-  "tracking-64-0.6-glow-blur-additive": { mean: 3, reason: "additive-blend blur: 2.023 web(Linux headless Chrome)-vs-Android(x86_64 swiftshader) in CI, 0.53 locally; CI Android vs local Web 1.23" },
-};
+const ENV_EXCEPTIONS = {};
 (async () => {
   const frames = JSON.parse(fs.readFileSync(framesPath));
   const paint = fs

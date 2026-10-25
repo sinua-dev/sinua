@@ -30,11 +30,8 @@ test(`packed == JSON on all ${golden.cases.length} golden cases`, () => {
     const packed = frameWithOverridesPacked(c.state, c.size, c.t, c.overrides);
     assert.deepEqual(unpackFrame(packed), json, c.key);
     assert.deepEqual(pub.frameWithOverrides(c.state, c.size, c.t, c.overrides), json, `${c.key} (public API)`);
-    // v4 exactly when a polyline has per-vertex hues, v3 when a fill has
-    // holes, v2 with fills or effect runs; v1 otherwise (byte identity).
-    const holes = (json.fills ?? []).some((x) => x.holes && x.holes.length);
-    const hues = json.polylines.some((p) => p.hues && p.hues.length);
-    assert.equal(packed.data[0], hues ? 4 : holes ? 3 : json.fills || json.effects ? 2 : 1, `${c.key}: layout version`);
+    // v2 exactly when the frame has effect runs; v1 otherwise (byte identity).
+    assert.equal(packed.data[0], json.effects ? 2 : 1, `${c.key}: layout version`);
   }
   assert.deepEqual(unpackFrame(framePacked("working", 64, 1.3)), frame("working", 64, 1.3));
   assert.equal(framePacked("not-a-state", 64, 0), null);
@@ -53,12 +50,12 @@ test("packed == JSON for every FX Spec example, state and power state", () => {
       }
     }
   }
-  assert.ok(n >= 26);
+  assert.ok(n >= 6);
   assert.equal(frameFromFxSpecPacked("{", 0), null);
 });
 
 test("readPacked visits polylines, lines, dots with their data", () => {
-  for (const [state, ov] of [["connecting", {}], ["scanning", {}], ["tracking", { progress0: 1.4 }]]) {
+  for (const [state, ov] of [["connecting", {}], ["glowing", {}], ["dune", { progress: 0.4 }]]) {
     const p = frameWithOverridesPacked(state, 64, 1.3, ov);
     const f = frameWithOverrides(state, 64, 1.3, ov);
     const seen = { poly: [], line: [], dot: [] };
@@ -77,16 +74,18 @@ test("readPacked visits polylines, lines, dots with their data", () => {
   }
 });
 
-test("readPacked hands v4 polylines their per-vertex hues", () => {
-  const p = frameWithOverridesPacked("tracking", 64, 0.6, { gradientStrength: 1, gradientHue: 200, gradientHue2: 300, gradientHue3: 40, glowStrength: 0.8, glowMode: 1 });
-  assert.equal(p.data[0], 4);
+test("v2: effect runs ride after the points, header of 8", () => {
+  const p = frameWithOverridesPacked("glowing", 64, 0.6, { glowStrength: 1, glowMode: 1 });
+  assert.equal(p.data[0], 2);
+  assert.equal(p.data[7], p.effectCount);
+  assert.ok(p.effectCount > 0);
+  assert.equal(p.dots, 8);
+  assert.equal(p.effects, p.points + p.pointCount * 2);
   const f = unpackFrame(p);
-  const seen = [];
-  readPacked(p, {
-    polyline(d, o, q, n, huesAt) {
-      seen.push(huesAt === undefined ? undefined : Array.from(d.subarray(huesAt, huesAt + n)));
-    },
+  assert.equal(f.effects.length, p.effectCount);
+  f.effects.forEach((e, i) => {
+    const o = p.effects + i * 5;
+    assert.deepEqual([e.target, e.start, e.count, e.blur, e.blend], Array.from(p.data.subarray(o, o + 5)));
   });
-  assert.deepEqual(seen, f.polylines.map((pl) => pl.hues));
-  assert.ok(seen.some((h) => h && h.length > 2));
+  assert.equal(frameWithOverridesPacked("glowing", 64, 0.6, {}).data[0], 1);
 });

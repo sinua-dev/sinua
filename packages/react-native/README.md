@@ -15,7 +15,7 @@ const voice = createVoiceSource({ vendor: "mic" });
 <SinuaOrb pattern="speaking" voice={voice} style={{ width: 160, height: 160 }} />;
 ```
 
-- Typed components per object (`SinuaOrb`, `SinuaRing`, …), generated from the parameter
+- Typed components per object (`SinuaOrb`, `SinuaSignal`), generated from the parameter
   catalog, plus the generic `SinuaView`.
 - Voice vendors are opt-in per platform: CocoaPods subspecs on iOS, the
   `sinua.voiceVendors` Gradle property on Android.

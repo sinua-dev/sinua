@@ -49,13 +49,13 @@ const scenarios = {
   elements: {
     packages: { core: CORE, web: WEB },
     entry: `import "@sinua/web/elements";\n`,
-    tags: ["sinua-orb", "sinua-signal", "sinua-ring", "sinua-core", "sinua-beacon"],
+    tags: ["sinua-orb", "sinua-signal"],
     what: "the bundle registers the typed tags",
   },
   "elements-by-call": {
     packages: { core: CORE, web: WEB },
     entry: `import { defineSinuaElements } from "@sinua/web/elements";\ndefineSinuaElements();\n`,
-    tags: ["sinua-orb", "sinua-beacon"],
+    tags: ["sinua-orb", "sinua-signal"],
     what: "the explicit defineSinuaElements() call still registers them",
   },
 };

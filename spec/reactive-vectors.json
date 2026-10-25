@@ -81,442 +81,72 @@
       "results": [
         {
           "overrides": {
-            "progress0": 0.0
+            "level": 0.0
           },
           "value": -0.5
         },
         {
           "overrides": {
-            "progress0": 0.0
+            "level": 0.0
           },
           "value": 0.0
         },
         {
           "overrides": {
-            "progress0": 0.125
+            "level": 0.125
           },
           "value": 0.125
         },
         {
           "overrides": {
-            "progress0": 0.25
+            "level": 0.25
           },
           "value": 0.25
         },
         {
           "overrides": {
-            "progress0": 0.375
+            "level": 0.375
           },
           "value": 0.375
         },
         {
           "overrides": {
-            "progress0": 0.5
+            "level": 0.5
           },
           "value": 0.5
         },
         {
           "overrides": {
-            "progress0": 0.625
+            "level": 0.625
           },
           "value": 0.625
         },
         {
           "overrides": {
-            "progress0": 0.75
+            "level": 0.75
           },
           "value": 0.75
         },
         {
           "overrides": {
-            "progress0": 0.875
+            "level": 0.875
           },
           "value": 0.875
         },
         {
           "overrides": {
-            "progress0": 1.0
+            "level": 1.0
           },
           "value": 1.0
         },
         {
           "overrides": {
-            "progress0": 1.0
+            "level": 1.0
           },
           "value": 1.5
         }
       ],
-      "target": "progress0"
-    },
-    {
-      "curve": null,
-      "inputRange": null,
-      "outputRange": null,
-      "results": [
-        {
-          "overrides": {
-            "progress1": 0.0
-          },
-          "value": -0.5
-        },
-        {
-          "overrides": {
-            "progress1": 0.0
-          },
-          "value": 0.0
-        },
-        {
-          "overrides": {
-            "progress1": 0.125
-          },
-          "value": 0.125
-        },
-        {
-          "overrides": {
-            "progress1": 0.25
-          },
-          "value": 0.25
-        },
-        {
-          "overrides": {
-            "progress1": 0.375
-          },
-          "value": 0.375
-        },
-        {
-          "overrides": {
-            "progress1": 0.5
-          },
-          "value": 0.5
-        },
-        {
-          "overrides": {
-            "progress1": 0.625
-          },
-          "value": 0.625
-        },
-        {
-          "overrides": {
-            "progress1": 0.75
-          },
-          "value": 0.75
-        },
-        {
-          "overrides": {
-            "progress1": 0.875
-          },
-          "value": 0.875
-        },
-        {
-          "overrides": {
-            "progress1": 1.0
-          },
-          "value": 1.0
-        },
-        {
-          "overrides": {
-            "progress1": 1.0
-          },
-          "value": 1.5
-        }
-      ],
-      "target": "progress1"
-    },
-    {
-      "curve": null,
-      "inputRange": null,
-      "outputRange": null,
-      "results": [
-        {
-          "overrides": {
-            "progress2": 0.0
-          },
-          "value": -0.5
-        },
-        {
-          "overrides": {
-            "progress2": 0.0
-          },
-          "value": 0.0
-        },
-        {
-          "overrides": {
-            "progress2": 0.125
-          },
-          "value": 0.125
-        },
-        {
-          "overrides": {
-            "progress2": 0.25
-          },
-          "value": 0.25
-        },
-        {
-          "overrides": {
-            "progress2": 0.375
-          },
-          "value": 0.375
-        },
-        {
-          "overrides": {
-            "progress2": 0.5
-          },
-          "value": 0.5
-        },
-        {
-          "overrides": {
-            "progress2": 0.625
-          },
-          "value": 0.625
-        },
-        {
-          "overrides": {
-            "progress2": 0.75
-          },
-          "value": 0.75
-        },
-        {
-          "overrides": {
-            "progress2": 0.875
-          },
-          "value": 0.875
-        },
-        {
-          "overrides": {
-            "progress2": 1.0
-          },
-          "value": 1.0
-        },
-        {
-          "overrides": {
-            "progress2": 1.0
-          },
-          "value": 1.5
-        }
-      ],
-      "target": "progress2"
-    },
-    {
-      "curve": null,
-      "inputRange": null,
-      "outputRange": null,
-      "results": [
-        {
-          "overrides": {
-            "progress3": 0.0
-          },
-          "value": -0.5
-        },
-        {
-          "overrides": {
-            "progress3": 0.0
-          },
-          "value": 0.0
-        },
-        {
-          "overrides": {
-            "progress3": 0.125
-          },
-          "value": 0.125
-        },
-        {
-          "overrides": {
-            "progress3": 0.25
-          },
-          "value": 0.25
-        },
-        {
-          "overrides": {
-            "progress3": 0.375
-          },
-          "value": 0.375
-        },
-        {
-          "overrides": {
-            "progress3": 0.5
-          },
-          "value": 0.5
-        },
-        {
-          "overrides": {
-            "progress3": 0.625
-          },
-          "value": 0.625
-        },
-        {
-          "overrides": {
-            "progress3": 0.75
-          },
-          "value": 0.75
-        },
-        {
-          "overrides": {
-            "progress3": 0.875
-          },
-          "value": 0.875
-        },
-        {
-          "overrides": {
-            "progress3": 1.0
-          },
-          "value": 1.0
-        },
-        {
-          "overrides": {
-            "progress3": 1.0
-          },
-          "value": 1.5
-        }
-      ],
-      "target": "progress3"
-    },
-    {
-      "curve": null,
-      "inputRange": null,
-      "outputRange": null,
-      "results": [
-        {
-          "overrides": {
-            "quality": 0.0
-          },
-          "value": -0.5
-        },
-        {
-          "overrides": {
-            "quality": 0.0
-          },
-          "value": 0.0
-        },
-        {
-          "overrides": {
-            "quality": 0.125
-          },
-          "value": 0.125
-        },
-        {
-          "overrides": {
-            "quality": 0.25
-          },
-          "value": 0.25
-        },
-        {
-          "overrides": {
-            "quality": 0.375
-          },
-          "value": 0.375
-        },
-        {
-          "overrides": {
-            "quality": 0.5
-          },
-          "value": 0.5
-        },
-        {
-          "overrides": {
-            "quality": 0.625
-          },
-          "value": 0.625
-        },
-        {
-          "overrides": {
-            "quality": 0.75
-          },
-          "value": 0.75
-        },
-        {
-          "overrides": {
-            "quality": 0.875
-          },
-          "value": 0.875
-        },
-        {
-          "overrides": {
-            "quality": 1.0
-          },
-          "value": 1.0
-        },
-        {
-          "overrides": {
-            "quality": 1.0
-          },
-          "value": 1.5
-        }
-      ],
-      "target": "quality"
-    },
-    {
-      "curve": null,
-      "inputRange": null,
-      "outputRange": null,
-      "results": [
-        {
-          "overrides": {
-            "accuracy": 0.0
-          },
-          "value": -0.5
-        },
-        {
-          "overrides": {
-            "accuracy": 0.0
-          },
-          "value": 0.0
-        },
-        {
-          "overrides": {
-            "accuracy": 0.125
-          },
-          "value": 0.125
-        },
-        {
-          "overrides": {
-            "accuracy": 0.25
-          },
-          "value": 0.25
-        },
-        {
-          "overrides": {
-            "accuracy": 0.375
-          },
-          "value": 0.375
-        },
-        {
-          "overrides": {
-            "accuracy": 0.5
-          },
-          "value": 0.5
-        },
-        {
-          "overrides": {
-            "accuracy": 0.625
-          },
-          "value": 0.625
-        },
-        {
-          "overrides": {
-            "accuracy": 0.75
-          },
-          "value": 0.75
-        },
-        {
-          "overrides": {
-            "accuracy": 0.875
-          },
-          "value": 0.875
-        },
-        {
-          "overrides": {
-            "accuracy": 1.0
-          },
-          "value": 1.0
-        },
-        {
-          "overrides": {
-            "accuracy": 1.0
-          },
-          "value": 1.5
-        }
-      ],
-      "target": "accuracy"
+      "target": "level"
     },
     {
       "curve": null,
@@ -1527,72 +1157,72 @@
       "results": [
         {
           "overrides": {
-            "quality": 1.0
+            "level": 1.0
           },
           "value": -120.0
         },
         {
           "overrides": {
-            "quality": 1.0
+            "level": 1.0
           },
           "value": 20.0
         },
         {
           "overrides": {
-            "quality": 0.9740154014703657
+            "level": 0.9740154014703657
           },
           "value": 55.0
         },
         {
           "overrides": {
-            "quality": 0.9065353490060324
+            "level": 0.9065353490060324
           },
           "value": 90.0
         },
         {
           "overrides": {
-            "quality": 0.8079780514132872
+            "level": 0.8079780514132872
           },
           "value": 125.0
         },
         {
           "overrides": {
-            "quality": 0.6846431874941069
+            "level": 0.6846431874941069
           },
           "value": 160.0
         },
         {
           "overrides": {
-            "quality": 0.5405347229813912
+            "level": 0.5405347229813912
           },
           "value": 195.0
         },
         {
           "overrides": {
-            "quality": 0.378138130826099
+            "level": 0.378138130826099
           },
           "value": 230.0
         },
         {
           "overrides": {
-            "quality": 0.19858001595992567
+            "level": 0.19858001595992567
           },
           "value": 265.0
         },
         {
           "overrides": {
-            "quality": 0.0
+            "level": 0.0
           },
           "value": 300.0
         },
         {
           "overrides": {
-            "quality": 0.0
+            "level": 0.0
           },
           "value": 440.0
         }
       ],
-      "target": "quality"
+      "target": "level"
     },
     {
       "curve": null,
@@ -1607,157 +1237,72 @@
       "results": [
         {
           "overrides": {
-            "progress1": 0.0
+            "progress": 0.0
           },
           "value": -1250.0
         },
         {
           "overrides": {
-            "progress1": 0.0
+            "progress": 0.0
           },
           "value": 0.0
         },
         {
           "overrides": {
-            "progress1": 0.625
+            "progress": 0.625
           },
           "value": 312.5
         },
         {
           "overrides": {
-            "progress1": 1.25
+            "progress": 1.0
           },
           "value": 625.0
         },
         {
           "overrides": {
-            "progress1": 1.875
+            "progress": 1.0
           },
           "value": 937.5
         },
         {
           "overrides": {
-            "progress1": 2.5
+            "progress": 1.0
           },
           "value": 1250.0
         },
         {
           "overrides": {
-            "progress1": 3.0
+            "progress": 1.0
           },
           "value": 1562.5
         },
         {
           "overrides": {
-            "progress1": 3.0
+            "progress": 1.0
           },
           "value": 1875.0
         },
         {
           "overrides": {
-            "progress1": 3.0
+            "progress": 1.0
           },
           "value": 2187.5
         },
         {
           "overrides": {
-            "progress1": 3.0
+            "progress": 1.0
           },
           "value": 2500.0
         },
         {
           "overrides": {
-            "progress1": 3.0
+            "progress": 1.0
           },
           "value": 3750.0
         }
       ],
-      "target": "progress1"
-    },
-    {
-      "curve": [
-        "easeOut",
-        "linear"
-      ],
-      "inputRange": [
-        0.0,
-        10000.0,
-        30000.0
-      ],
-      "outputRange": [
-        0.0,
-        1.0,
-        3.0
-      ],
-      "results": [
-        {
-          "overrides": {
-            "progress0": 0.0
-          },
-          "value": -15000.0
-        },
-        {
-          "overrides": {
-            "progress0": 0.0
-          },
-          "value": 0.0
-        },
-        {
-          "overrides": {
-            "progress0": 0.5405347229813912
-          },
-          "value": 3750.0
-        },
-        {
-          "overrides": {
-            "progress0": 0.9065353490060324
-          },
-          "value": 7500.0
-        },
-        {
-          "overrides": {
-            "progress0": 1.125
-          },
-          "value": 11250.0
-        },
-        {
-          "overrides": {
-            "progress0": 1.5
-          },
-          "value": 15000.0
-        },
-        {
-          "overrides": {
-            "progress0": 1.875
-          },
-          "value": 18750.0
-        },
-        {
-          "overrides": {
-            "progress0": 2.25
-          },
-          "value": 22500.0
-        },
-        {
-          "overrides": {
-            "progress0": 2.625
-          },
-          "value": 26250.0
-        },
-        {
-          "overrides": {
-            "progress0": 3.0
-          },
-          "value": 30000.0
-        },
-        {
-          "overrides": {
-            "progress0": 3.0
-          },
-          "value": 45000.0
-        }
-      ],
-      "target": "progress0"
+      "target": "progress"
     },
     {
       "curve": "ease",
@@ -1942,17 +1487,6 @@
   "note": "Reactive-binding vectors: targets table + value -> overrides through FX Spec bindings (core_engine::reactive). Checked by crates/core_engine/tests/reactive_vectors.rs and packages/core/test/reactive-parity.test.mjs (reactive.ts). null range/curve = the default.",
   "specVersion": "1.0.0",
   "targets": {
-    "accuracy": {
-      "companions": {},
-      "defaultOutput": [
-        0.0,
-        1.0
-      ],
-      "range": [
-        0.0,
-        1.0
-      ]
-    },
     "audioLevel": {
       "companions": {
         "audioStrength": 0.18
@@ -1999,6 +1533,17 @@
         1.0
       ]
     },
+    "level": {
+      "companions": {},
+      "defaultOutput": [
+        0.0,
+        1.0
+      ],
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
     "muted": {
       "companions": {},
       "defaultOutput": [
@@ -2032,62 +1577,7 @@
         1.0
       ]
     },
-    "progress0": {
-      "companions": {},
-      "defaultOutput": [
-        0.0,
-        1.0
-      ],
-      "range": [
-        0.0,
-        3.0
-      ]
-    },
-    "progress1": {
-      "companions": {},
-      "defaultOutput": [
-        0.0,
-        1.0
-      ],
-      "range": [
-        0.0,
-        3.0
-      ]
-    },
-    "progress2": {
-      "companions": {},
-      "defaultOutput": [
-        0.0,
-        1.0
-      ],
-      "range": [
-        0.0,
-        3.0
-      ]
-    },
-    "progress3": {
-      "companions": {},
-      "defaultOutput": [
-        0.0,
-        1.0
-      ],
-      "range": [
-        0.0,
-        3.0
-      ]
-    },
     "pulseStrength": {
-      "companions": {},
-      "defaultOutput": [
-        0.0,
-        1.0
-      ],
-      "range": [
-        0.0,
-        1.0
-      ]
-    },
-    "quality": {
       "companions": {},
       "defaultOutput": [
         0.0,

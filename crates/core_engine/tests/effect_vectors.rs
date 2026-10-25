@@ -16,7 +16,7 @@ const PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../spec/effect-vectors.json"
 );
-const PATTERNS: [&str; 4] = ["glowing", "completing", "veil", "dune"];
+const PATTERNS: [&str; 3] = ["glowing", "veil", "dune"];
 const EFFECTS: [&str; 3] = ["success", "error", "celebrate"];
 const AGES: [f64; 4] = [0.05, 0.3, 0.6, 1.2];
 const T: f64 = 1.0;

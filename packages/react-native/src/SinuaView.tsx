@@ -12,7 +12,7 @@ import { a11yNativeProps, voiceProps, type VoiceSourceHandle } from "./voice";
 export type SinuaViewProps = ViewProps & {
   /** An FX Spec: JSON text or the parsed object. Takes precedence over `pattern`. */
   spec?: string | object;
-  /** A pattern (e.g. "speaking", "tracking") when there's no spec. */
+  /** A pattern (e.g. "speaking", "dune") when there's no spec. */
   pattern?: string;
   /**
    * The agent's lifecycle state (e.g. "listening"); default: the voice's state. With a
@@ -35,7 +35,7 @@ export type SinuaViewProps = ViewProps & {
    * and audio; it never connects or disconnects it.
    */
   voice?: "none" | "test" | "mic" | VoiceSourceHandle;
-  /** The bound voice's pulse (`audioStrength`); unset = the view's default. The voice button's ring uses 0.75. */
+  /** The bound voice's pulse (`audioStrength`); unset = the view's default. */
   audioStrength?: number;
   /** Words per state for the accessible name and announcements (docs/fx-view.md, *Accessibility*). */
   labels?: Record<string, string>;

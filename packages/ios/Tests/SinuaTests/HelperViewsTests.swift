@@ -4,15 +4,9 @@ import XCTest
 
 @testable import Sinua
 
-/// SinuaAvatar and SinuaVoiceMessage (roadmap 7/8 helpers).
+/// SinuaVoiceMessage (roadmap 7/8 helpers).
 @MainActor
 final class HelperViewsTests: XCTestCase {
-    func testTheAvatarImageSpansTwiceTheRingsInnerRadius() {
-        XCTAssertEqual(SinuaAvatar.defaultInnerRadius, 0.34)
-        XCTAssertEqual(SinuaAvatar.imageDiameter(side: 100, innerRadius: 0.34), 68, accuracy: 1e-9)
-        XCTAssertEqual(SinuaAvatar.imageDiameter(side: 56, innerRadius: 0.4), 44.8, accuracy: 1e-9)
-    }
-
     func testSeekMapsATouchOntoTheEnginesRow() {
         let box = CGSize(width: 200, height: 40)
         XCTAssertEqual(SinuaVoiceMessage.seek(size: box, x: 0), 0)

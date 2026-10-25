@@ -55,8 +55,8 @@ final class BoxLayoutTests: XCTestCase {
         // The dune keeps a margin and its perspective shrinks the near end: a 50 px band.
         XCTAssertGreaterThan(
             try inkAtRightEdge(dune, width: 400, height: 100, band: 50), 20, "the dune reaches the box's right side")
-        let ring = SinuaView(pattern: "completing", overrides: ["progress": 1], reducedMotion: .never)
+        let orb = SinuaView(pattern: "listening", reducedMotion: .never)
         XCTAssertEqual(
-            try inkAtRightEdge(ring, width: 400, height: 100, band: 20), 0, "a square pattern leaves the sides empty")
+            try inkAtRightEdge(orb, width: 400, height: 100, band: 20), 0, "a square pattern leaves the sides empty")
     }
 }

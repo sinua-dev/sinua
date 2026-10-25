@@ -133,7 +133,7 @@ function SinuaViewSection() {
   return (
     <View style={styles.grid}>
       <SinuaView testID="fx-spec-light" style={styles.fx} spec={FXVIEW_SPEC} theme="light" reducedMotion="always" />
-      <SinuaView testID="fx-state-overrides" style={styles.fx} pattern="tracking" overrides={{ progress0: 0.7, progress1: 0.4 }} theme="light" reducedMotion="always" />
+      <SinuaView testID="fx-state-overrides" style={styles.fx} pattern="progressing" overrides={{ progress: 0.7 }} theme="light" reducedMotion="always" />
       <SinuaView testID="fx-spec-dark" style={[styles.fx, styles.dark]} spec={FXVIEW_SPEC} theme="dark" reducedMotion="always" />
       <View style={styles.fx}>
         <SinuaView testID="fx-live" style={StyleSheet.absoluteFill} pattern="speaking" theme="light" paused={paused} onFrame={() => setFrames((n) => n + 1)} />

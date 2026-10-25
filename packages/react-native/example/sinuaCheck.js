@@ -53,18 +53,18 @@ export async function runSinuaCheckpoints(checkpoints, frameWithOverrides) {
 
 // FX Spec through the bridge (docs/fx-spec.md). The spec is inlined (the
 // app can't read spec/examples/); packages/core/test/sinua-checkpoints
-// .test.mjs fails if it drifts from spec/examples/beacon-radar-glow.fxspec.json.
+// .test.mjs runs the same check against the wasm build.
 // `elapsed = 0` so the comparison needs no preset speed (RN exposes none).
 export const FX_SPEC_EXAMPLE = {
   $schema: 'https://sinua.dev/schema/fx-spec-1.json',
   fxSpec: '1.8',
-  name: 'Glowing radar',
-  object: 'beacon',
-  pattern: 'scanning',
+  name: 'Glowing orb',
+  object: 'orb',
+  pattern: 'working',
   size: 64,
   color: { value: { colorSpace: 'srgb', components: [0.2, 0.8, 0.4], hex: '#33cc66' }, mix: 0.8 },
   materials: { glow: { strength: 0.6, radius: 3 } },
-  params: { blipCount: 4 },
+  params: { orbitN: 3 },
 };
 
 // A minimal lifecycle spec (the keys FX Spec 1.1 added): one entry with an input binding.
@@ -97,8 +97,8 @@ export async function runFxSpecCheck(api) {
   const want = await api.frameWithOverrides(r.state, r.size, 0, r.overrides);
   if (!got || !want || !sameFrame(got, want)) return 'fxSpec: frameFromFxSpec != frameWithOverrides(resolved)';
   if (got.dots.length === 0 || r.overrides.glowStrength !== 0.6) return 'fxSpec: glow/colour not resolved';
-  const bad = await api.resolveFxSpec({ ...FX_SPEC_EXAMPLE, params: { blipCont: 4 } });
-  if (bad.ok || !bad.diagnostics.some((d) => d.path === '/params/blipCont' && d.message.includes('`blipCount`'))) {
+  const bad = await api.resolveFxSpec({ ...FX_SPEC_EXAMPLE, params: { orbitn: 3 } });
+  if (bad.ok || !bad.diagnostics.some((d) => d.path === '/params/orbitn' && d.message.includes('`orbitN`'))) {
     return `fxSpec: typo not diagnosed ${JSON.stringify(bad.diagnostics)}`;
   }
   // v1.1: a state entry + a binding through the bridge (ctx = { state, inputs }).

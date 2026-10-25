@@ -25,10 +25,8 @@ const PATH: &str = concat!(
 /// A state whose mode reads the target (so the spec raises no warning).
 fn host(target: &str) -> (&'static str, &'static str) {
     match target {
-        "progress" => ("ring", "completing"),
-        t if t.starts_with("progress") => ("ring", "tracking"),
-        "quality" => ("beacon", "reconnecting"),
-        "accuracy" => ("beacon", "locating"),
+        "progress" => ("signal", "dune"),
+        "level" => ("signal", "veil"),
         _ => ("orb", "working"),
     }
 }
@@ -70,7 +68,7 @@ fn cases() -> Vec<Case> {
         });
     }
     // Multi-stop with per-segment curves; descending input; clamped output;
-    // lap-range targets; companions.
+    // companions.
     v.push(Case {
         target: "glowStrength",
         input: Some(vec![60.0, 100.0, 160.0]),
@@ -78,28 +76,21 @@ fn cases() -> Vec<Case> {
         curve: Some(json!(["linear", "easeIn"])),
         values: sweep(60.0, 160.0),
     });
+    // A latency becomes a level: descending input, an eased curve.
     v.push(Case {
-        target: "quality",
+        target: "level",
         input: Some(vec![300.0, 20.0]),
         output: None,
         curve: Some(json!("easeOut")),
         values: sweep(20.0, 300.0),
     });
+    // An output wider than the target's range is clamped.
     v.push(Case {
-        target: "progress1",
+        target: "progress",
         input: Some(vec![0.0, 2500.0]),
         output: Some(vec![0.0, 5.0]),
         curve: None,
         values: sweep(0.0, 2500.0),
-    });
-    // A goal ring with laps: one lap at the goal, three at 3x (the
-    // multi-stop way to opt into laps; the default output is one lap).
-    v.push(Case {
-        target: "progress0",
-        input: Some(vec![0.0, 10_000.0, 30_000.0]),
-        output: Some(vec![0.0, 1.0, 3.0]),
-        curve: Some(json!(["easeOut", "linear"])),
-        values: sweep(0.0, 30_000.0),
     });
     v.push(Case {
         target: "audioLevel",
@@ -138,12 +129,9 @@ fn run(c: &Case) -> Vec<Value> {
             format!("{}.strength", c.target.trim_end_matches("Strength"))
         }
         "colorMix" => "color.mix".to_string(),
-        t => match t.strip_prefix("progress").filter(|i| !i.is_empty()) {
-            Some(i) => format!("progress[{i}]"),
-            None => t.to_string(),
-        },
+        t => t.to_string(),
     };
-    let spec = json!({ "fxSpec": "1.8", "object": object, "pattern": state,
+    let spec = json!({ "fxSpec": "1.15", "object": object, "pattern": state,
                        "bindings": { path: Value::Object(b) } })
     .to_string();
     c.values

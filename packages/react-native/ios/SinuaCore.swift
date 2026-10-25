@@ -133,28 +133,7 @@ class SinuaCore: NSObject {
   /// JSON shape), so a consumer's paint code is identical on Web and RN.
   private static func dictionary(from result: OrbFrame) -> [String: Any] {
     var out = base(from: result)
-    // Materials phase 1: present only when non-empty, like the wasm JSON.
-    if !result.fills.isEmpty {
-      out["fills"] = result.fills.map { f -> [String: Any] in
-        var d: [String: Any] = [
-          "points": f.points.map { ["x": $0.x, "y": $0.y] },
-          "white": f.white, "a": f.a, "saturation": f.saturation, "hue": f.hue,
-          "blur": f.blur, "blend": Int(f.blend), "gradient": NSNull(),
-        ]
-        if !f.holes.isEmpty {
-          d["holes"] = f.holes.map { ring in ring.map { ["x": $0.x, "y": $0.y] } }
-        }
-        if let g = f.gradient {
-          d["gradient"] = [
-            "kind": Int(g.kind), "x0": g.x0, "y0": g.y0, "x1": g.x1, "y1": g.y1, "r": g.r,
-            "stops": g.stops.map {
-              ["offset": $0.offset, "white": $0.white, "a": $0.a, "saturation": $0.saturation, "hue": $0.hue]
-            },
-          ] as [String: Any]
-        }
-        return d
-      }
-    }
+    // Effect runs: present only when non-empty, like the wasm JSON.
     if !result.effects.isEmpty {
       out["effects"] = result.effects.map {
         ["target": Int($0.target), "start": Int($0.start), "count": Int($0.count), "blur": $0.blur, "blend": Int($0.blend)]

@@ -50,7 +50,7 @@ It is vsync-quantized on purpose. Summing raw `dt − interval` counted ordinary
 
 ## How to run it on your phone
 
-Plug the phone in, close other apps, set brightness to a fixed level, and don't touch the screen while it runs. A full run is 10 cases × 2 × 11 s ≈ 4 minutes.
+Plug the phone in, close other apps, set brightness to a fixed level, and don't touch the screen while it runs. A full run is 8 cases × 2 × 11 s ≈ 3 minutes.
 
 **iPhone**
 1. `cd apps/fx-bench-ios && xcodegen generate`, then open `FxBench.xcodeproj`.
@@ -67,7 +67,7 @@ Plug the phone in, close other apps, set brightness to a fixed level, and don't 
 **Web (phone browser)**
 1. `cd apps/fx-bench-web && npm install && npm run build && npx vite preview --host`.
 2. Open the printed network URL on the phone (the same Wi-Fi), tap **Run**, then **Download JSON**.
-3. `?seconds=5` shortens each case; `?cases=orbs-breathing,ring-holo-hues` picks cases; `?auto=1` starts at once.
+3. `?seconds=5` shortens each case; `?cases=orbs-breathing,orbs-holo` picks cases; `?auto=1` starts at once.
 
 **Read the result**
 ```bash
@@ -95,6 +95,6 @@ The three runs used 2–3 s per case, on an M-series Mac: Chrome for Testing hea
   - the heavy glow case has the highest CPU on iOS (35%) and Android (105%).
 - **Cost check:** Spearman ρ between the badge and the measured work was 0.90 on the iOS simulator, 0.78 on the emulator and 0.54 in desktop Chrome. There were no inversions in the settled runs.
 - **Worth checking on a device:**
-  - On the emulator, `ring-holo-hues` stayed at ~20 fps at both power levels while its compute + paint recording was ~2 ms. The time goes to raster, which suggests the per-vertex layer (Compose `saveLayer`) is expensive on the emulator's GPU. The iOS simulator drew the same case at 60 fps. Reported to voice-adapters, who own the painters.
+  - On the emulator, a case that drew per-vertex stroke colour (the removed `ring-holo-hues`) stayed at ~20 fps at both power levels while its compute + paint recording was ~2 ms, so the time went to raster. That layer is gone from the paint contract (0.1.0-beta.12).
   - Liquid is the most compute-heavy case (2–3 ms, and up to 54 ms on a freshly booted emulator), but its badge is `light`, with 29 elements. The badge counts draw calls, not engine work.
   - Headless Chrome's 30 fps low-power runs occasionally showed a 50 ms frame (3–8 per 2 s). It didn't happen in an earlier run, so it looks like headless timer noise. Check it in a real browser.

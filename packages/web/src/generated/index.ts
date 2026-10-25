@@ -4,7 +4,4 @@
 export * from "./SinuaParams.js";
 export { SinuaOrb, type SinuaOrbProps } from "./SinuaOrb.js";
 export { SinuaSignal, type SinuaSignalProps } from "./SinuaSignal.js";
-export { SinuaRing, type SinuaRingProps } from "./SinuaRing.js";
-export { SinuaCore, type SinuaCoreProps } from "./SinuaCore.js";
-export { SinuaBeacon, type SinuaBeaconProps } from "./SinuaBeacon.js";
 export { defineSinuaElements, Sinua_ELEMENT_TAGS } from "./SinuaElements.js";

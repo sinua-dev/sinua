@@ -28,11 +28,8 @@ const read = (p) => readFileSync(join(root, p), "utf8");
 
 /**
  * The keys the Web side will render -- by **running `frames.mjs`**, not by
- * restating its rule. My first attempt re-derived the selection from the
- * golden file with frames.mjs's own `MATERIALS` regex, and it was wrong:
- * `tracking-64-0.6-gradient3` is selected by `hasHues(frame)`, which can only
- * be known by resolving the frame through the wasm engine. Re-deriving a
- * selection rule is how a check ends up testing the copy instead of the thing.
+ * restating its rule: re-deriving a selection rule is how a check ends up
+ * testing the copy instead of the thing.
  */
 let cached = null;
 function webKeys() {
@@ -65,7 +62,7 @@ function assertSameSet(a, b, aName, bName) {
 
 test("materials: the Swift render list matches the Web's", () => {
   const web = webKeys();
-  assert.ok(web.size > 5, `only ${web.size} web cases -- the golden file or frames.mjs changed shape`);
+  assert.ok(web.size >= 1, `only ${web.size} web cases -- the golden file or frames.mjs changed shape`);
   assertSameSet(web, swiftKeys(), "the Web list (frames.mjs + golden)", "MaterialsRenderTests.swift");
 });
 
@@ -82,7 +79,7 @@ test("materials: the tolerance and the AA exception are the ones docs/fx-view.md
   assert.match(compare, /v\.mean > meanLimit \|\| v\.p99 > 24/, "the tolerance is no longer mean <= limit / p99 <= 24");
   const aa = [...compare.matchAll(/^\s{2}"([^"]+)":\s*"/gm)].map((m) => m[1]);
   assert.deepEqual(aa, [], "the AA exception list changed");
-  // Renderer-environment exceptions (user decision 2026-09-21): exactly this case, at exactly 3.
+  // Renderer-environment exceptions (user decision 2026-09-21): none at the moment.
   const env = [...compare.matchAll(/^\s{2}"([^"]+)":\s*\{\s*mean:\s*([0-9.]+)/gm)].map((m) => `${m[1]}=${m[2]}`);
-  assert.deepEqual(env, ["tracking-64-0.6-glow-blur-additive=3"], "the environment exception list changed");
+  assert.deepEqual(env, [], "the environment exception list changed");
 });

@@ -81,7 +81,7 @@ public enum ${P}Size: UInt32, CaseIterable, Sendable {
     case s20 = 20, s32 = 32, s64 = 64
 }
 
-/// One value or one per item (ring \`progress\`: a number for arc/gauge/segmented, one per ring for tracking).
+/// One value or one per item (a number, or one per item).
 public enum ${P}Numbers: Equatable, Sendable, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral, ExpressibleByArrayLiteral {
     case value(Double)
     case list([Double])

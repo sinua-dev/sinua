@@ -2,11 +2,19 @@
 // pin, the no-materials baseline, and FX Spec 1.2 low-power shedding.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { estimateCost, fxSpecCost, resolveFxSpec } from "../dist-dev/dev-entry.js";
 
-const power = readFileSync(fileURLToPath(new URL("../../../spec/examples/status-beacon-power.fxspec.json", import.meta.url)), "utf8");
+// An always-on orb with glow and noise, power-aware: 30 fps, 15 fps and no glow / noise in low power.
+const power = JSON.stringify({
+  fxSpec: "1.8",
+  name: "Status orb (power-aware)",
+  object: "orb",
+  pattern: "working",
+  size: 64,
+  color: { value: "#30A46C", mix: 0.8 },
+  materials: { glow: { strength: 0.6, radius: 3 }, noise: { strength: 0.4, amplitude: 0.02 } },
+  performance: { maxFps: 30, lowPower: { maxFps: 15, disable: ["glow", "noise"] } },
+});
 
 test("classes and the baseline", () => {
   const plain = estimateCost("working", 64);

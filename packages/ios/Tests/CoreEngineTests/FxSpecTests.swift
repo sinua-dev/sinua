@@ -28,7 +28,7 @@ final class FxSpecTests: XCTestCase {
             throw XCTSkip("spec/examples not readable at \(dir.path) (device run?)")
         }
         let specs = files.filter { $0.hasSuffix(".fxspec.json") }.sorted()
-        XCTAssertGreaterThanOrEqual(specs.count, 8)
+        XCTAssertGreaterThanOrEqual(specs.count, 3)
         for file in specs {
             let json = try String(contentsOf: dir.appendingPathComponent(file), encoding: .utf8)
             // v1.1: every `states` key too, with the fixed inputs every
@@ -54,8 +54,8 @@ final class FxSpecTests: XCTestCase {
             }
         }
         // FX Spec 1.2: low power caps fps and sheds glow + noise.
-        let power = try String(
-            contentsOf: dir.appendingPathComponent("status-beacon-power.fxspec.json"), encoding: .utf8)
+        let power =
+            #"{"fxSpec":"1.8","object":"orb","pattern":"working","materials":{"glow":{"radius":3},"noise":{"strength":0.4}},"performance":{"maxFps":30,"lowPower":{"maxFps":15,"disable":["glow","noise"]}}}"#
         XCTAssertEqual(CoreEngine.resolveFxSpecWith(json: power, state: nil, inputs: [:]).maxFps, 30)
         let low = CoreEngine.resolveFxSpecWith(json: power, state: nil, inputs: [:], lowPower: true)
         XCTAssertEqual(low.maxFps, 15)
@@ -89,13 +89,13 @@ final class FxSpecTests: XCTestCase {
         let objects = try XCTUnwrap(cat["objects"] as? [[String: Any]])
         XCTAssertEqual(
             objects.compactMap { $0["component"] as? String },
-            ["SinuaOrb", "SinuaSignal", "SinuaRing", "SinuaCore", "SinuaBeacon"])
+            ["SinuaOrb", "SinuaSignal"])
         let defs = try XCTUnwrap(cat["definitions"] as? [String: [String: Any]])
         XCTAssertEqual(defs["glowStrength@shared"]?["path"] as? String, "glow.strength")
         let w = CoreEngine.checkOverrides(state: "breathing", size: 64, overrides: ["lanse": 6])
         XCTAssertEqual(w.count, 1)
         XCTAssertEqual(w.first?.severity, "warning")
         XCTAssertTrue(w.first?.message.contains("did you mean `lanes`") ?? false)
-        XCTAssertTrue(CoreEngine.checkOverrides(state: "tracking", size: 64, overrides: ["progress1": 2]).isEmpty)
+        XCTAssertTrue(CoreEngine.checkOverrides(state: "dune", size: 64, overrides: ["progress": 0.5]).isEmpty)
     }
 }

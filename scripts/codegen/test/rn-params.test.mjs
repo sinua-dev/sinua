@@ -4,15 +4,13 @@ import assert from "node:assert/strict";
 
 const P = await import("../../../packages/react-native/src/generated/SinuaParams.ts");
 
-test("ring: scalar progress, list progress on tracking, segment list, booleans, groups", () => {
-  assert.deepEqual(P.sinuaRingOverrides("completing", { progress: 0.4, strokeWidth: 0.1 }), { progress: 0.4, strokeWidth: 0.1 });
-  assert.deepEqual(P.sinuaRingOverrides("tracking", { progress: [0.2, 0.5], ringCount: 2 }), { progress0: 0.2, progress1: 0.5, ringCount: 2 });
-  assert.deepEqual(P.sinuaRingOverrides("tracking", { progress: 0.7 }), { progress0: 0.7 });
-  assert.deepEqual(P.sinuaRingOverrides("completing", { progress: [0.3, 0.9] }), { progress: 0.3 });
-  assert.deepEqual(P.sinuaRingOverrides("stepping", { segment: [1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] }).segment23, 0);
-  assert.deepEqual(P.sinuaRingOverrides("measuring", { fill: true, marker: false }), { fill: 1, marker: 0 });
-  assert.deepEqual(P.sinuaRingOverrides("loading", { glow: { strength: 0.6, blend: "additive" } }), { glowStrength: 0.6, glowBlend: 1 });
-  assert.deepEqual(P.sinuaRingOverrides("loading", {}), {});
+test("signal: scalar progress, the envelope list, groups, and an orb boolean", () => {
+  assert.deepEqual(P.sinuaSignalOverrides("dune", { progress: 0.4, ink: 1 }), { progress: 0.4, ink: 1 });
+  assert.deepEqual(P.sinuaSignalOverrides("dune", { envelope: [0.2, 0.5] }), { envelope0: 0.2, envelope1: 0.5 });
+  assert.equal(P.sinuaSignalOverrides("dune", { envelope: new Array(64).fill(0).map((_, i) => (i === 63 ? 1 : 0)) }).envelope63, 1);
+  assert.deepEqual(P.sinuaOrbOverrides("composing", { faceOn: true }), { faceOn: 1 });
+  assert.deepEqual(P.sinuaSignalOverrides("veil", { glow: { strength: 0.6, blend: "additive" } }), { glowStrength: 0.6, glowBlend: 1 });
+  assert.deepEqual(P.sinuaSignalOverrides("veil", {}), {});
 });
 
 test("orb: the renamed flat prop and a material stay apart", () => {
@@ -26,7 +24,7 @@ test("unknown choice throws", () => {
 });
 
 test("spec object check", () => {
-  assert.equal(P.sinuaSpecError('{"object":"ring"}', "ring"), null);
-  assert.match(P.sinuaSpecError({ object: "orb" }, "ring"), /describes a "orb"/);
-  assert.equal(P.sinuaSpecError("not json", "ring"), null);
+  assert.equal(P.sinuaSpecError('{"object":"signal"}', "signal"), null);
+  assert.match(P.sinuaSpecError({ object: "orb" }, "signal"), /describes a "orb"/);
+  assert.equal(P.sinuaSpecError("not json", "signal"), null);
 });

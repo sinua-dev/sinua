@@ -58,43 +58,15 @@ export type OrbState =
   | "progressing"
   // The "mic muted / connection lost" resting state (`orbs::modes::hush`).
   | "muted"
-  // Not `orbs` states at all -- `signal`, a genuinely separate family
-  // (see `crates/core_engine/src/signal/mod.rs`). Kept in the same
-  // `OrbState` union purely so `frame`/`frameWithOverrides` (whose engine
-  // signature spans every family) stay one TS type instead of two -- it
-  // does not imply these are more orbs.
+  // Not `orbs` states at all -- `signal`, a genuinely separate object.
+  // Kept in the same `OrbState` union purely so `frame`/`frameWithOverrides`
+  // (whose engine signature spans both) stay one TS type instead of two --
+  // it does not imply these are more orbs.
   // 1.15 light volumes (`crates/core_engine/src/volume/`): a sheet of light, a crystal
   // filled from below, a dune with a position (box layout). Any input, not only a voice.
   | "veil"
   | "crystal"
   | "dune"
-  // The `ring` family (`crates/core_engine/src/ring/`): a determinate
-  // progress ring, an indeterminate activity spinner, concentric
-  // multi-value rings (`progress0..3`, generic -- not Apple's Activity
-  // rings), a ring of equal segments (`segmentCount`, `segment0..N`), and
-  // an open-bottom value gauge (`sweep`, `fill`, `marker`).
-  | "completing"
-  | "loading"
-  | "tracking"
-  | "stepping"
-  | "measuring"
-  // ...and a voice ring round an avatar (`speaker`).
-  | "talking"
-  // The `beacon` family (`crates/core_engine/src/beacon/`): discrete-event
-  // attention indicators -- a notification ping, a connection pulse with
-  // a quality ring, a location halo.
-  | "notifying"
-  | "reconnecting"
-  | "locating"
-  // ...a radar sweep over a dot-field scope (`scanning`), and the `((•))`
-  // live/transmitting glyph (`broadcasting`).
-  | "scanning"
-  | "broadcasting"
-  // The `core` family (`crates/core_engine/src/core_fx/`): inline
-  // "generating..." indicators -- a shimmer sweep and typing dots.
-  | "generating"
-  | "typing";
-
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;
 
@@ -146,9 +118,9 @@ export interface Point {
  * why this exists -- the per-segment `Line` seams it replaces): polylines
  * draw *first* (then lines, then dots), each as ONE stroked path with round
  * caps and round joins, no fill, stroke width `w`, ink rule identical to
- * `Dot` (`white` as lightness, HSL via `hue` when `saturation > 0`). The
- * `ring`, `core` and `beacon` families emit these (arcs, sweeps); every
- * `orbs` state leaves the array empty.
+ * `Dot` (`white` as lightness, HSL via `hue` when `saturation > 0`). Only
+ * the success / error one-shot effects emit these (a ring and a tick); every
+ * pattern leaves the array empty.
  */
 export interface Polyline {
   points: Point[];
@@ -156,15 +128,7 @@ export interface Polyline {
   a: number;
   w: number;
   saturation: number;
-  /** The whole stroke's single hue; with `hues`, the fallback for renderers without per-vertex paint. */
   hue: number;
-  /**
-   * Per-vertex hue, one per point, or absent = `hue` for the whole stroke.
-   * Set by the gradient when the vertex hues differ. Paint: each segment
-   * a round-capped linear-gradient stroke between its vertices' inks at
-   * alpha 1, all in one layer composited once at `a` (docs/engine.md).
-   */
-  hues?: number[];
 }
 
 /** Mirrors `primitives::OrbFrame`: a complete, draw-ready set of instructions. */
@@ -182,59 +146,13 @@ export interface OrbFrame {
   polylines: Polyline[];
   /** Paint mode for the whole frame -- see `ColorMode`. */
   colorMode: ColorMode;
-  /**
-   * Filled shapes (materials phase 1), drawn first -- under polylines,
-   * lines, dots. Absent when the frame has none (every frame without a fill
-   * opt), so existing frames are unchanged.
-   */
-  fills?: Fill[];
   /** Paint effects on ranges of dots / lines / polylines (real-blur glow). Absent when none. */
   effects?: EffectRun[];
 }
 
-/**
- * Mirrors `primitives::Fill`: a closed polygon. Ink like a `Dot`; with a
- * `gradient`, the stops replace the solid ink and each stop paints at
- * `stop.a * fill.a`. `blur` = Gaussian sigma in engine units (0 = none),
- * `blend` 0 normal / 1 additive. See docs/engine.md, *Paint contract*.
- */
-export interface Fill {
-  points: Point[];
-  /** Inner rings: paint outer + holes as one path with the even-odd rule. Absent when none. */
-  holes?: Point[][];
-  white: number;
-  a: number;
-  saturation: number;
-  hue: number;
-  gradient: FillGradient | null;
-  blur: number;
-  blend: 0 | 1;
-}
-
-/** `kind` 0 = linear (x0,y0)->(x1,y1); 1 = radial, centre (x0,y0), radius 0..r. Pad beyond both ends. */
-export interface FillGradient {
-  kind: 0 | 1;
-  x0: number;
-  y0: number;
-  x1: number;
-  y1: number;
-  r: number;
-  /** 2-3 stops, sorted by offset in 0..1. */
-  stops: GradientStop[];
-}
-
-export interface GradientStop {
-  offset: number;
-  white: number;
-  /** Relative: painted alpha = stop.a * fill.a. */
-  a: number;
-  saturation: number;
-  hue: number;
-}
-
-/** Elements [start, start+count) of list `target` (0 dots, 1 lines, 2 polylines) get blur (sigma) / blend. Never reorders. */
+/** Elements [start, start+count) of list `target` (0 dots, 1 lines) get blur (sigma) / blend. Never reorders. */
 export interface EffectRun {
-  target: 0 | 1 | 2;
+  target: 0 | 1;
   start: number;
   count: number;
   blur: number;
@@ -381,7 +299,7 @@ export interface FxSpec {
   fxSpec: string;
   name?: string;
   description?: string;
-  object: "orb" | "signal" | "ring" | "beacon" | "core";
+  object: "orb" | "signal";
   state: string;
   size?: OrbSize;
   speed?: number;
@@ -530,8 +448,6 @@ export interface FxCost {
   class: "light" | "medium" | "heavy";
   baseElements: number;
   baseCoverage: number;
-  /** Filled shapes (materials phase 1); counted in `elements`. */
-  fills: number;
   /**
    * Blur work proxy: sum over blurred elements of (bbox + 6 sigma)^2-ish x sigma,
    * / canvas area. `medium` above 2.0, `heavy` above 5.0 (docs/engine.md, *Cost estimate*).
@@ -578,7 +494,7 @@ export interface ParameterDefinition {
   choices: ParameterChoice[] | null;
   /** Show only while another key has one of these values (Storybook `if`). */
   if: { key: string; in: number[] } | null;
-  /** Arrays (`progress[]`, `segment[]`): length bounds and the engine keys they expand to. */
+  /** Arrays (`envelope[]`): length bounds and the engine keys they expand to. */
   items?: { minItems: number; maxItems: number; engineKeys: string; uiMin?: number; uiMax?: number; step?: number };
   /** The material section this belongs to (`glow`, `color`, ...), if any. */
   material?: string;
@@ -604,7 +520,7 @@ export interface ParameterPattern {
 }
 
 export interface ParameterObject {
-  id: "orb" | "signal" | "ring" | "core" | "beacon";
+  id: "orb" | "signal";
   label: string;
   component: string;
   patterns: ParameterPattern[];

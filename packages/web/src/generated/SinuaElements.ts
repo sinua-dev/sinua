@@ -2,15 +2,12 @@
 // Regenerate: node scripts/codegen/generate.mjs (CI fails when this file is stale).
 
 import { defineTypedElement, type TypedElementDefinition } from "../element-typed.js";
-import { sinuaOrbOverrides, sinuaSignalOverrides, sinuaRingOverrides, sinuaCoreOverrides, sinuaBeaconOverrides, sinuaSpecError } from "./SinuaParams.js";
+import { sinuaOrbOverrides, sinuaSignalOverrides, sinuaSpecError } from "./SinuaParams.js";
 
 /**
  * One custom element per engine object:
  * - `<sinua-orb pattern="working">` -- Orb; parameters as attributes (ghost-a, ink, orbit-particles…), materials as properties (`el.glow = { strength: 0.6 }`).
  * - `<sinua-signal pattern="veil">` -- Signal; parameters as attributes (ink, layer-count, churn…), materials as properties (`el.glow = { strength: 0.6 }`).
- * - `<sinua-ring pattern="completing">` -- Ring; parameters as attributes (gap, hue, ink…), materials as properties (`el.glow = { strength: 0.6 }`).
- * - `<sinua-core pattern="generating">` -- Core; parameters as attributes (highlight-fill, highlight-length, hue…), materials as properties (`el.glow = { strength: 0.6 }`).
- * - `<sinua-beacon pattern="notifying">` -- Beacon; parameters as attributes (dot-size, hue, ink…), materials as properties (`el.glow = { strength: 0.6 }`).
  *
  * Scalar parameters and the view's own options are attributes (kebab-cased);
  * objects (`spec`, `inputs`, `voice`, the material groups) are properties.
@@ -30,27 +27,6 @@ export const Sinua_ELEMENT_TAGS: Record<string, TypedElementDefinition> = {
     toOverrides: sinuaSignalOverrides as (pattern: string, params: Record<string, unknown>) => Record<string, number>,
     specError: sinuaSpecError,
   },
-  "sinua-ring": {
-    object: "ring",
-    params: ["gap","hue","ink","saturation","strokeWidth","trackOpacity","progress","hueStep","ringCount","spacing","maxLaps","segmentCount","segment","fill","marker","sweep","avatarGap","idleOpacity","innerRadius","thickness","flow","rippleCount","shimmer","reach"],
-    groups: ["glow","noise","pulse","gradient","color"],
-    toOverrides: sinuaRingOverrides as (pattern: string, params: Record<string, unknown>) => Record<string, number>,
-    specError: sinuaSpecError,
-  },
-  "sinua-core": {
-    object: "core",
-    params: ["highlightFill","highlightLength","hue","ink","saturation","thickness","trackOpacity","period","length","bounceAmplitude","delay","dotCount","dotSize","spacing"],
-    groups: ["glow","noise","pulse","gradient","color"],
-    toOverrides: sinuaCoreOverrides as (pattern: string, params: Record<string, unknown>) => Record<string, number>,
-    specError: sinuaSpecError,
-  },
-  "sinua-beacon": {
-    object: "beacon",
-    params: ["dotSize","hue","ink","ringCount","saturation","period","once","ringReach","ringWidth","quality","segmentGap","segmentRadius","segmentWidth","accuracy","haloOpacity","blipCount","seed","trailFill","trailLength","cumulative","inactiveOpacity","sides","waveCount","reversing","level","strokeWidth","waveSweep"],
-    groups: ["glow","noise","pulse","gradient","color"],
-    toOverrides: sinuaBeaconOverrides as (pattern: string, params: Record<string, unknown>) => Record<string, number>,
-    specError: sinuaSpecError,
-  },
 };
 
 /** Registers every tag. Idempotent, and a no-op where there is no `customElements` (a server). */
@@ -62,8 +38,5 @@ declare global {
   interface HTMLElementTagNameMap {
     "sinua-orb": HTMLElement;
     "sinua-signal": HTMLElement;
-    "sinua-ring": HTMLElement;
-    "sinua-core": HTMLElement;
-    "sinua-beacon": HTMLElement;
   }
 }

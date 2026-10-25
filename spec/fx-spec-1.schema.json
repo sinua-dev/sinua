@@ -91,7 +91,7 @@
     },
     "params": {
       "type": "object",
-      "description": "Per-state engine opts (docs/parameters.md). Runtime inputs (pointer*, audio*, history*, interrupt*, muted*, voiceStateCode, peakN) and section-owned keys (color*, gradient*, glow*, noise*, pulse*) are rejected here. FX Spec 1.7: `progress` / `segment` may be arrays.",
+      "description": "Per-state engine opts (docs/parameters.md). Runtime inputs (pointer*, audio*, interrupt*, muted*, voiceStateCode) and section-owned keys (color*, gradient*, glow*, noise*, pulse*) are rejected here. FX Spec 1.7: `envelope` may be an array.",
       "additionalProperties": {
         "anyOf": [
           {
@@ -103,8 +103,8 @@
               "type": "number"
             },
             "minItems": 1,
-            "maxItems": 24,
-            "description": "FX Spec 1.7: `progress` (tracking, 1-4 values, one per ring) and `segment` (stepping, 1-24 values) as lists. One key per item (`progress0`, `segment12`) is also accepted."
+            "maxItems": 64,
+            "description": "FX Spec 1.7: `envelope` (dune, 1-64 values) as a list. One key per item (`envelope12`) is also accepted."
           }
         ]
       }
@@ -428,7 +428,7 @@
           "items": {
             "type": "number"
           },
-          "description": "Default: the target's range, except the per-ring `progress[0]`…`progress[3]`, which default to [0, 1] (the goal = one lap); for extra laps (up to 3) pass a multi-stop outputRange, e.g. [0, 1, 3]."
+          "description": "Default: the target's range."
         },
         "curve": {
           "oneOf": [
@@ -448,16 +448,11 @@
     },
     "bindings": {
       "type": "object",
-      "description": "Keyed by target, so each target is bound once and a state can override or delete (null) one. FX Spec 1.7 names the targets like the parameter catalog's paths: `glow.strength`, `noise.strength`, `gradient.strength`, `pulse.strength`, `color.mix`, `progress[0..3]`; the engine-key names (`glowStrength`, `progress0`) are errors that name the path to use.",
+      "description": "Keyed by target, so each target is bound once and a state can override or delete (null) one. FX Spec 1.7 names the targets like the parameter catalog's paths: `glow.strength`, `noise.strength`, `gradient.strength`, `pulse.strength`, `color.mix`; the engine-key names (`glowStrength`) are errors that name the path to use.",
       "propertyNames": {
         "enum": [
           "progress",
-          "progress0",
-          "progress1",
-          "progress2",
-          "progress3",
-          "quality",
-          "accuracy",
+          "level",
           "audioLevel",
           "glowStrength",
           "noiseStrength",
@@ -465,10 +460,6 @@
           "pulseStrength",
           "colorMix",
           "muted",
-          "progress[0]",
-          "progress[1]",
-          "progress[2]",
-          "progress[3]",
           "glow.strength",
           "noise.strength",
           "gradient.strength",

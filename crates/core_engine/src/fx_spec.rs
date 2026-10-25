@@ -498,131 +498,6 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
         "veil" => &["churn", "layerCount", "level"],
         "crystal" => &["churn", "columnCount", "level"],
         "dune" => &["churn", "progress"],
-        "arc" => &[
-            "gap",
-            "hue",
-            "progress",
-            "saturation",
-            "strokeWidth",
-            "trackOpacity",
-        ],
-        "speaker" => &[
-            "avatarGap",
-            "flow",
-            "hue",
-            "idleOpacity",
-            "innerRadius",
-            "reach",
-            "rippleCount",
-            "saturation",
-            "shimmer",
-            "thickness",
-        ],
-        "gauge" => &[
-            "fill",
-            "gap",
-            "hue",
-            "marker",
-            "progress",
-            "saturation",
-            "strokeWidth",
-            "sweep",
-            "trackOpacity",
-        ],
-        "nested" => &[
-            "hue",
-            "hueStep",
-            "maxLaps",
-            "ringCount",
-            "saturation",
-            "spacing",
-            "strokeWidth",
-            "trackOpacity",
-        ],
-        "segmented" => &[
-            "gap",
-            "hue",
-            "progress",
-            "saturation",
-            "segmentCount",
-            "strokeWidth",
-            "trackOpacity",
-        ],
-        "spinner" => &["gap", "hue", "saturation", "strokeWidth", "trackOpacity"],
-        "broadcast" => &[
-            "cumulative",
-            "dotSize",
-            "hue",
-            "inactiveOpacity",
-            "level",
-            "period",
-            "reversing",
-            "saturation",
-            "sides",
-            "strokeWidth",
-            "waveCount",
-            "waveSweep",
-        ],
-        "halo" => &[
-            "accuracy",
-            "dotSize",
-            "haloOpacity",
-            "hue",
-            "period",
-            "ringWidth",
-            "saturation",
-        ],
-        "ping" => &[
-            "dotSize",
-            "hue",
-            "once",
-            "period",
-            "ringCount",
-            "ringReach",
-            "ringWidth",
-            "saturation",
-        ],
-        "pulse" => &[
-            "dotSize",
-            "hue",
-            "period",
-            "quality",
-            "saturation",
-            "segmentGap",
-            "segmentRadius",
-            "segmentWidth",
-        ],
-        "radar" => &[
-            "blipCount",
-            "dotSize",
-            "hue",
-            "period",
-            "ringCount",
-            "saturation",
-            "seed",
-            "trailFill",
-            "trailLength",
-        ],
-        "dots" => &[
-            "bounceAmplitude",
-            "delay",
-            "dotCount",
-            "dotSize",
-            "hue",
-            "period",
-            "saturation",
-            "spacing",
-        ],
-        "shimmer" => &[
-            "highlightFill",
-            "highlightLength",
-            "hue",
-            "length",
-            "period",
-            "saturation",
-            "thickness",
-            "trackOpacity",
-        ],
         _ => &[],
     }
 }
@@ -635,8 +510,6 @@ pub(crate) fn indexed_param(mode: &str, key: &str) -> bool {
             .is_some_and(|n| n < max)
     };
     match mode {
-        "nested" => idx("progress", 4),
-        "segmented" => idx("segment", 24),
         "dune" => idx("envelope", 64),
         _ => false,
     }
@@ -694,12 +567,6 @@ fn family_of(state: &str) -> Option<&'static str> {
         Some("orb")
     } else if crate::signal::presets::resolve_preset(state, 64).is_some() {
         Some("signal")
-    } else if crate::ring::presets::resolve_preset(state, 64).is_some() {
-        Some("ring")
-    } else if crate::beacon::presets::resolve_preset(state, 64).is_some() {
-        Some("beacon")
-    } else if crate::core_fx::presets::resolve_preset(state, 64).is_some() {
-        Some("core")
     } else {
         None
     }
@@ -708,8 +575,7 @@ fn family_of(state: &str) -> Option<&'static str> {
 // ------------------------------------------------------------ migration --
 
 /// 1.7 names (the parameter catalog's `path`s) -> the engine keys the rest
-/// of the resolver works in. Bindable material masters only; `progress[i]`
-/// is handled by `binding_engine_key`.
+/// of the resolver works in. Bindable material masters only.
 const BINDING_PATHS: [(&str, &str); 5] = [
     ("glow.strength", "glowStrength"),
     ("noise.strength", "noiseStrength"),
@@ -718,32 +584,29 @@ const BINDING_PATHS: [(&str, &str); 5] = [
     ("color.mix", "colorMix"),
 ];
 
-/// A 1.7 binding target (`glow.strength`, `progress[1]`) -> its engine key.
+/// A 1.7 binding target (`glow.strength`) -> its engine key.
 fn binding_engine_key(target: &str) -> Option<String> {
-    if let Some((_, k)) = BINDING_PATHS.iter().find(|(p, _)| *p == target) {
-        return Some(k.to_string());
-    }
-    let i = target.strip_prefix("progress[")?.strip_suffix(']')?;
-    (i.len() == 1 && i.as_bytes()[0].is_ascii_digit()).then(|| format!("progress{i}"))
+    BINDING_PATHS
+        .iter()
+        .find(|(p, _)| *p == target)
+        .map(|(_, k)| k.to_string())
 }
 
 /// An engine-key binding target that 1.7 names differently, with its new name.
 fn binding_new_name(target: &str) -> Option<String> {
-    if let Some((p, _)) = BINDING_PATHS.iter().find(|(_, k)| *k == target) {
-        return Some(p.to_string());
-    }
-    let i = target.strip_prefix("progress")?;
-    (i.len() == 1 && i.as_bytes()[0].is_ascii_digit()).then(|| format!("progress[{i}]"))
+    BINDING_PATHS
+        .iter()
+        .find(|(_, k)| *k == target)
+        .map(|(p, _)| p.to_string())
 }
 
-/// Array params (1.7): `"progress": [..]` on tracking, `"segment": [..]` on
-/// stepping, `"envelope": [..]` on dune -> the indexed engine keys
-/// (`progress0..3`, `segment0..23`, `envelope0..63`).
-const ARRAY_PARAMS: [(&str, usize); 3] = [("progress", 4), ("segment", 24), ("envelope", 64)];
+/// Array params (1.7): `"envelope": [..]` on dune -> the indexed engine keys
+/// (`envelope0..63`).
+const ARRAY_PARAMS: [(&str, usize); 1] = [("envelope", 64)];
 
 /// Reads one block (the base or a `states` entry) into the engine names the
-/// resolver works in: catalog-path binding targets (`glow.strength`,
-/// `progress[0]`) -> engine keys, array params (`"progress": [..]`) -> indexed
+/// resolver works in: catalog-path binding targets (`glow.strength`) -> engine
+/// keys, array params (`"envelope": [..]`) -> indexed
 /// keys. The names FX Spec 1.7 replaced are errors that name the replacement --
 /// 1.0–1.7 were never published, so there is no alias to keep (FLOOR_MINOR).
 fn migrate_block(b: &mut Map<String, Value>, prefix: &str, diag: &mut Diag) {
@@ -754,7 +617,7 @@ fn migrate_block(b: &mut Map<String, Value>, prefix: &str, diag: &mut Diag) {
             "`state` is `pattern` (the visual; the lifecycle key is the `states` map)",
         );
     }
-    // Binding targets: dotted paths / progress[i] in, engine keys out.
+    // Binding targets: dotted paths in, engine keys out.
     if let Some(Value::Object(bm)) = b.get_mut("bindings") {
         let keys: Vec<String> = bm.keys().cloned().collect();
         for k in keys {
@@ -857,17 +720,46 @@ const REMOVED_TOP_KEYS: [&str; 2] = ["cosmetics", "wardrobe"];
 const REMOVED_PATTERNS: [&str; 1] = ["concluding"];
 
 /// Removed in FX Spec 1.15 (the 1.15 cleanup): the character family with its
-/// keys, the silhouette, and the flat signal patterns. Rejected whatever the
-/// file's version; a signal pattern names the light volume that replaces it.
+/// keys, the silhouette, the flat signal patterns, and the ring, core and beacon
+/// families. Rejected whatever the file's version; the error names what replaces
+/// the pattern, but only a pattern that exists.
 const REMOVED_1_15_KEYS: [&str; 4] = ["recipe", "expression", "palette", "silhouette"];
-const REMOVED_1_15_PATTERNS: [(&str, Option<&str>); 6] = [
-    ("signaling", Some("veil")),
-    ("waveform", Some("veil")),
-    ("scrolling", Some("veil")),
-    ("metering", Some("crystal")),
-    ("playing", Some("dune")),
-    ("silhouette", None),
+/// What a removed pattern leaves behind.
+#[derive(Clone, Copy)]
+enum Instead {
+    /// A pattern that took its place.
+    Use(&'static str),
+    /// A progress or level display: `crystal` (`level`) and `dune` (`progress`) do the job.
+    Covered,
+    /// Nothing yet.
+    Nothing,
+}
+const REMOVED_1_15_PATTERNS: [(&str, Instead); 19] = [
+    ("signaling", Instead::Use("veil")),
+    ("waveform", Instead::Use("veil")),
+    ("scrolling", Instead::Use("veil")),
+    ("metering", Instead::Use("crystal")),
+    ("playing", Instead::Use("dune")),
+    ("silhouette", Instead::Nothing),
+    // ring
+    ("completing", Instead::Covered),
+    ("tracking", Instead::Covered),
+    ("measuring", Instead::Covered),
+    ("stepping", Instead::Nothing),
+    ("loading", Instead::Nothing),
+    ("talking", Instead::Nothing),
+    // core
+    ("generating", Instead::Nothing),
+    ("typing", Instead::Nothing),
+    // beacon
+    ("notifying", Instead::Nothing),
+    ("reconnecting", Instead::Nothing),
+    ("locating", Instead::Nothing),
+    ("scanning", Instead::Nothing),
+    ("broadcasting", Instead::Nothing),
 ];
+/// Objects removed in 1.15 (their patterns are in the table above).
+const REMOVED_1_15_OBJECTS: [&str; 4] = ["character", "ring", "core", "beacon"];
 
 /// Patterns added after the 1.8 floor, with the minor that added them.
 const PATTERN_SINCE: [(&str, u64); 3] = [("veil", 15), ("crystal", 15), ("dune", 15)];
@@ -881,10 +773,13 @@ fn removed_material(path: &str, name: &str, diag: &mut Diag) {
 }
 
 /// The error for something removed in FX Spec 1.15, with its replacement if it has one.
-fn removed_1_15(path: &str, name: &str, instead: Option<&str>, diag: &mut Diag) {
+fn removed_1_15(path: &str, name: &str, instead: Instead, diag: &mut Diag) {
     let then = match instead {
-        Some(p) => format!("use `{p}` instead"),
-        None => "there is no replacement: delete it from the file".to_string(),
+        Instead::Use(p) => format!("use `{p}` instead"),
+        Instead::Covered => "its job is covered by `crystal` (`level`) or `dune` (`progress`): \
+             delete it from the file"
+            .to_string(),
+        Instead::Nothing => "there is no replacement: delete it from the file".to_string(),
     };
     diag.error(
         path,
@@ -963,6 +858,7 @@ const SINCE: &[(&str, u64)] = &[
     ("accessibility.name", 9),
     ("accessibility.states", 9),
     ("accessibility.announce", 9),
+    ("bindings:level", 15),
 ];
 
 /// A `transitions` entry's keys (1.9).
@@ -1570,8 +1466,7 @@ fn resolve_block(
                 };
                 match crate::reactive::compile(target, inr.as_deref(), outr.as_deref(), &curves) {
                     Ok(m) => {
-                        let mode_specific = matches!(target.as_str(), "quality" | "accuracy")
-                            || target.starts_with("progress");
+                        let mode_specific = matches!(target.as_str(), "level" | "progress");
                         if mode_specific
                             && !mode.is_empty()
                             && !mode_params(&mode).contains(&target.as_str())
@@ -1821,7 +1716,7 @@ pub fn resolve_full(
         if REMOVED_TOP_KEYS.contains(&k.as_str()) {
             removed_material(&ptr("", k), k, &mut diag);
         } else if REMOVED_1_15_KEYS.contains(&k.as_str()) {
-            removed_1_15(&ptr("", k), k, None, &mut diag);
+            removed_1_15(&ptr("", k), k, Instead::Nothing, &mut diag);
         } else if !TOP_KEYS.contains(&k.as_str()) {
             diag.unknown(strict, &ptr("", k), k, &TOP_KEYS);
         }
@@ -1839,10 +1734,7 @@ pub fn resolve_full(
     // File-wide: object and size.
     let object = root.get("object").and_then(Value::as_str);
     match object {
-        None => diag.error(
-            "/object",
-            "missing `object` (orb, signal, ring, beacon or core)",
-        ),
+        None => diag.error("/object", "missing `object` (orb or signal)"),
         // SinuaEdge was removed in 0.1.0-beta.8 (design note 9): a file that still names it
         // fails loudly, whatever its version, rather than drawing nothing.
         Some("edge") => diag.error(
@@ -1850,8 +1742,13 @@ pub fn resolve_full(
             "`object: edge` was removed in 0.1.0-beta.8 (FX Spec 1.12); there is no replacement: \
              draw the screen-edge glow in the app",
         ),
-        Some("character") => removed_1_15("/object", "object: character", None, &mut diag),
-        Some(o) if !["orb", "signal", "ring", "beacon", "core"].contains(&o) => {
+        Some(o) if REMOVED_1_15_OBJECTS.contains(&o) => removed_1_15(
+            "/object",
+            &format!("object: {o}"),
+            Instead::Nothing,
+            &mut diag,
+        ),
+        Some(o) if !["orb", "signal"].contains(&o) => {
             diag.error("/object", format!("unknown object `{o}`"))
         }
         _ => {}
@@ -1893,7 +1790,7 @@ pub fn resolve_full(
                             format!("`{k}` is file-wide; set it at the top level"),
                         );
                     } else if REMOVED_1_15_KEYS.contains(&k.as_str()) {
-                        removed_1_15(&ptr(&prefix, k), k, None, &mut diag);
+                        removed_1_15(&ptr(&prefix, k), k, Instead::Nothing, &mut diag);
                     } else if !ENTRY_KEYS.contains(&k.as_str()) {
                         diag.unknown(strict, &ptr(&prefix, k), k, &ENTRY_KEYS);
                     }
@@ -2217,7 +2114,7 @@ mod tests {
     #[test]
     fn shorthand_color_and_defaults() {
         let r = resolve(
-            r##"{ "fxSpec": "1.8", "object": "ring", "pattern": "completing", "color": "#e54666" }"##,
+            r##"{ "fxSpec": "1.15", "object": "signal", "pattern": "veil", "color": "#e54666" }"##,
         );
         assert!(r.ok, "{:?}", r.diagnostics);
         assert_eq!(r.size, 64);
@@ -2409,19 +2306,6 @@ mod tests {
             ("veil", include_str!("signal/modes/veil.rs")),
             ("crystal", include_str!("signal/modes/crystal.rs")),
             ("dune", include_str!("signal/modes/dune.rs")),
-            ("arc", include_str!("ring/modes/arc.rs")),
-            ("gauge", include_str!("ring/modes/gauge.rs")),
-            ("nested", include_str!("ring/modes/nested.rs")),
-            ("segmented", include_str!("ring/modes/segmented.rs")),
-            ("spinner", include_str!("ring/modes/spinner.rs")),
-            ("speaker", include_str!("ring/modes/speaker.rs")),
-            ("ping", include_str!("beacon/modes/ping.rs")),
-            ("pulse", include_str!("beacon/modes/pulse.rs")),
-            ("halo", include_str!("beacon/modes/halo.rs")),
-            ("radar", include_str!("beacon/modes/radar.rs")),
-            ("broadcast", include_str!("beacon/modes/broadcast.rs")),
-            ("shimmer", include_str!("core_fx/modes/shimmer.rs")),
-            ("dots", include_str!("core_fx/modes/dots.rs")),
             // Characters are recipes (design note 11): the reader, the rig, the
             // turn and the part files each one uses; the keys a recipe names
             // itself (`"gain": "flutterGain"`) are checked below.
@@ -2449,7 +2333,7 @@ mod tests {
         }
     }
 
-    const EXAMPLES: [(&str, &str); 9] = [
+    const EXAMPLES: [(&str, &str); 3] = [
         (
             "voice-assistant-glowing",
             include_str!("../../../spec/examples/voice-assistant-glowing.fxspec.json"),
@@ -2459,32 +2343,8 @@ mod tests {
             include_str!("../../../spec/examples/orb-brand-fixed.fxspec.json"),
         ),
         (
-            "ring-tracking-gradient",
-            include_str!("../../../spec/examples/ring-tracking-gradient.fxspec.json"),
-        ),
-        (
-            "beacon-radar-glow",
-            include_str!("../../../spec/examples/beacon-radar-glow.fxspec.json"),
-        ),
-        (
             "voice-assistant",
             include_str!("../../../spec/examples/voice-assistant.fxspec.json"),
-        ),
-        (
-            "fitness-rings",
-            include_str!("../../../spec/examples/fitness-rings.fxspec.json"),
-        ),
-        (
-            "status-beacon-power",
-            include_str!("../../../spec/examples/status-beacon-power.fxspec.json"),
-        ),
-        (
-            "shimmer-gradient",
-            include_str!("../../../spec/examples/shimmer-gradient.fxspec.json"),
-        ),
-        (
-            "radar-wedge-blur",
-            include_str!("../../../spec/examples/radar-wedge-blur.fxspec.json"),
         ),
     ];
 
@@ -2646,7 +2506,7 @@ mod tests {
         // wordings left to hold (release decision 0.1). All
         // examples declare 1.8 (9 since the 1.15 cleanup). Captured once 1.8 was stable;
         // a later minor adds its own.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.8-resolved.json"), 9);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.8-resolved.json"), 3);
     }
 
     /// 0.1.0-beta.9 (design note 38): a file using a removed material is rejected,
@@ -2710,21 +2570,21 @@ mod tests {
     fn v1_9_examples_resolve_identically() {
         // 1.9 shipped in 0.1.0-beta.6. This holds the 1.9 runtime's lock (minus what
         // 0.1.0-beta.9 removed: particles, liquid, holographic; design note 38).
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.9-resolved.json"), 9);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.9-resolved.json"), 3);
     }
 
     #[test]
     fn v1_10_examples_resolve_identically() {
         // 1.10 shipped in 0.1.0-beta.7; 1.11 adds the `character` object and
         // must not change how any 1.10 file resolves.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.10-resolved.json"), 9);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.10-resolved.json"), 3);
     }
 
     #[test]
     fn v1_11_examples_resolve_identically() {
         // 1.11 is the runtime 0.1.0-beta.8's characters were made with; 1.12 adds
         // `recipe` and must not change how any 1.11 file resolves.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.11-resolved.json"), 9);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.11-resolved.json"), 3);
     }
 
     #[test]
@@ -2732,14 +2592,14 @@ mod tests {
         // 1.12 adds `recipe`, `expression` and `palette`; 1.13 must not change how a 1.12 file
         // resolves. (Until 0.1.0-beta.9 no test read this lock, and it went stale: the
         // custom-character example's recipe text changed, so its `recipe:pip:<hash>` name did.)
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.12-resolved.json"), 9);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.12-resolved.json"), 3);
     }
 
     #[test]
     fn v1_13_examples_resolve_identically() {
         // 1.13 adds `silhouette`, palette roles and dark variants; 1.14 (the 0.1.0-beta.9
         // cleanup) adds no key and must not change how a 1.13 file resolves.
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.13-resolved.json"), 9);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.13-resolved.json"), 3);
     }
 
     #[test]
@@ -2747,7 +2607,7 @@ mod tests {
         // 1.14 (the 0.1.0-beta.9 cleanup) shipped in 0.1.0-beta.9; 1.15 adds the light volumes
         // and must not change how a 1.14 file resolves. (The 1.15 cleanup rewrote every lock
         // without the examples it removed: the character ones and signal-matrix.)
-        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.14-resolved.json"), 9);
+        resolves_like_snapshot(include_str!("../../../spec/fx-spec-1.14-resolved.json"), 3);
     }
 
     /// Every lock but the current runtime's (which `tests/fx_spec_lock.rs` holds) is read by a
@@ -2875,20 +2735,22 @@ mod tests {
     fn catalog_path_targets_and_array_params_resolve_to_engine_keys() {
         let x = HashMap::from([("x".to_string(), 0.5)]);
         let r = resolve_with(
-            r##"{ "fxSpec": "1.8", "object": "ring", "pattern": "tracking",
-                  "params": { "progress": [0.2] },
-                  "bindings": { "glow.strength": { "input": "x" }, "progress[1]": { "input": "x" } } }"##,
+            r##"{ "fxSpec": "1.15", "object": "signal", "pattern": "dune",
+                  "params": { "envelope": [0.2, 0.4] },
+                  "bindings": { "glow.strength": { "input": "x" }, "progress": { "input": "x" } } }"##,
             None,
             &x,
         );
         assert!(r.ok && r.diagnostics.is_empty(), "{:?}", r.diagnostics);
         assert_eq!(r.overrides["glowStrength"], 0.5);
-        assert_eq!(r.overrides["progress0"], 0.2);
-        assert_eq!(r.overrides["progress1"], 0.5);
-        let long = resolve(
-            r##"{ "fxSpec": "1.8", "object": "ring", "pattern": "tracking", "params": { "progress": [1, 1, 1, 1, 1] } }"##,
-        );
-        assert!(!long.ok && errors(&long)[0].message.contains("1 to 4 values"));
+        assert_eq!(r.overrides["envelope0"], 0.2);
+        assert_eq!(r.overrides["envelope1"], 0.4);
+        assert_eq!(r.overrides["progress"], 0.5);
+        let too_many = vec!["1"; 65].join(", ");
+        let long = resolve(&format!(
+            r##"{{ "fxSpec": "1.15", "object": "signal", "pattern": "dune", "params": {{ "envelope": [{too_many}] }} }}"##
+        ));
+        assert!(!long.ok && errors(&long)[0].message.contains("1 to 64 values"));
     }
 
     fn resolves_like_snapshot(snapshot: &str, count: usize) {
@@ -2940,7 +2802,11 @@ mod tests {
         }
     }
 
-    const MATERIALS: &str = include_str!("../../../spec/examples/radar-wedge-blur.fxspec.json");
+    /// A glowing orb with real-blur additive glow; low power sheds the blur and caps the rate.
+    const MATERIALS: &str = r##"{ "fxSpec": "1.8", "object": "orb", "pattern": "working", "size": 64,
+        "color": { "value": "#30A46C", "mix": 0.8 },
+        "materials": { "glow": { "strength": 0.7, "radius": 3, "mode": "blur", "blend": "additive" } },
+        "performance": { "maxFps": 30, "lowPower": { "maxFps": 20, "disable": ["blur"] } } }"##;
 
     #[test]
     fn v1_3_glow_mode_blend_and_blur_shedding() {
@@ -2951,14 +2817,12 @@ mod tests {
             (r.overrides["glowMode"], r.overrides["glowBlend"]),
             (1.0, 1.0)
         );
-        assert_eq!(r.overrides["trailFill"], 1.0);
         assert!(!r.overrides.contains_key("blurScale"));
         let f = crate::frame_from_fx_spec_with(MATERIALS.into(), 1.0, None, none.clone(), false)
             .unwrap();
-        assert_eq!(f.fills.len(), 1, "the wedge");
         assert!(f.effects.iter().any(|e| e.blur > 0.0 && e.blend == 1));
         // Low power sheds blur: blurScale 0, glow back to stacked copies,
-        // no blur left anywhere; the wedge (no blur) stays.
+        // no blur left anywhere.
         let low = resolve_full(MATERIALS, None, &none, true);
         assert_eq!(low.overrides["blurScale"], 0.0);
         assert_eq!(low.max_fps, Some(20.0));
@@ -2966,8 +2830,6 @@ mod tests {
         let lf = crate::frame_from_fx_spec_with(MATERIALS.into(), 1.0, None, none.clone(), true)
             .unwrap();
         assert!(lf.effects.is_empty(), "stacked glow: no effect runs left");
-        assert_eq!(lf.fills.len(), 1);
-        assert!(lf.fills.iter().all(|x| x.blur == 0.0));
         let bad = resolve(
             r##"{ "fxSpec": "1.8", "object": "orb", "pattern": "working",
                   "materials": { "glow": { "mode": "soft", "blend": 1 } } }"##,
@@ -2975,7 +2837,11 @@ mod tests {
         assert_eq!(errors(&bad).len(), 2);
     }
 
-    const POWER: &str = include_str!("../../../spec/examples/status-beacon-power.fxspec.json");
+    /// An always-on glowing orb that sheds its glow and noise under low power.
+    const POWER: &str = r##"{ "fxSpec": "1.8", "object": "orb", "pattern": "working", "size": 64,
+        "color": { "value": "#30A46C", "mix": 0.8 },
+        "materials": { "glow": { "strength": 0.6, "radius": 3 }, "noise": { "strength": 0.4, "amplitude": 0.02 } },
+        "performance": { "maxFps": 30, "lowPower": { "maxFps": 15, "disable": ["glow", "noise"] } } }"##;
 
     #[test]
     fn performance_caps_fps_and_sheds_materials_under_low_power() {
@@ -3064,7 +2930,16 @@ mod tests {
     }
 
     const VOICE: &str = include_str!("../../../spec/examples/voice-assistant.fxspec.json");
-    const FIT: &str = include_str!("../../../spec/examples/fitness-rings.fxspec.json");
+    /// A crystal driven by app numbers: water fills it, activity tints it, the heart rate
+    /// drives the glow; `done` swaps to a full dune and drops the bindings it no longer needs.
+    const FIT: &str = r##"{ "fxSpec": "1.15", "object": "signal", "pattern": "crystal", "size": 64,
+        "bindings": {
+          "level": { "input": "waterMl", "inputRange": [0, 2500] },
+          "color.mix": { "input": "activeMinutes", "inputRange": [0, 30] },
+          "glow.strength": { "input": "heartRate", "inputRange": [60, 100, 160],
+                             "outputRange": [0, 0.2, 0.8], "curve": ["linear", "easeIn"] } },
+        "states": { "done": { "pattern": "dune", "params": { "progress": 1 },
+                              "bindings": { "level": null, "color.mix": null, "glow.strength": null } } } }"##;
 
     #[test]
     fn states_merge_over_the_base_per_rfc_7396() {
@@ -3135,40 +3010,29 @@ mod tests {
 
     #[test]
     fn bindings_map_inputs_and_report_missing_ones() {
-        let r = resolve_with(FIT, None, &HashMap::from([("steps".to_string(), 5000.0)]));
-        assert!(r.ok, "{:?}", r.diagnostics);
-        let want = crate::reactive::compile(
-            "progress0",
-            Some(&[0.0, 10000.0, 30000.0]),
-            Some(&[0.0, 1.0, 3.0]),
-            &["easeOut".into(), "linear".into()],
-        )
-        .unwrap()
-        .map(5000.0);
-        assert_eq!(r.overrides["progress0"], want);
-        assert!(want > 0.5, "easeOut");
-        // Goal = one lap (the orchestrator's 20:55 bug: the default output
-        // used to be the full 0..3 lap range, so the goal read as 3 laps).
-        let fit = |k: &str, v: f64| {
-            resolve_with(FIT, None, &HashMap::from([(k.to_string(), v)])).overrides[&k
-                .replace("steps", "progress0")
-                .replace("waterMl", "progress1")
-                .replace("activeMinutes", "progress2")]
-        };
-        assert_eq!(fit("steps", 10_000.0), 1.0);
-        assert_eq!(fit("steps", 20_000.0), 2.0);
-        assert_eq!(fit("steps", 90_000.0), 3.0);
-        assert_eq!(fit("waterMl", 1_800.0), 0.72);
-        assert_eq!(
-            fit("activeMinutes", 45.0),
-            1.0,
-            "past the goal: clamped at one lap by default"
+        let r = resolve_with(
+            FIT,
+            None,
+            &HashMap::from([("waterMl".to_string(), 1_800.0)]),
         );
+        assert!(r.ok, "{:?}", r.diagnostics);
+        // The default output is the target's own 0..1: 1,800 of 2,500 is 0.72.
+        assert_eq!(r.overrides["level"], 0.72);
+        let mix = |v: f64| {
+            resolve_with(
+                FIT,
+                None,
+                &HashMap::from([("activeMinutes".to_string(), v)]),
+            )
+            .overrides["colorMix"]
+        };
+        assert_eq!(mix(15.0), 0.5);
+        assert_eq!(mix(45.0), 1.0, "past the range: clamped");
         let mut inactive = r.inactive_bindings.clone();
         inactive.sort();
-        assert_eq!(inactive, ["glowStrength", "progress1", "progress2"]);
+        assert_eq!(inactive, ["colorMix", "glowStrength"]);
         assert!(
-            !r.overrides.contains_key("progress1"),
+            !r.overrides.contains_key("colorMix"),
             "missing input = inactive, not guessed"
         );
         // Multi-stop, per-segment curves, clamped.
@@ -3195,14 +3059,14 @@ mod tests {
                 .overrides["audioStrength"]
         );
         // A deleted binding is gone, not inactive, in that state.
-        let g = resolve_with(FIT, Some("goalReached"), &HashMap::new());
+        let g = resolve_with(FIT, Some("done"), &HashMap::new());
         assert!(g.ok, "{:?}", g.diagnostics);
-        assert_eq!(g.state, "completing");
+        assert_eq!(g.state, "dune");
         assert!(g.inactive_bindings.is_empty());
         assert_eq!(g.overrides["progress"], 1.0);
         assert!(
-            !g.overrides.contains_key("ringCount"),
-            "inherited param the arc doesn't read"
+            !g.overrides.contains_key("level"),
+            "a deleted binding leaves no key behind"
         );
     }
 
@@ -3210,7 +3074,7 @@ mod tests {
     fn binding_targets_and_ranges_are_validated() {
         let spec = |b: &str| {
             resolve(&format!(
-                r##"{{ "fxSpec": "1.8", "object": "ring", "pattern": "completing", "bindings": {b} }}"##
+                r##"{{ "fxSpec": "1.15", "object": "signal", "pattern": "dune", "bindings": {b} }}"##
             ))
         };
         let r = spec(r##"{ "dotSize": { "input": "x" }, "progres": { "input": "x" } }"##);
@@ -3239,11 +3103,16 @@ mod tests {
         );
         assert!(errors(&r).iter().any(|d| d.message.contains("same length")));
         // A mode-specific target the mode doesn't read: warning.
+        let r = spec(r##"{ "level": { "input": "x" } }"##);
+        assert!(r.ok && warnings(&r)[0].message.contains("doesn't read `level`"));
+        // A target that is gone (the ring and beacon ones) is not bindable.
         let r = spec(r##"{ "quality": { "input": "x" } }"##);
-        assert!(r.ok && warnings(&r)[0].message.contains("doesn't read `quality`"));
+        assert!(errors(&r).iter().any(
+            |d| d.path == "/bindings/quality" && d.message.contains("isn't a bindable target")
+        ));
         // Bound and static at once: warning, binding wins.
         let r = resolve_with(
-            r##"{ "fxSpec": "1.8", "object": "ring", "pattern": "completing", "params": { "progress": 0.2 },
+            r##"{ "fxSpec": "1.15", "object": "signal", "pattern": "dune", "params": { "progress": 0.2 },
                   "bindings": { "progress": { "input": "x" } } }"##,
             None,
             &HashMap::from([("x".to_string(), 0.9)]),
@@ -3290,7 +3159,7 @@ mod tests {
         let r = resolve(
             r##"{ "fxSpec": "1.8", "object": "orb", "pattern": "working", "params": { "orbitN": 4 },
                   "states": {
-                    "a": { "pattern": "loading" },
+                    "a": { "pattern": "veil" },
                     "b": { "size": 20, "params": { "orbitn": 3 } },
                     "c": { "pattern": "speaking" },
                     "d": 5 } }"##,
@@ -3298,7 +3167,7 @@ mod tests {
         let e = errors(&r);
         assert!(e
             .iter()
-            .any(|d| d.path == "/states/a/pattern" && d.message.contains("a ring pattern")));
+            .any(|d| d.path == "/states/a/pattern" && d.message.contains("a signal pattern")));
         assert!(e
             .iter()
             .any(|d| d.path == "/states/b/size" && d.message.contains("file-wide")));
@@ -3368,7 +3237,6 @@ mod tests {
             .collect();
         let mut targets: Vec<String> = targets.iter().map(|s| s.to_string()).collect();
         // 1.7: the catalog-path names of the same targets.
-        targets.extend((0..4).map(|i| format!("progress[{i}]")));
         targets.extend(BINDING_PATHS.iter().map(|(p, _)| p.to_string()));
         assert_eq!(names(&defs["bindings"]["propertyNames"]["enum"]), targets);
         assert_eq!(
@@ -3444,7 +3312,7 @@ mod tests {
             .map(|v| v.as_str().unwrap())
             .collect();
         assert!(
-            frozen.len() > 100,
+            frozen.len() > 90,
             "a non-trivial denominator ({} keys)",
             frozen.len()
         );

@@ -223,7 +223,7 @@ fun SinuaVoiceButton(
     }
 }
 
-/** The inner ring for a state (Web's `voiceButtonRing`): an engine view, or null for the icon only. */
+/** The inner orb for a state (Web's `voiceButtonRing`): an engine view, or null for the icon only. */
 internal data class VoiceButtonRing(
     val pattern: String,
     val state: String,
@@ -231,18 +231,11 @@ internal data class VoiceButtonRing(
     val speed: Double,
 )
 
-internal fun voiceButtonRing(s: VoiceButtonState): VoiceButtonRing? {
-    val ring = mapOf("progress" to 1.0, "strokeWidth" to 0.045)
-    return when (s) {
-        VoiceButtonState.CONNECTING ->
-            VoiceButtonRing("loading", "initializing", mapOf("strokeWidth" to 0.045, "trackOpacity" to 0.15), 1.0)
-
-        VoiceButtonState.LISTENING -> VoiceButtonRing("completing", "listening", ring, 1.0)
-
-        VoiceButtonState.MUTED -> VoiceButtonRing("completing", "listening", ring, 0.15)
-
-        else -> null
-    }
+internal fun voiceButtonRing(s: VoiceButtonState): VoiceButtonRing? = when (s) {
+    VoiceButtonState.CONNECTING -> VoiceButtonRing("connecting", "initializing", emptyMap(), 1.0)
+    VoiceButtonState.LISTENING -> VoiceButtonRing("listening", "listening", emptyMap(), 1.0)
+    VoiceButtonState.MUTED -> VoiceButtonRing("listening", "listening", emptyMap(), 0.15)
+    else -> null
 }
 
 // The web element's icons (voice-button.ts), 24-unit paths.

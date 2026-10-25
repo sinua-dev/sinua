@@ -422,7 +422,7 @@ mod tests {
     fn technique_per_pair() {
         assert_eq!(technique("glowing", "glowing"), "params");
         assert_eq!(technique("glowing", "progressing"), "morph");
-        assert_eq!(technique("glowing", "scanning"), "crossFade");
+        assert_eq!(technique("glowing", "veil"), "crossFade");
         assert_eq!(technique("working", "searching"), "crossFade");
     }
 
@@ -546,7 +546,7 @@ mod tests {
         assert_eq!(m.speed, 0.75);
         let c = mix(
             &side("glowing", 0.5, &[]),
-            &side("scanning", 1.0, &[]),
+            &side("veil", 1.0, &[]),
             64,
             0.5,
             "linear",
@@ -773,7 +773,7 @@ mod tests {
             (half.overrides["period"] - 5.0).abs() < 1e-12 && (half.speed - 0.875).abs() < 1e-12
         );
         assert!(blend(
-            &[side("glowing", 1.0, &[]), side("loading", 1.0, &[])],
+            &[side("glowing", 1.0, &[]), side("veil", 1.0, &[])],
             &[1.0, 0.0],
             0,
             64

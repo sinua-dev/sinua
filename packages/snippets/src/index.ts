@@ -285,7 +285,7 @@ export function hasLifecycle(doc: { states?: unknown; bindings?: unknown; perfor
 export const LIFECYCLE_NOTE = "This design has lifecycle states, bindings or a performance block. The code below drops them: use the File tab.";
 
 // ---- Typed components --------------------------------------------------
-// The generated per-object components (SinuaOrb, SinuaRing, …) take named
+// The generated per-object components (SinuaOrb, SinuaSignal) take named
 // props instead of engine keys. Turning a design into those props needs the
 // parameter catalog, which lives in the engine package -- so the caller passes
 // it in and this file stays dependency-free.
@@ -301,7 +301,7 @@ export interface TypedDesign {
   /** e.g. `SinuaOrb`. */
   component: string;
   pattern: string;
-  /** Nested props: `{ ringCount: 3, glow: { strength: 0.6 } }`. */
+  /** Nested props: `{ orbitN: 3, glow: { strength: 0.6 } }`. */
   props: Record<string, PropValue | Record<string, PropValue>>;
   /** Engine keys with no catalog path: they keep the view form. */
   leftover: Record<string, number>;
@@ -310,7 +310,7 @@ export interface TypedDesign {
 /**
  * Engine overrides -> the typed component's props, using the catalog's
  * `key` -> `path` mapping (`glowStrength` -> `glow.strength`). Indexed keys
- * (`progress0`, `segment3`) collapse into one list prop. Anything the catalog
+ * (`envelope0`, `envelope12`) collapse into one list prop. Anything the catalog
  * doesn't describe is reported in `leftover`, so a caller can fall back.
  */
 export function toTypedProps(object: string, pattern: string, overrides: Record<string, number>, catalog: CatalogLike): TypedDesign {
@@ -347,7 +347,7 @@ export function toTypedProps(object: string, pattern: string, overrides: Record<
       set(direct.path, asValue(direct.def, n));
       continue;
     }
-    // `progress0` / `segment12`: one list prop on the base key.
+    // `envelope0` / `envelope12`: one list prop on the base key.
     const m = /^([a-zA-Z]+?)(\d+)$/.exec(key);
     const base = m ? byKey.get(m[1]) : undefined;
     if (m && base) {
@@ -363,7 +363,7 @@ export function toTypedProps(object: string, pattern: string, overrides: Record<
 
 const jsValue = (v: unknown): string => (typeof v === "string" ? JSON.stringify(v) : Array.isArray(v) ? `[${v.map(jsValue).join(", ")}]` : typeof v === "number" ? snipNum(v) : String(v));
 
-/** `pattern="working" ringCount={3} glow={{ strength: 0.6 }}` for JSX. */
+/** `pattern="working" orbitN={3} glow={{ strength: 0.6 }}` for JSX. */
 function jsxProps(design: TypedDesign, size: OrbSize, speed: number): string {
   const parts = [`pattern=${JSON.stringify(design.pattern)}`];
   for (const [name, value] of Object.entries(design.props)) {

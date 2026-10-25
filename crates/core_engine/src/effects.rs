@@ -73,9 +73,6 @@ fn extent(frame: &OrbFrame) -> Option<(f64, f64, f64)> {
     for p in &frame.polylines {
         pts.extend(p.points.iter().map(|q| (q.x, q.y)));
     }
-    for f in &frame.fills {
-        pts.extend(f.points.iter().map(|q| (q.x, q.y)));
-    }
     if pts.is_empty() {
         return None;
     }
@@ -114,9 +111,6 @@ fn tint(frame: &mut OrbFrame, hue: f64, k: f64) {
     for p in frame.polylines.iter_mut() {
         p.map_hue(f);
     }
-    for fl in frame.fills.iter_mut() {
-        (fl.saturation, fl.hue) = f(fl.saturation, fl.hue);
-    }
 }
 
 /// In place only: raises every element's opacity toward full by `k` (0..1), so an effect
@@ -135,9 +129,6 @@ fn lift(frame: &mut OrbFrame, k: f64) {
     for p in frame.polylines.iter_mut() {
         p.a = up(p.a);
     }
-    for f in frame.fills.iter_mut() {
-        f.a = up(f.a);
-    }
 }
 
 /// Moves every element by `dx`.
@@ -152,16 +143,6 @@ fn shift(frame: &mut OrbFrame, dx: f64) {
     for p in frame.polylines.iter_mut() {
         for q in p.points.iter_mut() {
             q.x += dx;
-        }
-    }
-    for f in frame.fills.iter_mut() {
-        for q in f.points.iter_mut() {
-            q.x += dx;
-        }
-        for h in f.holes.iter_mut() {
-            for q in h.iter_mut() {
-                q.x += dx;
-            }
         }
     }
 }
@@ -183,7 +164,6 @@ fn ring(cx: f64, cy: f64, r: f64, w: f64, a: f64, hue: f64) -> Polyline {
         w,
         saturation: 0.8,
         hue,
-        hues: Vec::new(),
     }
 }
 
@@ -214,7 +194,6 @@ fn tick(cx: f64, cy: f64, s: f64, u: f64, w: f64, a: f64) -> Polyline {
         w,
         saturation: 0.85,
         hue: 140.0,
-        hues: Vec::new(),
     }
 }
 

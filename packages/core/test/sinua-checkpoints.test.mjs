@@ -25,12 +25,12 @@ test("RN checkpoints are in sync with spec/sinua-golden.json", () => {
 test("the RN on-device check passes against wasm, and catches a perturbation", async () => {
   assert.equal(await runSinuaCheckpoints(checkpoints, wasm), null);
   const bad = structuredClone(checkpoints);
-  bad.cases[3].lastPolyline.last[0] += 0.01;
-  assert.match(await runSinuaCheckpoints(bad, wasm), /tracking-64-0\.6-laps: lastPolyline\.last\[0\]/);
+  bad.cases[3].lastDot[0] += 0.01;
+  assert.match(await runSinuaCheckpoints(bad, wasm), /dune-64-0\.6-voice-message-progress40: lastDot\[0\]/);
 });
 
-test("the RN FX Spec check mirrors spec/examples and passes against wasm", async () => {
-  assert.deepEqual(FX_SPEC_EXAMPLE, read("../../../spec/examples/beacon-radar-glow.fxspec.json"));
+test("the RN FX Spec check passes against wasm", async () => {
+  assert.equal(resolveFxSpec(FX_SPEC_EXAMPLE).ok, true);
   const api = {
     resolveFxSpec: async (s, ctx) => resolveFxSpec(s, ctx),
     frameFromFxSpec: async (s, e, ctx) => frameFromFxSpec(s, e, ctx),

@@ -29,7 +29,7 @@
 //! deliberately untouched by this file.
 
 use core_engine::{
-    frame_with_overrides, parameter_catalog_json, resolved_opts, ColorMode, Fill, OrbFrame,
+    frame_with_overrides, parameter_catalog_json, resolved_opts, ColorMode, OrbFrame,
 };
 use serde_json::{json, Map, Value};
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -65,7 +65,7 @@ const MATERIAL_KEYS: [&str; 3] = ["colorMix", "colorMode", "gradientStrength"];
 /// Every state this set freezes -- the complement of `PORTED` across all
 /// five families. `every_non_ported_state_is_frozen` checks each one
 /// resolves; adding a state means adding it here (docs/testing.md).
-const STATES: [&str; 24] = [
+const STATES: [&str; 11] = [
     // orbs, additive
     "glowing",
     "drifting",
@@ -75,22 +75,6 @@ const STATES: [&str; 24] = [
     "calibrating",
     "progressing",
     "muted",
-    // ring
-    "completing",
-    "loading",
-    "tracking",
-    "stepping",
-    "measuring",
-    "talking",
-    // beacon
-    "notifying",
-    "reconnecting",
-    "locating",
-    "scanning",
-    "broadcasting",
-    // core
-    "generating",
-    "typing",
     // 1.15 light volumes (signal)
     "veil",
     "crystal",
@@ -149,18 +133,6 @@ fn cases() -> Vec<Case> {
             .collect::<Vec<_>>()
     };
     let extra: Vec<ExtraCase> = vec![
-        ("completing", "progress37", s(&[("progress", 0.37)])),
-        ("stepping", "progress60", s(&[("progress", 0.6)])),
-        (
-            "measuring",
-            "progress70-marker",
-            s(&[("progress", 0.7), ("marker", 1.0)]),
-        ),
-        (
-            "tracking",
-            "laps",
-            s(&[("progress0", 0.8), ("progress1", 0.55), ("progress2", 1.2)]),
-        ),
         ("crystal", "speaking-bands", speaking_bands()),
         // A voice message's strip (SinuaVoiceMessage, 220 × 40).
         ("dune", "voice-message-progress40", {
@@ -168,19 +140,6 @@ fn cases() -> Vec<Case> {
             e.extend((0..24).map(|i| (format!("envelope{i}"), (i as f64 * 0.9).sin() * 0.5 + 0.5)));
             e
         }),
-        (
-            "talking",
-            "speaking-level60",
-            s(&[("audioLevel", 0.6), ("flow", 1.0)]),
-        ),
-        (
-            "talking",
-            "listening-level40",
-            s(&[("audioLevel", 0.4), ("flow", -1.0)]),
-        ),
-        ("talking", "thinking-shimmer", s(&[("shimmer", 1.0)])),
-        ("reconnecting", "quality66", s(&[("quality", 0.66)])),
-        ("broadcasting", "level50", s(&[("level", 0.5)])),
         // Color system (2026-09-18, spec 1.1.0): `apply_color` on a line-heavy
         // orb (edges coloured), fixed mode + a lightness bias on a depth-
         // shaded sphere, the 3-stop gradient, and the gradient on lines.
@@ -216,32 +175,10 @@ fn cases() -> Vec<Case> {
             ]),
         ),
         ("connecting", "gradient", s(&[("gradientStrength", 1.0)])),
-        // Materials phase 1 (spec 1.2.0): the fill primitive and paint
-        // effects -- shimmer's gradient-filled highlight, radar's filled
-        // wedge, real-blur glow on dots and (additive) on polylines.
-        ("generating", "highlight-fill", s(&[("highlightFill", 1.0)])),
-        ("scanning", "trail-fill", s(&[("trailFill", 1.0)])),
         (
             "glowing",
             "glow-blur",
             s(&[("glowStrength", 1.0), ("glowMode", 1.0)]),
-        ),
-        (
-            "tracking",
-            "glow-blur-additive",
-            s(&[("glowStrength", 0.8), ("glowMode", 1.0), ("glowBlend", 1.0)]),
-        ),
-        // 1.6.0: per-vertex stroke colour -- a 3-stop gradient sweeping
-        // along ring tracks (0.1.0-beta.9 removed the holographic cases).
-        (
-            "tracking",
-            "gradient3",
-            s(&[
-                ("gradientStrength", 1.0),
-                ("gradientHue", 200.0),
-                ("gradientHue2", 300.0),
-                ("gradientHue3", 40.0),
-            ]),
         ),
     ];
     for (state, tag, overrides) in extra {
@@ -342,21 +279,13 @@ fn regenerate_sinua_golden() {
                 "colorMode": color_mode_str(f.color_mode),
                 "lines": flat(f.lines.iter().flat_map(|l| [l.x1, l.y1, l.x2, l.y2, l.white, l.a, l.w, l.saturation, l.hue])),
                 "polylines": f.polylines.iter().map(|p| {
-                    let mut o = json!({
+                    let o = json!({
                         "style": flat([p.white, p.a, p.w, p.saturation, p.hue]),
                         "points": flat(p.points.iter().flat_map(|q| [q.x, q.y])),
                     });
-                    // 1.6.0: only on strokes that have them.
-                    if !p.hues.is_empty() {
-                        o["hues"] = json!(flat(p.hues.iter().copied()));
-                    }
                     o
                 }).collect::<Vec<_>>(),
             });
-            // 1.2.0: only on cases that have them, so older cases are unchanged.
-            if !f.fills.is_empty() {
-                case["fills"] = json!(f.fills.iter().map(fill_json).collect::<Vec<_>>());
-            }
             if !f.effects.is_empty() {
                 case["effects"] = json!(flat(f.effects.iter().flat_map(|e| {
                     [e.target as f64, e.start as f64, e.count as f64, e.blur, e.blend as f64]
@@ -366,7 +295,7 @@ fn regenerate_sinua_golden() {
         })
         .collect();
     let doc = json!({
-        "specVersion": "5.0.0",
+        "specVersion": "6.0.0",
         "note": "Sinua's own regression / cross-platform lock for every state spec/orbs-golden.json does not cover. \
     Generated by this engine, so it proves 'unchanged since baseline', NOT correctness -- upstream's set remains the only external oracle. \
     Dot stride 8: x, y, z, r, white, a, saturation, hue (dots in draw order). Line stride 9: x1, y1, x2, y2, white, a, w, saturation, hue (1.1.0; was 7). \
@@ -377,7 +306,7 @@ fn regenerate_sinua_golden() {
     1.3.0 (materials phase 2, liquid): a fill with inner rings carries `holes` [[x, y, ...], ...] (even-odd with `points`); absent when none. \
     1.4.0 (materials phase 3): particle cases -- no new fields (particles are dots). \
     1.5.0 (materials phase 4): holographic-lite cases -- no new fields (it recolours saturation/hue); the 4 particle cases re-baselined deliberately (particles on wall-clock time, per-state defaults, calmer motion, position-picked emitters). \
-    1.6.0 (per-vertex stroke colour): a polyline whose vertex hues differ (holo / gradient on strokes) carries `hues` [h, ...], one per vertex; absent when none. 1.7.0 (size 32): the plain frame() cases at every shipped size, 64 / 32 / 20; every earlier case unchanged. Size 32 of the ported orbs is also held to upstream's own engine (spec/orbs-golden-32.json). 1.8.0 (character family, FX Spec 1.11): the four characters (buzzy, hum, wisp, chirp) at every size and time, each with eight input-driven cases (listening, the turn blink, speaking with a hue, barge-in, celebrate, muted, the head turn and `turn` 0); a character is fills only; every earlier case unchanged. 2.0.0 (SinuaEdge removed): the `framing` cases are gone, the first removal, hence the major; every other case unchanged. 2.1.0: two more characters, cuppa (an SVG-path body with a hole: the mug's handle; the `steam` part) and bean (path patches), the same cases as the others; every earlier case unchanged. 2.2.0: the tap hop, `buzzy-64-0.6-hop` mid-hop and `cuppa-64-0.6-hop-glance` with the glance toward the tap (`tapX` / `tapY`); every earlier case unchanged. 2.3.0: the expressions, buzzy happy, cuppa surprised (the O mouth), bean sad (the frown), wisp sleepy and buzzy thoughtful while speaking (the voice keeps the mouth); every earlier case unchanged. 2.4.0: beep, a robot with the `arms` part, the same cases as the other characters plus `beep-64-0.6-arms-off`; every earlier case unchanged. 2.5.0: palette overrides, buzzy (body and accent), bean on a dark ground (the eyes lifted) and cuppa with `hue` too (the given colour isn't turned); every earlier case unchanged. (2026-10-03: the palette slots were renamed by part; these cases' input keys follow, their frames are unchanged.) 3.0.0 (0.1.0-beta.9): the liquid, particles and holographic materials removed, so their 14 cases are gone; every other case unchanged. 4.0.0 (0.1.0-beta.9): the `concluding` pattern removed, so its 12 cases are gone; every other case unchanged. 4.1.0 (0.1.0-beta.9): glowing under its own voice-state profile while thinking and speaking, `glowing-64-0.6-voice-thinking` / `-voice-speaking` (an app's voice orb; the overrides are read from the profile); every earlier case unchanged. 5.0.0 (0.1.0-beta.12, FX Spec 1.15): the light volumes veil, crystal and dune added (plus crystal with the voice's bands and dune as a voice message's strip); the flat signal patterns (signaling, waveform, scrolling, metering, playing), the character family and the orb's silhouette removed, so their cases are gone; every other case unchanged. Re-baseline only deliberately, with a LOG entry (docs/testing.md).",
+    1.6.0 (per-vertex stroke colour): a polyline whose vertex hues differ (holo / gradient on strokes) carries `hues` [h, ...], one per vertex; absent when none. 1.7.0 (size 32): the plain frame() cases at every shipped size, 64 / 32 / 20; every earlier case unchanged. Size 32 of the ported orbs is also held to upstream's own engine (spec/orbs-golden-32.json). 1.8.0 (character family, FX Spec 1.11): the four characters (buzzy, hum, wisp, chirp) at every size and time, each with eight input-driven cases (listening, the turn blink, speaking with a hue, barge-in, celebrate, muted, the head turn and `turn` 0); a character is fills only; every earlier case unchanged. 2.0.0 (SinuaEdge removed): the `framing` cases are gone, the first removal, hence the major; every other case unchanged. 2.1.0: two more characters, cuppa (an SVG-path body with a hole: the mug's handle; the `steam` part) and bean (path patches), the same cases as the others; every earlier case unchanged. 2.2.0: the tap hop, `buzzy-64-0.6-hop` mid-hop and `cuppa-64-0.6-hop-glance` with the glance toward the tap (`tapX` / `tapY`); every earlier case unchanged. 2.3.0: the expressions, buzzy happy, cuppa surprised (the O mouth), bean sad (the frown), wisp sleepy and buzzy thoughtful while speaking (the voice keeps the mouth); every earlier case unchanged. 2.4.0: beep, a robot with the `arms` part, the same cases as the other characters plus `beep-64-0.6-arms-off`; every earlier case unchanged. 2.5.0: palette overrides, buzzy (body and accent), bean on a dark ground (the eyes lifted) and cuppa with `hue` too (the given colour isn't turned); every earlier case unchanged. (2026-10-03: the palette slots were renamed by part; these cases' input keys follow, their frames are unchanged.) 3.0.0 (0.1.0-beta.9): the liquid, particles and holographic materials removed, so their 14 cases are gone; every other case unchanged. 4.0.0 (0.1.0-beta.9): the `concluding` pattern removed, so its 12 cases are gone; every other case unchanged. 4.1.0 (0.1.0-beta.9): glowing under its own voice-state profile while thinking and speaking, `glowing-64-0.6-voice-thinking` / `-voice-speaking` (an app's voice orb; the overrides are read from the profile); every earlier case unchanged. 5.0.0 (0.1.0-beta.12, FX Spec 1.15): the light volumes veil, crystal and dune added (plus crystal with the voice's bands and dune as a voice message's strip); the flat signal patterns (signaling, waveform, scrolling, metering, playing), the character family and the orb's silhouette removed, so their cases are gone; every other case unchanged. 6.0.0 (0.1.0-beta.12, FX Spec 1.15): the ring, core and beacon families removed (completing, loading, tracking, stepping, measuring, talking, generating, typing, notifying, reconnecting, locating, scanning, broadcasting), so their cases are gone, and with them every case that carried fills, holes or per-vertex hues; every other case unchanged. Re-baseline only deliberately, with a LOG entry (docs/testing.md).",
         "tolerance": TOLERANCE,
         "sizes": SIZES,
         "times": TIMES,
@@ -391,27 +320,6 @@ fn regenerate_sinua_golden() {
         "cases": cases,
     });
     fs::write(PATH, serde_json::to_string(&doc).unwrap() + "\n").expect("write golden");
-}
-
-fn fill_json(x: &Fill) -> Value {
-    let mut v = json!({
-        "style": flat([x.white, x.a, x.saturation, x.hue, x.blur, x.blend as f64]),
-        "points": flat(x.points.iter().flat_map(|q| [q.x, q.y])),
-        "gradient": x.gradient.as_ref().map(|g| json!({
-            "kind": g.kind,
-            "geom": flat([g.x0, g.y0, g.x1, g.y1, g.r]),
-            "stops": flat(g.stops.iter().flat_map(|s| [s.offset, s.white, s.a, s.saturation, s.hue])),
-        })),
-    });
-    // 1.3.0: only fills that have holes carry the key (older cases unchanged).
-    if !x.holes.is_empty() {
-        v["holes"] = json!(x
-            .holes
-            .iter()
-            .map(|r| flat(r.iter().flat_map(|q| [q.x, q.y])))
-            .collect::<Vec<_>>());
-    }
-    v
 }
 
 fn nums(v: &Value) -> Vec<f64> {
@@ -684,56 +592,9 @@ fn sinua_states_match_frozen_vectors() {
                     pts[j * 2 + 1],
                 );
             }
-            // 1.6.0: per-vertex hues, absent = none.
-            let hues = gp.get("hues").map(nums).unwrap_or_default();
-            assert_eq!(p.hues.len(), hues.len(), "{ctx}: polyline[{i}] hue count");
-            for (j, (h, gh)) in p.hues.iter().zip(&hues).enumerate() {
-                close(&format!("{ctx}: polyline[{i}].hues[{j}]"), *h, *gh);
-            }
         }
 
-        // 1.2.0: fills and effect runs, compared whole (fills never reorder).
-        let gf = g["fills"].as_array().cloned().unwrap_or_default();
-        assert_eq!(f.fills.len(), gf.len(), "{ctx}: fill count");
-        for (i, (x, gx)) in f.fills.iter().zip(&gf).enumerate() {
-            let want = fill_json(x);
-            for part in ["style", "points"] {
-                let (a, b) = (nums(&want[part]), nums(&gx[part]));
-                assert_eq!(a.len(), b.len(), "{ctx}: fill[{i}].{part} length");
-                for (k, (u, v)) in a.iter().zip(&b).enumerate() {
-                    close(&format!("{ctx}: fill[{i}].{part}[{k}]"), *u, *v);
-                }
-            }
-            assert_eq!(
-                want["gradient"].is_null(),
-                gx["gradient"].is_null(),
-                "{ctx}: fill[{i}] gradient"
-            );
-            // 1.3.0: holes (absent key = none).
-            let gh = gx["holes"].as_array().cloned().unwrap_or_default();
-            let wh = want["holes"].as_array().cloned().unwrap_or_default();
-            assert_eq!(wh.len(), gh.len(), "{ctx}: fill[{i}] hole count");
-            for (h, (a, b)) in wh.iter().zip(&gh).enumerate() {
-                let (a, b) = (nums(a), nums(b));
-                assert_eq!(a.len(), b.len(), "{ctx}: fill[{i}].holes[{h}] length");
-                for (k, (u, v)) in a.iter().zip(&b).enumerate() {
-                    close(&format!("{ctx}: fill[{i}].holes[{h}][{k}]"), *u, *v);
-                }
-            }
-            if !want["gradient"].is_null() {
-                assert_eq!(
-                    want["gradient"]["kind"], gx["gradient"]["kind"],
-                    "{ctx}: fill[{i}] kind"
-                );
-                for part in ["geom", "stops"] {
-                    let (a, b) = (nums(&want["gradient"][part]), nums(&gx["gradient"][part]));
-                    assert_eq!(a.len(), b.len(), "{ctx}: fill[{i}].gradient.{part} length");
-                    for (k, (u, v)) in a.iter().zip(&b).enumerate() {
-                        close(&format!("{ctx}: fill[{i}].gradient.{part}[{k}]"), *u, *v);
-                    }
-                }
-            }
-        }
+        // Effect runs, compared whole.
         let ge = if g["effects"].is_null() {
             vec![]
         } else {

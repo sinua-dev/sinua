@@ -130,7 +130,7 @@ fun SinuaView(
     FxCanvas(model, modifier, theme, paused, reducedMotion, contentDescription, maxFps, lowPower, onFrame)
 }
 
-/** A pattern (e.g. "speaking", "tracking") with optional engine overrides and a speed multiplier. */
+/** A pattern (e.g. "speaking", "listening") with optional engine overrides and a speed multiplier. */
 @Composable
 fun SinuaView(
     pattern: String,

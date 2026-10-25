@@ -25,12 +25,11 @@ export interface SinuaVoiceButtonProps {
   onChange?: (state: VoiceButtonState, reason: string | null) => void;
 }
 
-/** The inner ring per state (Web's `voiceButtonRing`): an engine view, or none. */
+/** The inner orb per state (Web's `voiceButtonRing`): an engine view, or none. */
 function ring(state: VoiceButtonState): { pattern: string; state: string; overrides: Record<string, number>; speed: number } | null {
-  const closed = { progress: 1, strokeWidth: 0.045 };
-  if (state === "connecting") return { pattern: "loading", state: "initializing", overrides: { strokeWidth: 0.045, trackOpacity: 0.15 }, speed: 1 };
-  if (state === "listening") return { pattern: "completing", state: "listening", overrides: closed, speed: 1 };
-  if (state === "muted") return { pattern: "completing", state: "listening", overrides: closed, speed: 0.15 };
+  if (state === "connecting") return { pattern: "connecting", state: "initializing", overrides: {}, speed: 1 };
+  if (state === "listening") return { pattern: "listening", state: "listening", overrides: {}, speed: 1 };
+  if (state === "muted") return { pattern: "listening", state: "listening", overrides: {}, speed: 0.15 };
   return null;
 }
 
@@ -112,7 +111,7 @@ export function SinuaVoiceButton({ voice, mode = "toggle", labels, size = 56, st
         style={[styles.button, { width: size, height: size, borderRadius: size / 2, backgroundColor: colors.bg }]}
       >
         {r ? (
-          // The ring sits on the button's edge and swells outward with the level.
+          // The orb sits behind the button, a little larger than it, and follows the level.
           <View pointerEvents="none" style={[styles.ring, { width: size * 1.28, height: size * 1.28, left: -size * 0.14, top: -size * 0.14 }]}>
             <SinuaView
               pattern={r.pattern}
@@ -120,7 +119,6 @@ export function SinuaVoiceButton({ voice, mode = "toggle", labels, size = 56, st
               overrides={r.overrides}
               speed={r.speed}
               voice={voice}
-              audioStrength={0.75}
               style={{ width: "100%", height: "100%" }}
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"

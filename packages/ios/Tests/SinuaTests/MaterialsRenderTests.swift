@@ -4,37 +4,13 @@ import XCTest
 
 @testable import Sinua
 
-/// Renders families' materials golden cases (spec/sinua-golden.json 1.2.0)
+/// Renders the effect-run golden cases (spec/sinua-golden.json)
 /// at 256 px, light and dark, as test attachments. The cross-platform
 /// tolerance comparison against Web/Android runs outside (docs/fx-view.md).
 @MainActor
 final class MaterialsRenderTests: XCTestCase {
     static let cases: [(key: String, state: String, overrides: [String: Double])] = [
-        ("generating-64-0.6-highlight-fill", "generating", ["highlightFill": 1]),
-        ("scanning-64-0.6-trail-fill", "scanning", ["trailFill": 1]),
-        ("glowing-64-0.6-glow-blur", "glowing", ["glowMode": 1, "glowStrength": 1]),
-        ("tracking-64-0.6-glow-blur-additive", "tracking", ["glowBlend": 1, "glowMode": 1, "glowStrength": 0.8]),
-        // Per-vertex stroke colour (golden 1.6.0, Polyline.hues): the one-layer paint rule.
-        (
-            "tracking-64-0.6-gradient3", "tracking",
-            ["gradientStrength": 1, "gradientHue": 200, "gradientHue2": 300, "gradientHue3": 40]
-        ),
-        // Synthetic, information only (packages/web/scripts/materials/frames.mjs SYNTHETIC):
-        // per-vertex strokes under a blur / additive run at the composite.
-        (
-            "x-completing-64-0.6-gradient-glowblur", "completing",
-            [
-                "gradientStrength": 1, "gradientHue": 200, "gradientHue2": 300, "gradientHue3": 40, "glowStrength": 0.8,
-                "glowMode": 1,
-            ]
-        ),
-        (
-            "x-completing-64-0.6-gradient-glowblur-additive", "completing",
-            [
-                "gradientStrength": 1, "gradientHue": 200, "gradientHue2": 300, "gradientHue3": 40, "glowStrength": 0.8,
-                "glowMode": 1, "glowBlend": 1,
-            ]
-        ),
+        ("glowing-64-0.6-glow-blur", "glowing", ["glowMode": 1, "glowStrength": 1])
     ]
 
     func testRenderMaterialsGoldenCases() throws {
@@ -49,9 +25,7 @@ final class MaterialsRenderTests: XCTestCase {
                 ))
         }
         for (key, frame) in frames {
-            if !key.contains("gradient3") {
-                XCTAssertTrue(!frame.fills.isEmpty || !frame.effects.isEmpty, "\(key) has materials")
-            }
+            XCTAssertTrue(!frame.effects.isEmpty, "\(key) has effect runs")
             for dark in [false, true] {
                 let view = Canvas { ctx, size in FxPaint.draw(frame, into: &ctx, size: size, engineSize: 64, dark: dark)
                 }

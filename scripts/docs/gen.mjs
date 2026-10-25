@@ -191,7 +191,7 @@ for (const m of catalog.materials) {
       rows.push([code(a) + " (binding target)", target, "FX Spec bindings"]);
     }
   }
-  rows.push([code("progress0..3") + " / " + code("segment0..23") + " in " + code("params"), code('"progress": [..]') + " / " + code('"segment": [..]'), "FX Spec params"]);
+  rows.push([code("envelope0..63") + " in " + code("params"), code('"envelope": [..]'), "FX Spec params"]);
   s += table(["1.0–1.6 name", "1.7 name", "Where"], rows);
   files.set("fx-spec/rename-map.mdx", s);
 }

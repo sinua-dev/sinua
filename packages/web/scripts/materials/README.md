@@ -1,8 +1,7 @@
 # Materials cross-platform check
 
 Does the Web, iOS and Android painter draw the **same frame**? This is the
-pixel half of that claim — geometry, fills, gradients, blur, additive blend,
-per-vertex stroke colour. The colour half is `spec/paint-ink-vectors.json`,
+pixel half of that claim — geometry, blur, additive blend. The colour half is `spec/paint-ink-vectors.json`,
 checked inside the native test suites.
 
 ```
@@ -41,7 +40,7 @@ or missing chunk fails **by name**.
 
 ## Tolerance
 
-`docs/fx-view.md`, *Fills and effects*: composite over the theme paper, compare
+`docs/fx-view.md`: composite over the theme paper, compare
 per RGB channel, **mean ≤ 2/255 and p99 ≤ 24/255**. These numbers are a decision,
 not a default; `packages/web/test/materials-cases.test.mjs` pins them so changing
 one has to be deliberate.

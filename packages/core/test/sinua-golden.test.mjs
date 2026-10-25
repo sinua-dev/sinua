@@ -84,35 +84,9 @@ test(`wasm matches all ${golden.cases.length} sinua golden cases`, () => {
         assert.ok(near(q.x, g.points[j * 2]), `${c.key}: polyline[${i}].pt[${j}].x`);
         assert.ok(near(q.y, g.points[j * 2 + 1]), `${c.key}: polyline[${i}].pt[${j}].y`);
       });
-      // spec 1.6.0: per-vertex hues, absent = none.
-      const hues = p.hues ?? [];
-      assert.equal(hues.length, (g.hues ?? []).length, `${c.key}: polyline[${i}] hue count`);
-      hues.forEach((h, j) => assert.ok(near(h, g.hues[j]), `${c.key}: polyline[${i}].hues[${j}]`));
     });
 
-    // spec 1.2.0: fills and effect runs (only cases that have them carry them).
-    const fills = f.fills ?? [];
-    assert.equal(fills.length, (c.fills ?? []).length, `${c.key}: fill count`);
-    fills.forEach((x, i) => {
-      const g = c.fills[i];
-      const cmp = (label, got, exp) => {
-        assert.equal(got.length, exp.length, `${c.key}: fill[${i}].${label} length`);
-        got.forEach((v, k) => assert.ok(near(v, exp[k]), `${c.key}: fill[${i}].${label}[${k}]: expected ${exp[k]}, got ${v}`));
-      };
-      cmp("style", [x.white, x.a, x.saturation, x.hue, x.blur, x.blend], g.style);
-      cmp("points", x.points.flatMap((q) => [q.x, q.y]), g.points);
-      // spec 1.3.0: holes (absent = none).
-      const xh = x.holes ?? [];
-      const gh = g.holes ?? [];
-      assert.equal(xh.length, gh.length, `${c.key}: fill[${i}] hole count`);
-      xh.forEach((ring, h) => cmp(`holes[${h}]`, ring.flatMap((q) => [q.x, q.y]), gh[h]));
-      assert.equal(x.gradient === null, g.gradient === null, `${c.key}: fill[${i}] gradient`);
-      if (x.gradient) {
-        assert.equal(x.gradient.kind, g.gradient.kind, `${c.key}: fill[${i}] kind`);
-        cmp("gradient.geom", [x.gradient.x0, x.gradient.y0, x.gradient.x1, x.gradient.y1, x.gradient.r], g.gradient.geom);
-        cmp("gradient.stops", x.gradient.stops.flatMap((s) => [s.offset, s.white, s.a, s.saturation, s.hue]), g.gradient.stops);
-      }
-    });
+    // spec 1.2.0: effect runs (only cases that have them carry them).
     const eff = (f.effects ?? []).flatMap((e) => [e.target, e.start, e.count, e.blur, e.blend]);
     const geff = c.effects ?? [];
     assert.equal(eff.length, geff.length, `${c.key}: effect count`);

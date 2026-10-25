@@ -36,7 +36,7 @@ class FxSpecTests {
     fun examplesRenderLikeOverrides() {
         val assets = InstrumentationRegistry.getInstrumentation().context.assets
         val files = assets.list("examples")!!.filter { it.endsWith(".fxspec.json") }.sorted()
-        assertTrue("found ${files.size} examples", files.size >= 8)
+        assertTrue("found ${files.size} examples", files.size >= 3)
         for (file in files) {
             val json = assets.open("examples/$file").bufferedReader().use { it.readText() }
             // v1.1: every `states` key too, with the fixed inputs every
@@ -57,7 +57,9 @@ class FxSpecTests {
             }
         }
         // FX Spec 1.2: low power caps fps and sheds glow + noise.
-        val power = assets.open("examples/status-beacon-power.fxspec.json").bufferedReader().use { it.readText() }
+        val power = """{"fxSpec":"1.8","object":"orb","pattern":"working","size":64,
+            "materials":{"glow":{"strength":0.6,"radius":3},"noise":{"strength":0.4,"amplitude":0.02}},
+            "performance":{"maxFps":30,"lowPower":{"maxFps":15,"disable":["glow","noise"]}}}"""
         assertEquals(30.0, resolveFxSpecWith(power, null, emptyMap()).maxFps)
         val low = resolveFxSpecWith(power, null, emptyMap(), true)
         assertEquals(15.0, low.maxFps)
@@ -94,7 +96,7 @@ class FxSpecTests {
         val cat = org.json.JSONObject(parameterCatalogJson())
         val objects = cat.getJSONArray("objects")
         assertEquals(
-            listOf("SinuaOrb", "SinuaSignal", "SinuaRing", "SinuaCore", "SinuaBeacon"),
+            listOf("SinuaOrb", "SinuaSignal"),
             (0 until objects.length()).map { objects.getJSONObject(it).getString("component") },
         )
         assertEquals(
@@ -105,6 +107,6 @@ class FxSpecTests {
         assertEquals(1, w.size)
         assertEquals("warning", w[0].severity)
         assertTrue(w[0].message.contains("did you mean `lanes`"))
-        assertTrue(checkOverrides("tracking", 64u, mapOf("progress1" to 2.0)).isEmpty())
+        assertTrue(checkOverrides("breathing", 64u, mapOf("lanes" to 6.0)).isEmpty())
     }
 }

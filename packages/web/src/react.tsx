@@ -99,7 +99,5 @@ export function SinuaVoiceButton({ source, mode = "toggle", labels, theme = "aut
   return createElement("sinua-voice-button", { ref, className, style });
 }
 
-// Helpers built on SinuaView: an avatar with the `talking` ring, and a voice message
-// (`dune`) with drag-to-seek.
-export { SinuaAvatar, AVATAR_INNER_RADIUS, type SinuaAvatarProps } from "./avatar.js";
+// Helper built on SinuaView: a voice message (`dune`) with drag-to-seek.
 export { SinuaVoiceMessage, voiceMessageSeek, type SinuaVoiceMessageProps } from "./voice-message.js";

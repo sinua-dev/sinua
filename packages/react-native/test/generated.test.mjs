@@ -11,7 +11,7 @@
 // Its element-registry case has no counterpart here: custom elements are a Web
 // thing, so React Native's emitter produces no SinuaElements.
 //
-// The five generated `.tsx` components stay at 0% coverage in this package **by
+// The generated `.tsx` components stay at 0% coverage in this package **by
 // design** -- not an oversight, and not a gap to be closed here. Two measured
 // reasons: node 24 strips types from `.ts` but does not transform JSX, so
 // importing them fails with ERR_UNKNOWN_FILE_EXTENSION; and they call
@@ -28,10 +28,7 @@ import { dirname, join } from "node:path";
 
 const {
   sinuaOrbOverrides,
-  sinuaRingOverrides,
   sinuaSignalOverrides,
-  sinuaCoreOverrides,
-  sinuaBeaconOverrides,
   sinuaSpecError,
 } = await import("../src/generated/SinuaParams.ts");
 
@@ -44,9 +41,9 @@ test("a material group becomes its engine keys", () => {
 });
 
 test("a list prop spreads over the indexed keys on the patterns that take one", () => {
-  assert.deepEqual(sinuaRingOverrides("tracking", { progress: [0.2, 0.5] }), { progress0: 0.2, progress1: 0.5 });
-  // A pattern that takes a single value keeps the scalar key.
-  assert.deepEqual(sinuaRingOverrides("completing", { progress: 0.4 }), { progress: 0.4 });
+  assert.deepEqual(sinuaSignalOverrides("dune", { envelope: [0.2, 0.5] }), { envelope0: 0.2, envelope1: 0.5 });
+  // A scalar prop keeps its key.
+  assert.deepEqual(sinuaSignalOverrides("dune", { progress: 0.4 }), { progress: 0.4 });
 });
 
 test("choices and booleans map to engine numbers", () => {
@@ -55,21 +52,18 @@ test("choices and booleans map to engine numbers", () => {
   assert.equal(typeof o.glowMode, "number");
 });
 
-// The web test only reaches orb and ring. There is one mapping function per
-// object and they are generated independently, so a codegen regression can
-// land on one object alone -- exercise all five here.
+// There is one mapping function per object and they are generated
+// independently, so a codegen regression can land on one object alone.
 test("every object's own parameters map to their engine keys", () => {
   assert.deepEqual(sinuaSignalOverrides("veil", { layerCount: 9, churn: 0.5 }), { layerCount: 9, churn: 0.5 });
-  assert.deepEqual(sinuaCoreOverrides("generating", { highlightLength: 0.3 }), { highlightLength: 0.3 });
-  assert.deepEqual(sinuaBeaconOverrides("notifying", { ringCount: 3, dotSize: 0.05 }), { ringCount: 3, dotSize: 0.05 });
   // The shared material groups resolve the same way on every object.
-  for (const fn of [sinuaSignalOverrides, sinuaCoreOverrides, sinuaBeaconOverrides]) {
+  for (const fn of [sinuaOrbOverrides, sinuaSignalOverrides]) {
     assert.deepEqual(fn("veil", { glow: { strength: 0.3 } }), { glowStrength: 0.3 });
   }
 });
 
 test("a spec for another object is reported, the right one passes", () => {
-  assert.match(sinuaSpecError({ object: "ring" }, "orb"), /not a "orb"/);
+  assert.match(sinuaSpecError({ object: "signal" }, "orb"), /not a "orb"/);
   assert.equal(sinuaSpecError({ object: "orb" }, "orb"), null);
 });
 

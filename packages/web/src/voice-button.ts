@@ -1,7 +1,7 @@
 // `<sinua-voice-button>` -- a mic button bound to a voice source (docs/fx-view.md,
 // *Voice button*). The logic is `VoiceButtonController` from @sinua/core (the same
 // state table iOS and Android test); this file is the DOM: a real <button>, an
-// engine-drawn ring behind the icon, and a small ✕ that ends the session.
+// engine-drawn orb behind the icon, and a small ✕ that ends the session.
 //
 //   import { defineSinuaVoiceButtonElement } from "@sinua/web/voice-button";
 //   defineSinuaVoiceButtonElement();
@@ -30,25 +30,16 @@ export interface VoiceButtonChangeDetail {
   reason: string | null;
 }
 
-/** A closed, thin ring: at button size the default stroke reads as a heavy outline. */
-const RING = { progress: 1, strokeWidth: 0.045 };
-/**
- * The ring sits on the button's edge (its canvas is 128% of the button) and swells
- * outward with the level: 0.75 reaches the canvas edge at full level. The views'
- * default (0.18) barely moves a ring this small.
- */
-const RING_VOICE = { audioStrength: 0.75 };
-
-/** The inner ring per state: an engine view, or none (icon only). */
+/** The inner orb per state: an engine view, or none (icon only). */
 export function voiceButtonRing(state: VoiceButtonState): Pick<SinuaViewOptions, "pattern" | "state" | "overrides" | "speed"> | null {
   switch (state) {
     case "connecting":
-      return { pattern: "loading", state: "initializing", overrides: { strokeWidth: 0.045, trackOpacity: 0.15 } };
+      return { pattern: "connecting", state: "initializing", overrides: {} };
     case "listening":
-      return { pattern: "completing", state: "listening", overrides: RING };
+      return { pattern: "listening", state: "listening", overrides: {} };
     case "muted":
-      // Same ring, the muted cue (from the shared source), barely moving.
-      return { pattern: "completing", state: "listening", overrides: RING, speed: 0.15 };
+      // Same orb, the muted cue (from the shared source), barely moving.
+      return { pattern: "listening", state: "listening", overrides: {}, speed: 0.15 };
     default:
       return null;
   }
@@ -289,7 +280,6 @@ function createClass(): CustomElementConstructor {
       const opts: SinuaViewOptions = {
         ...ring,
         voice: this.src,
-        voiceOptions: RING_VOICE,
         theme: this.themeValue,
         label: "",
         crossFade: 0.3,

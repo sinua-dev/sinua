@@ -8,7 +8,7 @@ import org.json.JSONObject
 /** The sizes the engine resolves (dp). */
 enum class SinuaSize(val px: UInt) { S20(20u), S32(32u), S64(64u) }
 
-/** One value or one per item (ring `progress`: a number for arc/gauge/segmented, one per ring for tracking). */
+/** One value or one per item (a number, or one per item). */
 sealed class SinuaNumbers {
     data class Value(val value: Double) : SinuaNumbers()
     data class Values(val values: List<Double>) : SinuaNumbers()

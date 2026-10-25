@@ -18,7 +18,7 @@ class EffectPlaybackTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             var now = 100.0
             val said = mutableListOf<String>()
-            val m = FxModel(FxInput.State("completing", 64u, emptyMap(), 1.0), null, null)
+            val m = FxModel(FxInput.State("listening", 64u, emptyMap(), 1.0), null, null)
             m.now = { now }
             m.speak = { said += it }
             m.appLabel = "Goal"

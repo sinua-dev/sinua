@@ -3,51 +3,37 @@
   "tolerance": 0.0001,
   "cases": [
     {
-      "key": "stepping-64-0.6",
-      "state": "stepping",
+      "key": "veil-64-0.6",
+      "state": "veil",
       "size": 64,
       "t": 0.6,
       "overrides": {},
-      "dotCount": 0,
+      "dotCount": 200,
       "lineCount": 0,
-      "polylineCount": 5,
-      "colorMode": "ink",
-      "firstDot": null,
-      "lastDot": null,
-      "firstPolyline": {
-        "style": [
-          0.15,
-          0.18,
-          5.44,
-          0,
-          0
-        ],
-        "first": [
-          35.626667,
-          8.761289
-        ],
-        "last": [
-          52.980626,
-          21.369678
-        ]
-      },
-      "lastPolyline": {
-        "style": [
-          0.15,
-          0.18,
-          5.44,
-          0,
-          0
-        ],
-        "first": [
-          11.019374,
-          21.369678
-        ],
-        "last": [
-          28.373333,
-          8.761289
-        ]
-      }
+      "polylineCount": 0,
+      "colorMode": "fixed",
+      "firstDot": [
+        17.599113,
+        26.0754,
+        -0.847974,
+        1.304196,
+        0.53,
+        0.191569,
+        0.76,
+        165
+      ],
+      "lastDot": [
+        56.930034,
+        41.722918,
+        0.833771,
+        2.210315,
+        0.65,
+        0.427254,
+        1,
+        218
+      ],
+      "firstPolyline": null,
+      "lastPolyline": null
     },
     {
       "key": "dune-64-0.6",
@@ -116,55 +102,64 @@
       "lastPolyline": null
     },
     {
-      "key": "tracking-64-0.6-laps",
-      "state": "tracking",
+      "key": "dune-64-0.6-voice-message-progress40",
+      "state": "dune",
       "size": 64,
       "t": 0.6,
       "overrides": {
-        "progress0": 0.8,
-        "progress1": 0.55,
-        "progress2": 1.2
+        "aspect": 5.5,
+        "envelope0": 0.5,
+        "envelope1": 0.8916634548137417,
+        "envelope10": 0.7060592426208783,
+        "envelope11": 0.27123205311233933,
+        "envelope12": 0.009531884966754223,
+        "envelope13": 0.11900820804048395,
+        "envelope14": 0.5168115236105684,
+        "envelope15": 0.9018922132758105,
+        "envelope16": 0.9828288882746388,
+        "envelope17": 0.6983702865653061,
+        "envelope18": 0.2637890068007669,
+        "envelope19": 0.007967497459178297,
+        "envelope2": 0.9869238154390976,
+        "envelope20": 0.12450637661416192,
+        "envelope21": 0.5252113439034074,
+        "envelope22": 0.9068368687535526,
+        "envelope23": 0.9805763622510583,
+        "envelope3": 0.7136899401169149,
+        "envelope4": 0.2787397783525738,
+        "envelope5": 0.011234941167451495,
+        "envelope6": 0.11361775622200643,
+        "envelope7": 0.5084069502421749,
+        "envelope8": 0.8968339319245766,
+        "envelope9": 0.9849449054225432,
+        "progress": 0.4
       },
-      "dotCount": 0,
+      "dotCount": 556,
       "lineCount": 0,
-      "polylineCount": 8,
-      "colorMode": "ink",
-      "firstDot": null,
-      "lastDot": null,
-      "firstPolyline": {
-        "style": [
-          0.15,
-          0.18,
-          4.48,
-          0,
-          0
-        ],
-        "first": [
-          32,
-          8
-        ],
-        "last": [
-          32,
-          8
-        ]
-      },
-      "lastPolyline": {
-        "style": [
-          0.29,
-          0.95,
-          4.48,
-          0,
-          200
-        ],
-        "first": [
-          32,
-          19.2
-        ],
-        "last": [
-          44.173523,
-          28.044582
-        ]
-      }
+      "polylineCount": 0,
+      "colorMode": "fixed",
+      "firstDot": [
+        37.630971,
+        52.479174,
+        -0.354883,
+        1.737779,
+        0.53,
+        0.554066,
+        0.76,
+        165
+      ],
+      "lastDot": [
+        334.3096,
+        17.718604,
+        0.2586,
+        1.830965,
+        0.632,
+        0.409884,
+        0.964,
+        210.05
+      ],
+      "firstPolyline": null,
+      "lastPolyline": null
     },
     {
       "key": "working-64-0.6-color-fixed",

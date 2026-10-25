@@ -10,7 +10,7 @@ final class EffectPlaybackTests: XCTestCase {
         _ effect: SinuaEffectTrigger?, labels: [String: String] = [:], announce: Bool? = nil
     ) -> FxConfig {
         FxConfig(
-            input: .state("completing", 64, [:], 1), voice: nil, voiceOverrides: nil, specState: nil, inputs: [:],
+            input: .state("listening", 64, [:], 1), voice: nil, voiceOverrides: nil, specState: nil, inputs: [:],
             voiceLevelInput: nil, crossFade: nil, theme: .light, paused: false, reducedMotion: .never, label: "Goal",
             maxFps: nil, lowPower: .auto, onFrame: nil, labels: labels, announce: announce, effect: effect)
     }

@@ -37,7 +37,7 @@ export function canvas(css = 100) {
   let clears = 0;
   const ctx = {
     save() {}, restore() {}, beginPath() {}, closePath() {}, stroke() {}, fill() {},
-    // Fills paint with gradients; the stub only needs them to exist.
+    // Light dots paint with gradients; the stub only needs them to exist.
     createLinearGradient() { return { addColorStop() {} }; },
     createRadialGradient() { return { addColorStop() {} }; },
     // Path points and the translate are recorded for the layout tests: a square

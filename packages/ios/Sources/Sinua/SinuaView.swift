@@ -85,7 +85,7 @@ public struct SinuaView: View {
         )
     }
 
-    /// A pattern (e.g. "speaking", "tracking") with optional engine overrides and a speed multiplier.
+    /// A pattern (e.g. "speaking", "dune") with optional engine overrides and a speed multiplier.
     /// `state` is the agent's lifecycle state ("listening", "speaking", ...): the built-in
     /// voice-state behaviour then moves this pattern, under your own `overrides`. With a
     /// `voice` attached it defaults to that source's state.

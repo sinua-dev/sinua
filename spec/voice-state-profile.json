@@ -257,69 +257,6 @@
         }
       }
     },
-    "generating": {
-      "$comment": "shimmer is a track with a travelling highlight: speaking needs the brighter, longer highlight, or it reads quieter than listening.",
-      "states": {
-        "listening": {
-          "overrides": {
-            "highlightLength": 0.3,
-            "trackOpacity": 0.2
-          }
-        },
-        "speaking": {
-          "overrides": {
-            "highlightLength": 0.45,
-            "highlightFill": 0.8,
-            "trackOpacity": 0.35,
-            "period": 1.0,
-            "thickness": 0.3
-          }
-        }
-      }
-    },
-    "talking": {
-      "$comment": "Avatar ring (speaker): the ring must never cross the avatar, so the generic radial swell (audioStrength) and particles are off; the mode reads audioLevel itself (thickness grows outward). States speak through flow (ripples out while speaking, in while listening) and shimmer (thinking, connecting).",
-      "states": {
-        "initializing": {
-          "overrides": {
-            "shimmer": 0.6,
-            "flow": 0,
-            "idleOpacity": 0.25
-          }
-        },
-        "idle": {
-          "overrides": {
-            "shimmer": 0,
-            "flow": 0
-          }
-        },
-        "listening": {
-          "overrides": {
-            "flow": -1,
-            "shimmer": 0,
-            "audioStrength": 0,
-            "idleOpacity": 0.5,
-            "reach": 0.02,
-            "glowStrength": 0.15
-          }
-        },
-        "thinking": {
-          "overrides": {
-            "shimmer": 1,
-            "flow": 0
-          }
-        },
-        "speaking": {
-          "overrides": {
-            "flow": 1,
-            "shimmer": 0,
-            "audioStrength": 0,
-            "reach": 0.045,
-            "glowStrength": 0.2
-          }
-        }
-      }
-    },
     "veil": {
       "$comment": "VEIL. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level.",
       "states": {
@@ -514,24 +451,9 @@
       "was": "spectrum's bars follow the mic too, so listening read louder than speaking",
       "now": "listening sheds its particles and sits back (10 vs speaking 23), but it still measures close to thinking (12) -- the bars are the same shape in both"
     },
-    "generating": {
-      "status": "open",
-      "issue": "shimmer is a thin track with a travelling highlight, so there is little to modulate: speaking (6) still doesn't beat listening (10) or thinking (10). It needs its own speaking treatment in the mode, not more overrides."
-    },
     "shaping": {
       "status": "open",
       "issue": "morph changes between circle, square and triangle by design, which cuts against 'one shape stays on screen'. Fine as a standalone pattern, wrong as a voice base."
-    },
-    "value-driven-rings": {
-      "status": "fixed",
-      "patterns": [
-        "completing",
-        "tracking",
-        "stepping",
-        "measuring"
-      ],
-      "was": "thinking equalled idle: nothing moves, so there was no tempo to raise",
-      "now": "the profile's pulse carries it (e.g. completing idle motion 1.8 vs thinking 13.9); the value itself is never touched"
     }
   }
 }

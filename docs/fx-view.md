@@ -40,7 +40,7 @@ they are SinuaVoice and its vendor products. See
 | Option | Meaning |
 |---|---|
 | `spec` | An FX Spec, as a JSON text or object on Web and as JSON text on native ([`fx-spec.md`](fx-spec.md)). It is resolved once per change, and an invalid spec draws nothing and reports its diagnostics (Web: `onError`; native: a logged warning). |
-| `pattern`, `size`, `overrides`, `speed` | Plain input instead of a spec: `pattern` is the look ("speaking", "tracking"). `overrides` are engine opts, e.g. a Studio export. `speed` multiplies the preset's tuned speed. A speed change is **phase-continuous**: the clock keeps the pose it had and runs on at the new rate, instead of rescaling all the elapsed time at once, so a lifecycle state with its own speed doesn't jump. `speed` 0 holds the pose where it is. |
+| `pattern`, `size`, `overrides`, `speed` | Plain input instead of a spec: `pattern` is the look ("speaking", "crystal"). `overrides` are engine opts, e.g. a Studio export. `speed` multiplies the preset's tuned speed. A speed change is **phase-continuous**: the clock keeps the pose it had and runs on at the new rate, instead of rescaling all the elapsed time at once, so a lifecycle state with its own speed doesn't jump. `speed` 0 holds the pose where it is. |
 | `voice` | A `VoiceSource` or a `VoiceOverrides`. A source holds one metrics/state callback, so the view binds it; read the view's `voice` (Web handle) for a meter. If your app already listens to the source, pass a `VoiceOverrides` you feed yourself. The view never connects or disconnects the source. The bound defaults are the Studio's per family, derived from `spec.object`: orb gets raw bands (`bandEaseRate` ∞); signal gets `audioStrength` 0 and a scrolling history of 40 @ 12 Hz (or the spec's `historyCount`). Override with `voiceOptions` (Web). |
 | `state`, `inputs` | With a spec: `state` is the app lifecycle key and picks the spec's `states` entry, and `inputs` drive `bindings`. **With a voice, `state` defaults to the voice's `AgentState`** (`listening`, `speaking`, …, which is the `states` convention in `fx-spec.md`), so a v1.1 spec follows the conversation. A key the spec lacks renders the top-level design. |
 | `voiceLevelInput` | Also feeds the voice level into this spec input, e.g. `"agentVolume"`, so the spec's own binding drives the look. |
@@ -52,7 +52,7 @@ they are SinuaVoice and its vendor products. See
 
 ### Names (FX Spec 1.7): `pattern` and `state`
 
-A **pattern** is the look ("speaking", "tracking"). A **state** is the app's
+A **pattern** is the look ("speaking", "crystal"). A **state** is the app's
 lifecycle key ("listening"), which picks a spec's `states` entry. FxView used
 the older labels until 1.7. They still work, deprecated:
 
@@ -129,24 +129,21 @@ Only a changed `pattern` rebuilds the input.
   - `FxView` renders in a Compose test, drawing and animating: 19k inked
     pixels, 25k changed between captures.
 
-## Fills and effects (Materials phase 1)
+## Effects (Materials phase 1)
 
-The paint contract gained **fills** (closed polygons, solid or with a
-linear/radial gradient) and **effects** (Gaussian blur σ, additive blend).
-The contract itself lives in `docs/engine.md` ("Paint contract: fills and
-effects", families). This section covers how each renderer draws it.
+The paint contract has **effects** (Gaussian blur σ, additive blend, and the light blend 3 for
+dots). The contract itself lives in `docs/engine.md` ("Paint contract: effects"). This section
+covers how each renderer draws it. Fills (solid or gradient polygons), holes and per-vertex
+stroke colour (`Polyline.hues`) were part of the contract until 0.1.0-beta.12; no pattern emits
+them any more and the painters no longer draw them.
 
 | | Web (`@sinua/web`) | SwiftUI (`FxPaint`) | Compose (`paintFxFrame`) |
 |---|---|---|---|
-| Fill path | `closePath`, nonzero | `Path.closeSubpath`, nonzero | `Path.close`, nonzero |
-| Fill with `holes` (phase 2, Liquid) | outer ring + each hole as a subpath of one path, `fill("evenodd")` | same, `FillStyle(eoFill: true)` | same, `PathFillType.EvenOdd` (carried into the framework path for blur) |
-| Gradient | `createLinearGradient` / `createRadialGradient(x0,y0,0, x0,y0,r)` | `.linearGradient` / `.radialGradient(startRadius: 0, endRadius: r)` | `Brush.linearGradient` / `radialGradient`, `TileMode.Clamp` |
-| Stop colour | `ink()` per stop, alpha = stop.a × fill.a, mirrored on dark unless `colorMode` fixed | same (`FxPaint.ink`) | same (`fxInk`) |
 | Additive | `globalCompositeOperation = "lighter"` | `blendMode = .plusLighter` | `BlendMode.Plus` |
 | Blur σ | **canvas shadow**: `shadowBlur = 2σ·scale` (the HTML spec's σ = shadowBlur/2, device px), element drawn 10 000 units away and shifted back via `shadowOffsetX`, `shadowColor` = opaque ink. Safari has no `ctx.filter` (WebKit bug 198416) | `addFilter(.blur(radius: σ · FxPaint.blurRadiusPerSigma))`, constant **1.0** (measured, see below) | `BlurMaskFilter(radius)` on a framework `Paint`, `radius = (σ·scale − 0.5) / 0.57735` (Skia's conversion) |
-| Fallback | a **blurred gradient fill** uses `ctx.filter` where present; Safari draws it sharp | none needed | **API < 29: no blur** (BlurMaskFilter isn't reliable under HW acceleration before Android 10); additive still works |
+| Fallback | none needed | none needed | **API < 29: no blur** (BlurMaskFilter isn't reliable under HW acceleration before Android 10); additive still works |
 
-- **Draw order:** fills → polylines → lines → dots, as before. Effect runs
+- **Draw order:** polylines → lines → dots, as before. Effect runs
   (`EffectRun`) apply blur/blend to a range of one list and never reorder.
   A cross-dissolve's alpha goes on top.
 - **Low power:** FX Spec 1.3 `performance.lowPower.disable: ["blur"]` makes
@@ -154,13 +151,9 @@ effects", families). This section covers how each renderer draws it.
   Web test asserts the low-power frame has no runs.)
 - **Liquid, particles and holographic** (phases 2–4) were removed in
   0.1.0-beta.9; the measurements below that name them are history.
-- **Plain frames are untouched.** A frame without fills or effects takes
-  the exact old code path on every platform:
-  - Web: 0 differing pixels against the old Studio painter over 440 renders,
-    and `drawPacked` v1 is 0 bytes different over 204.
-  - iOS: bitmap parity still 68/68.
-  - Android: raster parity still 136/136.
-  - Packed v2 frames paint through `unpackFrame` → `drawFrame`.
+- **Plain frames are untouched.** A frame without effects takes
+  the exact old code path on every platform. Packed v2 frames paint through
+  `unpackFrame` → `drawFrame`.
 
 **How the Web blur was validated.** In Chrome, which has both techniques,
 the shadow blur was compared with a `ctx.filter` `blur(σ·scale px)` render
@@ -175,42 +168,27 @@ size 64, drawn at 256 px):
 
 | Case | web↔iOS mean / p99 | web↔Android | iOS↔Android |
 |---|---|---|---|
-| highlight fill (solid + linear gradient) | ≤ 0.06 / 1.1 | ≤ 0.10 / 1.1 | ≤ 0.14 / 1.3 |
-| trail fill (gradient wedge + dots + beam) | ≤ 0.17 / 2 | ≤ 0.17 / 3 | ≤ 0.22 / 3 |
 | glow blur (520 dots) | ≤ 0.49 / 10.7 | ≤ 0.50 / 9 | ≤ 0.41 / 6 |
 | glow blur + additive (12 polylines) | ≤ 0.67 / 5.1 | ≤ 0.69 / 5 | ≤ 0.54 / 3.1 |
-| Liquid fill (1 fill + 1 hole, even-odd) | ≤ 0.22 / 4.1 | ≤ 0.32 / 5.8 | ≤ 0.14 / 2 |
-| Liquid outline (2 closed polylines + the kept 96-dot LED grid, re-baselined by families 2026-09-19) | ≤ 0.37 / 12.8 | ≤ 0.43 / 13.9 | ≤ 0.43 / 14.7 |
-| Liquid dots (contour-resampled dots) | ≤ 0.48 / 16 | ≤ 0.42 / 14.1 | ≤ 0.30 / 9.6 |
-| Particles drift (re-baselined, golden 1.5.0) | ≤ 0.50 / 16.3 | ≤ 0.43 / 14.2 | ≤ 0.30 / 9.8 |
-| Particles attract | ≤ 0.22 / 7 | ≤ 0.21 / 7.1 | ≤ 0.15 / 5 |
-| Particles orbit (12-particle ring + 2 polylines) | ≤ 0.10 / 4 | ≤ 0.29 / 4 | ≤ 0.26 / 3 |
-| Particles → liquid (24 thin polylines after families' Q2 re-baseline) **AA exception** | ≤ 1.01 / **12.1 half-res** (28.1 full-res, info) | ≤ 0.97 / 11.3 half-res (24.1 full-res) | ≤ 0.74 / 7.7 half-res (15.2 full-res) |
-| Holographic (glowing) | ≤ 0.47 / 16.3 | ≤ 0.41 / 14.1 | ≤ 0.27 / 9 |
-| Holographic + liquid fill (holes) | ≤ 0.40 / 3.8 | ≤ 0.42 / 5 | ≤ 0.15 / 2 |
-| Holographic + glow | ≤ 0.18 / 2.9 | ≤ 0.29 / 3 | ≤ 0.31 / 2.9 |
-| Holographic + gradient | ≤ 0.34 / 7 | ≤ 0.40 / 9.8 | ≤ 0.37 / 8.1 |
 
-All values are /255, and each cell is the worse of light and dark. The
+(The rows for the removed fills, the liquid and particle materials and holographic are gone; the
+numbers were all within the same limits.) All values are /255, and each cell is the worse of light and dark. The
 contact sheet was checked by eye too: the three renderers are
 indistinguishable.
 
 **This table is enforced, not remembered** (since 2026-09-20).
-`scripts/materials-check.sh` renders all 21 cases on all three painters and
+`scripts/materials-check.sh` renders every case on all three painters and
 fails the build outside the tolerance above; the `materials` job in
 `.github/workflows/ci.yml` runs it on every push. Both native render tests
 already ran in CI — `MaterialsRenderTests` inside `-only-testing:SinuaTests`,
 `renderMaterialsGoldenCases` inside `:sinua-view:connectedDebugAndroidTest` —
 so the check collects work that was previously produced and discarded, and
-costs no device time. A re-run reproduces the worst cases in this table
-exactly: web↔iOS 1.01 / 16.3, web↔Android 0.973 / 14.2, iOS↔Android 14.7.
+costs no device time. A re-run reproduces the table's cases exactly.
 
 A render that never arrives is a **failure**, named. Until that date it was
 not: `compare.cjs` recorded an absent platform as the string `"missing"` and
 its verdict loop only inspected object values, so an empty directory printed
-42 rows of `"missing"` and then `ALL WITHIN TOLERANCE`, exit 0. For Liquid fill, the hole is empty on every platform:
-the centre pixel of each render has alpha 0, so the paper shows. Adding
-holes didn't move the phase-1 numbers at all.
+a row of `"missing"` per case and then `ALL WITHIN TOLERANCE`, exit 0.
 
 ### Colour conversion differs between the Web and the natives, by decision
 
@@ -264,75 +242,16 @@ deliberate additions, each with its measurement). A listed case passes on
 mean ≤ its own limit instead of 2/255; p99 stays ≤ 24/255. These are for a
 render that has been measured to move with the *environment* (browser/OS build,
 Android GPU backend), not with our paint code.
-- `tracking-64-0.6-glow-blur-additive`: **mean ≤ 3/255.** The first CI run
-  with the Android leg (2026-09-21) measured web↔Android dark mean **2.023**,
-  against ≤ 0.97 locally. Measured, not assumed: the same Android render
-  compared with a *local* Web render is 1.23, a local arm64 `swiftshader`
-  emulator gives 0.53, and CI's Android differs from local Android only on the
-  additive-blur renders (≤ 1.07, the other 38 renders ≤ 0.05). CI renders the
-  Web in Linux headless Chrome and Android on an x86_64 `swiftshader`
-  emulator, and additive blending over a blur is the one render that is
-  sensitive to both. Everything else stays at 2/255, so a real paint change in
-  this case's neighbours still fails.
+- None today. The one case it held, `tracking-64-0.6-glow-blur-additive` (mean ≤ 3/255; the first CI
+  run with the Android leg measured web↔Android dark mean 2.023, because additive blending over a
+  blur is sensitive to the Linux headless Chrome and the x86_64 `swiftshader` emulator), went with
+  the ring family in 0.1.0-beta.12.
 
 The check is scripted in `packages/web/scripts/materials/` (`frames.mjs`
 reads every materials golden case, `compare.cjs` holds the exception
 list); the README covers producing the iOS/Android renders. Additive is invisible on a light paper by nature (it's
 a dark-theme look). SwiftUI's blur radius equals σ, so
 `blurRadiusPerSigma = 1.0` passes with margin; no fitting was needed.
-
-### Per-vertex stroke colour (`Polyline.hues`, golden 1.6.0)
-
-The painters follow families' rule (`docs/engine.md`, *Per-vertex stroke
-colour*). For a polyline with one hue per point:
-- every segment is a round-capped stroke with a linear gradient between its
-  two vertices' inks, at alpha 1;
-- a zero-length segment is a dot of diameter `w`;
-- all segments go into **one layer**, composited once at `a`, with the
-  polyline's blend.
-
-Frames without `hues` keep exactly the old calls (a `hues` array whose
-length doesn't match the points falls back to `hue`).
-
-| | Layer | Blur at the composite |
-|---|---|---|
-| Web `paint.ts` | a reused scratch canvas (`OffscreenCanvas`, else a DOM canvas) with the target's transform, drawn only in the stroke's device-pixel box, then one `drawImage` with `globalAlpha *= a` (an outer cross-fade alpha is kept) and `lighter` for additive | `ctx.filter = blur(σ·scale px)`. A shadow, this painter's usual blur, has one colour. **Safari** has `filter` disabled by default through 27.x (caniuse), so there the layer is drawn sharp with a one-time warning, the same rule as blurred gradient fills |
-| SwiftUI `FxPaint.swift` | `GraphicsContext.drawLayer` on a context copy with `opacity *= a` and `plusLighter` for additive | the copy's blur filter applies to the layer as a whole (exact) |
-| Compose `FxPaint.kt` | `Canvas.saveLayer(box, Paint(alpha = a, PLUS/ADD))` | no layer blur on a framework `Paint`: `RenderEffect` needs a RenderNode / hardware canvas, and the Studio's PNG export is a software bitmap. Blurring each segment inside the layer **measured wrong**: the overlapping soft fringes add up to a wider, stronger halo, mean ~5/255 against Web/iOS. So a *blurred* per-vertex polyline is drawn as the usual one-path `BlurMaskFilter` stroke in the vertex-mean `hue`: exact geometry, and the hue sweep drops out. That measures within tolerance, because the sweep isn't visible under a halo-sized blur |
-
-**Seam check** (iOS `PerVertexSeamTests`, Android `PerVertexSeamTest`).
-A zigzag with sharp bends and a repeated point, at `a = 0.5`, is drawn
-three ways: through the per-vertex path with all hues equal, as one stroke
-(the no-seam reference), and as a naive per-segment composite (the
-negative control, each segment straight at `a`).
-- The layered render matches the one-stroke reference: mean 0.06/255,
-  p99 2 (iOS) and 1 (Android).
-- Pixels off by more than 24/255: **31 (iOS) and 27 (Android)** for the
-  layered render, against **1044 and 1035** for the naive one.
-- Those few remaining pixels are anti-aliasing on the outline at bends.
-  Where two segments' AA edges overlap inside the layer, their coverages
-  combine as 1−(1−c₁)(1−c₂), a touch darker than one stroker's coverage.
-  It isn't the notch.
-- A 16× zoom of `tracking-64-0.6-gradient3`'s alpha < 1 tracks (the iOS
-  attachment) shows continuous tracks with no marks at the joints.
-
-**Three-platform tolerance** (same metric; worst of light/dark; mean / p99):
-
-| Case | web↔iOS | web↔Android | iOS↔Android |
-|---|---|---|---|
-| `tracking-64-0.6-gradient3` | 0.13 / 1.9 | 0.19 / 3.1 | 0.26 / 3 |
-| *synthetic* `x-…-gradient-glowblur` (information) | 0.51 / 2.9 | 1.02 / 4 | 1.03 / 4.1 |
-| *synthetic* `x-…-gradient-glowblur-additive` (information) | 0.52 / 3 | 0.91 / 4 | 1.00 / 5 |
-
-(Measured 2026-10-07 after 0.1.0-beta.9 removed the holographic cases; the synthetic rows
-moved from holo to a 3-stop gradient.)
-
-No golden case puts an effect run on a per-vertex polyline, so the two
-synthetic cases do: `completing`, a 3-stop gradient + glow with `glowMode 1` (+
-`glowBlend 1`). They're listed in `frames.mjs` `SYNTHETIC` (keys start with
-`x-`); `compare.cjs` reports them and never fails on them. `frames.mjs` now
-also picks up any golden case whose frame has `hues`, which catches
-`…-gradient3`.
 
 ## Performance and power
 
@@ -407,7 +326,7 @@ View) that hosts the Compose `FxView` unchanged:
 ```kotlin
 val orb = findViewById<SinuaViewLayout>(R.id.orb)
 orb.voice = LocalMicVoiceSource()   // every attribute is also a property; setting one recomposes
-orb.pattern = "tracking"            // or orb.spec = json to switch to the spec path
+orb.pattern = "crystal"            // or orb.spec = json to switch to the spec path
 ```
 
 - **Attributes:** `fxPattern`, `fxSize` (the engine resolves **20**, **32**
@@ -540,9 +459,9 @@ drives the session:
 | State | When | Look |
 |---|---|---|
 | `ready` | not connected | the mic icon |
-| `connecting` | a connect is under way | a spinning `loading` ring |
-| `listening` | connected, not muted | a closed `completing` ring on the button's edge that swells with the level |
-| `muted` | connected, muted | the mic struck through, grey; the ring barely moves |
+| `connecting` | a connect is under way | the orb `connecting` as the button's ring |
+| `listening` | connected, not muted | the orb `listening` as the button's ring, swelling with the level |
+| `muted` | connected, muted | the mic struck through, grey; the ring is the listening orb at 0.15× speed |
 | `error` | the connect failed | a warning icon; the accessible name carries the reason |
 
 The agent's own states (thinking, speaking) stay on the main visual.
@@ -660,7 +579,7 @@ carry on underneath.
 
 | Effect | Look | Length | Spoken |
 |---|---|---|---|
-| `success` | a green tint pulse, one ring expanding from the shape, a tick drawn in the middle | 0.9 s | "Done" |
+| `success` | a green tint pulse, one ring expanding from the shape (a plain polyline), a tick drawn in the middle | 0.9 s | "Done" |
 | `error` | a short horizontal shake (three decaying swings) with a red tint | 0.5 s | "Something went wrong" |
 | `celebrate` | a seeded burst of particles out of the shape, and a small brightness lift | 1.4 s | "Well done" |
 
@@ -673,26 +592,26 @@ carry on underneath.
 - Box-layout patterns play effects in place: the voice message's `dune`. Its light turns
   green, red or gold where it is, and nothing is drawn in the middle. There's no ring, tick,
   burst or shake, which would otherwise spill out of the strip or slide it about.
-- The typed components take the same parameter (`SinuaRing(…, effect:)`,
+- The typed components take the same parameter (`SinuaSignal(…, effect:)`,
   `SinuaOrb(…, effect = …)`), along with `labels`, `announce`, `haptics` and, on a spec,
   `rules`.
 
 ```ts
-const fx = mount(canvas, { pattern: "tracking" });
+const fx = mount(canvas, { pattern: "crystal" });
 fx.trigger("celebrate");                 // Web; <sinua-view>: el.trigger("celebrate")
 ```
 ```swift
 @State var effect: SinuaEffectTrigger?
-SinuaView(pattern: "tracking", effect: effect)
+SinuaView(pattern: "crystal", effect: effect)
 effect = SinuaEffectTrigger(.celebrate)  // each new value plays once
 ```
 ```kotlin
 var effect by remember { mutableStateOf<SinuaEffectTrigger?>(null) }
-SinuaView(pattern = "tracking", effect = effect)
+SinuaView(pattern = "crystal", effect = effect)
 effect = SinuaEffectTrigger(SinuaEffect.CELEBRATE)
 ```
 ```tsx
-<SinuaView pattern="tracking" effect={{ name: "celebrate", key: goalCount }} />  // plays when key changes
+<SinuaView pattern="crystal" effect={{ name: "celebrate", key: goalCount }} />  // plays when key changes
 ```
 
 The engine draws the effect: it's a post-process like the barge-in flash, driven by the
@@ -701,7 +620,7 @@ the effect runs. So it works on every pattern of every family and looks identica
 every platform (`spec/effect-vectors.json`). The durations and words come from
 `effect_info(name)`.
 
-## Typed components (`SinuaOrb`, `SinuaRing`, `SinuaSignal`, `SinuaCore`, `SinuaBeacon`)
+## Typed components (`SinuaOrb`, `SinuaSignal`)
 
 One component per engine object, generated from the parameter catalog
 (`spec/parameters.json`). Each one is a thin wrapper over `FxView`, with no
@@ -709,22 +628,22 @@ painting of its own: typed props become the engine overrides, or a spec is
 played as is. FxView stays the low-level layer.
 
 ```swift
-SinuaRing(pattern: .tracking, progress: [0.2, 0.5], ringCount: 2, glow: .init(strength: 0.6))
+SinuaSignal(pattern: .crystal, level: 0.6, glow: .init(strength: 0.6))
 SinuaOrb(spec: json, state: "listening", voice: source)   // must be an "object": "orb" spec
 ```
 ```kotlin
-SinuaRing(pattern = SinuaRingPattern.TRACKING, progress = SinuaNumbers.of(0.2, 0.5), ringCount = 2, glow = SinuaGlow(strength = 0.6))
+SinuaSignal(pattern = SinuaSignalPattern.CRYSTAL, level = 0.6, glow = SinuaGlow(strength = 0.6))
 ```
 ```tsx
-<SinuaRing pattern="tracking" progress={[0.2, 0.5]} ringCount={2} glow={{ strength: 0.6 }} style={{ width: 64, height: 64 }} />
+<SinuaSignal pattern="crystal" level={0.6} glow={{ strength: 0.6 }} style={{ width: 64, height: 64 }} />
 ```
 
 - **`pattern`** is an enum of the object's catalog patterns (required). **`size`** is 20, 32 or 64.
-- **Parameters.** Pattern and value parameters are flat optional props (`progress`, `ringCount`, `strokeWidth`, …). Material parameters are one optional group per material (`glow`, `noise`, `pulse`, `gradient`, `color`), shared by all five components. Unset props keep the pattern's tuned values. Choices are enums (`SinuaGlow.Blend.additive`; TS: `"additive"`), and booleans become 1 or 0.
-- **One prop per catalog path.** Where patterns disagree, the prop takes the union, and each doc comment lists the per-pattern range. Ring `progress` takes a number (arc, gauge, segmented) or one value per ring (`tracking`, up to 4 → `progress0…3`; Swift literal `0.4` or `[0.2, 0.5]`, Kotlin `SinuaNumbers.of(…)`, TS `number | number[]`). The list does not set `ringCount`: set it yourself. `segment` is a list of up to 24 values. On orb, the `orbits` pattern's particle count is `orbitParticles` (catalog path; engine key `particles`), apart from the `particles` material group.
+- **Parameters.** Pattern and value parameters are flat optional props (`level`, `progress`, `layerCount`, `columnCount`, …). Material parameters are one optional group per material (`glow`, `noise`, `pulse`, `gradient`, `color`), shared by both components. Unset props keep the pattern's tuned values. Choices are enums (`SinuaGlow.Blend.additive`; TS: `"additive"`), and booleans become 1 or 0.
+- **One prop per catalog path.** Where patterns disagree, the prop takes the union, and each doc comment lists the per-pattern range. `dune`'s `envelope` is a list of up to 64 values, the only list parameter. On orb, the `orbits` pattern's particle count is `orbitParticles` (catalog path; engine key `particles`), apart from the `particles` material group.
 - **Spec path.** `spec` + `state` (the spec's lifecycle state) + `inputs` / `voiceLevelInput`. The spec's `object` must match the component. Otherwise the component draws nothing and calls `onError` (native, without an `onError`: a debug assertion on iOS, a logged error on Android; RN logs with `console.error`). An unreadable spec is passed through for FxView to report.
 - **Common options.** `voice`, `voiceOverrides`, `speed`, `theme`, `paused`, `reducedMotion`, `maxFps`, `lowPower`, `onFrame` and the accessible label all pass through to FxView.
-- **The pure mapping is public**, for tests and custom hosts: Swift `SinuaRing(…).overrides()`, Kotlin `SinuaRingProps(…).toOverrides()`, TS `sinuaRingOverrides(pattern, params)`.
+- **The pure mapping is public**, for tests and custom hosts: Swift `SinuaSignal(…).overrides()`, Kotlin `SinuaSignalProps(…).toOverrides()`, TS `sinuaSignalOverrides(pattern, params)`.
 
 **Where they live.**
 - Swift: `packages/ios/Sources/Sinua/Generated/`, in the Sinua module.
@@ -751,7 +670,7 @@ a review of that JSON diff. `generate.mjs` never writes the snapshot, so
 regenerating can't make a breaking change pass. `node --test
 'scripts/codegen/test/*.test.mjs'` covers the model (merging, bounds, choices,
 renames), the prefix rule, `--check` and the RN mapping. XCTest
-`TypedComponentsTests` renders `SinuaRing(…)` pixel-equal to
+`TypedComponentsTests` renders `SinuaSignal(…)` pixel-equal to
 `FxView(pattern:overrides:)`, and the Kotlin JVM `TypedComponentsTest` checks
 `toOverrides()`.
 

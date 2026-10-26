@@ -617,8 +617,6 @@ test("a source connected before mount: the view picks up its state, and all elev
       await src.connect();
       src.advance(0.5);
       // The app connected first; the view comes later (or remounts).
-      // The light run draws cached sprites: record where each one lands.
-      c.el.getContext().drawImage = (_img, x, y, w) => c.calls.push(["sprite", x, y, w]);
       const fx = mount(c.el, { pattern, voice: src });
       assert.equal(fx.voice.state, state, `${pattern}: the view starts in the source's state`);
       for (let i = 0; i < 30; i++) {
@@ -750,23 +748,17 @@ const pathExtent = (calls) => {
 };
 
 test("a box-layout pattern fills a wide box: the box ratio goes in as aspect, nothing is centred", (t) => {
-  globalThis.OffscreenCanvas = class {
-    constructor(w, h) { this.width = w; this.height = h; }
-    getContext() { return { createRadialGradient: () => ({ addColorStop() {} }), fillRect() {} }; }
-  };
-  t.after(() => delete globalThis.OffscreenCanvas);
   const { step } = env();
   const c = canvas();
   c.el.clientWidth = 400;
   c.el.clientHeight = 100;
-  // The voice message (dune): its light run draws cached sprites, so record where each lands.
-  c.el.getContext().drawImage = (_img, x, y, w) => c.calls.push(["sprite", x + w / 2, y + w / 2]);
   const fx = mount(c.el, { pattern: "dune", overrides: { progress: 0.4, saturation: 0 }, reducedMotion: "never" });
   step(2);
-  const sprites = c.calls.filter((k) => k[0] === "sprite");
-  assert.ok(sprites.length > 0, "the dune was drawn");
-  const maxX = Math.max(...sprites.map((k) => k[1]));
-  const maxY = Math.max(...sprites.map((k) => k[2]));
+  // The voice message (dune): its light run draws one disc (an `arc`) per dot.
+  const discs = c.calls.filter((k) => k[0] === "arc");
+  assert.ok(discs.length > 0, "the dune was drawn");
+  const maxX = Math.max(...discs.map((k) => k[1]));
+  const maxY = Math.max(...discs.map((k) => k[2]));
   // aspect 4: engine space is 256 x 64; the dune runs on past the square's 64.
   assert.ok(maxX > 200 && maxX <= 256, `right edge at ${maxX}`);
   assert.ok(maxY > 32 && maxY <= 64, `bottom edge at ${maxY}`);

@@ -212,61 +212,34 @@ private fun DrawScope.paintWithMaterials(frame: OrbFrame, engineSize: Int, dark:
 // ---------------------------------------------------------------- light --
 
 /**
- * `blend` 3 on dots (1.15 light volumes, docs/engine.md *Light*): each dot is a soft radial
- * glow of radius `r` -- a bright core, its colour, then nothing -- added up on a dark
- * background (`BlendMode.Plus`). A light background can't take added light, so there the
- * glow, its core no brighter than the colour, is laid on normally. The Web's `drawLight`.
+ * `blend` 3 on dots (1.15 light volumes, docs/engine.md *Light*): each dot is a flat,
+ * hard-edged disc -- a plain circle, like an orb's dots, so it is as sharp at 900 dp as at 140 --
+ * of [FX_LIGHT_CORE] of the dot's radius `r` (`r` is sized for glow). Added up on a dark
+ * background (`PorterDuff.ADD`). A light background can't take added light, so there the disc, no
+ * brighter than the colour, is laid on normally. The Web's `drawLight`.
  */
 internal const val FX_LIGHT = 3
+internal const val FX_LIGHT_CORE = 0.5f
 
 private fun DrawScope.drawLight(d: uniffi.core_engine.Dot, scale: Float, dark: Boolean, mirror: Boolean, k: Double) {
     val r = (d.r * scale).toFloat()
     if (r <= 0f) return
-    val l = if (mirror) 1.0 - d.white else d.white
-    val sprite = lightSprite(d.hue, d.saturation, l, dark)
+    val w = if (mirror) 1.0 - d.white else d.white
+    val l = (w * 100).roundToInt() / 100.0
+    val tone = if (dark) l else max(0.10, l - 0.22)
+    val paint = if (dark) lightPaintAdd else lightPaintOver
+    val sat = (d.saturation * 100).roundToInt() / 100.0
+    paint.color = fxInk(tone, 1.0, false, sat, d.hue.roundToInt().toDouble()).toArgb()
+    paint.alpha = ((d.a * k).coerceIn(0.0, 1.0) * 255).roundToInt()
     val x = (d.x * scale).toFloat()
     val y = (d.y * scale).toFloat()
-    val paint = if (dark) lightPaintAdd else lightPaintOver
-    paint.alpha = ((d.a * k).coerceIn(0.0, 1.0) * 255).roundToInt()
-    lightRect.set(x - r, y - r, x + r, y + r)
-    drawIntoCanvas { it.nativeCanvas.drawBitmap(sprite, null, lightRect, paint) }
+    drawIntoCanvas { it.nativeCanvas.drawCircle(x, y, r * FX_LIGHT_CORE, paint) }
 }
 
 // Lazy: created on the first light dot, so loading this file (JVM unit tests) needs no Paint.
-private val lightRect by lazy { android.graphics.RectF() }
 private val lightPaintAdd by lazy {
-    android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG).apply {
+    android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
         xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.ADD)
     }
 }
-private val lightPaintOver by lazy { android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG) }
-
-/** One 32-px glow per colour (hue, saturation and lightness in whole steps), drawn once and reused. */
-private val lightSprites = object : java.util.LinkedHashMap<Long, android.graphics.Bitmap>(64, 0.75f, true) {
-    override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Long, android.graphics.Bitmap>?) = size > 512
-}
-
-private fun lightSprite(hue: Double, sat: Double, light: Double, dark: Boolean): android.graphics.Bitmap {
-    val h = hue.roundToInt()
-    val s = (sat * 100).roundToInt()
-    val l = (light * 100).roundToInt()
-    val key = (h.toLong() shl 24) or (s.toLong() shl 16) or (l.toLong() shl 8) or (if (dark) 1L else 0L)
-    lightSprites[key]?.let { return it }
-    val core = if (dark) min(0.97, l / 100.0 + 0.30) else max(0.10, l / 100.0 - 0.22)
-    val tone = if (dark) l / 100.0 else max(0.10, l / 100.0 - 0.22)
-    val ink = { w: Double, a: Double -> fxInk(w, a, false, s / 100.0, h.toDouble()).toArgb() }
-    val size = 32
-    val bmp = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
-    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
-    paint.shader = android.graphics.RadialGradient(
-        size / 2f,
-        size / 2f,
-        size / 2f,
-        intArrayOf(ink(core, 1.0), ink(tone, 0.9), ink(tone, 0.22), ink(tone, 0.0)),
-        floatArrayOf(0f, 0.18f, 0.45f, 1f),
-        android.graphics.Shader.TileMode.CLAMP,
-    )
-    android.graphics.Canvas(bmp).drawRect(0f, 0f, size.toFloat(), size.toFloat(), paint)
-    lightSprites[key] = bmp
-    return bmp
-}
+private val lightPaintOver by lazy { android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG) }

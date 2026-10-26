@@ -86,6 +86,11 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   and time, plus `constellation` `progress` 0.5 with `steps` 5, `ripple` `churn` 1, `broadcast`
   `level` 0.8 and `halo` `accuracy` 0.4) and 12 `resolved` entries, nothing changed; 19 frozen
   states. The FX Spec locks are unchanged. Native old-painter parity skips the light volumes (11 now).
+- **Light-volume dots are crisp discs.** The light volumes drew each dot as a soft 32-px radial glow
+  that blurred at large sizes; every painter (Web, SwiftUI, Compose) now fills a flat, hard-edged circle
+  at half the dot's radius, like an orb's dots, so veil, constellation, halo and the rest are as sharp
+  at 900 px as at 140 px. Dark backgrounds still add the discs up. Paint only: the engine frames, the
+  golden vectors and the native binaries are unchanged.
 - **Look fix for `flow`, `halo` and `constellation`, golden vectors 6.2.0 to 6.3.0.** The three
   light volumes are unreleased, so their frames were re-baselined: 39 digests changed, none added
   or removed, nothing else changed. `flow` is a sheet with a sharp front and a crest instead of a

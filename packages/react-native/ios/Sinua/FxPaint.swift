@@ -109,57 +109,27 @@ public enum FxPaint {
         draw(&c)
     }
 
-    /// `blend` 3 on dots (1.15 light volumes, docs/engine.md *Light*): each dot is a soft radial
-    /// glow of radius `r` -- a bright core, its colour, then nothing -- added up on a dark
-    /// background (`plusLighter`). A light background can't take added light, so there the glow,
-    /// its core no brighter than the colour, is laid on normally. The Web's `drawLight`.
+    /// `blend` 3 on dots (1.15 light volumes, docs/engine.md *Light*): each dot is a flat,
+    /// hard-edged disc -- a plain path fill, like an orb's dots, so it is as sharp at 900 pt as at
+    /// 140 -- of `lightCore` of the dot's radius `r` (`r` is sized for glow). Added up on a dark
+    /// background (`plusLighter`). A light background can't take added light, so there the disc,
+    /// no brighter than the colour, is laid on normally. The Web's `drawLight`.
     static let light: UInt8 = 3
+    static let lightCore = 0.5
 
     private static func drawLight(_ d: Dot, in context: GraphicsContext, dark: Bool, mirror: Bool) {
-        let l = mirror ? 1 - d.white : d.white
-        guard d.r > 0, let sprite = lightSprite(hue: d.hue, saturation: d.saturation, lightness: l, dark: dark) else {
-            return
-        }
+        guard d.r > 0 else { return }
+        let w = mirror ? 1 - d.white : d.white
+        let l = Double(Int((w * 100).rounded())) / 100
+        let tone = dark ? l : max(0.10, l - 0.22)
+        let (r, g, b) = hslToRGB(Double(Int(d.hue.rounded())), Double(Int((d.saturation * 100).rounded())) / 100, tone)
         var c = context
         c.blendMode = dark ? .plusLighter : .normal
         c.opacity = min(1, max(0, d.a))
-        c.draw(
-            Image(decorative: sprite, scale: 1),
-            in: CGRect(x: d.x - d.r, y: d.y - d.r, width: d.r * 2, height: d.r * 2))
-    }
-
-    /// One 32-px glow per colour (hue, saturation and lightness in whole steps), drawn once.
-    private static var lightSprites: [Int: CGImage] = [:]
-
-    private static func lightSprite(hue: Double, saturation: Double, lightness: Double, dark: Bool) -> CGImage? {
-        let h = Int(hue.rounded())
-        let s = Int((saturation * 100).rounded())
-        let l = Int((lightness * 100).rounded())
-        let key = (h << 24) | (s << 16) | (l << 8) | (dark ? 1 : 0)
-        if let hit = lightSprites[key] { return hit }
-        let core = dark ? min(0.97, Double(l) / 100 + 0.30) : max(0.10, Double(l) / 100 - 0.22)
-        let tone = dark ? Double(l) / 100 : max(0.10, Double(l) / 100 - 0.22)
-        let rgba = { (w: Double, a: Double) -> CGColor in
-            let (r, g, b) = hslToRGB(Double(h), Double(s) / 100, w)
-            return CGColor(srgbRed: r, green: g, blue: b, alpha: a)
-        }
-        let size = 32
-        guard
-            let ctx = CGContext(
-                data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: 0,
-                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue),
-            let gradient = CGGradient(
-                colorsSpace: CGColorSpace(name: CGColorSpace.sRGB),
-                colors: [rgba(core, 1), rgba(tone, 0.9), rgba(tone, 0.22), rgba(tone, 0)] as CFArray,
-                locations: [0, 0.18, 0.45, 1])
-        else { return nil }
-        let mid = CGPoint(x: Double(size) / 2, y: Double(size) / 2)
-        ctx.drawRadialGradient(
-            gradient, startCenter: mid, startRadius: 0, endCenter: mid, endRadius: Double(size) / 2, options: [])
-        guard let image = ctx.makeImage() else { return nil }
-        if lightSprites.count > 512 { lightSprites.removeAll() }
-        lightSprites[key] = image
-        return image
+        let rr = d.r * lightCore
+        c.fill(
+            Path(ellipseIn: CGRect(x: d.x - rr, y: d.y - rr, width: rr * 2, height: rr * 2)),
+            with: .color(Color(red: r, green: g, blue: b)))
     }
 
     /// HSL (hue in degrees, saturation and lightness 0..1) to sRGB 0..1.

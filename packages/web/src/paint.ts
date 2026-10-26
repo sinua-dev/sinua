@@ -279,47 +279,27 @@ function drawFrameWithMaterials(ctx: CanvasRenderingContext2D, frame: PaintFrame
 }
 
 // ---------------------------------------------------------------- light --
-// `blend` 3 on dots (light volumes, docs/engine.md *Light*): each dot is a soft
-// radial glow of radius `r` -- a bright core, its colour, then nothing -- and on a dark
-// background the glows add up ("lighter"). A light background can't take added light
-// (it is already white), so there the same glow, its core no brighter than the colour,
-// is laid on normally. One sprite per colour, cached.
+// `blend` 3 on dots (light volumes, docs/engine.md *Light*): each dot is a flat, hard-edged disc
+// -- a plain `arc`, exactly like an orb's dots, so it is as sharp at 900 px as at 140 -- of
+// `LIGHT_CORE` of the dot's radius `r` (`r` is sized for glow, so the disc is a fraction of it).
+// On a dark background the discs add up ("lighter"), so overlapping dots still read as light. A
+// light background can't take added light (it is already white), so there the disc, no brighter
+// than the colour, is laid on normally. The same fraction and colours on every platform.
 
 const LIGHT = 3;
-const lightSprites = new Map<string, HTMLCanvasElement | OffscreenCanvas>();
-
-function lightSprite(hue: number, sat: number, light: number, dark: boolean): HTMLCanvasElement | OffscreenCanvas | null {
-  const h = Math.round(hue), s = Math.round(sat * 100), l = Math.round(light * 100);
-  const key = `${h}/${s}/${l}/${dark ? 1 : 0}`;
-  const hit = lightSprites.get(key);
-  if (hit) return hit;
-  const size = 32;
-  const c = typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(size, size) : typeof document !== "undefined" ? Object.assign(document.createElement("canvas"), { width: size, height: size }) : null;
-  if (!c) return null;
-  const g = c.getContext("2d") as CanvasRenderingContext2D | null;
-  if (!g) return null;
-  const core = dark ? Math.min(97, l + 30) : Math.max(10, l - 22);
-  const tone = dark ? l : Math.max(10, l - 22);
-  const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  grad.addColorStop(0, `hsla(${h}, ${s}%, ${core}%, 1)`);
-  grad.addColorStop(0.18, `hsla(${h}, ${s}%, ${tone}%, 0.9)`);
-  grad.addColorStop(0.45, `hsla(${h}, ${s}%, ${tone}%, 0.22)`);
-  grad.addColorStop(1, `hsla(${h}, ${s}%, ${tone}%, 0)`);
-  g.fillStyle = grad;
-  g.fillRect(0, 0, size, size);
-  if (lightSprites.size > 512) lightSprites.clear();
-  lightSprites.set(key, c);
-  return c;
-}
+const LIGHT_CORE = 0.5;
 
 function drawLight(ctx: CanvasRenderingContext2D, d: OrbFrame["dots"][number], dark: boolean, mirror: boolean): void {
   const lightness = mirror ? 1 - d.white : d.white;
-  const spr = lightSprite(d.hue, d.saturation, lightness, dark);
-  if (!spr) return;
+  const l = Math.round(lightness * 100);
+  const tone = dark ? l : Math.max(10, l - 22);
   const prevOp = ctx.globalCompositeOperation, prevA = ctx.globalAlpha;
   ctx.globalCompositeOperation = dark ? "lighter" : "source-over";
   ctx.globalAlpha = Math.min(1, Math.max(0, d.a));
-  ctx.drawImage(spr as CanvasImageSource, d.x - d.r, d.y - d.r, d.r * 2, d.r * 2);
+  ctx.fillStyle = `hsl(${Math.round(d.hue)}, ${Math.round(d.saturation * 100)}%, ${tone}%)`;
+  ctx.beginPath();
+  ctx.arc(d.x, d.y, d.r * LIGHT_CORE, 0, Math.PI * 2);
+  ctx.fill();
   ctx.globalCompositeOperation = prevOp;
   ctx.globalAlpha = prevA;
 }

@@ -359,9 +359,9 @@ Fills (closed polygons with linear or radial gradients), holes (even-odd inner r
 
 ### Light (1.15)
 
-**`EffectRun.blend` 3 = light**, on dots only. Every painter draws each dot of the run as a soft radial glow of radius `r`: a bright core (lightness + 0.30, alpha 1) at 0, the dot's colour at 0.18 (alpha 0.9) and 0.45 (alpha 0.22), nothing at 1, all times the dot's `a`.
+**`EffectRun.blend` 3 = light**, on dots only. Every painter draws each dot of the run as a flat, hard-edged disc, a plain circle fill exactly like an orb's dots (so it is as sharp at 900 px as at 140 px, with no bitmap to resample), of half the dot's radius `r` (`r` is sized for glow, so the disc is a fraction of it), in the dot's colour (lightness as is on dark), all times the dot's `a`. An earlier 1.15 draft drew a soft 32-px radial glow sprite instead; it blurred at large sizes.
 - **Dark background:** the glows add up (Canvas `lighter`, SwiftUI `plusLighter`, Compose `BlendMode.Plus`), so dense regions burn brighter.
-- **Light background:** added light can't show on white, so the glow is laid on normally and its core and colour go 0.22 darker instead.
+- **Light background:** added light can't show on white, so the disc is laid on normally and its colour goes 0.22 darker instead (floor 0.10).
 - The FFI record and the packed transport are unchanged (`blend` was already carried). A painter from before 1.15 draws such dots as plain dots.
 - Under low power the engine emits `blend` 1 (plain additive dots) instead.
 - Light adds up, so the order inside the run doesn't matter.

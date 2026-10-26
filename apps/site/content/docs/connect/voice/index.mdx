@@ -6,7 +6,7 @@ description: Connect a voice agent or the microphone, and the visual follows the
 A **voice source** turns a conversation into two streams the visual understands:
 
 - **the agent's state** (`initializing`, `idle`, `listening`, `thinking`, `speaking`), which picks the look through your [states](/docs/connect/states-vs-patterns);
-- **the audio**: an overall level and per-band levels, which drive `audioLevel` (an orb's breathing) and the bars and waveforms of a signal.
+- **the audio**: an overall level and per-band levels, which drive `audioLevel` (an orb's breathing) and the light volumes of a signal (`veil`, `crystal`, `broadcast` and the others follow the level and the bands).
 
 Give the view a source and it does the rest: it follows the state, eases the audio at display rate so nothing steps, shows the mute cue when you set it, and flashes briefly when the user interrupts the agent (barge-in).
 
@@ -66,8 +66,6 @@ Every pattern follows the four states with the same built-in profile, on top of 
 | speaking | 1.15× | a stronger glow; the agent's voice moves the shape |
 
 The states add no particles.
-
-A [character](/docs/catalog/character) has its own state language instead: it looks at you while listening, looks away while thinking and talks while speaking.
 
 Your `overrides` go on top of the profile, in every state and on every platform. To make a view quieter still, soften the glow and drop the pulse:
 

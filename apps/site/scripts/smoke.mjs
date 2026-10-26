@@ -64,7 +64,7 @@ const gallery = await (async () => {
   await page.goto(base + "/gallery/", { waitUntil: "networkidle" });
   const nav = await page.locator("header.lp-top a", { hasText: "Docs" }).count();
   const home = await page.locator("header.lp-top a.lp-wordmark").count();
-  await page.goto(base + "/gallery/?family=ring", { waitUntil: "networkidle" });
+  await page.goto(base + "/gallery/?family=signal", { waitUntil: "networkidle" });
   await page.waitForTimeout(600);
   const tiles = await page.locator("#gallery-grid .fx-tile").count();
   const all = await page.goto(base + "/gallery/", { waitUntil: "networkidle" }).then(async () => {

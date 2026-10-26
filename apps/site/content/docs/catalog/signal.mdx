@@ -1,18 +1,22 @@
 ---
 title: Signal
-description: Sound as bars, waveforms, a scrolling history or an LED meter.
+description: Eleven light volumes for a voice, a value or a status, from a swelling veil to a crystal, a dune, a scan and a halo.
 ---
 
-The signal draws sound: bars, waveforms, a scrolling history or an LED meter. Feed it a voice source and it follows the audio.
+The signal is a set of **light volumes**: hundreds of points of light in 3D, lit by depth and drawn as soft glows that add up on a dark background. Each one shows a value, a voice or a status, and each one keeps moving on its own with no input at all.
 
 <div className="demo-gallery">
-<Demo object="signal" pattern="signaling" />
-<Demo object="signal" pattern="waveform" />
-<Demo object="signal" pattern="scrolling" />
-<Demo object="signal" pattern="metering" />
 <Demo object="signal" pattern="veil" />
 <Demo object="signal" pattern="crystal" />
 <Demo object="signal" pattern="dune" />
+<Demo object="signal" pattern="comet" />
+<Demo object="signal" pattern="flow" />
+<Demo object="signal" pattern="cohesion" />
+<Demo object="signal" pattern="scan" />
+<Demo object="signal" pattern="constellation" />
+<Demo object="signal" pattern="ripple" />
+<Demo object="signal" pattern="broadcast" />
+<Demo object="signal" pattern="halo" />
 </div>
 
 <GalleryLink family="signal" />
@@ -21,20 +25,89 @@ The signal draws sound: bars, waveforms, a scrolling history or an LED meter. Fe
 
 | Pattern | `pattern` | When to use it |
 |---|---|---|
-| [Bars](#signaling) | `signaling` | Live level: bars that follow the audio. |
-| [Waveform](#waveform) | `waveform` | Live voice: layered waveform lines. |
-| [Scrolling](#scrolling) | `scrolling` | Voice over time: a scrolling history of levels. |
-| [Meter](#metering) | `metering` | A precise meter: an LED matrix with peaks. |
-| [Playing](#playing) | `playing` | A recorded voice message: its waveform and how far it has played. |
-| [Veil](#veil) | `veil` | A sheet of light that swells with a voice or any 0 to 1 value, and keeps moving while something is being worked on (no audio needed). |
-| [Crystal](#crystal) | `crystal` | A crystal of light filled from below: a voice's bands, or one value like a battery, a quota or a goal. |
-| [Dune](#dune) | `dune` | A dune of light whose done part glows: a voice message's position, or a long task's progress. |
+| [Veil](#veil) | `veil` | A sheet of light that swells with a voice or any 0 to 1 value, and keeps moving while something is worked on. |
+| [Crystal](#crystal) | `crystal` | A crystal filled from below: a voice's bands, or one value like a battery, a quota or a goal. |
+| [Dune](#dune) | `dune` | A dune whose done part glows: a long task's progress, or a recorded voice message. |
+| [Comet](#comet) | `comet` | Waiting with no end in sight: a stream of points orbiting a faint core. |
+| [Flow](#flow) | `flow` | Something is being made: fronts of light sweeping a slab of points. |
+| [Cohesion](#cohesion) | `cohesion` | How well something holds, like a connection or a match: a sphere that loses points as `quality` falls. |
+| [Scan](#scan) | `scan` | Looking for something: a beam sweeping a disc, with found points flashing. |
+| [Constellation](#constellation) | `constellation` | A task in stages: one cloud per step, done ones tight and bright. |
+| [Ripple](#ripple) | `ripple` | Something happened, look here: shells of warm light spreading from a core. |
+| [Broadcast](#broadcast) | `broadcast` | Sending, speaking out: fans of light opening left and right. |
+| [Halo](#halo) | `halo` | How sure a position is: a cloud that tightens onto a core as `accuracy` rises. |
 
-Veil, Crystal and Dune are light volumes: hundreds of points of light in 3D that glow and add up on a dark background. They suit a voice and a status alike, and each one moves on its own with no input at all.
+Every volume reads its inputs in the same order: its own value (`level` or `progress`, from your app or a [binding](/docs/connect/bindings)), else a bound voice's level, which counts only while the agent listens or speaks, else its own noise field. Nothing is tied to the voice, so any of them works as a status visual. Every volume also takes `churn` (0 to 1, default 0): restless work, such as thinking, that keeps it moving and brightens it with no level. Their pace is the view's `speed`.
+
+On a small view a volume draws fewer points (about 150 at 48 px, 420 at 128 px, 1,000 from 256 px). Reduced motion holds each one still in its pose, and low power draws plain dots instead of soft glows.
+
+## Veil
+
+A sheet of light: layers of points curl one behind the other. With a voice it swells with the level; with `level` it shows any 0 to 1 value; with `churn` it keeps moving while something is worked on.
+
+## Crystal
+
+A crystal filled from below: each column lights up to its value and unlit cells stay as dust. With a voice, the bands fill the columns. With `level` it is one value, such as a battery, a quota or a goal.
+
+## Dune
+
+A dune: a series is its profile, the done part glows, and a plane of light marks the position. `envelope` is the series (up to 64 values from 0 to 1) and `progress` the position; for a long task, `progress` alone is enough. Without `progress` the plane drifts across on its own.
+
+## Comet
+
+A stream of 260 points orbiting a faint core sphere: the head leads, the tail breathes with the noise and the hue runs from head to tail. `level` sets the brightness and the tail length; `churn` lengthens and brightens the tail.
+
+## Flow
+
+About 800 scattered points in a slab. A front sweeps across at a noisy pace and a fainter second front follows 1.6 s behind; points light as it passes. `level` sets how strongly the fronts light the slab; `churn` strengthens the second front and adds a shimmer.
+
+## Cohesion
+
+A sphere of about 450 points that loses its place as `quality` falls. Each point lets go at its own threshold, drifts apart and warms to amber, and gathers again when `quality` rises. `quality` runs 0 to 1 and defaults to 1 (whole); `churn` adds a tremor and a brighter sphere, for trying again.
+
+## Scan
+
+A tilted disc of about 900 points and a beam sweeping it. The beam lights what it passes; found points flash white and burn down over about 2.2 s. `blips` is how many are found (a whole number from 0 to 12, default 7); `churn` lengthens the trail, for still searching.
+
+## Constellation
+
+`steps` clouds of about 110 points on a ring seen from above. Done steps are tight and bright, the current one gathers out of dust, and the ones to come hang loose and dim. `progress` runs over all steps, an equal share each; `steps` is a whole number from 2 to 8 (default 5). With no `progress`, the first step is done and the next one gathers and loosens on its own. `churn` makes the clouds shimmer.
+
+## Ripple
+
+Crinkled shells of warm amber light, up to about 300 points each, spreading from a warm core and fading as they grow. A shell leaves about every 1.6 s on a slightly uneven beat. `churn` fades in a second train of shells.
+
+## Broadcast
+
+Two fans of light opening left and right of a small white core, a front after a front. Louder fronts burn brighter and a second train fades in; quiet, they are few and faint. `churn` brings in the second train with no level, for waiting on a reply.
+
+## Halo
+
+A small bright core and a cloud of about 700 points that tightens onto it as `accuracy` rises, with a thin shell travelling from the core to the edge every 1.4 s. `accuracy` runs 0 to 1 and defaults to 1 (on the core); `churn` makes the cloud tremble and brighten.
+
+## Keys of one pattern
+
+`quality` (cohesion), `accuracy` (halo), `steps` and `progress` (constellation) and `blips` (scan) are plain numbers from your app. `quality`, `accuracy` and `progress` can also be [bound](/docs/connect/bindings) to an input, so a file maps your data onto them.
+
+<Demo spec="spec/signal-keys.fxspec.json" controls={[{ state: ["idle", "tight", "stages", "found"] }]} />
+
+<Tabs groupId="platform" items={["React", "SwiftUI", "Compose"]} persist>
+<Tab value="React">
+<include lang="tsx" meta='title="signal-keys-react.tsx"'>../../../snippets/values/signal-keys-react.tsx</include>
+</Tab>
+<Tab value="SwiftUI">
+<include lang="swift" meta='title="signal-keys.swift"'>../../../snippets/values/signal-keys.swift</include>
+</Tab>
+<Tab value="Compose">
+<include lang="kotlin" meta='title="signal-keys.kt"'>../../../snippets/values/signal-keys.kt</include>
+</Tab>
+</Tabs>
 
 ## A voice message
 
-`playing` draws a recorded message the way a chat app shows one: the waveform, the played part in full ink and the rest dimmed. It fills a wide box instead of a square. `SinuaVoiceMessage` wraps it with drag-to-seek and a slider for screen readers (not on React Native yet). Sinua decodes no audio: your app passes up to 64 loudness values as `envelope`, and `progress` from 0 to 1.
+`SinuaVoiceMessage` draws `dune` in a wide box, the way a chat app shows a voice message: the clip's loudness is the profile, the played part glows and a plane of light marks the position. It comes with drag-to-seek and a slider for screen readers (not on React Native yet). Sinua decodes no audio: your app passes up to 64 loudness values as `envelope`, and `progress` from 0 to 1.
+
+Up to an aspect of 2.2 the dune is the turned volume above. From 2.2 to 3 it eases into a strip: the camera turns to a side view, the dune fills the box and stands taller so the profile reads at 40 px high. With `progress` given, the plane holds still; without it, it drifts slowly across.
 
 <Tabs groupId="platform" items={["React", "SwiftUI", "Compose"]} persist>
 <Tab value="React">

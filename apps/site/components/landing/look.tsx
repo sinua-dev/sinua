@@ -13,8 +13,8 @@ import { SWATCHES } from "./swatches";
 
 const PATTERNS = [
   { value: "glowing", label: "Glowing", object: "orb" },
-  { value: "completing", label: "Completing", object: "ring" },
-  { value: "metering", label: "Metering", object: "signal" },
+  { value: "veil", label: "Veil", object: "signal" },
+  { value: "crystal", label: "Crystal", object: "signal" },
 ] as const;
 
 /** Each material's master key at a strength that reads clearly on its own. */
@@ -24,7 +24,7 @@ const MATERIALS: { id: string; label: string; keys: Record<string, number> }[] =
   { id: "pulse", label: "Pulse", keys: { pulseStrength: 0.7 } },
 ];
 
-const SHOWCASE: Record<string, Record<string, number>> = { completing: { progress: 0.7 }, metering: { audioLevel: 0.75 } };
+const SHOWCASE: Record<string, Record<string, number>> = { veil: { level: 0.7 }, crystal: { level: 0.75 } };
 
 export function Look() {
   const [pattern, setPattern] = useState<(typeof PATTERNS)[number]["value"]>("glowing");

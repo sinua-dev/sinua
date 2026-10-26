@@ -1,7 +1,7 @@
 "use client";
 /**
- * App data, not voice: the docs' activity-rings file (snippets/spec/activity-rules.fxspec.json)
- * mounted as it is. The sliders are the app's numbers; the file's bindings fill the rings, its
+ * App data, not voice: the docs' daily-activity file (snippets/spec/activity-rules.fxspec.json)
+ * mounted as it is. The sliders are the app's numbers; the file's bindings move the constellation, its
  * rules pick the state, and crossing the step goal plays a one-shot effect -- the React snippet
  * beside it (snippets/states/goal-react.tsx) is the same thing in an app. The state shown is
  * the engine's own `fxSpecDeriveState`, the function the view itself runs.
@@ -35,7 +35,7 @@ export function Goal({ spec, react }: { spec: string; react: string }) {
       .then(([{ mount }, core]) => {
         if (!live || !canvas.current) return;
         derive.current = core.fxSpecDeriveState;
-        handle.current = mount(canvas.current, { spec: JSON.parse(spec) as object, ...latest.current, label: "Daily rings" });
+        handle.current = mount(canvas.current, { spec: JSON.parse(spec) as object, ...latest.current, label: "Daily activity" });
         setState(core.fxSpecDeriveState(spec, latest.current.inputs, null));
       })
       .catch((err: unknown) => {
@@ -66,14 +66,14 @@ export function Goal({ spec, react }: { spec: string; react: string }) {
           Your numbers pick the state
         </h2>
         <p className="lp-lead">
-          Pass the app&apos;s values and let the file decide what they mean. Here a binding fills the rings, a rule switches to the goal state at 10,000
+          Pass the app&apos;s values and let the file decide what they mean. Here a binding moves the constellation along, a rule switches to the goal state at 10,000
           steps, and one call plays a short celebration on top. Push the heart rate past 150 for the other rule.
         </p>
       </header>
 
       <div className="lp-workbench">
         <div className="lp-stage lp-look-stage">
-          <canvas ref={canvas} className="lp-look-visual" aria-label="Daily rings" />
+          <canvas ref={canvas} className="lp-look-visual" aria-label="Daily activity" />
         </div>
         <div className="lp-inspector">
           <PgSlider label="Steps" value={steps} min={0} max={15000} step={250} display={steps.toLocaleString("en-US")} onChange={onSteps} />

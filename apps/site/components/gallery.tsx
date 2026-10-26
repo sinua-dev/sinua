@@ -134,7 +134,7 @@ function LiveThumb({ label, ...fx }: FxProps & { label: string }) {
 /**
  * A pattern tile in the grid: the Studio's `.tile`. It shows the engine's still frame
  * (in the chosen voice state, when one is on) and runs live only while someone points
- * at it, focuses it or has it selected: 34 render loops would say nothing the stills don't.
+ * at it, focuses it or has it selected: 28 render loops would say nothing the stills don't.
  */
 function Tile({ label, selected, onSelect, ...fx }: FxProps & { label: string; selected: boolean; onSelect: () => void }) {
   const [hot, setHot] = useState(false);
@@ -190,7 +190,7 @@ export function Gallery() {
   const [pointer, setPointer] = useState(true);
   const theme = useSiteTheme();
   const [selected, setSelected] = useState<string>("glowing");
-  // A docs page links here filtered: /gallery/?family=ring (&pattern=tracking).
+  // A docs page links here filtered: /gallery/?family=signal (&pattern=dune).
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const f = q.get("family");

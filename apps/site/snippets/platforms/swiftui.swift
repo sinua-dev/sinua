@@ -7,7 +7,7 @@ struct AssistantCard: View {
     var body: some View {
         VStack(spacing: 24) {
             // Typed: one component per object, parameters as properties.
-            SinuaRing(pattern: .completing, progress: 0.65, strokeWidth: 0.12)
+            SinuaSignal(pattern: .crystal, level: 0.65)
                 .frame(width: 64, height: 64)
 
             // A spec file; `state` picks its lifecycle state.

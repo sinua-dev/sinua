@@ -8,7 +8,7 @@ import PackageDescription
 let topics: [(folder: String, target: String, exclude: [String])] = [
     ("first-visual", "FirstVisual", ["react.tsx", "react-native.tsx", "compose.kt"]),
     ("platforms", "Platforms", ["compose.kt", "android-view.kt", "android-res", "react-native.tsx"]),
-    ("values", "Values", ["react.tsx", "compose.kt", "voice-message-react.tsx", "voice-message.kt"]),
+    ("values", "Values", ["react.tsx", "compose.kt", "voice-message-react.tsx", "voice-message.kt", "signal-keys-react.tsx", "signal-keys.kt"]),
     ("states", "States", ["goal-react.tsx", "react.tsx", "compose.kt", "plain-react.tsx", "plain-compose.kt", "plain-react-native.tsx",
                           "effects-web.ts", "effects.kt", "effects-react-native.tsx"]),
     ("bindings", "Bindings", ["react.tsx", "compose.kt", "rules-react.tsx", "rules.kt"]),
@@ -20,8 +20,7 @@ let topics: [(folder: String, target: String, exclude: [String])] = [
                         "simulated-web.ts", "simulated-script-web.ts", "simulated.kt", "simulated-react-native.tsx",
                         "transcripts-web.ts", "transcripts.kt", "transcripts-react-native.tsx",
                         "voice-button-web.ts", "voice-button-react.tsx", "voice-button.kt", "voice-button-react-native.tsx",
-                        "sharing-web.ts", "avatar-react.tsx", "avatar.kt",
-                        "character-react.tsx", "character.kt", "character-react-native.tsx"]),
+                        "sharing-web.ts"]),
     ("real-app", "RealApp", ["soul.kt", "soul.fxspec.json"]),
     ("perf", "Perf", ["low-power-web.ts", "max-fps-web.ts", "reduced-motion-web.ts", "accessibility-label-web.ts",
                       "low-power.kt", "max-fps.kt", "reduced-motion.kt", "accessibility-label.kt",

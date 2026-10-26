@@ -59,7 +59,7 @@ What only a studio, a dev tool, a test or a demo needs lives in its own entry, s
 import { estimateCost, SimulatedVoiceSource } from "@sinua/core/dev";
 ```
 
-`@sinua/core/dev` also re-exports everything in `@sinua/core`. A tool that loads catalog packs or recipes should import everything from it, so it runs one engine. On iOS and Android these functions are only in development builds, not in the published packages.
+`@sinua/core/dev` also re-exports everything in `@sinua/core`. A tool should import everything from it, so it runs one engine. On iOS and Android these functions are only in development builds, not in the published packages.
 
 ## From source
 

@@ -14,7 +14,7 @@ fun CalmSignal() {
     // The voice states add a glow and a pulse; your overrides go on top of them,
     // in every state. Here: a softer glow and no pulse.
     SinuaView(
-        pattern = "waveform",
+        pattern = "veil",
         overrides = mapOf("glowStrength" to 0.15, "pulseStrength" to 0.0),
         voice = voice,
         modifier = Modifier.size(220.dp, 120.dp),

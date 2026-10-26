@@ -1,7 +1,7 @@
 {
-  "fxSpec": "1.8",
-  "object": "beacon",
-  "pattern": "locating",
+  "fxSpec": "1.15",
+  "object": "signal",
+  "pattern": "ripple",
   "materials": {
     "pulse": {
       "strength": 0.7,

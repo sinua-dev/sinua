@@ -9,13 +9,13 @@ An **FX Spec** is a small JSON file that describes a visual completely: the obje
 
 ## Structure
 
-- **`fxSpec`** (required): the version, `"1.14"`.
+- **`fxSpec`** (required): the version, `"1.15"`.
 - **`object`** (required) and **`pattern`** (required): what to draw. See the [catalog](/docs/catalog).
 - **`size`** (20 · 32 · 64) and **`speed`**: see [Speed & size](/docs/look/speed-and-size).
 - **`ink`** (1.8): how present the visual is, `0` to `1` (default `1`). It fades everything, halos included, and a state can patch it — an assistant rests below full ink when idle and comes to full ink when it listens.
 - **`color`**, **`gradient`**: see [Colour & theme](/docs/look/color-and-theme).
 - **`materials`**: `glow`, `noise`, `pulse`. See [Materials](/docs/look/materials).
-- **`params`**: the pattern's own props (the catalog's style props), e.g. `"ringCount": 3`.
+- **`params`**: the pattern's own props (the catalog's style props), e.g. `"steps": 5` on a constellation.
 - **`bindings`**: map your app's inputs onto values. See [Bindings](/docs/connect/bindings).
 - **`states`**: a patch per lifecycle state. See [States vs patterns](/docs/connect/states-vs-patterns).
 - **`transitions`** (1.9): how a change between two states animates. See [Transitions](#transitions) below.
@@ -24,11 +24,33 @@ An **FX Spec** is a small JSON file that describes a visual completely: the obje
 - **`performance`**: `maxFps`, and what to shed under low power.
 - **`name`**, **`description`**, **`$schema`**: for people and editors.
 
-Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor completes and checks the file as you type. A [character recipe](/docs/reference/character-recipe) inside it is checked too.
+Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor completes and checks the file as you type.
 
 ## Versioning
 
-`fxSpec` is `"1.14"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.14"` and use whatever this page documents. An older file stays valid and renders the same, with the exceptions from before 1.0: [`object: "edge"`](#removed-the-edge-object) (0.1.0-beta.8), and in the 1.14 cleanup (0.1.0-beta.9) [the liquid, particles and holographic materials](#removed-three-materials), [the concluding pattern](#removed-the-concluding-pattern) and [the wardrobe, named palettes and eye styles](#removed-the-wardrobe-named-palettes-and-eye-styles). A file that uses a removed section gets an error and isn't drawn, and the message says what to delete. After 1.0, a removal only comes in a major version (FX Spec 2.0), after a minor of deprecation warnings.
+`fxSpec` is `"1.15"`, written as `major.minor` (so 1.10 comes after 1.9). A file declares the version it was written for, and a runtime reads every file of its major version: keys it doesn't know become warnings, and a different major is refused. Declaring a version older than the keys you use is an error (`transitions` in a `"1.8"` file, say), so write `"1.15"` and use whatever this page documents. An older file stays valid and renders the same, with the exceptions from before 1.0: [`object: "edge"`](#removed-the-edge-object) (0.1.0-beta.8), the 1.14 cleanup (0.1.0-beta.9: [the liquid, particles and holographic materials](#removed-three-materials), [the concluding pattern](#removed-the-concluding-pattern) and the character wardrobe) and the 1.15 cleanup (0.1.0-beta.12: [what 1.15 removed](#removed-in-115)). A file that uses a removed section gets an error and isn't drawn, and the message says what to delete. After 1.0, a removal only comes in a major version (FX Spec 2.0), after a minor of deprecation warnings.
+
+### 1.15: light volumes, and the 0.1.0-beta.12 cleanup
+
+1.15 adds eleven patterns to `object: "signal"`: `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`, `scan`, `constellation`, `ripple`, `broadcast` and `halo` (see [Signal](/docs/catalog/signal)). They need `"fxSpec": "1.15"`; an older file that names one gets an error at that `pattern`.
+
+<include lang="json" meta='title="signal-keys.fxspec.json"'>../../../snippets/spec/signal-keys.fxspec.json</include>
+
+- **New keys in `params` and `bindings`:** `level` (every signal pattern but `dune`), `quality` (`cohesion`), `accuracy` (`halo`), `blips` (`scan`), `steps` (`constellation`, a whole number from 2 to 8), `progress` (`dune`, `constellation`), `envelope` (`dune`) and `churn` (all eleven).
+- **Eleven binding targets:** `progress`, `level`, `quality`, `accuracy`, `audioLevel`, `muted` and the material masters (`glow.strength`, `noise.strength`, `gradient.strength`, `pulse.strength`, `color.mix`). A target the pattern doesn't read is a warning. See [Bindings](/docs/connect/bindings).
+- **The examples** that every older version still resolves are three: `voice-assistant`, `voice-assistant-glowing` and `orb-brand-fixed`.
+- Older files resolve exactly as before, apart from what is removed below.
+
+#### Removed in 1.15
+
+Every item is an error at every version, with a message that names the replacement where there is one and otherwise says to delete it from the file.
+
+- **The objects `ring`, `core` and `beacon`**, with all their patterns (`completing`, `loading`, `tracking`, `stepping`, `measuring`, `talking`, `generating`, `typing`, `notifying`, `reconnecting`, `locating`, `scanning`, `broadcasting`). `completing`, `tracking` and `measuring` say their job is covered by `crystal` (`level`) or `dune` (`progress`); the others have no replacement. The new `comet`, `flow`, `scan`, `constellation`, `ripple`, `broadcast` and `halo` are new patterns, not aliases.
+- **The flat signal patterns:** `signaling`, `waveform` and `scrolling` say to use `veil`, `metering` says `crystal`, and `playing` says `dune`.
+- **The character family:** `object: "character"` and the keys `recipe`, `expression` and `palette`. No replacement.
+- **The orb's `silhouette`** pattern and key. No replacement.
+- **Binding targets and parameters:** `progress0` to `progress3` (and `progress[0]` to `progress[3]`) and the array parameters `progress` and `segment`. `quality` and `accuracy` are new targets of their own, for `cohesion` and `halo`.
+- **Materials:** fills, holes, gradient stops and per-vertex stroke colour no longer exist in the paint contract. The materials left are glow, noise, gradient, pulse and colour.
 
 ### 1.14: the 0.1.0-beta.9 cleanup
 
@@ -37,44 +59,9 @@ Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor com
 - **Removed, an error at every version:** the [liquid, particles and holographic materials](#removed-three-materials), the [concluding pattern](#removed-the-concluding-pattern), and the [wardrobe, named palettes and eye styles](#removed-the-wardrobe-named-palettes-and-eye-styles).
 - **One value change that reaches every version:** `glowing` zooms in less between voice states (thinking and speaking come closer to listening), so it no longer seems to jump at large sizes.
 
-### 1.13: the richer look and silhouettes
+### 1.11 to 1.13: characters and silhouettes (removed in 1.15)
 
-<div className="demo-gallery">
-<Demo spec="examples/rich-bean.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }]} />
-</div>
-
-- **`palette`** (character) also takes roles (`primary`, `secondary`, `accent`) and a `dark` variant. See [Roles and the dark variant](/docs/catalog/character#roles-and-the-dark-variant).
-- **`params`** on a character take `grain` (0–1) and `shading` (0/1). Under low power, grain and the soft shading turn off.
-- **`silhouette`** (orb, `pattern: "silhouette"`): `"human"`, `"helmet"` or your own `{ path, eyes, mouth }`. See [Silhouette](/docs/catalog/orb#a-head-and-shoulders).
-- **Voice states without `states`:** in a 1.13 file, a voice state the file has no entry for takes the built-in voice behaviour, so a character file with no `states` still listens, thinks and speaks.
-- **Recipe limits:** 96 parts (was 48) and 4,096 path points in all.
-- **Removed in 0.1.0-beta.9:** `cosmetics`, `wardrobe`, named palettes (`"palette": "sunset"`, `theme`) and `params.eyeStyle` are errors in any version.
-- 1.8–1.12 files resolve exactly as before.
-
-### 1.12: character recipes
-
-1.12 lets a file carry its own [character](/docs/catalog/character): the new key **`recipe`** holds a character recipe, the same format as the built-in characters. No code and no Sinua release; the file is the character. [Make your own character](/docs/catalog/own-character) walks through one, and the [recipe reference](/docs/reference/character-recipe) lists every key.
-
-<Demo spec="spec/custom-character.fxspec.json" controls={[{ state: ["idle", "listening", "thinking", "speaking"] }]} />
-
-```json title="custom-character.fxspec.json (shortened)"
-{
-  "$schema": "https://sinua.dev/schema/fx-spec-1.json",
-  "fxSpec": "1.12",
-  "object": "character",
-  "pattern": "pip",
-  "recipe": { "recipe": 1, "id": "pip", "profile": "chirp", "palette": { … }, "rig": { … }, "parts": [ … ], "burst": { … } },
-  "params": { "seed": 5, "flutterGain": 0.3 }
-}
-```
-
-- **`recipe`** needs `"fxSpec": "1.12"` and `object: "character"`. The `pattern` (and any state's) names the recipe's `id`, which can't be a built-in character's. Its mistakes point into it: `/recipe/parts/2/segments: expected a whole number from 3 to 128`.
-- **Limits**, so a file from outside can't make the engine slow: at most 64 KB, 48 parts, lists of 32, numbers within ±1000. Over a limit is an error, never trimmed; a recipe that would be heavy to draw is a warning.
-- **Shapes from a drawing:** any shape in a recipe may be an SVG path, `"shape": { "path": "M50 74 L56 22 … Z" }`, with the commands `M L H V C S Q T Z` (no arcs) in the 200-unit box; later subpaths are holes.
-- **Voice states:** a recipe moves like the shared character, or like a built-in with `"profile": "chirp"`. The file's own `states` go on top.
-- **`expression`** (any character): `"happy"`, `"surprised"`, `"thoughtful"`, `"sad"`, `"sleepy"` or `"none"`, in the base and in `states`. A state change blends one into the next.
-- **`palette`** (any character): `{ "<slot>": "<colour>" }`, hex or DTCG, in the base and in `states`. See [Palette](/docs/catalog/character#palette).
-- 1.8–1.11 files resolve exactly as before.
+1.11 added the `character` object, 1.12 character recipes and 1.13 the orb's `silhouette`. All were [removed in 1.15](#removed-in-115). 1.13 also made a voice state a file has no `states` entry for take the built-in voice behaviour, so a file without `states` still listens, thinks and speaks; that stays.
 
 #### Removed: the edge object
 
@@ -90,19 +77,7 @@ Also in 0.1.0-beta.9: the orb's `concluding` pattern. A file whose `pattern` (or
 
 #### Removed: the wardrobe, named palettes and eye styles
 
-Also in 0.1.0-beta.9: the character wardrobe and cosmetics (`cosmetics`, `wardrobe`, a view's `loadout`, catalog packs), the built-in named palettes (`"palette": "sunset"`, `palette.theme`) and the eye styles (`params.eyeStyle`). A file that uses one is rejected at every version, with an error naming the key; in a recipe, `slots`, `tags`, `cosmetics`, a part's `role` and the eye fields `style`, `iris` and `sclera` are errors too. Delete them; there's no replacement. Palettes by slot or role, with a `dark` variant, stay.
-
-### 1.11: characters
-
-1.11 adds one object, **`character`**: a [face for a voice assistant](/docs/catalog/character). Its voice states are built in, so a file only says who it is:
-
-<include lang="json" meta='title="character.fxspec.json"'>../../../snippets/spec/character.fxspec.json</include>
-
-- **`object: "character"` needs `"fxSpec": "1.11"`.** An older file gets an error at `/object`.
-- **No `color` or `gradient` on a character.** They would repaint its eyes and screen, so the file gets an error that points at `params.hue`. `hue` turns the character's own colour, and `mouth`, `accessories`, `look`, `turn` and `seed` are its other options.
-- **The pose values are `params` too.** The values the states set (`gazeX`, `lid`, `eyeSmile`, …) can go in `params` or in a state's patch, to tune how a state looks.
-- **`stateAge`** is a new runtime input: the seconds since the view's state changed. Every view sets it (a character blinks with it as your turn ends), and it can't go in `params`.
-- **Older files** (1.8 to 1.10) resolve exactly as before.
+Also in 0.1.0-beta.9: the character wardrobe and cosmetics, the built-in named palettes and the eye styles. They belonged to the character family, which [1.15 removed](#removed-in-115) altogether.
 
 ### 1.10: calmer voice states
 

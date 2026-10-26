@@ -1,6 +1,6 @@
 /**
  * The frame a pattern is shown in. Most patterns draw in a square; the box-layout
- * one (`patternLayout()`: signal `playing`) fills whatever box it gets, so the site
+ * one (`patternLayout()`: signal `dune`) fills whatever box it gets, so the site
  * gives it the box its use has: a chat bubble for a voice message.
  */
 import { patternLayout } from "@sinua/core";
@@ -17,7 +17,7 @@ export function shapeOf(pattern: string): Shape {
  * played. Empty for every other pattern.
  */
 export function previewInputs(pattern: string): Record<string, number> {
-  if (pattern !== "playing") return {};
+  if (pattern !== "dune") return {};
   const out: Record<string, number> = { progress: 0.42 };
   for (let i = 0; i < 48; i++) {
     // A spoken sentence: phrases with pauses, syllables inside them.

@@ -1,7 +1,7 @@
 "use client";
 /**
  * The voice side: where a voice comes from, what the engine takes from it, and
- * three different families following one simulated conversation in step. The
+ * three patterns following one simulated conversation in step. The
  * module names are the real products on each platform; the vendor sources are
  * labelled beta because none has been verified against its live service yet.
  */
@@ -27,8 +27,8 @@ const MODULES: { id: Platform; platform: string; names: string[] }[] = [
 
 const FOLLOWERS = [
   { pattern: "speaking", label: "Orb", hue: 265 },
-  { pattern: "waveform", label: "Signal", hue: 172 },
-  { pattern: "broadcasting", label: "Beacon", hue: 345 },
+  { pattern: "veil", label: "Signal", hue: 172 },
+  { pattern: "crystal", label: "Signal", hue: 345 },
 ];
 
 export function Voice() {

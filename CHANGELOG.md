@@ -112,7 +112,7 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 - **Golden vectors 5.0.0 to 6.0.0:** 169 digests removed (ring 81, beacon 63, core 25), 141
   remain, nothing changed. The FX Spec locks 1.8 to 1.15 lost the six examples that used removed
   objects and keep three (`voice-assistant`, `voice-assistant-glowing`, `orb-brand-fixed`); every
-  remaining row is byte-identical. The bench has 8 cases (was 10).
+  remaining row is byte-identical. The bench has 13 cases (was 10): `ring-holo-hues` and `beacon-locating` went with their families, the liquid, particles and holographic orb cases (their keys have not existed since 0.1.0-beta.9, so they measured a plain orb) were dropped, and one case per newer light volume was added.
 
 ### Removed
 

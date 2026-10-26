@@ -5,7 +5,7 @@ description: The numbers your app feeds a visual — progress, audio level, qual
 
 A **value** is app data that a pattern draws: how far an upload is, how loud the user speaks, how good the connection is. Values are plain props on the component, and they can change every frame.
 
-<Demo spec="spec/ring-progress.fxspec.json" controls={[{ input: "uploaded", min: 0, max: 100 }]} />
+<Demo spec="spec/upload-progress.fxspec.json" controls={[{ input: "uploaded", min: 0, max: 100 }]} />
 
 <Tabs groupId="platform" items={["React", "SwiftUI", "Compose"]} persist>
 <Tab value="React">
@@ -25,13 +25,15 @@ Which patterns read which value, with its range. Everything outside the range is
 
 <include>../../generated/values.mdx</include>
 
-## Lists of values
+## The keys of one pattern
 
-Some patterns take one value per item. `tracking` draws up to four activity rings, so `progress` is a list with one entry per ring (the length follows `ringCount`). A ring's value past 1 draws extra laps, up to 3.
+Some values belong to one pattern: `quality` to `cohesion`, `accuracy` to `halo`, `blips` to `scan`, and `steps` (a whole number from 2 to 8) and `progress` to `constellation`. `dune` also takes a list, `envelope`, up to 64 values from 0 to 1: the profile of the dune, such as a clip's loudness. [Signal](/docs/catalog/signal#keys-of-one-pattern) has one example of each.
+
+A constellation with fixed `steps` and `progress`, no binding:
 
 <include lang="json" meta='title="fixed-progress.fxspec.json"'>../../../snippets/spec/fixed-progress.fxspec.json</include>
 
-In a binding, address one ring with `progress[0]`, `progress[1]`, … (see [Bindings](/docs/connect/bindings)).
+In a binding, `progress`, `quality` and `accuracy` are targets of their own (see [Bindings](/docs/connect/bindings)).
 
 ## Values vs style
 

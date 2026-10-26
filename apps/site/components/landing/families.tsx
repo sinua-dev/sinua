@@ -13,26 +13,28 @@ import { LiveVisual } from "./live-visual";
 import { TINT } from "./swatches";
 
 /** One hue per family, so switching families reads at a glance. */
-const FAMILY_HUE: Record<string, number> = { orb: 265, signal: 172, ring: 38, beacon: 345, core: 200, character: 232 };
+const FAMILY_HUE: Record<string, number> = { orb: 265, signal: 172 };
 const tint = (family: string) => ({ ...TINT, colorHue: FAMILY_HUE[family] ?? 265 });
 
-/** Values that make a pattern read at a glance: a ring needs progress, a meter needs a level. */
+/** Values that make a pattern read at a glance: a dune needs progress, a crystal needs a level. */
 const SHOWCASE: Record<string, Record<string, number>> = {
-  completing: { progress: 0.68 },
-  tracking: { progress0: 0.72, progress1: 0.48, progress2: 0.3 },
-  stepping: { progress: 0.6 },
-  measuring: { progress: 0.62 },
   progressing: { progress: 0.55 },
-  reconnecting: { quality: 0.5 },
-  signaling: { audioLevel: 0.7 },
-  waveform: { audioLevel: 0.7 },
-  scrolling: { audioLevel: 0.6 },
-  metering: { audioLevel: 0.75 },
+  veil: { level: 0.7 },
+  crystal: { level: 0.75 },
+  dune: { progress: 0.55 },
+  comet: { level: 0.6 },
+  flow: { level: 0.6 },
+  cohesion: { quality: 0.55, level: 0.6 },
+  scan: { blips: 7, level: 0.6 },
+  constellation: { steps: 5, progress: 0.6 },
+  ripple: { level: 0.6 },
+  broadcast: { level: 0.6 },
+  halo: { accuracy: 0.7, level: 0.6 },
   speaking: { audioLevel: 0.6, audioStrength: 0.45 },
 };
 
 /** Patterns whose point is a value moving: their live previews sweep it instead of holding one. */
-const SWEEPS: Record<string, string> = { progressing: "progress" };
+const SWEEPS: Record<string, string> = { progressing: "progress", dune: "progress", constellation: "progress" };
 
 /**
  * A value that sweeps 0 → 1 over `seconds`, holds a moment at 1 and starts again,
@@ -89,10 +91,10 @@ export function Families() {
     <section className="lp-section" aria-labelledby="lp-families">
       <header className="lp-section-head">
         <h2 id="lp-families" className="lp-h2">
-          {total} patterns in {objects.length} families
+          {total} patterns in {objects.length} objects
         </h2>
         <p className="lp-lead">
-          Orbs for an agent's inner life, signals for sound, rings for progress, beacons for attention, cores for text that is on its way and characters that give your assistant a face. Point at one to
+          Orbs for an agent's inner life, signals for everything that has a value: a voice, a level, a task in steps, a connection, a search. Point at one to
           set it moving; every frame below is drawn by the engine.
         </p>
       </header>
@@ -138,7 +140,7 @@ export function Families() {
 
 /**
  * A tile is a still frame until someone points at it, focuses it or picks it;
- * only then does it run. Eighteen live tiles would each run a render loop to
+ * only then does it run. Seventeen live tiles would each run a render loop to
  * tell a visitor nothing the still frame doesn't.
  */
 function FamilyTile({

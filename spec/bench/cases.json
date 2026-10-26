@@ -5,13 +5,18 @@
   "warmupSeconds": 1,
   "measureSeconds": 10,
   "cases": [
-    { "id": "orbs-breathing", "label": "Orbs · breathing", "state": "breathing", "overrides": {} },
-    { "id": "orbs-liquid", "label": "Orbs · breathing + liquid", "state": "breathing", "overrides": { "liquidStrength": 1 } },
-    { "id": "orbs-particles", "label": "Orbs · breathing + particles", "state": "breathing", "overrides": { "particleStrength": 1 } },
-    { "id": "orbs-holo", "label": "Orbs · glowing + holographic", "state": "glowing", "overrides": { "holoStrength": 1 } },
-    { "id": "orbs-glow-heavy", "label": "Orbs · working + glow (heavy)", "state": "working", "overrides": { "glowStrength": 1 } },
-    { "id": "signal-veil", "label": "Signal · veil (light volume)", "state": "veil", "overrides": { "audioLevel": 0.6 } },
-    { "id": "signal-crystal", "label": "Signal · crystal (light volume, 16 bands)", "state": "crystal", "overrides": { "audioBandCount": 16, "audioBand0": 0.7, "audioBand1": 0.66, "audioBand2": 0.62, "audioBand3": 0.58, "audioBand4": 0.54, "audioBand5": 0.5, "audioBand6": 0.46, "audioBand7": 0.42, "audioBand8": 0.38, "audioBand9": 0.34, "audioBand10": 0.3, "audioBand11": 0.26, "audioBand12": 0.22, "audioBand13": 0.18, "audioBand14": 0.14, "audioBand15": 0.1 } },
-    { "id": "signal-dune", "label": "Signal · dune (light volume)", "state": "dune", "overrides": { "progress": 0.6 } }
+    {"id": "orbs-breathing", "label": "Orbs \u00b7 breathing", "state": "breathing", "overrides": {}},
+    {"id": "orbs-glow-heavy", "label": "Orbs \u00b7 working + glow (heavy)", "state": "working", "overrides": {"glowStrength": 1}},
+    {"id": "signal-veil", "label": "Signal \u00b7 veil (light volume)", "state": "veil", "overrides": {"audioLevel": 0.6}},
+    {"id": "signal-crystal", "label": "Signal \u00b7 crystal (light volume, 16 bands)", "state": "crystal", "overrides": {"audioBandCount": 16, "audioBand0": 0.7, "audioBand1": 0.66, "audioBand2": 0.62, "audioBand3": 0.58, "audioBand4": 0.54, "audioBand5": 0.5, "audioBand6": 0.46, "audioBand7": 0.42, "audioBand8": 0.38, "audioBand9": 0.34, "audioBand10": 0.3, "audioBand11": 0.26, "audioBand12": 0.22, "audioBand13": 0.18, "audioBand14": 0.14, "audioBand15": 0.1}},
+    {"id": "signal-dune", "label": "Signal \u00b7 dune (light volume)", "state": "dune", "overrides": {"progress": 0.6}},
+    {"id": "signal-comet", "label": "Signal \u00b7 comet (light volume)", "state": "comet", "overrides": {"level": 0.6}},
+    {"id": "signal-flow", "label": "Signal \u00b7 flow (light volume)", "state": "flow", "overrides": {"level": 0.6}},
+    {"id": "signal-cohesion", "label": "Signal \u00b7 cohesion (light volume)", "state": "cohesion", "overrides": {"quality": 0.5}},
+    {"id": "signal-scan", "label": "Signal \u00b7 scan (light volume)", "state": "scan", "overrides": {"blips": 7}},
+    {"id": "signal-constellation", "label": "Signal \u00b7 constellation (light volume)", "state": "constellation", "overrides": {"progress": 0.5}},
+    {"id": "signal-ripple", "label": "Signal \u00b7 ripple (light volume)", "state": "ripple", "overrides": {"level": 0.6}},
+    {"id": "signal-broadcast", "label": "Signal \u00b7 broadcast (light volume)", "state": "broadcast", "overrides": {"level": 0.6}},
+    {"id": "signal-halo", "label": "Signal \u00b7 halo (light volume)", "state": "halo", "overrides": {"accuracy": 0.5}}
   ]
 }

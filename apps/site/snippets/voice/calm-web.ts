@@ -7,7 +7,7 @@ const voice = new LocalMicVoiceSource();
 // The voice states add a glow and a pulse; your overrides go on top of them,
 // in every state. Here: a softer glow and no pulse.
 export const fx = mount(canvas, {
-  pattern: "waveform",
+  pattern: "veil",
   voice,
   overrides: { glowStrength: 0.15, pulseStrength: 0 },
 });

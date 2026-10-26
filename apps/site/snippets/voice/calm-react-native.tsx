@@ -7,7 +7,7 @@ export function CalmSignal() {
   // in every state. Here: a softer glow and no pulse.
   return (
     <SinuaView
-      pattern="waveform"
+      pattern="veil"
       overrides={{ glowStrength: 0.15, pulseStrength: 0 }}
       voice={voice}
       style={{ width: 220, height: 120 }}

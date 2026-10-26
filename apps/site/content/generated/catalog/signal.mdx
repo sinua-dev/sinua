@@ -74,8 +74,8 @@ The signal component is `SinuaSignal`. Pick a look with `pattern`; each pattern 
 | Prop | Category | Type | Range | Default | Description |
 |---|---|---|---|---|---|
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
-| `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: a stronger second front and a shimmer across the slab (thinking, processing). Its pace is the view's speed. |
-| `level` | Inputs | number | 0–1 fraction | 0 | How strongly the fronts light the slab, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps sweeping. |
+| `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: a stronger second front and a shimmer across the sheet (thinking, processing). Its pace is the view's speed. |
+| `level` | Inputs | number | 0–1 fraction | 0 | How strongly the fronts light the sheet, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps sweeping. |
 
 ### Cohesion [#cohesion]
 
@@ -140,4 +140,4 @@ The signal component is `SinuaSignal`. Pick a look with `pattern`; each pattern 
 | `ink` | Appearance | number | 0–1 fraction | 1 | How present the whole visual is: 1 draws it as the pattern defines it, lower fades everything including its halos. A voice assistant rests below 1 when idle and comes to full ink when it listens. |
 | `churn` | Motion | number | 0–1 fraction | 0 | Restless work, 0 to 1: the cloud trembles (thinking, processing). |
 | `accuracy` | Inputs | number | 0–1 fraction | 1 | How tight the cloud is, 0 to 1: 1 (the default) is on the core, 0 is wide. |
-| `level` | Inputs | number | 0–1 fraction | 0 | How brightly the core burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it burns at a quiet default. |
+| `level` | Inputs | number | 0–1 fraction | 0 | How brightly the core burns and how far the cloud swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it burns at a quiet default. |

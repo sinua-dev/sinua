@@ -27,13 +27,13 @@ A point is lit by its depth and drawn as a soft glow; on a dark background the g
 | `crystal` | `crystal` | `modes/crystal.rs` | A crystal filled from below: each column lights up to its value, unlit cells stay as dust | the bands fill the columns | `level` fills it as one value (a battery, a quota, a goal) |
 | `dune` | `dune` | `modes/dune.rs` | A dune: a series is its profile, the done part glows, a plane of light marks the position (box layout) | a clip's `envelope` + `progress` | a long task's `progress` |
 | `comet` | `comet` | `modes/comet.rs` | A stream of 260 points orbiting a faint core sphere: the head leads, the tail breathes with the noise, the hue runs from head to tail | `level` sets the brightness and the tail length | waiting with no end in sight; `churn` lengthens and brightens the tail |
-| `flow` | `flow` | `modes/flow.rs` | About 800 scattered points in a slab; a front sweeps across with a noisy pace and a fainter second front follows 1.6 s behind; points light as it passes | `level` sets how strongly the fronts light it | something is being made; `churn` strengthens the second front and adds a shimmer |
+| `flow` | `flow` | `modes/flow.rs` | About 800 points in a sheet; a front with a sharp leading edge sweeps across with a noisy pace, lifts the sheet into a crest and leaves a fading trail, and a fainter second front follows 1.6 s behind | `level` sets how strongly the fronts light it | something is being made; `churn` strengthens the second front and adds a shimmer |
 | `cohesion` | `cohesion` | `modes/cohesion.rs` | A sphere of about 450 points that loses its place point by point as `quality` falls: each point lets go at its own threshold, drifts apart and warms to amber; it re-gathers when `quality` rises | `level` sets the brightness | how well something holds (a connection, a match); `churn` adds a tremor and a brighter sphere: trying again |
 | `scan` | `scan` | `modes/scan.rs` | A tilted disc of about 900 points and a beam sweeping it; the beam lights what it passes, found points flash white and burn down over about 2.2 s | `level` sets the beam's brightness | looking for something; `blips` is how many are found, `churn` lengthens the trail: still searching |
 | `constellation` | `constellation` | `modes/constellation.rs` | `steps` clouds of about 110 points on a ring seen from above: done steps are tight and bright, the current one gathers out of dust, the ones to come hang loose and dim | `level` sets the brightness | a task in stages; `progress` runs over all steps (an equal share each), with none the first step is done and the next gathers and loosens on its own; `churn` makes the clouds shimmer |
 | `ripple` | `ripple` | `modes/ripple.rs` | Crinkled shells of warm amber light (up to about 300 points each) spreading from a warm core and fading as they grow; a shell leaves about every 1.6 s on a hash-jittered beat | `level` sets the brightness | something happened, look here; `churn` fades in a second train of shells |
 | `broadcast` | `broadcast` | `modes/broadcast.rs` | Two fans of light opening left and right of a small white core, a front after a front (life 1.6 s) | louder fronts burn brighter and a second train fades in; quiet they are few and faint (every live front shares the current level) | sending, speaking out; `churn` fades in a second train: waiting on a reply |
-| `halo` | `halo` | `modes/halo.rs` | A small bright core and a cloud of about 700 points that tightens onto it as `accuracy` rises; a thin shell travels from core to edge every 1.4 s | `level` sets the brightness | how sure a position is; `churn` makes the cloud tremble and brighten |
+| `halo` | `halo` | `modes/halo.rs` | A bright core and a cloud of about 700 points that tightens onto it as `accuracy` rises; a ring of light travels from core to edge every 1.4 s | `level` sets the brightness | how sure a position is; `churn` makes the cloud tremble and brighten |
 
 - **The inputs are generic, not tied to the voice.** A shape reads them in this order:
   1. its own value (`level` or `progress`), from the app or an FX Spec binding;
@@ -48,7 +48,7 @@ A point is lit by its depth and drawn as a soft glow; on a dark background the g
   | `comet` | `level` | 0..1 | a bound voice's level, else low | brightness and tail length (the tail runs 1.3 to 3.2 rad) |
   | `comet` | `churn` | 0..1 | 0 | a longer, brighter tail |
   | `flow` | `level` | 0..1 | a bound voice's level, else low | how strongly the fronts light the points |
-  | `flow` | `churn` | 0..1 | 0 | a stronger second front and a shimmer over the slab |
+  | `flow` | `churn` | 0..1 | 0 | a stronger second front and a shimmer over the sheet |
   | `cohesion` | `quality` | 0..1 | 1 (whole) | how many points hold their place; also a binding target (`bindings.quality`) |
   | `cohesion` | `level` | 0..1 | a bound voice's level, else low | brightness |
   | `cohesion` | `churn` | 0..1 | 0 | a tremor and a brighter sphere |
@@ -71,7 +71,7 @@ A point is lit by its depth and drawn as a soft glow; on a dark background the g
   `speed` (phase-continuous).
 - **Tags, not locks.** The catalog tags each one `voice` and `status`; any input fits any shape.
 - **Voice states** come from the profile:
-  - `churn` 1 while thinking;
+  - `churn` 1 while thinking; `halo` listening is a wide cloud (`accuracy` 0.55) and speaking a tight one (`accuracy` 1);
   - thinking gets its own speed on the newer volumes: `comet` 1.5x, `flow` 1.35x, `scan` 1.6x, `halo` 1.35x (`constellation`, `ripple` and `broadcast` keep the view's speed: their phase is absolute in time, so a speed change would show different shells);
   - the generic swell, glow, pulse and colour mix are off, since a light volume draws its own light.
 - **Point budget:** about 150 points at 48 px, 420 at 128 px and 1,000 from 256 px. A small view drops depth

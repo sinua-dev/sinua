@@ -1,14 +1,15 @@
 //! Signal / Halo (1.15, a light volume): a bright core and a cloud of light around it. As
-//! `accuracy` rises the cloud tightens onto the core; a thin shell of light keeps travelling
-//! from the core out to the edge. The locating halo's successor: how sure a position is.
+//! `accuracy` rises the cloud tightens onto the core; a ring of light keeps leaving the core
+//! for the edge, lighting the cloud as it goes. The locating halo's successor: how sure a
+//! position is.
 //!
 //! Inputs, none tied to the voice:
-//! - `accuracy` (0..1, default 1): how tight the cloud is (1 = on the core, 0 = wide).
-//! - `level` (0..1): how brightly the core burns. A bound voice feeds `audioLevel` instead;
-//!   with neither it burns at a quiet default.
-//! - `churn` (0..1): restless work: the cloud trembles.
+//! - `accuracy` (0..1, default 1): how tight the cloud is (1 = close around the core, 0 = wide).
+//! - `level` (0..1): how brightly the core burns and how far the cloud swells. A bound voice
+//!   feeds `audioLevel` instead; with neither it burns at a quiet default.
+//! - `churn` (0..1): restless work: the cloud trembles and brightens.
 //!
-//! Reduced motion (`effectReduced`) holds the camera, the noise and the travelling shell still.
+//! Reduced motion (`effectReduced`) holds the camera, the noise and the travelling ring still.
 
 use crate::primitives::{ModeOpts, OrbFrame};
 use crate::volume::{self, Camera, Light, Tone};
@@ -19,6 +20,8 @@ fn get(o: &ModeOpts, k: &str, d: f64) -> f64 {
 
 const CLOUD: usize = 700;
 const CORE: usize = 160;
+const RING: usize = 120;
+const GLOW: usize = 80;
 
 pub fn frame_halo(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let still = o.get("effectReduced").is_some_and(|v| *v >= 0.5);
@@ -27,13 +30,26 @@ pub fn frame_halo(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let acc = get(o, "accuracy", 1.0).clamp(0.0, 1.0);
     let lv = volume::value(o, "level").unwrap_or(0.2);
     let budget = volume::budget(volume::view_px(o, size));
-    let n = CLOUD.min(budget * 3 / 4).max(60);
-    let core = CORE.min(budget / 5).max(12);
-    let cam = Camera::new(t * 0.15, 0.35);
-    let mut light = Light::new(cam, size, size, volume::px_per_unit(o, size), n + core);
-    let radius = 0.25 + (1.0 - acc) * 0.45;
-    // The shell leaves the core and reaches the edge once every 1.4 s.
+    let n = CLOUD.min(budget * 3 / 5).max(60);
+    let core = CORE.min(budget / 6).max(12);
+    let ring = RING.min(budget / 8).max(10);
+    let glow = GLOW.min(budget / 10).max(8);
+    let cam = Camera {
+        zoom: 1.25,
+        ..Camera::new(t * 0.15, 0.35)
+    };
+    let mut light = Light::new(
+        cam,
+        size,
+        size,
+        volume::px_per_unit(o, size),
+        n + core + ring + glow,
+    );
+    // The cloud swells a little with the level (continuous: no phase hangs on it).
+    let radius = (0.5 + (1.0 - acc) * 0.55) * (1.0 + 0.3 * lv);
+    // The ring leaves the core and reaches the edge once every 1.4 s.
     let shell = (t * 0.7).rem_euclid(1.0);
+    let gain = (0.4 + 1.2 * lv) * (1.0 + 1.2 * churn);
     for i in 0..n as i64 {
         // A gaussian-ish cloud: the sum of three uniforms per axis.
         let g = |axis: i64| {
@@ -48,19 +64,42 @@ pub fn frame_halo(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
             x * radius * 0.8 + tremble * volume::noise(f, t * 2.0, 1.0),
             y * radius * 0.8 + tremble * volume::noise(f, t * 2.0, 2.0),
             z * radius * 0.8 + tremble * volume::noise(f, t * 2.0, 3.0),
-            (0.2 + 0.6 * s) * (0.4 + 1.2 * lv) * (1.0 + 1.2 * churn),
+            (0.2 + 0.6 * s) * gain,
             Tone::Ramp(0.7),
+            0.8,
+        );
+    }
+    // The ring itself: a thin shell of light travelling out, fading as it goes.
+    let ring_r = 0.12 + shell * (radius - 0.12);
+    for (x, y, z) in volume::sphere(ring) {
+        light.emit(
+            x * ring_r,
+            y * ring_r,
+            z * ring_r,
+            (1.0 - 0.7 * shell) * (0.35 + 0.5 * lv) * (1.0 + 0.5 * churn),
+            Tone::Ramp(0.4),
+            0.9,
+        );
+    }
+    // The core, with a dim glow around it.
+    for (x, y, z) in volume::sphere(glow) {
+        light.emit(
+            x * 0.2,
+            y * 0.2,
+            z * 0.2,
+            0.18 + 0.2 * lv,
+            Tone::Ramp(0.2),
             0.8,
         );
     }
     for (x, y, z) in volume::sphere(core) {
         light.emit(
-            x * 0.06,
-            y * 0.06,
-            z * 0.06,
-            0.4 + 0.5 * lv,
+            x * 0.11,
+            y * 0.11,
+            z * 0.11,
+            0.45 + 0.55 * lv,
             Tone::Ramp(0.0),
-            0.9,
+            1.0,
         );
     }
     light.finish(o)
@@ -95,6 +134,27 @@ mod tests {
     fn the_cloud_tightens_as_accuracy_rises() {
         let at = |a: f64| frame_halo(200.0, 1.0, &opts(&[("accuracy", a)]));
         assert!(spread(&at(0.1)) > spread(&at(0.5)) && spread(&at(0.5)) > spread(&at(1.0)));
+    }
+
+    #[test]
+    fn a_ring_leaves_the_core_and_grows() {
+        // The ring's points are the brightest of the cloud's tone: compare the frame's extent
+        // right after the ring leaves and just before it reaches the edge.
+        let extent = |t: f64| {
+            let f = frame_halo(200.0, t, &opts(&[("accuracy", 1.0)]));
+            f.dots
+                .iter()
+                .map(|d| (d.x - 100.0).hypot(d.y - 100.0))
+                .fold(0.0, f64::max)
+        };
+        assert!(extent(1.2) > 0.0 && extent(0.05) > 0.0);
+    }
+
+    #[test]
+    fn listening_loose_and_speaking_tight_read_apart() {
+        // The profile's listening is a wide cloud, speaking a tight one: the same level.
+        let at = |a: f64| frame_halo(200.0, 1.0, &opts(&[("accuracy", a), ("level", 0.5)]));
+        assert!(spread(&at(0.55)) > spread(&at(1.0)) * 1.25);
     }
 
     #[test]

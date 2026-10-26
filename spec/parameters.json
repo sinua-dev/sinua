@@ -301,7 +301,7 @@
       "category": "motion",
       "choices": null,
       "deprecated": null,
-      "description": "Restless work, 0 to 1: a stronger second front and a shimmer across the slab (thinking, processing). Its pace is the view's speed.",
+      "description": "Restless work, 0 to 1: a stronger second front and a shimmer across the sheet (thinking, processing). Its pace is the view's speed.",
       "fallback": 0,
       "group": "style",
       "if": null,
@@ -1779,7 +1779,7 @@
       "category": "input",
       "choices": null,
       "deprecated": null,
-      "description": "How strongly the fronts light the slab, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps sweeping.",
+      "description": "How strongly the fronts light the sheet, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps sweeping.",
       "fallback": 0,
       "group": "value",
       "if": null,
@@ -1802,7 +1802,7 @@
       "category": "input",
       "choices": null,
       "deprecated": null,
-      "description": "How brightly the core burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it burns at a quiet default.",
+      "description": "How brightly the core burns and how far the cloud swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it burns at a quiet default.",
       "fallback": 0,
       "group": "value",
       "if": null,
@@ -5543,7 +5543,7 @@
           ]
         },
         {
-          "description": "A front of light sweeping through a slab of points, a fainter one trailing it. Something is being made: it lights with a voice or any 0 to 1 value and shimmers while work goes on.",
+          "description": "A front of light sweeping across a sheet of points: a sharp leading edge that lifts the sheet into a crest, a fading trail, a fainter front following. Something is being made: it lights with a voice or any 0 to 1 value and shimmers while work goes on.",
           "id": "flow",
           "label": "Flow",
           "mode": "flow",
@@ -5825,7 +5825,7 @@
           ]
         },
         {
-          "description": "A bright core and a cloud of light around it that tightens onto the core as accuracy rises, with a shell travelling out from the core. How sure a position is.",
+          "description": "A bright core and a cloud of light around it that tightens onto the core as accuracy rises, with a ring of light travelling out from the core. How sure a position is.",
           "id": "halo",
           "label": "Halo",
           "mode": "halo",

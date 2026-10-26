@@ -58,7 +58,7 @@ pub fn frame_constellation(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
         } else if f > 0.0 {
             0.25 + 0.6 * f
         } else {
-            0.2
+            0.34
         };
         for i in 0..per {
             let (px, py, pz) = sphere[(i * 8 + s * 13) % sphere.len()];
@@ -70,7 +70,7 @@ pub fn frame_constellation(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
                 cz + pz * radius * (1.0 + n),
                 b * gain,
                 Tone::Ramp(s as f64 / (steps - 1) as f64),
-                if finished { 1.1 } else { 0.8 },
+                if finished { 1.1 } else { 0.9 },
             );
         }
     }

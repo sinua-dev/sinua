@@ -8,7 +8,7 @@
 | `SinuaSignal` | `progress` | `dune` | number | 0–1 fraction | How much is done, 0 to 1: a clip's position or a long task's progress. The done part glows. Left out, the plane drifts across on its own. |
 | `SinuaSignal` | `envelope` | `dune` | number[] (1–64) | 0–1 fraction | The dune's profile, 0 to 1 per value (a clip's loudness or any series; up to 64). Without it a fixed dune is drawn. |
 | `SinuaSignal` | `level` | `comet` | number | 0–1 fraction | How brightly and how long the stream burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps circling. |
-| `SinuaSignal` | `level` | `flow` | number | 0–1 fraction | How strongly the fronts light the slab, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps sweeping. |
+| `SinuaSignal` | `level` | `flow` | number | 0–1 fraction | How strongly the fronts light the sheet, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low and keeps sweeping. |
 | `SinuaSignal` | `level` | `cohesion` | number | 0–1 fraction | How brightly the sphere burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it glows low. |
 | `SinuaSignal` | `quality` | `cohesion` | number | 0–1 fraction | How whole the sphere is, 0 to 1: as it falls the points let go one by one and warm to amber; 1 (the default) is whole. |
 | `SinuaSignal` | `blips` | `scan` | integer | 0–12 | How many points the scan has found, 0 to 12: each flashes white as the beam reaches it and burns down. |
@@ -18,6 +18,6 @@
 | `SinuaSignal` | `level` | `ripple` | number | 0–1 fraction | How brightly the shells burn, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither they burn at a quiet default. |
 | `SinuaSignal` | `level` | `broadcast` | number | 0–1 fraction | How strongly the fronts burn and how often they leave, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither a slow swell stands in. |
 | `SinuaSignal` | `accuracy` | `halo` | number | 0–1 fraction | How tight the cloud is, 0 to 1: 1 (the default) is on the core, 0 is wide. |
-| `SinuaSignal` | `level` | `halo` | number | 0–1 fraction | How brightly the core burns, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it burns at a quiet default. |
+| `SinuaSignal` | `level` | `halo` | number | 0–1 fraction | How brightly the core burns and how far the cloud swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it burns at a quiet default. |
 | every object | `audioLevel` | every pattern | number | 0–1 | The live voice level 0 to 1; drives the radial breathing pulse on any pattern. |
 | every object | `muted` | every pattern | number | 0–1 | The mute / connection-lost cue, 0 to 1. |

@@ -38,8 +38,9 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   own, a bound voice feeds `level`, and thinking runs at its own speed.
   - `comet`: waiting with no end in sight. 260 points orbit a faint core; the head leads and the
     tail breathes. Keys `level` (brightness and tail length), `churn` (a longer, brighter tail).
-  - `flow`: something is being made. About 800 points in a slab light as a front sweeps over them,
-    with a fainter second front behind. Keys `level`, `churn` (a stronger second front).
+  - `flow`: something is being made. About 800 points form a sheet; a front with a sharp leading
+    edge sweeps across it, lifts it into a crest and leaves a fading trail, with a fainter second
+    front behind. Keys `level`, `churn` (a stronger second front).
   - `cohesion`: how well something holds. A sphere of about 450 points that lets go point by point
     (and warms to amber) as `quality` falls, and gathers again as it rises. Keys `quality`, `level`,
     `churn` (a tremor: trying again).
@@ -74,8 +75,10 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
     few and faint. Every live front shares the current level. Keys `level`, `churn` (a steady
     stream with no level: waiting on a reply).
   - `halo`: how sure a position is. A small bright core and a cloud of about 700 points that
-    tightens onto it as `accuracy` rises; a thin shell travels from core to edge every 1.4 s. Keys
-    `accuracy`, `level` (brightness), `churn` (the cloud trembles and brightens).
+    tightens onto it as `accuracy` rises; a ring of light travels from core to edge every 1.4 s. In
+    voice use the profile makes listening a wide cloud (`accuracy` 0.55) and speaking a tight one
+    (`accuracy` 1). Keys `accuracy`, `level` (brightness, and the cloud swells a little with it),
+    `churn` (the cloud trembles and brightens).
 - **Reactive target `accuracy`** (`halo`), 0..1, default 1, bindable (`bindings.accuracy`, FX Spec
   1.15). Bound on a pattern that doesn't read it, it warns. `progress` is now also read by
   `constellation`.
@@ -83,6 +86,12 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   and time, plus `constellation` `progress` 0.5 with `steps` 5, `ripple` `churn` 1, `broadcast`
   `level` 0.8 and `halo` `accuracy` 0.4) and 12 `resolved` entries, nothing changed; 19 frozen
   states. The FX Spec locks are unchanged. Native old-painter parity skips the light volumes (11 now).
+- **Look fix for `flow`, `halo` and `constellation`, golden vectors 6.2.0 to 6.3.0.** The three
+  light volumes are unreleased, so their frames were re-baselined: 39 digests changed, none added
+  or removed, nothing else changed. `flow` is a sheet with a sharp front and a crest instead of a
+  scatter lit by a blob; `halo` is bigger, with a visible travelling ring; `constellation`'s waiting
+  clouds are brighter. No new keys. Size, release variant (web `inline.js` / Android arm64 `.so` / iOS device `.a`):
+  295,428 / 1,396,464 / 3,563,480 (+256 / +2,992 / +3,376).
 - Size of the four volumes added in S3 (release variant, bytes: web `inline.js` / Android arm64
   `.so` / iOS device `.a`): 295,172 / 1,393,472 / 3,560,104 (the S3 four add 5,300 / 23,320 / 26,032).
 - Size of the S2 four volumes (release variant, bytes: web `inline.js` / Android arm64 `.so` / iOS

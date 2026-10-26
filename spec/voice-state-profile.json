@@ -811,7 +811,7 @@
       }
     },
     "halo": {
-      "$comment": "HALO. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level. The pace is the view's `speed`: thinking sweeps the shell faster.",
+      "$comment": "HALO. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level. Listening is a wide cloud (`accuracy` 0.55: tuning in) and speaking a tight one (`accuracy` 1: locked on). The pace is the view's `speed`: thinking sweeps the ring faster.",
       "states": {
         "initializing": {
           "overrides": {
@@ -835,6 +835,7 @@
         },
         "listening": {
           "overrides": {
+            "accuracy": 0.55,
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,
@@ -856,6 +857,7 @@
         },
         "speaking": {
           "overrides": {
+            "accuracy": 1,
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,

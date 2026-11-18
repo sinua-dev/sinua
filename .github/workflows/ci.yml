@@ -371,7 +371,7 @@ jobs:
     name: Android (bindings + JVM tests, instrumented tests on an emulator)
     # Linux + KVM: android-emulator-runner's recommended setup (hardware-
     # accelerated, faster and cheaper than macOS runners). The image ships
-    # NDK 27 at $ANDROID_NDK_HOME and JDK 17 as default.
+    # NDK 27 at $ANDROID_NDK_HOME; the JDK is pinned below (the image's default is newer).
     runs-on: ubuntu-latest
     env:
       API_LEVEL: 35
@@ -398,6 +398,13 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-ndk@4.1.2
+      # ubuntu-latest moved to ubuntu-26.04 (2026-11), whose default JDK is 25; Gradle 8.9 cannot
+      # read Java 25 class files ("Unsupported class file major version 69"). Pin the JDK the
+      # project has always built on.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
       - uses: gradle/actions/setup-gradle@v6
       # scripts/lint-kotlin.sh fetches a pinned ktlint CLI (81 MB) into .cache/
       # rather than adding a Gradle plugin, because three areas build

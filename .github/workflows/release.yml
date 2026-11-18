@@ -104,6 +104,11 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-ndk@4.1.2
+      # The runner's default JDK is 25 on ubuntu-26.04; Gradle 8.9 needs 17-21. Same pin as ci.yml.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
       - uses: gradle/actions/setup-gradle@v6
       - name: Build the bindings + jniLibs
         # The published variant: no Studio / dev exports (design note 34).

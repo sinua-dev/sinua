@@ -1,6 +1,8 @@
-//! Signal / Constellation (1.15, a light volume): steps as clouds of light on a ring. A done
-//! step is tight and bright, the current one gathers out of dust, the ones to come hang loose
-//! and dim. The segmented ring's successor: a task in stages.
+//! Signal / Constellation (1.15, a light volume): steps as clouds of light on a circle. The
+//! steps fill one after another around it, starting at the top and going clockwise: a done
+//! step is tight and bright, the current one gathers out of dust, and the ones still to come are
+//! very faint, small clouds on a faint path of the circle. The segmented ring's successor: a task
+//! in stages.
 //!
 //! Inputs, none tied to the voice:
 //! - `progress` (0..1): how far through all the steps; each step takes an equal share. With
@@ -11,8 +13,8 @@
 //!   with neither they burn at a quiet default.
 //! - `churn` (0..1): restless work: the clouds shimmer.
 //!
-//! The camera looks down on the ring. Reduced motion (`effectReduced`) holds the camera and
-//! the noise still.
+//! The camera is fixed, a little off the vertical so the circle reads as a circle. Reduced
+//! motion (`effectReduced`) holds the noise still.
 
 use crate::primitives::{ModeOpts, OrbFrame};
 use crate::volume::{self, Camera, Light, Tone};
@@ -23,6 +25,8 @@ fn get(o: &ModeOpts, k: &str, d: f64) -> f64 {
 
 const CLOUD: usize = 110;
 const RING: f64 = 0.72;
+/// Points on the faint path of the circle.
+const PATH: usize = 120;
 
 fn smooth(t: f64) -> f64 {
     t * t * (3.0 - 2.0 * t)
@@ -36,7 +40,8 @@ pub fn frame_constellation(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let lv = volume::value(o, "level").unwrap_or(0.3);
     let gain = 0.6 + 0.9 * lv;
     let budget = volume::budget(volume::view_px(o, size));
-    let per = CLOUD.min(budget / steps).max(10);
+    let per = CLOUD.min(budget / (steps + 1)).max(10);
+    let path = PATH.min(budget / 6).max(24);
     // How many steps are done: the value's share, or a slow sway.
     let done = match o.get("progress") {
         Some(p) => p.clamp(0.0, 1.0) * steps as f64,
@@ -44,23 +49,36 @@ pub fn frame_constellation(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
         // running at different speeds never show different steps.
         None => 1.0 + 0.9 * (0.5 + 0.5 * (t * 0.5).sin()),
     };
-    let cam = Camera::new(t * 0.15, 0.7);
-    let mut light = Light::new(cam, size, size, volume::px_per_unit(o, size), per * steps);
+    // A fixed view, a little off the vertical.
+    let cam = Camera::new(0.0, 0.95);
+    let mut light = Light::new(
+        cam,
+        size,
+        size,
+        volume::px_per_unit(o, size),
+        per * steps + path,
+    );
     let sphere = volume::sphere(900);
     for s in 0..steps {
         let a = s as f64 / steps as f64 * std::f64::consts::TAU - std::f64::consts::FRAC_PI_2;
         let (cx, cz) = (a.cos() * RING, a.sin() * RING);
         let f = (done - s as f64).clamp(0.0, 1.0);
         let finished = f >= 1.0;
-        let radius = 0.42 + (0.14 - 0.42) * smooth(f);
-        let b = if finished {
-            0.8
-        } else if f > 0.0 {
-            0.25 + 0.6 * f
+        // Waiting: a small, very faint cloud; the current step grows out of it; done is tight.
+        let waiting = f <= 0.0;
+        let radius = if waiting {
+            0.28
         } else {
-            0.34
+            0.28 + (0.14 - 0.28) * smooth(f)
         };
-        for i in 0..per {
+        let (b, npts, sz) = if finished {
+            (0.8, per, 1.1)
+        } else if !waiting {
+            (0.07 + 0.78 * f, per, 0.9)
+        } else {
+            (0.07, per * 6 / 10, 0.7)
+        };
+        for i in 0..npts {
             let (px, py, pz) = sphere[(i * 8 + s * 13) % sphere.len()];
             let n =
                 volume::noise(i as f64 * 0.2, s as f64, t * 0.6) * (0.25 * (1.0 - f) + 0.2 * churn);
@@ -70,9 +88,21 @@ pub fn frame_constellation(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
                 cz + pz * radius * (1.0 + n),
                 b * gain,
                 Tone::Ramp(s as f64 / (steps - 1) as f64),
-                if finished { 1.1 } else { 0.9 },
+                sz,
             );
         }
+    }
+    // The path the steps sit on.
+    for i in 0..path {
+        let a = i as f64 / path as f64 * std::f64::consts::TAU;
+        light.emit(
+            a.cos() * RING,
+            0.0,
+            a.sin() * RING,
+            0.08 * gain,
+            Tone::Ramp(0.5),
+            0.55,
+        );
     }
     light.finish(o)
 }

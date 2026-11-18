@@ -300,8 +300,7 @@ export type SinuaSignalPattern =
   | "scan"
   | "constellation"
   | "ripple"
-  | "broadcast"
-  | "halo";
+  | "broadcast";
 
 /** Signal parameters; unset ones keep the pattern's values. */
 export interface SinuaSignalParams {
@@ -311,7 +310,7 @@ export interface SinuaSignalParams {
   layerCount?: number;
   /** Restless work, 0 to 1: the sheet keeps moving with no level (thinking, processing). Range 0...1 (fraction). */
   churn?: number;
-  /** How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own. Range 0...1 (fraction). Patterns: veil, crystal, comet, flow, cohesion, scan, constellation, ripple, broadcast, halo. */
+  /** How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own. Range 0...1 (fraction). Patterns: veil, crystal, comet, flow, cohesion, scan, constellation, ripple, broadcast. */
   level?: number;
   /** Columns of cells, one per band or value. Range 4...24. Patterns: crystal. */
   columnCount?: number;
@@ -325,8 +324,6 @@ export interface SinuaSignalParams {
   blips?: number;
   /** How many clouds of light, 2 to 8. Range 2...8. Patterns: constellation. */
   steps?: number;
-  /** How tight the cloud is, 0 to 1: 1 (the default) is on the core, 0 is wide. Range 0...1 (fraction). Patterns: halo. */
-  accuracy?: number;
   glow?: SinuaGlow;
   noise?: SinuaNoise;
   pulse?: SinuaPulse;
@@ -334,7 +331,7 @@ export interface SinuaSignalParams {
   color?: SinuaColor;
 }
 
-const SIGNAL_TABLE: Table = {"ink":{"key":"ink"},"layerCount":{"key":"layerCount"},"churn":{"key":"churn"},"level":{"key":"level"},"columnCount":{"key":"columnCount"},"progress":{"key":"progress"},"envelope":{"key":"envelope","keys":["envelope0","envelope1","envelope2","envelope3","envelope4","envelope5","envelope6","envelope7","envelope8","envelope9","envelope10","envelope11","envelope12","envelope13","envelope14","envelope15","envelope16","envelope17","envelope18","envelope19","envelope20","envelope21","envelope22","envelope23","envelope24","envelope25","envelope26","envelope27","envelope28","envelope29","envelope30","envelope31","envelope32","envelope33","envelope34","envelope35","envelope36","envelope37","envelope38","envelope39","envelope40","envelope41","envelope42","envelope43","envelope44","envelope45","envelope46","envelope47","envelope48","envelope49","envelope50","envelope51","envelope52","envelope53","envelope54","envelope55","envelope56","envelope57","envelope58","envelope59","envelope60","envelope61","envelope62","envelope63"]},"quality":{"key":"quality"},"blips":{"key":"blips"},"steps":{"key":"steps"},"accuracy":{"key":"accuracy"}};
+const SIGNAL_TABLE: Table = {"ink":{"key":"ink"},"layerCount":{"key":"layerCount"},"churn":{"key":"churn"},"level":{"key":"level"},"columnCount":{"key":"columnCount"},"progress":{"key":"progress"},"envelope":{"key":"envelope","keys":["envelope0","envelope1","envelope2","envelope3","envelope4","envelope5","envelope6","envelope7","envelope8","envelope9","envelope10","envelope11","envelope12","envelope13","envelope14","envelope15","envelope16","envelope17","envelope18","envelope19","envelope20","envelope21","envelope22","envelope23","envelope24","envelope25","envelope26","envelope27","envelope28","envelope29","envelope30","envelope31","envelope32","envelope33","envelope34","envelope35","envelope36","envelope37","envelope38","envelope39","envelope40","envelope41","envelope42","envelope43","envelope44","envelope45","envelope46","envelope47","envelope48","envelope49","envelope50","envelope51","envelope52","envelope53","envelope54","envelope55","envelope56","envelope57","envelope58","envelope59","envelope60","envelope61","envelope62","envelope63"]},"quality":{"key":"quality"},"blips":{"key":"blips"},"steps":{"key":"steps"}};
 
 /** The engine overrides a SinuaSignal hands to SinuaView. */
 export function sinuaSignalOverrides(pattern: SinuaSignalPattern, params: SinuaSignalParams): Record<string, number> {

@@ -119,7 +119,7 @@ This follows glTF 2.0's `asset.version` rule: `"major.minor"`. A major version m
     there is no replacement: delete it from the file". A removed pattern named on its own says
     the same; for `completing`, `tracking` and `measuring` it says "its job is covered by
     `crystal` (`level`) or `dune` (`progress`)". Gone with them: the binding targets
-    `progress0..3` and the old `accuracy` (and the old `quality` target; `cohesion` brings a new `quality` back, and `halo` a new `accuracy`), and the array params `progress` (1–4 values) and
+    `progress0..3` and the old `accuracy` (and the old `quality` target; `cohesion` brings a new `quality` back), and the array params `progress` (1–4 values) and
     `segment` (1–24 values).
 
   One value change reaches older files too, under the same 1.14 cleanup: `glowing`'s
@@ -201,7 +201,7 @@ The sections from here on record what each minor added. Since the 1.8 floor thei
 
 ### `bindings`
 - **Keyed by target**, so each target is bound once and a state can override or delete (`null`) one: `"audioLevel": { "input": "micLevel", "inputRange": [0, 1], "outputRange": [0.1, 1], "curve": "easeOut" }`.
-- **Targets come only from the curated Reactive-Inputs contract** ([parameters.md](parameters.md#reactive-inputs-the-public-binding-contract)): `progress` (`dune`, `constellation`, the orb `progressing`), `level` (`veil`, `crystal`, `comet`, `flow`, `cohesion`, `scan`, `constellation`, `ripple`, `broadcast`, `halo`), `quality` (`cohesion`), `accuracy` (`halo`), `audioLevel`, `glowStrength`, `noiseStrength`, `gradientStrength`, `pulseStrength`, `colorMix`, `muted`. Anything else is an error with a hint. Raw opts can't be bound from a spec.
+- **Targets come only from the curated Reactive-Inputs contract** ([parameters.md](parameters.md#reactive-inputs-the-public-binding-contract)): `progress` (`dune`, `constellation`, the orb `progressing`), `level` (`veil`, `crystal`, `comet`, `flow`, `cohesion`, `scan`, `constellation`, `ripple`, `broadcast`), `quality` (`cohesion`), `audioLevel`, `glowStrength`, `noiseStrength`, `gradientStrength`, `pulseStrength`, `colorMix`, `muted`. Anything else is an error with a hint. Raw opts can't be bound from a spec.
 - **Input names are the app's own** (`micLevel`, `steps`, `heartRate`); the engine never interprets them.
 - **Mapping:** the same contract as `bindReactiveInput`, following Motion's `interpolate()`:
   - multi-stop `inputRange`/`outputRange` (field names as in RN's `Animated.interpolate`), ascending or descending;
@@ -347,19 +347,19 @@ How state changes animate, per pair. Optional. Without a rule for a pair, a voic
 ## v1.15: light volumes, and the 0.1.0-beta.12 cleanup
 
 - **New patterns** on `object: "signal"`: `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`,
-  `scan`, `constellation`, `ripple`, `broadcast` and `halo`, light volumes ([`signal.md`](signal.md)). They need `"fxSpec": "1.15"`; an older
+  `scan`, `constellation`, `ripple`, `broadcast`, light volumes ([`signal.md`](signal.md)). They need `"fxSpec": "1.15"`; an older
   file that names one gets an error at that `pattern`. Their inputs are ordinary `params` and
-  bindings: `level` (all but dune), `quality` (cohesion), `accuracy` (halo), `blips` (scan), `steps`
+  bindings: `level` (all but dune), `quality` (cohesion), `blips` (scan), `steps`
   (constellation, integer 2..8, default 5), `progress` (dune, constellation) and `envelope` (dune),
-  `churn` (all eleven). The last eight are new patterns, not aliases of the removed ones; the old
-  names are still rejected. `constellation`, `ripple`, `broadcast` and `halo` cover jobs similar to
-  the removed stepping, ping, broadcasting and locating patterns.
+  `churn` (all ten). The last seven are new patterns, not aliases of the removed ones; the old
+  names are still rejected. `constellation`, `ripple` and `broadcast` cover jobs similar to
+  the removed stepping, ping and broadcasting patterns.
 - **Removed, an error at every version** (see *Versioning*): the flat signal patterns, the
   `character` object with `recipe`, `expression` and `palette`, the orb's `silhouette`
   pattern and key, and the objects `ring`, `core` and `beacon` with all their patterns.
-- **Reactive targets** are now eleven: `progress`, `level`, `quality`, `accuracy`, `audioLevel`,
+- **Reactive targets** are now ten: `progress`, `level`, `quality`, `audioLevel`,
   `glowStrength`, `noiseStrength`, `gradientStrength`, `pulseStrength`, `colorMix` and `muted`;
-  `level`, `quality` and `accuracy` are new (`quality` is read by `cohesion`, `accuracy` by `halo`;
+  `level` and `quality` are new (`quality` is read by `cohesion`;
   bound on another pattern they warn that the pattern doesn't read them). `progress` is also read
   by `constellation`.
 

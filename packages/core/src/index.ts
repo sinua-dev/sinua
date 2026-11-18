@@ -65,7 +65,7 @@ export type OrbState =
   // 1.15 light volumes (`crates/core_engine/src/volume/`): a sheet of light, a crystal
   // filled from below, a dune with a position (box layout), a comet, a flow, a cohesion
   // sphere with a quality, a scan with blips, a constellation of steps, a ripple, a
-  // broadcast and a halo with an accuracy. Any input, not only a voice.
+  // broadcast. Any input, not only a voice.
   | "veil"
   | "crystal"
   | "dune"
@@ -76,7 +76,6 @@ export type OrbState =
   | "constellation"
   | "ripple"
   | "broadcast"
-  | "halo"
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;
 

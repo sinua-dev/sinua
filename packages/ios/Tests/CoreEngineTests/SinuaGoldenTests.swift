@@ -152,7 +152,7 @@ final class SinuaGoldenTests: XCTestCase {
             ($0["patterns"] as? [[String: Any]] ?? []).compactMap { $0["id"] as? String }
         }
         XCTAssertGreaterThanOrEqual(
-            states.count, 28, "only \(states.count) patterns read -- the file or the loader moved")
+            states.count, 27, "only \(states.count) patterns read -- the file or the loader moved")
         for state in states {
             XCTAssertNotNil(CoreEngine.frame(state: state, size: 64, t: 1.0), "\(state) should resolve")
         }

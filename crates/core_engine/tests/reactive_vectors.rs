@@ -28,7 +28,6 @@ fn host(target: &str) -> (&'static str, &'static str) {
         "progress" => ("signal", "dune"),
         "level" => ("signal", "veil"),
         "quality" => ("signal", "cohesion"),
-        "accuracy" => ("signal", "halo"),
         _ => ("orb", "working"),
     }
 }

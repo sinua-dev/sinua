@@ -1,19 +1,13 @@
 {
   "fxSpec": "1.15",
   "name": "Signal keys",
-  "description": "One file, four states, each a different light volume with its own key: cohesion (quality), halo (accuracy), constellation (steps and progress) and scan (blips).",
+  "description": "One file, three states, each a different light volume with its own key: cohesion (quality), constellation (steps and progress) and scan (blips).",
   "object": "signal",
   "pattern": "cohesion",
   "params": {
     "quality": 0.6
   },
   "states": {
-    "tight": {
-      "pattern": "halo",
-      "params": {
-        "accuracy": 0.8
-      }
-    },
     "stages": {
       "pattern": "constellation",
       "params": {

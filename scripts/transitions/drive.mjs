@@ -7,7 +7,7 @@ import { raster, diff } from "./raster.mjs";
 export const core = await import(new URL("../../packages/core/dist/index.js", import.meta.url).href);
 // The catalog is a dev API (@sinua/core/dev); the frames stay on the default build.
 const { parameterCatalog } = await import(new URL("../../packages/core/dist-dev/dev-entry.js", import.meta.url).href);
-export const ORBS = core.ORB_STATES ?? "working searching solving listening connecting weaving composing breathing shaping glowing drifting speaking confirming initializing calibrating progressing muted veil crystal dune comet flow cohesion scan constellation ripple broadcast halo".split(" ");
+export const ORBS = core.ORB_STATES ?? "working searching solving listening connecting weaving composing breathing shaping glowing drifting speaking confirming initializing calibrating progressing muted veil crystal dune comet flow cohesion scan constellation ripple broadcast".split(" ");
 // A new orb or signal pattern must join the list above (one once didn't).
 for (const object of ["orb", "signal"]) {
   const missing = parameterCatalog().objects.find((o) => o.id === object).patterns.map((p) => p.id).filter((id) => !ORBS.includes(id));

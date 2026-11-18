@@ -177,7 +177,6 @@ pub const MODES: &[&str] = &[
     "constellation",
     "ripple",
     "broadcast",
-    "halo",
 ];
 
 /// View px per engine unit: the view draws the frame `viewPx` px across (it sets the key;
@@ -581,7 +580,7 @@ mod dump {
         let states = ["idle", "listening", "thinking", "speaking"];
         // (pattern, the use it shows, its value inputs)
         #[allow(clippy::type_complexity)]
-        let silent: [(&str, &str, Vec<(&str, f64)>); 16] = [
+        let silent: [(&str, &str, Vec<(&str, f64)>); 14] = [
             ("veil", "processing", vec![("churn", 0.6)]),
             ("veil", "value-0.8", vec![("level", 0.8)]),
             ("crystal", "battery-35", vec![("level", 0.35)]),
@@ -595,8 +594,6 @@ mod dump {
             ("scan", "blips-12", vec![("blips", 12.0)]),
             ("constellation", "progress-0.4", vec![("progress", 0.4)]),
             ("constellation", "progress-1", vec![("progress", 1.0)]),
-            ("halo", "accuracy-0.5", vec![("accuracy", 0.5)]),
-            ("halo", "accuracy-0.1", vec![("accuracy", 0.1)]),
             ("broadcast", "level-0.9", vec![("level", 0.9)]),
         ];
         for mode in super::MODES {

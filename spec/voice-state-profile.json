@@ -331,7 +331,7 @@
             "glowStrength": 0,
             "pulseStrength": 0,
             "colorMix": 0,
-            "ink": 0.85,
+            "ink": 0.7,
             "churn": 0
           }
         },
@@ -800,64 +800,6 @@
         },
         "speaking": {
           "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "colorMix": 0,
-            "ink": 1,
-            "churn": 0
-          }
-        }
-      }
-    },
-    "halo": {
-      "$comment": "HALO. 1.15 light volume: it draws its own light, so the generic swell, glow, pulse and colour mix are off. The bound voice (micLevel listening, agentVolume speaking) shapes it through `audioLevel`/bands; thinking is `churn`, restless work with no level. Listening is a wide cloud (`accuracy` 0.55: tuning in) and speaking a tight one (`accuracy` 1: locked on). The pace is the view's `speed`: thinking sweeps the ring faster.",
-      "states": {
-        "initializing": {
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "colorMix": 0,
-            "ink": 0.7,
-            "churn": 0.3
-          }
-        },
-        "idle": {
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "colorMix": 0,
-            "ink": 0.85,
-            "churn": 0
-          }
-        },
-        "listening": {
-          "overrides": {
-            "accuracy": 0.55,
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "colorMix": 0,
-            "ink": 1,
-            "churn": 0
-          }
-        },
-        "thinking": {
-          "speed": 1.35,
-          "overrides": {
-            "audioStrength": 0,
-            "glowStrength": 0,
-            "pulseStrength": 0,
-            "colorMix": 0,
-            "ink": 1,
-            "churn": 1
-          }
-        },
-        "speaking": {
-          "overrides": {
-            "accuracy": 1,
             "audioStrength": 0,
             "glowStrength": 0,
             "pulseStrength": 0,

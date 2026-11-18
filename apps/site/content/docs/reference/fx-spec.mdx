@@ -32,12 +32,12 @@ Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor com
 
 ### 1.15: light volumes, and the 0.1.0-beta.12 cleanup
 
-1.15 adds eleven patterns to `object: "signal"`: `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`, `scan`, `constellation`, `ripple`, `broadcast` and `halo` (see [Signal](/docs/catalog/signal)). They need `"fxSpec": "1.15"`; an older file that names one gets an error at that `pattern`.
+1.15 adds ten patterns to `object: "signal"`: `veil`, `crystal`, `dune`, `comet`, `flow`, `cohesion`, `scan`, `constellation`, `ripple`, `broadcast` (see [Signal](/docs/catalog/signal)). They need `"fxSpec": "1.15"`; an older file that names one gets an error at that `pattern`.
 
 <include lang="json" meta='title="signal-keys.fxspec.json"'>../../../snippets/spec/signal-keys.fxspec.json</include>
 
-- **New keys in `params` and `bindings`:** `level` (every signal pattern but `dune`), `quality` (`cohesion`), `accuracy` (`halo`), `blips` (`scan`), `steps` (`constellation`, a whole number from 2 to 8), `progress` (`dune`, `constellation`), `envelope` (`dune`) and `churn` (all eleven).
-- **Eleven binding targets:** `progress`, `level`, `quality`, `accuracy`, `audioLevel`, `muted` and the material masters (`glow.strength`, `noise.strength`, `gradient.strength`, `pulse.strength`, `color.mix`). A target the pattern doesn't read is a warning. See [Bindings](/docs/connect/bindings).
+- **New keys in `params` and `bindings`:** `level` (every signal pattern but `dune`), `quality` (`cohesion`), `blips` (`scan`), `steps` (`constellation`, a whole number from 2 to 8), `progress` (`dune`, `constellation`), `envelope` (`dune`) and `churn` (all ten).
+- **Ten binding targets:** `progress`, `level`, `quality`, `audioLevel`, `muted` and the material masters (`glow.strength`, `noise.strength`, `gradient.strength`, `pulse.strength`, `color.mix`). A target the pattern doesn't read is a warning. See [Bindings](/docs/connect/bindings).
 - **The examples** that every older version still resolves are three: `voice-assistant`, `voice-assistant-glowing` and `orb-brand-fixed`.
 - Older files resolve exactly as before, apart from what is removed below.
 
@@ -45,11 +45,11 @@ Point `$schema` at `https://sinua.dev/schema/fx-spec-1.json` and your editor com
 
 Every item is an error at every version, with a message that names the replacement where there is one and otherwise says to delete it from the file.
 
-- **The objects `ring`, `core` and `beacon`**, with all their patterns (`completing`, `loading`, `tracking`, `stepping`, `measuring`, `talking`, `generating`, `typing`, `notifying`, `reconnecting`, `locating`, `scanning`, `broadcasting`). `completing`, `tracking` and `measuring` say their job is covered by `crystal` (`level`) or `dune` (`progress`); the others have no replacement. The new `comet`, `flow`, `scan`, `constellation`, `ripple`, `broadcast` and `halo` are new patterns, not aliases.
+- **The objects `ring`, `core` and `beacon`**, with all their patterns (`completing`, `loading`, `tracking`, `stepping`, `measuring`, `talking`, `generating`, `typing`, `notifying`, `reconnecting`, `locating`, `scanning`, `broadcasting`). `completing`, `tracking` and `measuring` say their job is covered by `crystal` (`level`) or `dune` (`progress`); the others have no replacement. The new `comet`, `flow`, `scan`, `constellation`, `ripple`, `broadcast` are new patterns, not aliases.
 - **The flat signal patterns:** `signaling`, `waveform` and `scrolling` say to use `veil`, `metering` says `crystal`, and `playing` says `dune`.
 - **The character family:** `object: "character"` and the keys `recipe`, `expression` and `palette`. No replacement.
 - **The orb's `silhouette`** pattern and key. No replacement.
-- **Binding targets and parameters:** `progress0` to `progress3` (and `progress[0]` to `progress[3]`) and the array parameters `progress` and `segment`. `quality` and `accuracy` are new targets of their own, for `cohesion` and `halo`.
+- **Binding targets and parameters:** `progress0` to `progress3` (and `progress[0]` to `progress[3]`) and the array parameters `progress` and `segment`. `quality` is a new target of its own, for `cohesion`.
 - **Materials:** fills, holes, gradient stops and per-vertex stroke colour no longer exist in the paint contract. The materials left are glow, noise, gradient, pulse and colour.
 
 ### 1.14: the 0.1.0-beta.9 cleanup

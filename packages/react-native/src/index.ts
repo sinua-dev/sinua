@@ -43,8 +43,7 @@ export type OrbState =
   | "scan"
   | "constellation"
   | "ripple"
-  | "broadcast"
-  | "halo";
+  | "broadcast";
 
 /** Mirrors the sizes shipped in `orbs::presets::presets()`. */
 export type OrbSize = 20 | 32 | 64;

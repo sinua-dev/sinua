@@ -505,7 +505,6 @@ pub(crate) fn mode_params(mode: &str) -> &'static [&'static str] {
         "constellation" => &["churn", "level", "progress", "steps"],
         "ripple" => &["churn", "level"],
         "broadcast" => &["churn", "level"],
-        "halo" => &["accuracy", "churn", "level"],
         _ => &[],
     }
 }
@@ -770,7 +769,7 @@ const REMOVED_1_15_PATTERNS: [(&str, Instead); 19] = [
 const REMOVED_1_15_OBJECTS: [&str; 4] = ["character", "ring", "core", "beacon"];
 
 /// Patterns added after the 1.8 floor, with the minor that added them.
-const PATTERN_SINCE: [(&str, u64); 11] = [
+const PATTERN_SINCE: [(&str, u64); 10] = [
     ("veil", 15),
     ("crystal", 15),
     ("dune", 15),
@@ -781,7 +780,6 @@ const PATTERN_SINCE: [(&str, u64); 11] = [
     ("constellation", 15),
     ("ripple", 15),
     ("broadcast", 15),
-    ("halo", 15),
 ];
 
 /// The error for a removed material (or other removed feature) at `path`.
@@ -880,7 +878,6 @@ const SINCE: &[(&str, u64)] = &[
     ("accessibility.announce", 9),
     ("bindings:level", 15),
     ("bindings:quality", 15),
-    ("bindings:accuracy", 15),
 ];
 
 /// A `transitions` entry's keys (1.9).
@@ -1488,10 +1485,8 @@ fn resolve_block(
                 };
                 match crate::reactive::compile(target, inr.as_deref(), outr.as_deref(), &curves) {
                     Ok(m) => {
-                        let mode_specific = matches!(
-                            target.as_str(),
-                            "level" | "progress" | "quality" | "accuracy"
-                        );
+                        let mode_specific =
+                            matches!(target.as_str(), "level" | "progress" | "quality");
                         if mode_specific
                             && !mode.is_empty()
                             && !mode_params(&mode).contains(&target.as_str())
@@ -2341,7 +2336,6 @@ mod tests {
             ),
             ("ripple", include_str!("signal/modes/ripple.rs")),
             ("broadcast", include_str!("signal/modes/broadcast.rs")),
-            ("halo", include_str!("signal/modes/halo.rs")),
             // Characters are recipes (design note 11): the reader, the rig, the
             // turn and the part files each one uses; the keys a recipe names
             // itself (`"gain": "flutterGain"`) are checked below.
@@ -3143,9 +3137,11 @@ mod tests {
         assert!(r.ok && warnings(&r)[0].message.contains("doesn't read `level`"));
         let r = spec(r##"{ "quality": { "input": "x" } }"##);
         assert!(r.ok && warnings(&r)[0].message.contains("doesn't read `quality`"));
-        // A target that is gone (the ring and beacon ones) is not bindable.
+        // A target that is gone (the ring and beacon ones, and `accuracy`) is not bindable.
         let r = spec(r##"{ "accuracy": { "input": "x" } }"##);
-        assert!(r.ok && warnings(&r)[0].message.contains("doesn't read `accuracy`"));
+        assert!(errors(&r).iter().any(
+            |d| d.path == "/bindings/accuracy" && d.message.contains("isn't a bindable target")
+        ));
         let r = spec(r##"{ "progress0": { "input": "x" } }"##);
         assert!(errors(&r)
             .iter()

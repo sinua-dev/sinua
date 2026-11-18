@@ -19,7 +19,6 @@ pub const STATES: &[&str] = &[
     "constellation",
     "ripple",
     "broadcast",
-    "halo",
 ];
 
 fn state_to_mode(state: &str) -> Option<&'static str> {
@@ -35,7 +34,6 @@ fn state_to_mode(state: &str) -> Option<&'static str> {
         "constellation" => Some("constellation"),
         "ripple" => Some("ripple"),
         "broadcast" => Some("broadcast"),
-        "halo" => Some("halo"),
         _ => None,
     }
 }

@@ -32,10 +32,10 @@ pub fn frame_veil(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
         2,
     )
     .max(3);
-    // Zoomed out a little: the sheet's turned near edge stays inside the view.
+    // A fixed angle (no sway), zoomed out a little so the sheet's near edge stays inside the view.
     let cam = Camera {
         zoom: 0.88,
-        ..Camera::new(-0.5 + 0.25 * (t * 0.15).sin(), 0.35)
+        ..Camera::new(-0.5, 0.35)
     };
     let mut light = Light::new(
         cam,

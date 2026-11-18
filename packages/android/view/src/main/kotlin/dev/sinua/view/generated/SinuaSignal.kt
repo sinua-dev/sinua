@@ -29,7 +29,6 @@ enum class SinuaSignalPattern(val id: String) {
     CONSTELLATION("constellation"),
     RIPPLE("ripple"),
     BROADCAST("broadcast"),
-    HALO("halo"),
 }
 
 /** Signal parameters; null keeps the pattern's value. [toOverrides] is what [SinuaSignal] hands to SinuaView. */
@@ -42,7 +41,7 @@ data class SinuaSignalProps(
     val layerCount: Int? = null,
     /** Restless work, 0 to 1: the sheet keeps moving with no level (thinking, processing). Range 0...1 (fraction). */
     val churn: Double? = null,
-    /** How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own. Range 0...1 (fraction). Patterns: veil, crystal, comet, flow, cohesion, scan, constellation, ripple, broadcast, halo. */
+    /** How high the sheet swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither the sheet breathes on its own. Range 0...1 (fraction). Patterns: veil, crystal, comet, flow, cohesion, scan, constellation, ripple, broadcast. */
     val level: Double? = null,
     /** Columns of cells, one per band or value. Range 4...24. Patterns: crystal. */
     val columnCount: Int? = null,
@@ -56,8 +55,6 @@ data class SinuaSignalProps(
     val blips: Int? = null,
     /** How many clouds of light, 2 to 8. Range 2...8. Patterns: constellation. */
     val steps: Int? = null,
-    /** How tight the cloud is, 0 to 1: 1 (the default) is on the core, 0 is wide. Range 0...1 (fraction). Patterns: halo. */
-    val accuracy: Double? = null,
     val glow: SinuaGlow? = null,
     val noise: SinuaNoise? = null,
     val pulse: SinuaPulse? = null,
@@ -76,7 +73,6 @@ data class SinuaSignalProps(
         quality?.let { o["quality"] = it }
         blips?.let { o["blips"] = it.toDouble() }
         steps?.let { o["steps"] = it.toDouble() }
-        accuracy?.let { o["accuracy"] = it }
         glow?.writeTo(o)
         noise?.writeTo(o)
         pulse?.writeTo(o)
@@ -105,7 +101,6 @@ fun SinuaSignal(
     quality: Double? = null,
     blips: Int? = null,
     steps: Int? = null,
-    accuracy: Double? = null,
     glow: SinuaGlow? = null,
     noise: SinuaNoise? = null,
     pulse: SinuaPulse? = null,
@@ -137,7 +132,7 @@ fun SinuaSignal(
     /** A one-shot effect to play (docs/fx-view.md, *One-shot effects*); each new value plays once. */
     effect: SinuaEffectTrigger? = null,
 ) {
-    val overrides = SinuaSignalProps(pattern = pattern, size = size, ink = ink, layerCount = layerCount, churn = churn, level = level, columnCount = columnCount, progress = progress, envelope = envelope, quality = quality, blips = blips, steps = steps, accuracy = accuracy, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color).toOverrides()
+    val overrides = SinuaSignalProps(pattern = pattern, size = size, ink = ink, layerCount = layerCount, churn = churn, level = level, columnCount = columnCount, progress = progress, envelope = envelope, quality = quality, blips = blips, steps = steps, glow = glow, noise = noise, pulse = pulse, gradient = gradient, color = color).toOverrides()
     SinuaView(
         pattern = pattern.id, modifier = modifier, size = size.px, overrides = overrides, speed = speed,
         state = state, inputs = inputs, voice = voice, voiceOverrides = voiceOverrides, theme = theme, paused = paused, reducedMotion = reducedMotion,

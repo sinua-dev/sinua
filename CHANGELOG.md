@@ -27,7 +27,7 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   one gets an error at that `pattern`. Every older minor still resolves as before (its lock lost
   only the examples removed below). The objects `ring`, `core` and `beacon` and their patterns
   are rejected at every version (see *Removed*).
-- **Reactive target `level`** (`veil`, `crystal`, and the four below): the 0..1 value the volume
+- **Reactive target `level`** (`veil`, `crystal`, and the others below): the 0..1 value the volume
   shows, bindable like `progress`.
 - **Four more light volumes: `comet`, `flow`, `cohesion` and `scan`** (`signal`, every platform,
   FX Spec 1.15). Seven signal patterns now, 24 in all (orb 17). They are new patterns, not
@@ -54,19 +54,21 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
   and time, plus `comet` `level` 0.8, `flow` `churn` 1, `cohesion` `quality` 0.4 and `scan`
   `blips` 12) and 12 `resolved` entries, nothing changed; 15 frozen states. The FX Spec locks are
   unchanged.
-- **Four more light volumes: `constellation`, `ripple`, `broadcast` and `halo`** (`signal`, every
-  platform, FX Spec 1.15). Eleven signal patterns now, 28 in all (orb 17). They are new patterns,
+- **Three more light volumes: `constellation`, `ripple` and `broadcast`** (`signal`, every
+  platform, FX Spec 1.15). Ten signal patterns now, 27 in all (orb 17). They are new patterns,
   not replacements or aliases of the removed ones (the old names are still rejected), though they
-  cover similar jobs to the removed stepping, ping, broadcasting and locating patterns. Same light
+  cover similar jobs to the removed stepping, ping and broadcasting patterns. Same light
   rules (`blend` 3, `ink` fades them, reduced motion holds them still, a small view draws fewer
   points). No input is tied to the voice: each lives on its own, a bound voice feeds `level`, and
-  the pace is the view's `speed`. Thinking runs at its own speed on `halo` (1.35x); the others keep the view's speed, so a
-  state change never reshuffles which shells or fronts are alive.
+  the pace is the view's `speed`; thinking keeps the view's speed, so a state change never
+  reshuffles which shells or fronts are alive.
   - `constellation`: a task in stages. `steps` (integer 2..8, default 5) clouds of about 110 points
-    on a ring seen from above; done steps are tight and bright, the current one gathers out of dust,
-    the ones to come hang loose and dim. Keys `progress` (0..1 over all steps, an equal share each;
-    with none the first step is done and the next gathers and loosens on its own), `steps`, `level` (brightness), `churn` (the
-    clouds shimmer).
+    fill one after another around a circle, starting at the top and going clockwise; a done step is
+    tight and bright, the current one gathers out of dust, the ones to come are very faint small
+    clouds on a faint path of the circle. The camera is fixed, a little off the vertical, and the
+    circle doesn't spin. Keys `progress` (0..1 over all steps, an equal share each; with none the
+    first step is done and the next gathers and loosens on its own), `steps`, `level` (brightness),
+    `churn` (the clouds shimmer).
   - `ripple`: something happened, look here. Crinkled shells of light (up to about 300 points each,
     warm amber) spread from a warm core and fade as they grow; a shell leaves about every 1.6 s on a
     jittered beat. Keys `level` (brightness), `churn` (a second train of shells fades in).
@@ -74,36 +76,38 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
     a front after a front (life 1.6 s). Louder fronts burn brighter and a second train fades in; quiet ones are
     few and faint. Every live front shares the current level. Keys `level`, `churn` (a steady
     stream with no level: waiting on a reply).
-  - `halo`: how sure a position is. A small bright core and a cloud of about 700 points that
-    tightens onto it as `accuracy` rises; a ring of light travels from core to edge every 1.4 s. In
-    voice use the profile makes listening a wide cloud (`accuracy` 0.55) and speaking a tight one
-    (`accuracy` 1). Keys `accuracy`, `level` (brightness, and the cloud swells a little with it),
-    `churn` (the cloud trembles and brightens).
-- **Reactive target `accuracy`** (`halo`), 0..1, default 1, bindable (`bindings.accuracy`, FX Spec
-  1.15). Bound on a pattern that doesn't read it, it warns. `progress` is now also read by
-  `constellation`.
-- **Golden vectors 6.1.0 to 6.2.0**, additions only: 52 digests (the four patterns at every size
-  and time, plus `constellation` `progress` 0.5 with `steps` 5, `ripple` `churn` 1, `broadcast`
-  `level` 0.8 and `halo` `accuracy` 0.4) and 12 `resolved` entries, nothing changed; 19 frozen
-  states. The FX Spec locks are unchanged. Native old-painter parity skips the light volumes (11 now).
+  `progress` is now also read by `constellation`.
+- **Every light volume's catalog description ends with a "Use it for" sentence** (the `signal`
+  patterns in the catalog and `spec/parameters.json`), for example veil: "Use it for a voice or
+  any live level, like an assistant that speaks and listens."; the docs and the site's catalog
+  page carry the same sentence per shape.
+- **Golden vectors 6.0.0 to 7.0.0 for the unreleased light volumes** (6.1.0 and 6.2.0 added the
+  S2 and S3 volumes, 6.3.0 re-baselined the look; 7.0.0 is the final state). The light volumes
+  never shipped, so the file is described as it ends: no halo cases (13 digests and 3 `resolved`
+  entries are gone) and 18 frozen states. The cases of `veil`, `crystal`, `broadcast`
+  and `constellation` changed with the look changes below; nothing else did. The FX Spec locks
+  are unchanged; of the effect vectors only veil's 12 cases changed. Native old-painter parity
+  skips the light volumes (10 now).
 - **Light-volume dots are crisp discs.** The light volumes drew each dot as a soft 32-px radial glow
   that blurred at large sizes; every painter (Web, SwiftUI, Compose) now fills a flat, hard-edged circle
-  at half the dot's radius, like an orb's dots, so veil, constellation, halo and the rest are as sharp
+  at half the dot's radius, like an orb's dots, so veil, constellation and the rest are as sharp
   at 900 px as at 140 px. Dark backgrounds still add the discs up. Paint only: the engine frames, the
   golden vectors and the native binaries are unchanged.
-- **Look fix for `flow`, `halo` and `constellation`, golden vectors 6.2.0 to 6.3.0.** The three
-  light volumes are unreleased, so their frames were re-baselined: 39 digests changed, none added
-  or removed, nothing else changed. `flow` is a sheet with a sharp front and a crest instead of a
-  scatter lit by a blob; `halo` is bigger, with a visible travelling ring; `constellation`'s waiting
-  clouds are brighter. No new keys. Size, release variant (web `inline.js` / Android arm64 `.so` / iOS device `.a`):
-  295,428 / 1,396,464 / 3,563,480 (+256 / +2,992 / +3,376).
-- Size of the four volumes added in S3 (release variant, bytes: web `inline.js` / Android arm64
-  `.so` / iOS device `.a`): 295,172 / 1,393,472 / 3,560,104 (the S3 four add 5,300 / 23,320 / 26,032).
-- Size of the S2 four volumes (release variant, bytes: web `inline.js` / Android arm64 `.so` / iOS
-  device `.a`): 289,872 / 1,370,152 / 3,534,072 (the four volumes add 6,380 / 16,752 / 19,584).
+- **Look fix for `flow` and `constellation`.** `flow` is a sheet with a sharp front and a crest
+  instead of a scatter lit by a blob. No new keys.
+- **Size of the light volumes after the S2 to S6 work** (release variant, bytes: web `inline.js` /
+  Android arm64 `.so` / iOS device `.a`): 294,896 / 1,390,504 / 3,556,888, 532 / 5,960 / 6,592 less
+  than before the unreleased `halo` was removed and the looks were changed.
 
 ### Changed
 
+- **Fixed cameras and a circular `constellation`.** `veil`, `crystal` and `broadcast` are drawn
+  from one fixed camera with no sway (veil yaw -0.5 / pitch 0.35, crystal 0.25 / 0.3, slightly
+  from the side so depth shows, broadcast 0 / 0.2); `comet`, `flow`, `scan` and `dune` were already
+  fixed, and `cohesion` and `ripple` still turn slowly. `constellation` is a circle of `steps`
+  clouds that fill clockwise from the top, with a fixed camera and no spin. `crystal` rests a little
+  fainter and its resting drift is slower, so its states stay apart and its transitions stay inside
+  the bounds. A sway or spin may return later as a parameter.
 - **`SinuaVoiceMessage` draws `dune`** (every platform). In a wide box dune turns to a side view
   that fills the strip, with the clip's loudness as its profile, the played part glowing and a
   plane of light at the position. The props are the same (`envelope`, `progress`, `onSeek`), and
@@ -113,10 +117,10 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 - **`SinuaVoiceButton`'s ring draws orb patterns** (every platform): connecting is the orb
   `connecting`, listening the orb `listening`, muted the listening orb slowed to 0.15x speed.
   The props are unchanged.
-- **Reactive targets** are now eleven: `progress`, `level`, `quality`, `accuracy`, `audioLevel`, `glowStrength`, `noiseStrength`,
+- **Reactive targets** are now ten: `progress`, `level`, `quality`, `audioLevel`, `glowStrength`, `noiseStrength`,
   `gradientStrength`, `pulseStrength`, `colorMix` and `muted`. `progress0..3` (and the
   `progress[0..3]` catalog paths) are gone with the ring and beacon
-  patterns that read them; `quality` and `accuracy` return as new targets for `cohesion` and `halo`. The frozen FX Spec 1.8 key list shrinks from 103 to 97 paths on
+  patterns that read them; `quality` returns as a new target for `cohesion`. The frozen FX Spec 1.8 key list shrinks from 103 to 97 paths on
   purpose (pre-1.0); the only array parameter left is `envelope` (`dune`).
 - **Packed transport (web fast path):** v1 is unchanged. v2 is emitted only for a frame that has
   effect runs and now has an 8-word header,
@@ -126,7 +130,7 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 - **Golden vectors 5.0.0 to 6.0.0:** 169 digests removed (ring 81, beacon 63, core 25), 141
   remain, nothing changed. The FX Spec locks 1.8 to 1.15 lost the six examples that used removed
   objects and keep three (`voice-assistant`, `voice-assistant-glowing`, `orb-brand-fixed`); every
-  remaining row is byte-identical. The bench has 13 cases (was 10): `ring-holo-hues` and `beacon-locating` went with their families, the liquid, particles and holographic orb cases (their keys have not existed since 0.1.0-beta.9, so they measured a plain orb) were dropped, and one case per newer light volume was added.
+  remaining row is byte-identical. The bench has 12 cases (was 10): `ring-holo-hues` and `beacon-locating` went with their families, the liquid, particles and holographic orb cases (their keys have not existed since 0.1.0-beta.9, so they measured a plain orb) were dropped, and one case per newer light volume was added.
 
 ### Removed
 

@@ -29,7 +29,6 @@ const SHOWCASE: Record<string, Record<string, number>> = {
   constellation: { steps: 5, progress: 0.6 },
   ripple: { level: 0.6 },
   broadcast: { level: 0.6 },
-  halo: { accuracy: 0.7, level: 0.6 },
   speaking: { audioLevel: 0.6, audioStrength: 0.45 },
 };
 

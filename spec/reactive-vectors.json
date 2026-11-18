@@ -229,80 +229,6 @@
       "results": [
         {
           "overrides": {
-            "accuracy": 0.0
-          },
-          "value": -0.5
-        },
-        {
-          "overrides": {
-            "accuracy": 0.0
-          },
-          "value": 0.0
-        },
-        {
-          "overrides": {
-            "accuracy": 0.125
-          },
-          "value": 0.125
-        },
-        {
-          "overrides": {
-            "accuracy": 0.25
-          },
-          "value": 0.25
-        },
-        {
-          "overrides": {
-            "accuracy": 0.375
-          },
-          "value": 0.375
-        },
-        {
-          "overrides": {
-            "accuracy": 0.5
-          },
-          "value": 0.5
-        },
-        {
-          "overrides": {
-            "accuracy": 0.625
-          },
-          "value": 0.625
-        },
-        {
-          "overrides": {
-            "accuracy": 0.75
-          },
-          "value": 0.75
-        },
-        {
-          "overrides": {
-            "accuracy": 0.875
-          },
-          "value": 0.875
-        },
-        {
-          "overrides": {
-            "accuracy": 1.0
-          },
-          "value": 1.0
-        },
-        {
-          "overrides": {
-            "accuracy": 1.0
-          },
-          "value": 1.5
-        }
-      ],
-      "target": "accuracy"
-    },
-    {
-      "curve": null,
-      "inputRange": null,
-      "outputRange": null,
-      "results": [
-        {
-          "overrides": {
             "audioLevel": 0.0,
             "audioStrength": 0.18
           },
@@ -1635,17 +1561,6 @@
   "note": "Reactive-binding vectors: targets table + value -> overrides through FX Spec bindings (core_engine::reactive). Checked by crates/core_engine/tests/reactive_vectors.rs and packages/core/test/reactive-parity.test.mjs (reactive.ts). null range/curve = the default.",
   "specVersion": "1.0.0",
   "targets": {
-    "accuracy": {
-      "companions": {},
-      "defaultOutput": [
-        0.0,
-        1.0
-      ],
-      "range": [
-        0.0,
-        1.0
-      ]
-    },
     "audioLevel": {
       "companions": {
         "audioStrength": 0.18

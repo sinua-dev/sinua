@@ -605,7 +605,7 @@ test("a source connected before mount: the view picks up its state, and all elev
     getContext() { return { createRadialGradient: () => ({ addColorStop() {} }), fillRect() {} }; }
   };
   t.after(() => delete globalThis.OffscreenCanvas);
-  for (const pattern of ["veil", "crystal", "dune", "comet", "flow", "cohesion", "scan", "constellation", "ripple", "broadcast", "halo"]) {
+  for (const pattern of ["veil", "crystal", "dune", "comet", "flow", "cohesion", "scan", "constellation", "ripple", "broadcast"]) {
     const drawn = new Map();
     for (const state of ["idle", "listening", "thinking", "speaking"]) {
       const { step } = env();

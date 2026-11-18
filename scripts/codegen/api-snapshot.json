@@ -93,7 +93,7 @@
     },
     "packages/android/view/src/main/kotlin/dev/sinua/view/generated/SinuaSignal.kt": {
       "(top level)": [
-        "@Composable fun SinuaSignal(pattern:SinuaSignalPattern,modifier:Modifier,size:SinuaSize,ink:Double?,layerCount:Int?,churn:Double?,level:Double?,columnCount:Int?,progress:Double?,envelope:List<Double>?,quality:Double?,blips:Int?,steps:Int?,accuracy:Double?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?)",
+        "@Composable fun SinuaSignal(pattern:SinuaSignalPattern,modifier:Modifier,size:SinuaSize,ink:Double?,layerCount:Int?,churn:Double?,level:Double?,columnCount:Int?,progress:Double?,envelope:List<Double>?,quality:Double?,blips:Int?,steps:Int?,glow:SinuaGlow?,noise:SinuaNoise?,pulse:SinuaPulse?,gradient:SinuaGradient?,color:SinuaColor?,speed:Double,state:String?,inputs:Map<String,Double>,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,effect:SinuaEffectTrigger?)",
         "@Composable fun SinuaSignal(spec:String,modifier:Modifier,state:String?,inputs:Map<String,Double>,voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Boolean,reducedMotion:FxReducedMotion,contentDescription:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Unit)?,onFrame:((FxFrameStats)->Unit)?,labels:Map<String,String>,announce:Boolean?,haptics:Boolean,rules:Boolean,effect:SinuaEffectTrigger?)"
       ],
       "SinuaSignalPattern": [
@@ -105,13 +105,12 @@
         "entry CRYSTAL(\"crystal\")",
         "entry DUNE(\"dune\")",
         "entry FLOW(\"flow\")",
-        "entry HALO(\"halo\")",
         "entry RIPPLE(\"ripple\")",
         "entry SCAN(\"scan\")",
         "entry VEIL(\"veil\")"
       ],
       "SinuaSignalProps": [
-        "decl data class SinuaSignalProps(val pattern:SinuaSignalPattern,val size:SinuaSize,val ink:Double?,val layerCount:Int?,val churn:Double?,val level:Double?,val columnCount:Int?,val progress:Double?,val envelope:List<Double>?,val quality:Double?,val blips:Int?,val steps:Int?,val accuracy:Double?,val glow:SinuaGlow?,val noise:SinuaNoise?,val pulse:SinuaPulse?,val gradient:SinuaGradient?,val color:SinuaColor?)",
+        "decl data class SinuaSignalProps(val pattern:SinuaSignalPattern,val size:SinuaSize,val ink:Double?,val layerCount:Int?,val churn:Double?,val level:Double?,val columnCount:Int?,val progress:Double?,val envelope:List<Double>?,val quality:Double?,val blips:Int?,val steps:Int?,val glow:SinuaGlow?,val noise:SinuaNoise?,val pulse:SinuaPulse?,val gradient:SinuaGradient?,val color:SinuaColor?)",
         "fun toOverrides():Map<String,Double>"
       ]
     },
@@ -322,10 +321,9 @@
       "SinuaSignal": [
         "decl public struct SinuaSignal:View",
         "public func overrides()->[String:Double]",
-        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],accuracy:Double?,blips:Int?,churn:Double?,columnCount:Int?,envelope:[Double]?,ink:Double?,layerCount:Int?,level:Double?,progress:Double?,quality:Double?,steps:Int?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,noise:SinuaNoise?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?)",
+        "public init(pattern:Pattern,size:SinuaSize,state:String?,inputs:[String:Double],blips:Int?,churn:Double?,columnCount:Int?,envelope:[Double]?,ink:Double?,layerCount:Int?,level:Double?,progress:Double?,quality:Double?,steps:Int?,color:SinuaColor?,glow:SinuaGlow?,gradient:SinuaGradient?,noise:SinuaNoise?,pulse:SinuaPulse?,speed:Double,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,effect:SinuaEffectTrigger?)",
         "public init(spec:String,state:String?,inputs:[String:Double],voiceLevelInput:String?,voice:VoiceSource?,voiceOverrides:VoiceOverrides?,theme:FxTheme,paused:Bool,reducedMotion:FxReducedMotion,accessibilityLabel:String?,maxFps:Double?,lowPower:FxLowPower,onError:((SinuaSpecError)->Void)?,onFrame:((FxFrameStats)->Void)?,labels:[String:String],announce:Bool?,haptics:Bool,rules:Bool,effect:SinuaEffectTrigger?)",
         "public var accessibilityLabel:String?",
-        "public var accuracy:Double?",
         "public var announce:Bool?",
         "public var blips:Int?",
         "public var body:some View",
@@ -369,7 +367,6 @@
         "case crystal=\"crystal\"",
         "case dune=\"dune\"",
         "case flow=\"flow\"",
-        "case halo=\"halo\"",
         "case ripple=\"ripple\"",
         "case scan=\"scan\"",
         "case veil=\"veil\"",
@@ -396,7 +393,7 @@
         "export function sinuaSignalOverrides(pattern:SinuaSignalPattern,params:SinuaSignalParams):Record<string,number>",
         "export function sinuaSpecError(spec:string|object,expected:string):string|null",
         "export type SinuaOrbPattern=|\"working\"|\"searching\"|\"solving\"|\"listening\"|\"connecting\"|\"weaving\"|\"composing\"|\"breathing\"|\"shaping\"|\"glowing\"|\"drifting\"|\"speaking\"|\"confirming\"|\"initializing\"|\"calibrating\"|\"progressing\"|\"muted\"",
-        "export type SinuaSignalPattern=|\"veil\"|\"crystal\"|\"dune\"|\"comet\"|\"flow\"|\"cohesion\"|\"scan\"|\"constellation\"|\"ripple\"|\"broadcast\"|\"halo\"",
+        "export type SinuaSignalPattern=|\"veil\"|\"crystal\"|\"dune\"|\"comet\"|\"flow\"|\"cohesion\"|\"scan\"|\"constellation\"|\"ripple\"|\"broadcast\"",
         "export type SinuaSize=20|32|64",
         "type Entry={key:string;choices?:Record<string,number>;keys?:string[];listPatterns?:string[]}",
         "type Table=Record<string,Entry>"
@@ -520,7 +517,6 @@
         "strength?:number"
       ],
       "SinuaSignalParams": [
-        "accuracy?:number",
         "blips?:number",
         "churn?:number",
         "color?:SinuaColor",
@@ -650,7 +646,6 @@
         "group noise",
         "group pulse",
         "object signal",
-        "param accuracy",
         "param blips",
         "param churn",
         "param columnCount",
@@ -676,7 +671,7 @@
         "export function sinuaSignalOverrides(pattern:SinuaSignalPattern,params:SinuaSignalParams):Record<string,number>",
         "export function sinuaSpecError(spec:string|object,expected:string):string|null",
         "export type SinuaOrbPattern=|\"working\"|\"searching\"|\"solving\"|\"listening\"|\"connecting\"|\"weaving\"|\"composing\"|\"breathing\"|\"shaping\"|\"glowing\"|\"drifting\"|\"speaking\"|\"confirming\"|\"initializing\"|\"calibrating\"|\"progressing\"|\"muted\"",
-        "export type SinuaSignalPattern=|\"veil\"|\"crystal\"|\"dune\"|\"comet\"|\"flow\"|\"cohesion\"|\"scan\"|\"constellation\"|\"ripple\"|\"broadcast\"|\"halo\"",
+        "export type SinuaSignalPattern=|\"veil\"|\"crystal\"|\"dune\"|\"comet\"|\"flow\"|\"cohesion\"|\"scan\"|\"constellation\"|\"ripple\"|\"broadcast\"",
         "export type SinuaSize=20|32|64",
         "type Entry={key:string;choices?:Record<string,number>;keys?:string[];listPatterns?:string[]}",
         "type Table=Record<string,Entry>"
@@ -800,7 +795,6 @@
         "strength?:number"
       ],
       "SinuaSignalParams": [
-        "accuracy?:number",
         "blips?:number",
         "churn?:number",
         "color?:SinuaColor",

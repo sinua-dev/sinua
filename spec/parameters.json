@@ -23,29 +23,6 @@
     }
   ],
   "definitions": {
-    "accuracy@halo": {
-      "aliases": [],
-      "category": "input",
-      "choices": null,
-      "deprecated": null,
-      "description": "How tight the cloud is, 0 to 1: 1 (the default) is on the core, 0 is wide.",
-      "fallback": 1,
-      "group": "value",
-      "if": null,
-      "key": "accuracy",
-      "label": "Accuracy",
-      "max": 1,
-      "min": 0,
-      "path": "accuracy",
-      "scope": "halo",
-      "specPath": "/params/accuracy",
-      "step": 0.01,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
     "bandMul@ribbon": {
       "aliases": [],
       "category": "appearance",
@@ -311,29 +288,6 @@
       "min": 0,
       "path": "churn",
       "scope": "flow",
-      "specPath": "/params/churn",
-      "step": 0.05,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "churn@halo": {
-      "aliases": [],
-      "category": "motion",
-      "choices": null,
-      "deprecated": null,
-      "description": "Restless work, 0 to 1: the cloud trembles (thinking, processing).",
-      "fallback": 0,
-      "group": "style",
-      "if": null,
-      "key": "churn",
-      "label": "Churn",
-      "max": 1,
-      "min": 0,
-      "path": "churn",
-      "scope": "halo",
       "specPath": "/params/churn",
       "step": 0.05,
       "tier": "basic",
@@ -1789,29 +1743,6 @@
       "min": 0,
       "path": "level",
       "scope": "flow",
-      "specPath": "/params/level",
-      "step": 0.01,
-      "tier": "basic",
-      "type": "number",
-      "uiMax": 1,
-      "uiMin": 0,
-      "unit": "fraction"
-    },
-    "level@halo": {
-      "aliases": [],
-      "category": "input",
-      "choices": null,
-      "deprecated": null,
-      "description": "How brightly the core burns and how far the cloud swells, 0 to 1: any value (a bound input) or, when left out, a bound voice's level; with neither it burns at a quiet default.",
-      "fallback": 0,
-      "group": "value",
-      "if": null,
-      "key": "level",
-      "label": "Level",
-      "max": 1,
-      "min": 0,
-      "path": "level",
-      "scope": "halo",
       "specPath": "/params/level",
       "step": 0.01,
       "tier": "basic",
@@ -5350,7 +5281,7 @@
       "label": "Signal",
       "patterns": [
         {
-          "description": "A sheet of light with depth: layers of glowing points curl one behind the other. It swells with a voice or any 0 to 1 value and keeps moving on its own while something is being worked on.",
+          "description": "A sheet of light with depth: layers of glowing points curl one behind the other, seen from one fixed angle. It swells with a voice or any 0 to 1 value and keeps moving on its own while something is being worked on. Use it for a voice or any live level, like an assistant that speaks and listens.",
           "id": "veil",
           "label": "Veil",
           "mode": "veil",
@@ -5400,7 +5331,7 @@
           ]
         },
         {
-          "description": "A crystal of light filled from below: each column lights up to its value and the unlit cells stay as dust. A voice's bands, a battery, a quota or a goal.",
+          "description": "A crystal of light filled from below: each column lights up to its value and the unlit cells stay as dust, seen from one fixed angle. Use it for a level or quota you want to read exactly, like a battery, a goal or a meter.",
           "id": "crystal",
           "label": "Crystal",
           "mode": "crystal",
@@ -5450,7 +5381,7 @@
           ]
         },
         {
-          "description": "A dune of light: a recording's loudness (or any series) is its profile, the done part glows and a plane of light marks the position. A voice message or a long task's progress.",
+          "description": "A dune of light: a recording's loudness (or any series) is its profile, the done part glows and a plane of light marks the position. Use it for progress through something long or a recording, like a download or a voice message.",
           "id": "dune",
           "label": "Dune",
           "layout": "box",
@@ -5501,7 +5432,7 @@
           ]
         },
         {
-          "description": "A stream of light orbiting a faint core, its tail breathing with the noise. Waiting with no end in sight: it burns brighter with a voice or any 0 to 1 value, longer while work goes on.",
+          "description": "A stream of light orbiting a faint core, its tail breathing with the noise. It burns brighter with a voice or any 0 to 1 value, longer while work goes on. Use it for a wait with no end in sight, like a tool call that is still running.",
           "id": "comet",
           "label": "Comet",
           "mode": "comet",
@@ -5543,7 +5474,7 @@
           ]
         },
         {
-          "description": "A front of light sweeping across a sheet of points: a sharp leading edge that lifts the sheet into a crest, a fading trail, a fainter front following. Something is being made: it lights with a voice or any 0 to 1 value and shimmers while work goes on.",
+          "description": "A front of light sweeping across a sheet of points: a sharp leading edge that lifts the sheet into a crest, a fading trail, a fainter front following. It lights with a voice or any 0 to 1 value and shimmers while work goes on. Use it for something being made, like text or an image that is generating.",
           "id": "flow",
           "label": "Flow",
           "mode": "flow",
@@ -5585,7 +5516,7 @@
           ]
         },
         {
-          "description": "A sphere of light held together by quality: as it falls the points let go one by one, drift apart and warm to amber; as it recovers they gather back. A connection, a sync, a signal.",
+          "description": "A sphere of light held together by quality: as it falls the points let go one by one, drift apart and warm to amber; as it recovers they gather back. Use it for how well something holds, like a connection or a sync.",
           "id": "cohesion",
           "label": "Cohesion",
           "mode": "cohesion",
@@ -5634,7 +5565,7 @@
           ]
         },
         {
-          "description": "A tilted disc of light and a beam sweeping it: the beam lights what it passes and found points flash white and burn down. Looking for something.",
+          "description": "A tilted disc of light and a beam sweeping it: the beam lights what it passes and found points flash white and burn down. Use it for a search that finds things; each found point is a hit.",
           "id": "scan",
           "label": "Scan",
           "mode": "scan",
@@ -5684,7 +5615,7 @@
           ]
         },
         {
-          "description": "Steps as clouds of light on a ring: done steps are tight and bright, the current one gathers out of dust, the ones to come hang loose. A task in stages; it follows a progress value, or sways on its own.",
+          "description": "Steps as clouds of light on a circle, filling one after another from the top: done steps are tight and bright, the current one gathers out of dust, the ones to come are very faint. It follows a progress value, or sways on its own. Use it for a job in stages, like an agent working through its steps.",
           "id": "constellation",
           "label": "Constellation",
           "mode": "constellation",
@@ -5741,7 +5672,7 @@
           ]
         },
         {
-          "description": "Shells of light spreading from a warm core, crinkled by the noise and fading as they grow. Something happened, look here: a notification or an event.",
+          "description": "Shells of light spreading from a warm core, crinkled by the noise and fading as they grow. Use it for something that just happened, like a notification or an event.",
           "id": "ripple",
           "label": "Ripple",
           "mode": "ripple",
@@ -5783,7 +5714,7 @@
           ]
         },
         {
-          "description": "Two fans of light opening left and right of a white core, a front after a front. Louder, they burn brighter and a second train of fronts fades in. Sending or speaking out.",
+          "description": "Two fans of light opening left and right of a white core, a front after a front, seen from one fixed angle. Louder, they burn brighter and a second train of fronts fades in. Use it for sending or speaking out, like a live or outgoing stream.",
           "id": "broadcast",
           "label": "Broadcast",
           "mode": "broadcast",
@@ -5822,55 +5753,6 @@
           "tags": [
             "status",
             "voice"
-          ]
-        },
-        {
-          "description": "A bright core and a cloud of light around it that tightens onto the core as accuracy rises, with a ring of light travelling out from the core. How sure a position is.",
-          "id": "halo",
-          "label": "Halo",
-          "mode": "halo",
-          "params": [
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "ink@shared"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "churn@halo"
-            },
-            {
-              "default": {
-                "20": 1,
-                "32": 1,
-                "64": 1
-              },
-              "ref": "accuracy@halo"
-            },
-            {
-              "default": {
-                "20": 0,
-                "32": 0,
-                "64": 0
-              },
-              "ref": "level@halo"
-            }
-          ],
-          "sizes": [
-            20,
-            32,
-            64
-          ],
-          "speed": 1,
-          "tags": [
-            "status"
           ]
         }
       ]

@@ -22,7 +22,7 @@ export const Sinua_ELEMENT_TAGS: Record<string, TypedElementDefinition> = {
   },
   "sinua-signal": {
     object: "signal",
-    params: ["ink","layerCount","churn","level","columnCount","progress","envelope","quality","blips","steps","accuracy"],
+    params: ["ink","layerCount","churn","level","columnCount","progress","envelope","quality","blips","steps"],
     groups: ["glow","noise","pulse","gradient","color"],
     toOverrides: sinuaSignalOverrides as (pattern: string, params: Record<string, unknown>) => Record<string, number>,
     specError: sinuaSpecError,

@@ -9,7 +9,7 @@
 //!   reply).
 //!
 //! Fronts leave on a fixed, hash-jittered beat (closed-form in `t`, no queue), and all those
-//! alive burn at the level of now. Reduced motion (`effectReduced`) holds the sway still.
+//! alive burn at the level of now. Reduced motion (`effectReduced`) holds the noise still.
 
 use crate::primitives::{ModeOpts, OrbFrame};
 use crate::volume::{self, Camera, Light, Tone};
@@ -35,7 +35,7 @@ pub fn frame_broadcast(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     // A fixed beat (a state change must not reshuffle which fronts are alive); a louder
     // level or work fades in a second train half a beat behind, so it reads busier.
     let beat = 0.9;
-    let cam = Camera::new(0.25 * (t * 0.3).sin(), 0.2);
+    let cam = Camera::new(0.0, 0.2);
     let core = CORE.min(budget / 6).max(12);
     let mut light = Light::new(
         cam,

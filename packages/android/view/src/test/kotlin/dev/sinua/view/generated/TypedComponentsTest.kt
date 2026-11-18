@@ -15,12 +15,11 @@ class TypedComponentsTest {
         assertEquals(mapOf("particles" to 4.0, "noiseStrength" to 0.5), o)
         assertEquals(emptyMap<String, Double>(), SinuaSignalProps(SinuaSignalPattern.VEIL).toOverrides())
         assertEquals(emptyMap<String, Double>(), SinuaSignalProps(SinuaSignalPattern.DUNE).toOverrides())
-        for (p in listOf(SinuaSignalPattern.COMET, SinuaSignalPattern.FLOW, SinuaSignalPattern.COHESION, SinuaSignalPattern.SCAN, SinuaSignalPattern.CONSTELLATION, SinuaSignalPattern.RIPPLE, SinuaSignalPattern.BROADCAST, SinuaSignalPattern.HALO)) {
+        for (p in listOf(SinuaSignalPattern.COMET, SinuaSignalPattern.FLOW, SinuaSignalPattern.COHESION, SinuaSignalPattern.SCAN, SinuaSignalPattern.CONSTELLATION, SinuaSignalPattern.RIPPLE, SinuaSignalPattern.BROADCAST)) {
             assertEquals(emptyMap<String, Double>(), SinuaSignalProps(p).toOverrides())
         }
         assertEquals(mapOf("quality" to 0.4), SinuaSignalProps(SinuaSignalPattern.COHESION, quality = 0.4).toOverrides())
         assertEquals(mapOf("blips" to 5.0), SinuaSignalProps(SinuaSignalPattern.SCAN, blips = 5).toOverrides())
-        assertEquals(mapOf("accuracy" to 0.7), SinuaSignalProps(SinuaSignalPattern.HALO, accuracy = 0.7).toOverrides())
         assertEquals(mapOf("steps" to 6.0), SinuaSignalProps(SinuaSignalPattern.CONSTELLATION, steps = 6).toOverrides())
     }
 

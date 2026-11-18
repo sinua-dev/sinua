@@ -111,21 +111,11 @@ test("level is a plain 0..1 target: default output is its range, no companions",
   assert.deepEqual(Object.keys(bindReactiveInput({ value: 0.2, target: "level" })), ["level"]);
   assert.deepEqual(REACTIVE_TARGETS.level.range, [0, 1]);
   // The removed targets are plain unknown names now.
-  for (const gone of ["progress0", "progress3"]) {
+  for (const gone of ["progress0", "progress3", "accuracy"]) {
     assert.throws(() => bindReactiveInput({ value: 0.5, target: gone }), /unknown target/);
   }
   const bound = frameWithOverrides("crystal", 64, 0, bindReactiveInput({ value: 0.4, target: "level" }));
   assert.deepEqual(bound, frameWithOverrides("crystal", 64, 0, { level: 0.4 }));
-});
-
-test("accuracy is a plain 0..1 target: default output is its range, no companions", () => {
-  close(bindReactiveInput({ value: 0.5, target: "accuracy" }).accuracy, 0.5);
-  assert.equal(bindReactiveInput({ value: 9, target: "accuracy" }).accuracy, 1);
-  assert.equal(bindReactiveInput({ value: -3, target: "accuracy" }).accuracy, 0);
-  assert.deepEqual(Object.keys(bindReactiveInput({ value: 0.2, target: "accuracy" })), ["accuracy"]);
-  assert.deepEqual(REACTIVE_TARGETS.accuracy.range, [0, 1]);
-  const bound = frameWithOverrides("halo", 64, 0, bindReactiveInput({ value: 0.4, target: "accuracy" }));
-  assert.deepEqual(bound, frameWithOverrides("halo", 64, 0, { accuracy: 0.4 }));
 });
 
 test("quality is a plain 0..1 target: default output is its range, no companions", () => {

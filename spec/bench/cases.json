@@ -16,7 +16,6 @@
     {"id": "signal-scan", "label": "Signal \u00b7 scan (light volume)", "state": "scan", "overrides": {"blips": 7}},
     {"id": "signal-constellation", "label": "Signal \u00b7 constellation (light volume)", "state": "constellation", "overrides": {"progress": 0.5}},
     {"id": "signal-ripple", "label": "Signal \u00b7 ripple (light volume)", "state": "ripple", "overrides": {"level": 0.6}},
-    {"id": "signal-broadcast", "label": "Signal \u00b7 broadcast (light volume)", "state": "broadcast", "overrides": {"level": 0.6}},
-    {"id": "signal-halo", "label": "Signal \u00b7 halo (light volume)", "state": "halo", "overrides": {"accuracy": 0.5}}
+    {"id": "signal-broadcast", "label": "Signal \u00b7 broadcast (light volume)", "state": "broadcast", "overrides": {"level": 0.6}}
   ]
 }

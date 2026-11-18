@@ -50,7 +50,7 @@ It is vsync-quantized on purpose. Summing raw `dt − interval` counted ordinary
 
 ## How to run it on your phone
 
-Plug the phone in, close other apps, set brightness to a fixed level, and don't touch the screen while it runs. A full run is 13 cases × 2 × 11 s ≈ 5 minutes.
+Plug the phone in, close other apps, set brightness to a fixed level, and don't touch the screen while it runs. A full run is 12 cases × 2 × 11 s ≈ 4.5 minutes.
 
 **iPhone**
 1. `cd apps/fx-bench-ios && xcodegen generate`, then open `FxBench.xcodeproj`.
@@ -67,7 +67,7 @@ Plug the phone in, close other apps, set brightness to a fixed level, and don't 
 **Web (phone browser)**
 1. `cd apps/fx-bench-web && npm install && npm run build && npx vite preview --host`.
 2. Open the printed network URL on the phone (the same Wi-Fi), tap **Run**, then **Download JSON**.
-3. `?seconds=5` shortens each case; `?cases=orbs-breathing,signal-halo` picks cases; `?auto=1` starts at once.
+3. `?seconds=5` shortens each case; `?cases=orbs-breathing,signal-veil` picks cases; `?auto=1` starts at once.
 
 **Read the result**
 ```bash

@@ -36,10 +36,11 @@ pub fn frame_crystal(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     let rows = volume::fit(ROWS, cols_full * ROWS * depth, budget, 2).max(4);
     let bands = volume::bands(o);
     let level = o.get("level").map(|v| v.clamp(0.0, 1.0));
-    // Zoomed so the columns stay inside the view as the crystal turns.
+    // A fixed angle (no sway), slightly from the side so the layers' depth shows; zoomed so the
+    // columns stay inside the view.
     let cam = Camera {
         zoom: 1.05,
-        ..Camera::new(0.6 * (t * 0.2).sin(), 0.3)
+        ..Camera::new(0.25, 0.3)
     };
     let mut light = Light::new(
         cam,
@@ -52,12 +53,12 @@ pub fn frame_crystal(size: f64, t: f64, o: &ModeOpts) -> OrbFrame {
     for i in 0..cols {
         let fi = i as f64 / (cols - 1) as f64;
         let fill = if let Some(v) = level {
-            v * (0.9 + 0.2 * volume::noise(fi * 3.0, t * 0.6, 4.0).abs())
+            v * (0.9 + 0.2 * volume::noise(fi * 3.0, t * 0.45, 4.0).abs())
         } else if !bands.is_empty() {
             bands[((fi * bands.len() as f64) as usize).min(bands.len() - 1)].clamp(0.0, 1.0)
         } else {
             // At rest: a low, slowly drifting fill, so the crystal is there and alive.
-            0.2 + 0.14 * volume::noise(fi * 3.5, t * 0.7, 0.0)
+            0.2 + 0.14 * volume::noise(fi * 3.5, t * 0.5, 0.0)
         } + churn * 0.4 * (0.5 + 0.5 * volume::noise(fi * 6.4, 0.0, t * 1.5));
         for j in 0..rows {
             let fj = j as f64 / (rows - 1) as f64;

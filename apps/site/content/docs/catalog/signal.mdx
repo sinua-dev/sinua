@@ -1,6 +1,6 @@
 ---
 title: Signal
-description: Eleven light volumes for a voice, a value or a status, from a swelling veil to a crystal, a dune, a scan and a halo.
+description: Ten light volumes for a voice, a value or a status, from a swelling veil to a crystal, a dune, a scan and a broadcast.
 ---
 
 The signal is a set of **light volumes**: hundreds of points of light in 3D, lit by depth and drawn as crisp discs that add up on a dark background. Each one shows a value, a voice or a status, and each one keeps moving on its own with no input at all.
@@ -16,7 +16,6 @@ The signal is a set of **light volumes**: hundreds of points of light in 3D, lit
 <Demo object="signal" pattern="constellation" />
 <Demo object="signal" pattern="ripple" />
 <Demo object="signal" pattern="broadcast" />
-<Demo object="signal" pattern="halo" />
 </div>
 
 <GalleryLink family="signal" />
@@ -35,61 +34,56 @@ The signal is a set of **light volumes**: hundreds of points of light in 3D, lit
 | [Constellation](#constellation) | `constellation` | A task in stages: one cloud per step, done ones tight and bright. |
 | [Ripple](#ripple) | `ripple` | Something happened, look here: shells of warm light spreading from a core. |
 | [Broadcast](#broadcast) | `broadcast` | Sending, speaking out: fans of light opening left and right. |
-| [Halo](#halo) | `halo` | How sure a position is: a cloud that tightens onto a core as `accuracy` rises. |
 
-Every volume reads its inputs in the same order: its own value (`level` or `progress`, from your app or a [binding](/docs/connect/bindings)), else a bound voice's level, which counts only while the agent listens or speaks, else its own noise field. Nothing is tied to the voice, so any of them works as a status visual. Every volume also takes `churn` (0 to 1, default 0): restless work, such as thinking, that keeps it moving and brightens it with no level. Their pace is the view's `speed`.
+Every volume reads its inputs in the same order: its own value (`level` or `progress`, from your app or a [binding](/docs/connect/bindings)), else a bound voice's level, which counts only while the agent listens or speaks, else its own noise field. Nothing is tied to the voice, so any of them works as a status visual. Every volume also takes `churn` (0 to 1, default 0): restless work, such as thinking, that keeps it moving and brightens it with no level. Their pace is the view's `speed`. Veil, crystal, broadcast, comet, flow, scan, dune and constellation are drawn from one fixed camera (veil, crystal and broadcast no longer sway, and constellation does not spin); only cohesion and ripple still turn slowly.
 
 On a small view a volume draws fewer points (about 150 at 48 px, 420 at 128 px, 1,000 from 256 px). Reduced motion holds each one still in its pose, and low power draws plain dots instead of soft glows.
 
 ## Veil
 
-A sheet of light: layers of points curl one behind the other. With a voice it swells with the level; with `level` it shows any 0 to 1 value; with `churn` it keeps moving while something is worked on.
+A sheet of light: layers of points curl one behind the other. With a voice it swells with the level; with `level` it shows any 0 to 1 value; with `churn` it keeps moving while something is worked on. Use it for a voice or any live level, like an assistant that speaks and listens.
 
 ## Crystal
 
-A crystal filled from below: each column lights up to its value and unlit cells stay as dust. With a voice, the bands fill the columns. With `level` it is one value, such as a battery, a quota or a goal.
+A crystal filled from below: each column lights up to its value and unlit cells stay as dust. With a voice, the bands fill the columns. With `level` it is one value, such as a battery, a quota or a goal. Use it for a level or quota you want to read exactly, like a battery, a goal or a meter.
 
 ## Dune
 
-A dune: a series is its profile, the done part glows, and a plane of light marks the position. `envelope` is the series (up to 64 values from 0 to 1) and `progress` the position; for a long task, `progress` alone is enough. Without `progress` the plane drifts across on its own.
+A dune: a series is its profile, the done part glows, and a plane of light marks the position. `envelope` is the series (up to 64 values from 0 to 1) and `progress` the position; for a long task, `progress` alone is enough. Without `progress` the plane drifts across on its own. Use it for progress through something long or a recording, like a download or a voice message.
 
 ## Comet
 
-A stream of 260 points orbiting a faint core sphere: the head leads, the tail breathes with the noise and the hue runs from head to tail. `level` sets the brightness and the tail length; `churn` lengthens and brightens the tail.
+A stream of 260 points orbiting a faint core sphere: the head leads, the tail breathes with the noise and the hue runs from head to tail. `level` sets the brightness and the tail length; `churn` lengthens and brightens the tail. Use it for a wait with no end in sight, like a tool call that is still running.
 
 ## Flow
 
-About 800 points in a sheet. A front with a sharp leading edge sweeps across at a noisy pace, lifts the sheet into a crest and leaves a fading trail, and a fainter second front follows 1.6 s behind. `level` sets how strongly the fronts light the slab; `churn` strengthens the second front and adds a shimmer.
+About 800 points in a sheet. A front with a sharp leading edge sweeps across at a noisy pace, lifts the sheet into a crest and leaves a fading trail, and a fainter second front follows 1.6 s behind. `level` sets how strongly the fronts light the slab; `churn` strengthens the second front and adds a shimmer. Use it for something being made, like text or an image that is generating.
 
 ## Cohesion
 
-A sphere of about 450 points that loses its place as `quality` falls. Each point lets go at its own threshold, drifts apart and warms to amber, and gathers again when `quality` rises. `quality` runs 0 to 1 and defaults to 1 (whole); `churn` adds a tremor and a brighter sphere, for trying again.
+A sphere of about 450 points that loses its place as `quality` falls. Each point lets go at its own threshold, drifts apart and warms to amber, and gathers again when `quality` rises. `quality` runs 0 to 1 and defaults to 1 (whole); `churn` adds a tremor and a brighter sphere, for trying again. Use it for how well something holds, like a connection or a sync.
 
 ## Scan
 
-A tilted disc of about 900 points and a beam sweeping it. The beam lights what it passes; found points flash white and burn down over about 2.2 s. `blips` is how many are found (a whole number from 0 to 12, default 7); `churn` lengthens the trail, for still searching.
+A tilted disc of about 900 points and a beam sweeping it. The beam lights what it passes; found points flash white and burn down over about 2.2 s. `blips` is how many are found (a whole number from 0 to 12, default 7); `churn` lengthens the trail, for still searching. Use it for a search that finds things; each found point is a hit.
 
 ## Constellation
 
-`steps` clouds of about 110 points on a ring seen from above. Done steps are tight and bright, the current one gathers out of dust, and the ones to come hang loose and dim. `progress` runs over all steps, an equal share each; `steps` is a whole number from 2 to 8 (default 5). With no `progress`, the first step is done and the next one gathers and loosens on its own. `churn` makes the clouds shimmer.
+`steps` clouds of about 110 points fill one after another around a circle, starting at the top and going clockwise. A done step is tight and bright, the current one gathers out of dust, and the ones to come are very faint small clouds on a faint path of the circle. `progress` runs over all steps, an equal share each; `steps` is a whole number from 2 to 8 (default 5). With no `progress`, the first step is done and the next one gathers and loosens on its own. `churn` makes the clouds shimmer. Use it for a job in stages, like an agent working through its steps.
 
 ## Ripple
 
-Crinkled shells of warm amber light, up to about 300 points each, spreading from a warm core and fading as they grow. A shell leaves about every 1.6 s on a slightly uneven beat. `churn` fades in a second train of shells.
+Crinkled shells of warm amber light, up to about 300 points each, spreading from a warm core and fading as they grow. A shell leaves about every 1.6 s on a slightly uneven beat. `churn` fades in a second train of shells. Use it for something that just happened, like a notification or an event.
 
 ## Broadcast
 
-Two fans of light opening left and right of a small white core, a front after a front. Louder fronts burn brighter and a second train fades in; quiet, they are few and faint. `churn` brings in the second train with no level, for waiting on a reply.
-
-## Halo
-
-A bright core and a cloud of about 700 points that tightens onto it as `accuracy` rises, with a ring of light travelling from the core to the edge every 1.4 s. `accuracy` runs 0 to 1 and defaults to 1 (on the core); `churn` makes the cloud tremble and brighten.
+Two fans of light opening left and right of a small white core, a front after a front. Louder fronts burn brighter and a second train fades in; quiet, they are few and faint. `churn` brings in the second train with no level, for waiting on a reply. Use it for sending or speaking out, like a live or outgoing stream.
 
 ## Keys of one pattern
 
-`quality` (cohesion), `accuracy` (halo), `steps` and `progress` (constellation) and `blips` (scan) are plain numbers from your app. `quality`, `accuracy` and `progress` can also be [bound](/docs/connect/bindings) to an input, so a file maps your data onto them.
+`quality` (cohesion), `steps` and `progress` (constellation) and `blips` (scan) are plain numbers from your app. `quality` and `progress` can also be [bound](/docs/connect/bindings) to an input, so a file maps your data onto them.
 
-<Demo spec="spec/signal-keys.fxspec.json" controls={[{ state: ["idle", "tight", "stages", "found"] }]} />
+<Demo spec="spec/signal-keys.fxspec.json" controls={[{ state: ["idle", "stages", "found"] }]} />
 
 <Tabs groupId="platform" items={["React", "SwiftUI", "Compose"]} persist>
 <Tab value="React">

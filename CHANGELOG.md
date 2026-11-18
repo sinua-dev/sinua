@@ -101,6 +101,14 @@ How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
 ### Changed
 
+- **The site and the Studios wear Aurora.** The brand colour is the teal-to-blue pair (#2DE2B5 to #3B82F6).
+  Dark is pure black (#000000, panels #0a0a0c, no glow behind the orb); light is white with a cool-grey
+  surface and uses the deep inks (#0B7A61 to #2563EB) for text, links and buttons, because the bright
+  teal is 1.66:1 on white. `@sinua/design`'s tokens carry both themes (a test measures every pair: text
+  at least 4.5:1, decoration at least 3:1). The Studios start new documents with the Aurora orb (the
+  gradient on dark; on light also a fixed colour, `colorMix` 1 and `colorLightness` -0.25); this is the
+  Studio's own starting state, not an engine default. The web, SwiftUI and Compose Studios, the landing
+  page and the docs follow; Android's wallpaper (dynamic) colours are no longer the default.
 - **Fixed cameras and a circular `constellation`.** `veil`, `crystal` and `broadcast` are drawn
   from one fixed camera with no sway (veil yaw -0.5 / pitch 0.35, crystal 0.25 / 0.3, slightly
   from the side so depth shows, broadcast 0 / 0.2); `comet`, `flow`, `scan` and `dune` were already

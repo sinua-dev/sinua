@@ -11,9 +11,9 @@ import { voiceStateVisual, type VoiceState } from "@/lib/voice-state";
 import { previewInputs, shapeOf } from "@/lib/layout";
 
 /**
- * On paper the engine's ink is a mid-tone, and the brand violet at its profile
- * lightness reads washed out; a darker colour holds the same hue against a
- * light background. Dark backgrounds need nothing.
+ * On paper the engine's ink is a mid-tone and reads washed out; a darker colour
+ * holds the same hue against a light background. Dark backgrounds need nothing.
+ * It goes in first, so a tint that sets its own lightness (swatches.ts) wins.
  */
 export const contrast = (theme: "light" | "dark"): Record<string, number> => (theme === "light" ? { colorLightness: -0.22 } : {});
 
@@ -53,7 +53,7 @@ export function LiveVisual({
       pattern,
       size,
       ...(visual ? { speed: visual.speed } : {}),
-      overrides: { ...previewInputs(pattern), ...(visual?.overrides ?? {}), ...overrides, ...contrast(theme) },
+      overrides: { ...previewInputs(pattern), ...(visual?.overrides ?? {}), ...contrast(theme), ...overrides },
       theme,
       maxFps,
       pointer,

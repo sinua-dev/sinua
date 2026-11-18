@@ -4,8 +4,10 @@ The look the Sinua Studio and the docs site (sinua.dev) share, so a change to a 
 control or the type scale is made once. Not published: both consumers depend on it by path.
 
 - `tokens.css`: the semantic tokens (`--bg-panel`, `--text-2`, `--accent`, spacing, radii,
-  motion), light and dark. Dark keys on `data-theme="dark"` or a `.dark` class on `<html>`.
-- `colors.css`: the `@radix-ui/colors` scales the tokens point at.
+  motion), light and dark. The palette is Aurora (teal to blue) on pure black (dark) or white
+  (light); the light theme uses the deep inks for text and buttons. `scripts/test/design-contrast.test.mjs`
+  measures the pairs. Dark keys on `data-theme="dark"` or a `.dark` class on `<html>`.
+- `colors.css`: the `@radix-ui/colors` scales the cost and status colours point at.
 - `fonts.css`: Inter Variable and JetBrains Mono Variable, self-hosted.
 - `components.css` + the React components: `PgTabs` (pill tabs with radio semantics),
   `PgSlider` (a native range under a fill), `Disclosure`, `Snippet` (a code viewer with

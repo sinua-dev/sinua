@@ -12,10 +12,12 @@ import { Icon } from "@sinua/design";
 import { brand } from "@/lib/brand";
 import { SCRIPT, useConversation } from "@/lib/conversation";
 import { VOICE_STATES, type VoiceState } from "@/lib/voice-state";
+import { useSiteTheme } from "@/lib/use-site-theme";
 import { LiveVisual } from "./live-visual";
 import { SWATCHES, swatchOverrides } from "./swatches";
 
 export function Hero({ patternCount }: { patternCount: number }) {
+  const theme = useSiteTheme();
   const [hold, setHold] = useState<VoiceState | null>(null);
   const [swatch, setSwatch] = useState(SWATCHES[0].id);
   // The Studio's two stage toggles. The simulated level starts off: the states alone
@@ -67,7 +69,7 @@ export function Hero({ patternCount }: { patternCount: number }) {
           pattern="glowing"
           state={convo.state}
           level={sound ? convo.level : 0}
-          overrides={swatchOverrides(swatch)}
+          overrides={swatchOverrides(swatch, theme)}
           pointer={pointer}
           className="lp-hero-visual"
           label={`A voice agent, ${convo.state}`}

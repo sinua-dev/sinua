@@ -33,7 +33,7 @@ export function StillVisual({
   const key = JSON.stringify(overrides ?? {});
   const shape = shapeOf(pattern);
   const base = useMemo(
-    () => ({ ...previewInputs(pattern), ...(JSON.parse(key) as Record<string, number>), ...(themeContrast ? contrast(theme) : {}) }),
+    () => ({ ...previewInputs(pattern), ...(themeContrast ? contrast(theme) : {}), ...(JSON.parse(key) as Record<string, number>) }),
     [pattern, key, theme, themeContrast]
   );
   // A square pattern's frame doesn't depend on the box; a box-layout one is drawn for its box.

@@ -6,9 +6,10 @@
  * labelled beta because none has been verified against its live service yet.
  */
 import { useRef } from "react";
+import { useSiteTheme } from "@/lib/use-site-theme";
 import { useConversation, SCRIPT } from "@/lib/conversation";
 import { LiveVisual } from "./live-visual";
-import { TINT } from "./swatches";
+import { tint } from "./swatches";
 import { PlatformIcon, type Platform } from "./platform-icons";
 
 const SOURCES: { name: string; note: string; beta?: boolean }[] = [
@@ -26,12 +27,13 @@ const MODULES: { id: Platform; platform: string; names: string[] }[] = [
 ];
 
 const FOLLOWERS = [
-  { pattern: "speaking", label: "Orb", hue: 265 },
-  { pattern: "veil", label: "Signal", hue: 172 },
-  { pattern: "crystal", label: "Signal", hue: 345 },
+  { pattern: "speaking", label: "Orb", hue: 217 },
+  { pattern: "veil", label: "Signal", hue: 165 },
+  { pattern: "crystal", label: "Signal", hue: 190 },
 ];
 
 export function Voice() {
+  const theme = useSiteTheme();
   const live = useRef<HTMLDivElement>(null);
   const convo = useConversation(live);
   const turn = SCRIPT[convo.turn];
@@ -88,7 +90,7 @@ export function Voice() {
                   level={convo.level}
                   bands={convo.bands}
                   maxFps={30}
-                  overrides={{ ...TINT, colorHue: f.hue }}
+                  overrides={tint(f.hue, theme)}
                   className="lp-follower-visual"
                   label={`${f.label} ${f.pattern}, ${convo.state}`}
                 />

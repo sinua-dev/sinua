@@ -1,10 +1,13 @@
 /* Sinua's design tokens: the one palette, type scale, rhythm and motion the Studio and
-   the site share. Color scales are @radix-ui/colors (colors.css): `slate`, a blue-tinted
-   neutral, paired with `indigo` per Radix's "pick the gray saturated toward your accent
-   hue" guidance, in 12 documented steps: 1-2 app/subtle bg, 3-5 component bg
-   (rest/hover/active), 6-8 borders (subtle/interactive/strong), 9-10 solid, 11-12 text
-   (low/high contrast). Component CSS only ever reads the semantic aliases below, never a
-   raw --slate-N/--indigo-N, so swapping the palette is one file.
+   the site share. The brand is Aurora, a teal-to-blue pair (#2DE2B5 -> #3B82F6). Dark is pure
+   black (#000000, panels #0a0a0c, no glow behind the orb); light is white with a cool-grey
+   surface. The two themes use Aurora differently on purpose: dark uses the bright pair; light
+   uses the deep inks (#0B7A61 -> #2563EB) wherever Aurora carries text, links or a button
+   (the bright teal is 1.66:1 on white: decoration only, never text or small icons).
+   `scripts/test/design-contrast.test.mjs` measures every pair below (text >= 4.5, decoration
+   >= 3), so a later edit can't quietly break them. The Radix scales (colors.css) remain for the
+   cost and status colours only. Component CSS reads only the semantic aliases below, so
+   swapping the palette is one file.
 
    Dark mode is the same alias set re-pointed, keyed on either `data-theme="dark"` or a
    `.dark` class on <html> (next-themes and Radix's dark scales use the class). */
@@ -13,35 +16,40 @@
   color-scheme: light;
 
   /* surfaces */
-  --bg-app: var(--slate-2);
-  --bg-panel: #ffffff;
+  --bg-app: #ffffff;
+  --bg-panel: #f6f7f9;
   --bg-stage: #ffffff;
   --bg-elevated: #ffffff;
-  --bg-control: var(--slate-a3);
-  --bg-control-hover: var(--slate-a4);
-  --bg-control-active: var(--slate-a5);
+  --bg-control: rgba(11, 11, 13, 0.05);
+  --bg-control-hover: rgba(11, 11, 13, 0.08);
+  --bg-control-active: rgba(11, 11, 13, 0.11);
 
   /* lines */
-  --hairline: var(--slate-a4);
-  --border: var(--slate-6);
-  --border-hover: var(--slate-7);
-  --border-strong: var(--slate-10);
+  --hairline: #e3e5e9;
+  --border: #e3e5e9;
+  --border-hover: #cfd2d8;
+  --border-strong: #8a8f99;
 
-  /* ink -- --text-3 fails WCAG AA for text on a panel (3.8:1 light,
-     4.2:1 dark, measured); it is for non-text decoration only, never
-     labels, hints or placeholders */
-  --text: var(--slate-12);
-  --text-2: var(--slate-11);
-  --text-3: var(--slate-10);
+  /* ink -- --text-3 is for non-text decoration only (never labels, hints or placeholders) */
+  --text: #0b0b0d;
+  --text-2: #5b606a;
+  --text-3: #8a8f99;
 
-  /* accent -- deliberately quiet: the orb itself is monochrome ink, the
-     chrome shouldn't compete with it (Linear's "neutral, timeless" pass) */
-  --accent: var(--indigo-9);
-  --accent-hover: var(--indigo-10);
-  --accent-ink: var(--indigo-11);
-  --accent-soft: var(--indigo-3);
-  --accent-soft-hover: var(--indigo-4);
-  --accent-border: var(--indigo-6);
+  /* Aurora, the deep inks: text, links and buttons (white on #0B7A61 is 5.29:1, on #2563EB
+     5.17:1); the lighter decoration pair is for non-text use only (3.34:1) */
+  --aurora-from: #0b7a61;
+  --aurora-to: #2563eb;
+  --aurora-deco-from: #0f9f7f;
+  --aurora-deco-to: #2563eb;
+  --grad-aurora: linear-gradient(90deg, var(--aurora-from), var(--aurora-to));
+  --grad-aurora-deco: linear-gradient(90deg, var(--aurora-deco-from), var(--aurora-deco-to));
+  --accent: #0b7a61;
+  --accent-hover: #096a54;
+  --accent-ink: #0b7a61;
+  --accent-2: #2563eb;
+  --accent-soft: rgba(15, 159, 127, 0.1);
+  --accent-soft-hover: rgba(15, 159, 127, 0.16);
+  --accent-border: rgba(15, 159, 127, 0.35);
   --on-accent: #ffffff;
 
   /* cost classes (the cost badge): dot = step 9, text = step 11 */
@@ -52,15 +60,15 @@
   --cost-medium-ink: var(--amber-11);
   --cost-heavy-ink: var(--tomato-11);
 
-  /* selection pill: inverted ink, not accent (keeps blue for "modified") */
-  --pill-bg: var(--slate-12);
+  /* selection pill: inverted ink, not accent (keeps Aurora for "modified") */
+  --pill-bg: #0b0b0d;
   --pill-text: #ffffff;
 
-  --focus-ring: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--indigo-8);
-  --shadow-panel: 0 0 0 1px var(--slate-a4), 0 1px 2px var(--slate-a3);
-  --shadow-seg: 0 0 0 1px var(--slate-a4), 0 1px 2px var(--slate-a3);
-  --shadow-thumb: 0 0 0 1px var(--slate-a5), 0 1px 2px var(--slate-a4);
-  --shadow-pop: 0 0 0 1px var(--slate-a4), 0 12px 32px -12px var(--slate-a9);
+  --focus-ring: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--accent);
+  --shadow-panel: 0 0 0 1px #e3e5e9, 0 1px 2px rgba(11, 11, 13, 0.04);
+  --shadow-seg: 0 0 0 1px #e3e5e9, 0 1px 2px rgba(11, 11, 13, 0.05);
+  --shadow-thumb: 0 0 0 1px #cfd2d8, 0 1px 2px rgba(11, 11, 13, 0.08);
+  --shadow-pop: 0 0 0 1px #e3e5e9, 0 12px 32px -12px rgba(11, 11, 13, 0.3);
 
   /* type -- Inter Variable / JetBrains Mono Variable, self-hosted via
      @fontsource-variable (fonts.css): no font CDN, so it works offline */
@@ -101,30 +109,38 @@
 :root.dark {
   color-scheme: dark;
 
-  --bg-app: var(--slate-1);
-  --bg-panel: var(--slate-2);
-  --bg-stage: var(--slate-2);
-  --bg-elevated: var(--slate-4);
-  --bg-control: var(--slate-a3);
-  --bg-control-hover: var(--slate-a4);
-  --bg-control-active: var(--slate-a5);
+  --bg-app: #000000;
+  --bg-panel: #0a0a0c;
+  --bg-stage: #000000;
+  --bg-elevated: #1c1c21;
+  --bg-control: #111114;
+  --bg-control-hover: #17171b;
+  --bg-control-active: #1d1d22;
 
-  --hairline: var(--slate-a4);
-  --border: var(--slate-6);
-  --border-hover: var(--slate-7);
-  --border-strong: var(--slate-10);
+  --hairline: #1f2024;
+  --border: #1f2024;
+  --border-hover: #2c2e34;
+  --border-strong: #5a5e68;
 
-  --text: var(--slate-12);
-  --text-2: var(--slate-11);
-  --text-3: var(--slate-10);
+  --text: #f2f3f5;
+  --text-2: #a1a4ab;
+  --text-3: #6b6f78;
 
-  --accent: var(--indigo-9);
-  --accent-hover: var(--indigo-10);
-  --accent-ink: var(--indigo-11);
-  --accent-soft: var(--indigo-3);
-  --accent-soft-hover: var(--indigo-4);
-  --accent-border: var(--indigo-6);
-  --on-accent: #ffffff;
+  /* Aurora, the bright pair (#050608 on #2DE2B5 is 12.22:1, on #3B82F6 5.51:1) */
+  --aurora-from: #2de2b5;
+  --aurora-to: #3b82f6;
+  --aurora-deco-from: #2de2b5;
+  --aurora-deco-to: #3b82f6;
+  --grad-aurora: linear-gradient(90deg, var(--aurora-from), var(--aurora-to));
+  --grad-aurora-deco: linear-gradient(90deg, var(--aurora-deco-from), var(--aurora-deco-to));
+  --accent: #2de2b5;
+  --accent-hover: #52ebc6;
+  --accent-ink: #2de2b5;
+  --accent-2: #3b82f6;
+  --accent-soft: rgba(45, 226, 181, 0.12);
+  --accent-soft-hover: rgba(45, 226, 181, 0.18);
+  --accent-border: rgba(45, 226, 181, 0.35);
+  --on-accent: #050608;
 
   /* cost classes (the cost badge): dot = step 9, text = step 11 */
   --cost-light: var(--grass-9);
@@ -134,12 +150,13 @@
   --cost-medium-ink: var(--amber-11);
   --cost-heavy-ink: var(--tomato-11);
 
-  --pill-bg: var(--slate-12);
-  --pill-text: var(--slate-1);
+  --pill-bg: #f2f3f5;
+  --pill-text: #000000;
 
-  --focus-ring: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--indigo-8);
-  --shadow-panel: 0 0 0 1px var(--slate-a5), 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-seg: 0 0 0 1px var(--slate-a6), 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-thumb: 0 0 0 1px var(--slate-a6), 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-pop: 0 0 0 1px var(--slate-a5), 0 12px 32px -12px rgba(0, 0, 0, 0.8);
+  --focus-ring: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--accent);
+  /* depth on pure black comes from hairlines, not shadows */
+  --shadow-panel: 0 0 0 1px #1f2024;
+  --shadow-seg: 0 0 0 1px #1f2024;
+  --shadow-thumb: 0 0 0 1px #2c2e34, 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-pop: 0 0 0 1px #1f2024, 0 12px 32px -12px rgba(0, 0, 0, 0.9);
 }

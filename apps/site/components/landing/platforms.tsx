@@ -19,11 +19,11 @@ import type { FxHandle } from "@sinua/web";
 import { designTabs, type TabId } from "@/lib/design-tabs";
 import { useSiteTheme } from "@/lib/use-site-theme";
 import { contrast } from "./live-visual";
-import { TINT } from "./swatches";
+import { AURORA, swatchOverrides } from "./swatches";
 import { PlatformIcon, type Platform } from "./platform-icons";
 
 const PATTERN = { object: "orb", id: "connecting" };
-const LOOK = { ...TINT, colorHue: 172 };
+const LOOK = AURORA;
 
 const PLATFORMS: { id: Platform; label: string; device: string; tabs: TabId[] }[] = [
   { id: "web", label: "Web", device: "browser", tabs: ["typed-react", "web"] },
@@ -86,7 +86,7 @@ export function Platforms({ frames }: { frames: number }) {
 function useMirroredVisual(canvases: { current: (HTMLCanvasElement | null)[] }) {
   const theme = useSiteTheme();
   const handle = useRef<FxHandle | null>(null);
-  const options = useMemo(() => ({ pattern: PATTERN.id, overrides: { ...LOOK, ...contrast(theme) }, theme, maxFps: 30 }), [theme]);
+  const options = useMemo(() => ({ pattern: PATTERN.id, overrides: { ...contrast(theme), ...swatchOverrides("aurora", theme) }, theme, maxFps: 30 }), [theme]);
   const latest = useRef(options);
   latest.current = options;
 

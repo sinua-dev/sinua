@@ -10,11 +10,11 @@ import { StillVisual } from "../still-visual";
 import Link from "next/link";
 import { parameterCatalog } from "@/lib/catalog";
 import { LiveVisual } from "./live-visual";
-import { TINT } from "./swatches";
+import { AURORA_HUE, tint as hueTint } from "./swatches";
+import { useSiteTheme } from "@/lib/use-site-theme";
 
-/** One hue per family, so switching families reads at a glance. */
-const FAMILY_HUE: Record<string, number> = { orb: 265, signal: 172 };
-const tint = (family: string) => ({ ...TINT, colorHue: FAMILY_HUE[family] ?? 265 });
+/** One hue per family, so switching families reads at a glance: Aurora's two ends (to revert, use 265 and 172). */
+const FAMILY_HUE: Record<string, number> = { orb: AURORA_HUE.blue, signal: AURORA_HUE.teal };
 
 /** Values that make a pattern read at a glance: a dune needs progress, a crystal needs a level. */
 const SHOWCASE: Record<string, Record<string, number>> = {
@@ -76,6 +76,8 @@ function showcase(pattern: string, sweep: number | null): Record<string, number>
 }
 
 export function Families() {
+  const theme = useSiteTheme();
+  const tint = (family: string) => hueTint(FAMILY_HUE[family] ?? AURORA_HUE.blue, theme);
   const objects = useMemo(() => parameterCatalog().objects, []);
   const [family, setFamily] = useState(objects[0].id as string);
   const current = objects.find((o) => o.id === family) ?? objects[0];

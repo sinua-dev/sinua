@@ -180,8 +180,8 @@
   height: 36px;
   padding: 0 16px;
   border-radius: var(--r-2);
-  background: var(--pill-bg);
-  color: var(--pill-text);
+  background: var(--grad-aurora);
+  color: var(--on-accent);
   font-size: var(--fs-2);
   font-weight: 600;
   text-decoration: none;

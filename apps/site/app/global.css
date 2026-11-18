@@ -8,8 +8,8 @@
 @import "@sinua/design/tokens.css";
 @import "@sinua/design/components.css";
 
-/* Fumadocs' colors, pointed at the shared tokens: the docs wear the Studio's slate and
-   indigo instead of Fumadocs' neutral grey. One block serves both themes, because the
+/* Fumadocs' colors, pointed at the shared tokens: the docs wear the Studio's pure black
+   (dark), white (light) and Aurora instead of Fumadocs' neutral grey. One block serves both themes, because the
    tokens themselves switch under `.dark`. */
 :root,
 .dark,
@@ -29,7 +29,7 @@
   --color-fd-secondary-foreground: var(--text);
   --color-fd-accent: var(--bg-control-hover);
   --color-fd-accent-foreground: var(--text);
-  --color-fd-ring: var(--indigo-8);
+  --color-fd-ring: var(--accent);
 }
 
 body {

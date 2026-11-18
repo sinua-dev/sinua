@@ -8,8 +8,9 @@
 import { useMemo, useState } from "react";
 import { Icon, PgSlider, PgTabs, Snippet } from "@sinua/design";
 import { designTabs } from "@/lib/design-tabs";
+import { useSiteTheme } from "@/lib/use-site-theme";
 import { LiveVisual } from "./live-visual";
-import { SWATCHES } from "./swatches";
+import { SWATCHES, swatchOverrides } from "./swatches";
 
 const PATTERNS = [
   { value: "glowing", label: "Glowing", object: "orb" },
@@ -27,18 +28,19 @@ const MATERIALS: { id: string; label: string; keys: Record<string, number> }[] =
 const SHOWCASE: Record<string, Record<string, number>> = { veil: { level: 0.7 }, crystal: { level: 0.75 } };
 
 export function Look() {
+  const theme = useSiteTheme();
   const [pattern, setPattern] = useState<(typeof PATTERNS)[number]["value"]>("glowing");
-  const [swatch, setSwatch] = useState("violet");
+  const [swatch, setSwatch] = useState("aurora");
   const [hue, setHue] = useState(265);
   const [on, setOn] = useState<Record<string, boolean>>({ glow: true });
   const [pointer, setPointer] = useState(true);
   const object = PATTERNS.find((p) => p.value === pattern)!.object;
 
   const colour = useMemo(() => {
-    const s = SWATCHES.find((x) => x.id === swatch)!;
+    const o = swatchOverrides(swatch, theme);
     // A solid swatch is a starting hue; the slider moves it.
-    return "colorHue" in s.overrides ? { ...s.overrides, colorHue: hue } : s.overrides;
-  }, [swatch, hue]);
+    return "colorHue" in o ? { ...o, colorHue: hue } : o;
+  }, [swatch, hue, theme]);
   const overrides = useMemo(() => {
     const out: Record<string, number> = { ...colour };
     for (const m of MATERIALS) if (on[m.id]) Object.assign(out, m.keys);

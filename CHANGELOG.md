@@ -9,7 +9,9 @@ tag `beta`, and it may still change incompatibly.
 
 How to release: [`docs/publishing.md`](docs/publishing.md), *How to release*.
 
-## Unreleased
+## 0.1.0-beta.12
+
+A large cleanup and a new look. Sinua now has two objects, `orb` and `signal`: the character, ring, core, beacon and silhouette features are removed (see *Removed*), and `signal` gains ten light volumes. Everything below is in one version on every platform. Size drops by about a third on the web and a quarter on Android.
 
 ### Added
 
@@ -193,6 +195,10 @@ and Kotlin come on top). Release-variant totals for the whole R2 tree: web inlin
   never showed listening, thinking or speaking until the next change. Every built-in source now
   replays its current state, and `true` while its session is up, to a callback set mid-session;
   `SharedVoiceSource` does the same for its listeners (on React Native, the JS handle too).
+
+Size: web 294,820 B (gzip 218,844), Android arm64 .so 1,390,504 B, iOS .a 3,556,888 B; @sinua/voice min+gzip: voice 3,858, openai 8,981, gemini 6,847, elevenlabs 6,981, livekit 5,409, mic 1,208, tone 1,303 B (release builds). Down from 0.1.0-beta.11 (whose web, .so and .a are those of 0.1.0-beta.9): web −32.6%, .so −26.9%, .a −13.3%.
+
+Not re-measured for this beta: device frame time. The device bench needs a phone and this release was verified on a simulator and an emulator only; simulator and emulator numbers are not device numbers. It stays on the open list for the next phone checks.
 
 ## 0.1.0-beta.11
 

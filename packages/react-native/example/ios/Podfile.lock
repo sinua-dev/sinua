@@ -1673,7 +1673,7 @@ PODS:
     - React-utils (= 0.87.1)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.87.1)
-  - SinuaCore (0.1.0-beta.11):
+  - SinuaCore (0.1.0-beta.12):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1694,9 +1694,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - SinuaCore/Core (= 0.1.0-beta.11)
+    - SinuaCore/Core (= 0.1.0-beta.12)
     - Yoga
-  - SinuaCore/Core (0.1.0-beta.11):
+  - SinuaCore/Core (0.1.0-beta.12):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety

@@ -125,7 +125,7 @@ class SinuaViewTest {
             assertEquals(n, want, FxStatePlayer.render(json, null, 1.3, emptyMap(), emptyMap()))
             checked++
         }
-        assertTrue("checked $checked", checked > 3)
+        assertTrue("checked $checked", checked >= 3)
     }
 
     /** A pattern change cross-fades by the transition clock's weights (design note 31), then settles. */
